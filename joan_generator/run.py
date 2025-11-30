@@ -25,7 +25,7 @@ except Exception as e:
     print(f"ℹ️ Info: Could not read options (first run?): {e}")
 
 if not TOKEN:
-    print("❌ WARNING: No token found (neither System nor Manual) !!!")
+    print("❌ WARNING: No token found. Entity list will be empty!")
 else:
     print(f"🔑 Token Source: {TOKEN_SOURCE}")
 
@@ -38,9 +38,17 @@ def get_ha_entities():
         response = requests.get(f"{API_URL}/states", headers=headers, timeout=10)
         if response.status_code == 200:
             data = response.json()
-            entities = [state['entity_id'] for state in data]
-            entities.sort()
-            print(f"✅ SUCCESS! Fetched {len(entities)} entities.")
+            # Zwracamy obiekt: {id, state, unit}
+            entities = []
+            for state in data:
+                entities.append({
+                    'id': state['entity_id'],
+                    'state': state['state'],
+                    'unit': state['attributes'].get('unit_of_measurement', '')
+                })
+            # Sortowanie po ID
+            entities.sort(key=lambda x: x['id'])
+            print(f"✅ SUCCESS! Fetched {len(entities)} entities with states.")
             return entities
         else:
             print(f"⚠️ Home Assistant API Error: {response.status_code} - {response.text}")
@@ -58,12 +66,9 @@ STYLES = {
     "icon": "color: #000000 !important;"
 }
 
-# --- SMART ICONS ---
 def get_icon_pair(base_icon, w_type):
-    """Zwraca parę ikon lub None, jeśli brak ikony bazowej."""
     if not base_icon:
         return None, None
-
     i = base_icon.lower()
     if 'garage' in i: return 'mdi-garage-open', 'mdi-garage'
     if 'gate' in i: return 'mdi-gate-open', 'mdi-gate'
@@ -71,7 +76,6 @@ def get_icon_pair(base_icon, w_type):
     if 'lock' in i: return 'mdi-lock-open', 'mdi-lock'
     if 'door' in i: return 'mdi-door-open', 'mdi-door-closed'
     if 'window' in i or 'blind' in i or 'shutter' in i: return 'mdi-window-shutter-open', 'mdi-window-shutter'
-    
     if 'off' in i or 'outline' in i:
         return i.replace('-off', '').replace('-outline', ''), i
     return i, i + '-outline'
@@ -159,41 +163,33 @@ def index():
                     generated_yaml += f"{w_id}:\n"
                     generated_yaml += f"  title: \"{w_name}\"\n"
                     
-                    # 1. NAVIGATE
                     if w_type == 'navigate':
                         dashboard_name = w_id.replace('navigate.', '')
                         generated_yaml += f"  widget_type: navigate\n"
                         generated_yaml += f"  dashboard: {dashboard_name}\n"
-                        # Dla navigate ikona jest wymagana lub domyślna
                         nav_icon = w_icon if w_icon else 'mdi-arrow-right-circle'
                         generated_yaml += f"  icon_inactive: {nav_icon}\n"
                         generated_yaml += f"  widget_style: \"background-color: #FFFFFF !important; border-radius: 8px !important; padding: 10px !important; color: #000000 !important;\"\n"
                         generated_yaml += f"  icon_style_inactive: \"color: #000000 !important;\"\n"
                     
-                    # 2. SENSOR
                     elif w_type == 'sensor':
                         generated_yaml += f"  widget_type: sensor\n"
                         generated_yaml += f"  entity: {w_id}\n"
                         generated_yaml += f"  value_style: \"{STYLES['value']}\"\n"
                         generated_yaml += f"  unit_style: \"{STYLES['unit']}\"\n"
-                        if w_icon:
-                            generated_yaml += f"  icon: {w_icon}\n"
+                        if w_icon: generated_yaml += f"  icon: {w_icon}\n"
                     
-                    # 3. MEDIA PLAYER
                     elif w_type == 'media_player':
                         generated_yaml += f"  widget_type: media_player\n"
                         generated_yaml += f"  entity: {w_id}\n"
                         generated_yaml += f"  truncate_name: 20\n"
                         generated_yaml += f"  step: 5\n"
 
-                    # 4. LABEL / SCENE
                     elif w_type == 'label':
                          generated_yaml += f"  widget_type: label\n"
-                         generated_yaml += f"  text: \"{w_name}\"\n" # Name is text
-                         if w_icon:
-                             generated_yaml += f"  icon: {w_icon}\n"
+                         generated_yaml += f"  text: \"{w_name}\"\n"
+                         if w_icon: generated_yaml += f"  icon: {w_icon}\n"
 
-                    # 5. OTHERS (Switch, Cover, etc.)
                     else:
                         ad_type = w_type
                         if w_type == 'binary_sensor': ad_type = 'binary_sensor'
@@ -202,26 +198,20 @@ def index():
                         generated_yaml += f"  widget_type: {ad_type}\n"
                         generated_yaml += f"  entity: {w_id}\n"
                         
-                        # --- IKONY ---
-                        # Generujemy tylko jeśli użytkownik podał ikonę
                         if w_icon:
                             icon_on, icon_off = get_icon_pair(w_icon, ad_type)
-                            # Jeśli get_icon_pair zwróciło coś sensownego
                             if icon_on: generated_yaml += f"  icon_on: {icon_on}\n"
                             if icon_off: generated_yaml += f"  icon_off: {icon_off}\n"
                         
                         generated_yaml += f"  state_text: 1\n"
-                        
                         generated_yaml += "  state_map:\n"
                         generated_yaml += f"    \"on\": \"{dic['on']}\"\n"
                         generated_yaml += f"    \"off\": \"{dic['off']}\"\n"
-                        
                         if w_type == 'cover' or w_type == 'binary_sensor':
                             generated_yaml += f"    \"open\": \"{dic['open']}\"\n"
                             generated_yaml += f"    \"closed\": \"{dic['closed']}\"\n"
                             generated_yaml += f"    \"opening\": \"{dic['opening']}\"\n"
                             generated_yaml += f"    \"closing\": \"{dic['closing']}\"\n"
-                        
                         if w_type == 'lock':
                              generated_yaml += f"    \"locked\": \"{dic['locked']}\"\n"
                              generated_yaml += f"    \"unlocked\": \"{dic['unlocked']}\"\n"
