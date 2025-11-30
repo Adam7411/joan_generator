@@ -1,6 +1,6 @@
 {
   "name": "Joan Dashboard Generator",
-  "version": "1.1.2",
+  "version": "1.1.3",
   "slug": "joan_generator",
   "description": "Generator dashboardow E-Ink",
   "url": "https://github.com/Adam7411/joan_generator",
@@ -13,6 +13,10 @@
     "5000/tcp": 5000
   },
   "webui": "http://[HOST]:[PORT:5000]/",
-  "options": {},
-  "schema": {}
+  "options": {
+    "manual_token": ""
+  },
+  "schema": {
+    "manual_token": "str"
+  }
 }
