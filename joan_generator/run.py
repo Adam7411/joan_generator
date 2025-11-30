@@ -48,10 +48,10 @@ def get_ha_entities():
         print(f"❌ Exception while fetching entities: {e}")
     return []
 
-# E-Ink Styles
+# E-Ink Styles (Strict Black & White)
 STYLES = {
     "title": "color: #000000; font-size: 20px; font-weight: 700; text-align: center; padding-top: 5px; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif;",
-    "widget": "color: #000000 !important; background-color: #FFFFFF !important;",
+    "widget": "color: #000000 !important; background-color: #FFFFFF !important; border: 2px solid #000000 !important;",
     "text": "color: #000000 !important; font-weight: 700 !important;",
     "value": "color: #000000 !important; font-size: 44px !important; font-weight: 700 !important;",
     "unit": "color: #000000 !important;",
@@ -82,9 +82,13 @@ def get_icon_pair(base_icon, w_type):
 def index():
     generated_yaml = ""
     ha_entities = get_ha_entities()
+    dashboard_filename = ""
     
     if request.method == 'POST':
         title = request.form.get('title', 'JoanDashboard')
+        # Ustalanie nazwy pliku na podstawie tytułu (male litery, bez spacji)
+        dashboard_filename = title.lower().replace(" ", "_") + ".dash"
+        
         lang = request.form.get('ui_language', 'pl')
         
         T = {
@@ -95,6 +99,12 @@ def index():
         }
         dic = T.get(lang, T['pl'])
 
+        # Nagłówek informacyjny w pliku
+        generated_yaml += f"# --- JOAN 6 E-INK DASHBOARD ---\n"
+        generated_yaml += f"# File: {dashboard_filename}\n"
+        generated_yaml += f"# Location: \\\\IP_HA\\addon_configs\\appdaemon\\dashboards\\\n"
+        generated_yaml += f"# --------------------------------\n\n"
+
         generated_yaml += f"title: {title}\n"
         generated_yaml += "widget_dimensions: [117, 117]\n"
         generated_yaml += "widget_size: [2, 1]\n"
@@ -102,7 +112,7 @@ def index():
         generated_yaml += "columns: 6\n"
         generated_yaml += "rows: 9\n"
         
-        # GLOBAL PARAMS
+        # GLOBAL PARAMS (E-ink Optimization)
         generated_yaml += "global_parameters:\n"
         generated_yaml += "  use_comma: 0\n"
         generated_yaml += "  precision: 1\n"
@@ -113,6 +123,8 @@ def index():
         generated_yaml += f"  text_style: \"{STYLES['text']}\"\n"
         generated_yaml += f"  state_text_style: \"color: #000000 !important; font-weight: 700 !important; font-size: 14px; text-transform: uppercase; margin-top: 5px;\"\n"
         generated_yaml += f"  widget_style: \"{STYLES['widget']}\"\n"
+        generated_yaml += f"  icon_style_active: \"{STYLES['icon']}\"\n"
+        generated_yaml += f"  icon_style_inactive: \"{STYLES['icon']}\"\n"
         
         generated_yaml += "skin: simplyred\n\n"
         
@@ -162,7 +174,6 @@ def index():
                         generated_yaml += f"  unit_style: \"{STYLES['unit']}\"\n"
                         if w_icon:
                             generated_yaml += f"  icon: {w_icon}\n"
-                            generated_yaml += f"  icon_style: \"{STYLES['icon']}\"\n"
                     
                     # 3. MEDIA PLAYER
                     elif w_type == 'media_player':
@@ -203,10 +214,8 @@ def index():
             except Exception as e:
                 print(f"❌ Error processing JSON: {e}")
 
-    return render_template('index.html', generated_yaml=generated_yaml, entities=ha_entities)
+    return render_template('index.html', generated_yaml=generated_yaml, entities=ha_entities, filename=dashboard_filename)
 
-# To uruchomi się TYLKO jeśli odpalisz plik ręcznie, 
-# Gunicorn to pominie i uruchomi serwer po swojemu.
 if __name__ == "__main__":
     print("🚀 3. Starting Dev Server...")
     app.run(host='0.0.0.0', port=5000, debug=False)
