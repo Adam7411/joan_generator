@@ -1,13 +1,13 @@
-print("📦 1. Importuje biblioteki...")
+print("📦 1. Importing libraries...")
 from flask import Flask, render_template, request
 import os
 import requests
 import json
-print("✅ 2. Biblioteki zaladowane.")
+print("✅ 2. Libraries loaded.")
 
 app = Flask(__name__)
 
-# --- KONFIGURACJA TOKENA ---
+# --- TOKEN CONFIGURATION ---
 TOKEN = os.environ.get('SUPERVISOR_TOKEN')
 API_URL = "http://supervisor/core/api" 
 TOKEN_SOURCE = "System (Supervisor)"
@@ -19,36 +19,36 @@ try:
         if manual_token and len(manual_token) > 10:
             TOKEN = manual_token
             API_URL = "http://homeassistant:8123/api"
-            TOKEN_SOURCE = "Reczny (Konfiguracja)"
-            print("🔧 Znaleziono ręczny token. Zmieniam adres API na http://homeassistant:8123/api")
+            TOKEN_SOURCE = "Manual (Configuration)"
+            print("🔧 Manual token found. Switching API URL to http://homeassistant:8123/api")
 except Exception as e:
-    print(f"ℹ️ Info: Nie udalo sie odczytac opcji: {e}")
+    print(f"ℹ️ Info: Could not read options (first run?): {e}")
 
 if not TOKEN:
-    print("❌ UWAGA: Brak tokena (ani systemowego, ani ręcznego) !!!")
+    print("❌ WARNING: No token found (neither System nor Manual) !!!")
 else:
-    print(f"🔑 Uzywany Token: {TOKEN_SOURCE}")
+    print(f"🔑 Token Source: {TOKEN_SOURCE}")
 
 def get_ha_entities():
     if not TOKEN:
         return []
     headers = {"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json"}
     try:
-        print(f"🌍 Pobieram encje z: {API_URL}/states")
+        print(f"🌍 Fetching entities from: {API_URL}/states")
         response = requests.get(f"{API_URL}/states", headers=headers, timeout=10)
         if response.status_code == 200:
             data = response.json()
             entities = [state['entity_id'] for state in data]
             entities.sort()
-            print(f"✅ SUKCES! Pobrano {len(entities)} encji.")
+            print(f"✅ SUCCESS! Fetched {len(entities)} entities.")
             return entities
         else:
-            print(f"⚠️ Blad API Home Assistant: {response.status_code} - {response.text}")
+            print(f"⚠️ Home Assistant API Error: {response.status_code} - {response.text}")
     except Exception as e:
-        print(f"❌ Wyjatek podczas pobierania encji: {e}")
+        print(f"❌ Exception while fetching entities: {e}")
     return []
 
-# Style E-Ink (Czarne na białym)
+# E-Ink Styles
 STYLES = {
     "title": "color: #000000; font-size: 20px; font-weight: 700; text-align: center; padding-top: 5px; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif;",
     "widget": "color: #000000 !important; background-color: #FFFFFF !important;",
@@ -58,7 +58,7 @@ STYLES = {
     "icon": "color: #000000 !important;"
 }
 
-# --- INTELIGENTNE IKONY ---
+# --- SMART ICONS ---
 def get_icon_pair(base_icon, w_type):
     if not base_icon:
         if w_type == 'cover': return 'mdi-window-shutter-open', 'mdi-window-shutter'
@@ -102,7 +102,7 @@ def index():
         generated_yaml += "columns: 6\n"
         generated_yaml += "rows: 9\n"
         
-        # PARAMETRY GLOBALNE
+        # GLOBAL PARAMS
         generated_yaml += "global_parameters:\n"
         generated_yaml += "  use_comma: 0\n"
         generated_yaml += "  precision: 1\n"
@@ -129,7 +129,7 @@ def index():
                     generated_yaml += f"  - {row_str}\n"
                     processed_widgets.extend(row)
                 
-                generated_yaml += "\n# --- DEFINICJE WIDZETOW ---\n\n"
+                generated_yaml += "\n# --- WIDGET DEFINITIONS ---\n\n"
                 
                 seen_ids = set()
                 for w in processed_widgets:
@@ -144,16 +144,13 @@ def index():
                     generated_yaml += f"{w_id}:\n"
                     generated_yaml += f"  title: \"{w_name}\"\n"
                     
-                    # 1. NAWIGACJA (DASHBOARD SWITCHER)
+                    # 1. NAVIGATE
                     if w_type == 'navigate':
-                        # Wyciągamy nazwę dashboardu z ID (np. navigate.joan3 -> joan3)
                         dashboard_name = w_id.replace('navigate.', '')
                         generated_yaml += f"  widget_type: navigate\n"
                         generated_yaml += f"  dashboard: {dashboard_name}\n"
-                        # Używamy icon_inactive, bo navigate nie ma stanu on/off
                         nav_icon = w_icon if w_icon else 'mdi-arrow-right-circle'
                         generated_yaml += f"  icon_inactive: {nav_icon}\n"
-                        # Specjalny styl dla nawigacji (często ma inny wygląd)
                         generated_yaml += f"  widget_style: \"background-color: #FFFFFF !important; border-radius: 8px !important; padding: 10px !important; color: #000000 !important;\"\n"
                         generated_yaml += f"  icon_style_inactive: \"color: #000000 !important;\"\n"
                     
@@ -174,7 +171,7 @@ def index():
                         generated_yaml += f"  truncate_name: 20\n"
                         generated_yaml += f"  step: 5\n"
 
-                    # 4. RESZTA (Switch, Cover itp.)
+                    # 4. OTHERS
                     else:
                         ad_type = w_type
                         if w_type == 'binary_sensor': ad_type = 'binary_sensor'
@@ -204,9 +201,9 @@ def index():
 
                     generated_yaml += "\n"
             except Exception as e:
-                print(f"❌ Blad przetwarzania JSON: {e}")
+                print(f"❌ Error processing JSON: {e}")
 
     return render_template('index.html', generated_yaml=generated_yaml, entities=ha_entities)
 
-print("🚀 3. Uruchamiam serwer Flask na porcie 5000...")
+print("🚀 3. Starting Flask Server on port 5000...")
 app.run(host='0.0.0.0', port=5000, debug=False)
