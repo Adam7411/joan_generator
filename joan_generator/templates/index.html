@@ -338,6 +338,12 @@
             name = name.replace(/_/g, ' ');
             return name.replace(/\b\w/g, l => l.toUpperCase());
         }
+        function formatNameFromEntity(entity) {
+            if (!entity) return "";
+            let name = entity.split('.').pop();
+            name = name.replace(/_/g, ' ');
+            return name.replace(/\b\w/g, l => l.toUpperCase());
+        }
 
         function setLang(lang) {
             currentLang = lang;
@@ -462,7 +468,8 @@
                     let iconHtml = iconClass ? `<i class="mdi ${iconClass} ew-icon"></i>` : `<div style="height:28px"></div>`;
                     let displayState = getEntityState(widget.id) || defaultStates[widget.type] || '---';
 
-                    wDiv.innerHTML = `<div class="ew-title">${widget.name}</div>${iconHtml}<div class="ew-state">${displayState}</div><div class="ew-delete" onclick="removeWidget(${index}, ${wIndex}); event.stopPropagation();">X</div><div class="ew-edit-overlay"></div>`;
+                    const safeName = widget.name || formatNameFromId(widget.id);
+                    wDiv.innerHTML = `<div class="ew-title">${safeName}</div>${iconHtml}<div class="ew-state">${displayState}</div><div class="ew-delete" onclick="removeWidget(${index}, ${wIndex}); event.stopPropagation();">X</div><div class="ew-edit-overlay"></div>`;
                     rowDiv.appendChild(wDiv);
                 });
 
@@ -480,7 +487,7 @@
 
         function toggleImport() { document.getElementById('import-area').classList.toggle('visible'); }
         
-        // --- IMPROVED IMPORT LOGIC (FIXED TITLES) ---
+        // --- IMPROVED IMPORT LOGIC (FIXED TITLES & TYPES) ---
         function importYaml() {
             const code = document.getElementById('import-code').value;
             if (!code) return;
@@ -516,7 +523,6 @@
                             const ignoreKeys = ['global_parameters','widget_dimensions','widget_size','widget_margins','columns','rows','skin','title'];
                             if (!ignoreKeys.includes(key)) { currentWidgetId = key; widgetDefs[currentWidgetId] = {}; } else { currentWidgetId = null; }
                         } else if (currentWidgetId && line.includes(':')) {
-                            // Handle title with/without quotes
                             let val = line.substring(line.indexOf(':') + 1).trim();
                             if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) val = val.slice(1, -1);
                             const key = line.split(':')[0].trim();
@@ -538,15 +544,28 @@
                         const id = item;
                         const def = widgetDefs[id] || {};
                         
-                        let type = def.widget_type || 'switch';
-                        if (id.startsWith('navigate.')) type = 'navigate';
-                        else if (id.startsWith('sensor.')) type = 'sensor';
-                        
-                        // FIXED: Auto name if missing in definition
-                        let name = def.title;
-                        if(!name) name = formatNameFromId(id);
+                        // Detekcja typu
+                        let type = def.widget_type || '';
+                        if (!type) {
+                            if (id.startsWith('navigate.')) type = 'navigate';
+                            else if (id.startsWith('sensor.')) type = 'sensor';
+                            else if (id.startsWith('binary_sensor.')) type = 'binary_sensor';
+                            else if (id.startsWith('cover.')) type = 'cover';
+                            else if (id.startsWith('media_player.')) type = 'media_player';
+                            else if (id.startsWith('climate.')) type = 'climate';
+                            else if (id.startsWith('light.') || id.startsWith('switch.')) type = 'switch';
+                            else type = 'switch'; // domyślnie
+                        }
 
+                        // Nazwa: preferuj title, jeśli brak, z entity, jeśli też brak – z id
+                        let name = def.title;
+                        if (!name && def.entity) name = formatNameFromEntity(def.entity);
+                        if (!name) name = formatNameFromId(id);
+
+                        // Ikona: wybierz najlepszą dostępną
                         let icon = def.icon || def.icon_on || def.icon_off || def.icon_inactive || '';
+                        if (icon && !icon.startsWith('mdi-')) icon = 'mdi-' + icon;
+
                         newRow.push({ id, type, name, icon, size });
                     });
                     if(newRow.length > 0) rows.push(newRow);
