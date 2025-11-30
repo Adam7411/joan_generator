@@ -50,7 +50,7 @@ def get_ha_entities():
         print(f"!!! Wyjatek podczas pobierania encji: {e}")
     return []
 
-# Style zgodne z E-Ink (Czarny tekst, biale tlo)
+# Style E-Ink
 STYLES = {
     "title": "color: #000000; font-size: 20px; font-weight: 700; text-align: center; padding-top: 5px; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif;",
     "widget": "color: #000000 !important; background-color: #FFFFFF !important;",
@@ -67,14 +67,15 @@ def index():
     
     if request.method == 'POST':
         title = request.form.get('title', 'JoanDashboard')
-        lang = request.form.get('language', 'pl') # Pobieramy język (pl lub en)
+        lang = request.form.get('ui_language', 'pl') # Język wybrany w UI
         
-        # Słownik tłumaczeń dla YAML
-        TEXTS = {
+        # Tłumaczenia dla YAML (co ma się wyświetlać na ekranie E-Ink)
+        T = {
             'pl': {'on': 'WŁĄCZONE', 'off': 'WYŁĄCZONE', 'open': 'OTWARTE', 'closed': 'ZAMKNIĘTE', 'opening': 'OTWIERANIE', 'closing': 'ZAMYKANIE'},
             'en': {'on': 'ON', 'off': 'OFF', 'open': 'OPEN', 'closed': 'CLOSED', 'opening': 'OPENING', 'closing': 'CLOSING'}
         }
-        T = TEXTS[lang]
+        # Zabezpieczenie, gdyby przyszedł nieznany język
+        dic = T.get(lang, T['pl'])
 
         generated_yaml += f"title: {title}\n"
         generated_yaml += "widget_dimensions: [117, 117]\n"
@@ -113,7 +114,6 @@ def index():
                     
                     generated_yaml += f"{w_id}:\n"
                     
-                    # 1. NAWIGACJA
                     if w_type == 'navigate':
                         dashboard_name = w_id.replace('navigate.', '')
                         generated_yaml += f"  widget_type: navigate\n"
@@ -123,7 +123,6 @@ def index():
                         generated_yaml += f"  widget_style: \"background-color: #FFFFFF !important; border-radius: 8px !important; padding: 10px !important; color: #000000 !important;\"\n"
                         generated_yaml += f"  title_style: \"{STYLES['title']}\"\n"
                     
-                    # 2. SENSOR
                     elif w_type == 'sensor':
                         generated_yaml += f"  widget_type: sensor\n"
                         generated_yaml += f"  entity: {w_id}\n"
@@ -137,7 +136,6 @@ def index():
                             generated_yaml += f"  icon: {w_icon}\n"
                             generated_yaml += f"  icon_style: \"{STYLES['icon']}\"\n"
 
-                    # 3. MEDIA PLAYER
                     elif w_type == 'media_player':
                         generated_yaml += f"  widget_type: media_player\n"
                         generated_yaml += f"  entity: {w_id}\n"
@@ -149,7 +147,6 @@ def index():
                         generated_yaml += f"  widget_style: \"{STYLES['widget']}\"\n"
                         generated_yaml += f"  icon_style: \"{STYLES['icon']}\"\n"
 
-                    # 4. POZOSTAŁE
                     else:
                         ad_type = w_type
                         if w_type == 'binary_sensor': ad_type = 'binary_sensor'
@@ -168,7 +165,6 @@ def index():
                              generated_yaml += f"  icon_on: mdi-toggle-switch\n"
                              generated_yaml += f"  icon_off: mdi-toggle-switch-off\n"
 
-                        # KLUCZOWE DLA WYŚWIETLANIA STANU
                         generated_yaml += f"  state_text: 1\n"
                         generated_yaml += f"  title_style: \"{STYLES['title']}\"\n"
                         generated_yaml += f"  text_style: \"{STYLES['text']}\"\n" 
@@ -177,14 +173,14 @@ def index():
                         generated_yaml += f"  icon_style_inactive: \"{STYLES['icon']}\"\n"
                         
                         generated_yaml += "  state_map:\n"
-                        generated_yaml += f"    \"on\": \"{T['on']}\"\n"
-                        generated_yaml += f"    \"off\": \"{T['off']}\"\n"
+                        generated_yaml += f"    \"on\": \"{dic['on']}\"\n"
+                        generated_yaml += f"    \"off\": \"{dic['off']}\"\n"
                         
                         if w_type == 'cover' or w_type == 'binary_sensor':
-                            generated_yaml += f"    \"open\": \"{T['open']}\"\n"
-                            generated_yaml += f"    \"closed\": \"{T['closed']}\"\n"
-                            generated_yaml += f"    \"opening\": \"{T['opening']}\"\n"
-                            generated_yaml += f"    \"closing\": \"{T['closing']}\"\n"
+                            generated_yaml += f"    \"open\": \"{dic['open']}\"\n"
+                            generated_yaml += f"    \"closed\": \"{dic['closed']}\"\n"
+                            generated_yaml += f"    \"opening\": \"{dic['opening']}\"\n"
+                            generated_yaml += f"    \"closing\": \"{dic['closing']}\"\n"
 
                     generated_yaml += "\n"
             except Exception as e:
