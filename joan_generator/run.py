@@ -7,12 +7,11 @@ print("✅ 2. Libraries loaded.")
 
 app = Flask(__name__)
 
-# --- TOKEN & API CONFIGURATION ---
+# --- TOKEN CONFIGURATION ---
 TOKEN = os.environ.get('SUPERVISOR_TOKEN')
 API_URL = "http://supervisor/core/api" 
 TOKEN_SOURCE = "System (Supervisor)"
 
-# Try to load manual token from options
 try:
     with open('/data/options.json', 'r') as f:
         options = json.load(f)
@@ -26,27 +25,19 @@ except Exception as e:
     print(f"ℹ️ Info: Could not read options (first run?): {e}")
 
 if not TOKEN:
-    print("❌ WARNING: No token found (neither System nor Manual). Entity list will be empty!")
+    print("❌ WARNING: No token found (neither System nor Manual) !!!")
 else:
     print(f"🔑 Token Source: {TOKEN_SOURCE}")
 
 def get_ha_entities():
-    """Fetches entity IDs from Home Assistant API."""
     if not TOKEN:
         return []
-    
-    headers = {
-        "Authorization": f"Bearer {TOKEN}",
-        "Content-Type": "application/json",
-    }
-    
+    headers = {"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json"}
     try:
         print(f"🌍 Fetching entities from: {API_URL}/states")
         response = requests.get(f"{API_URL}/states", headers=headers, timeout=10)
-        
         if response.status_code == 200:
             data = response.json()
-            # Filter and sort entity IDs
             entities = [state['entity_id'] for state in data]
             entities.sort()
             print(f"✅ SUCCESS! Fetched {len(entities)} entities.")
@@ -55,10 +46,9 @@ def get_ha_entities():
             print(f"⚠️ Home Assistant API Error: {response.status_code} - {response.text}")
     except Exception as e:
         print(f"❌ Exception while fetching entities: {e}")
-    
     return []
 
-# --- E-INK STYLES (Strict Black & White) ---
+# E-Ink Styles
 STYLES = {
     "title": "color: #000000; font-size: 20px; font-weight: 700; text-align: center; padding-top: 5px; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif;",
     "widget": "color: #000000 !important; background-color: #FFFFFF !important; border: 2px solid #000000 !important;",
@@ -68,32 +58,22 @@ STYLES = {
     "icon": "color: #000000 !important;"
 }
 
-# --- SMART ICON LOGIC ---
+# --- SMART ICONS ---
 def get_icon_pair(base_icon, w_type):
-    """Generates icon_on/icon_off pair based on base icon name."""
+    """Zwraca parę ikon lub None, jeśli brak ikony bazowej."""
     if not base_icon:
-        # Defaults if no icon provided
-        if w_type == 'cover': return 'mdi-window-shutter-open', 'mdi-window-shutter'
-        if w_type == 'lock': return 'mdi-lock-open', 'mdi-lock'
-        if w_type == 'binary_sensor': return 'mdi-checkbox-marked-circle', 'mdi-radiobox-blank'
-        return 'mdi-toggle-switch', 'mdi-toggle-switch-off'
+        return None, None
 
     i = base_icon.lower()
-    
-    # Specific Logic
     if 'garage' in i: return 'mdi-garage-open', 'mdi-garage'
     if 'gate' in i: return 'mdi-gate-open', 'mdi-gate'
     if 'light' in i or 'bulb' in i: return 'mdi-lightbulb-on', 'mdi-lightbulb-outline'
     if 'lock' in i: return 'mdi-lock-open', 'mdi-lock'
     if 'door' in i: return 'mdi-door-open', 'mdi-door-closed'
     if 'window' in i or 'blind' in i or 'shutter' in i: return 'mdi-window-shutter-open', 'mdi-window-shutter'
-    if 'fan' in i: return 'mdi-fan', 'mdi-fan-off'
     
-    # Generic Logic (try removing -off/-outline to get "on" state)
     if 'off' in i or 'outline' in i:
         return i.replace('-off', '').replace('-outline', ''), i
-    
-    # Fallback: same icon or add -outline
     return i, i + '-outline'
 
 @app.route('/', methods=['GET', 'POST'])
@@ -104,12 +84,9 @@ def index():
     
     if request.method == 'POST':
         title = request.form.get('title', 'JoanDashboard')
-        # Generate filename from title
         dashboard_filename = title.lower().replace(" ", "_") + ".dash"
-        
         lang = request.form.get('ui_language', 'pl')
         
-        # Translation Dictionary for State Maps
         T = {
             'pl': {'on': 'WŁĄCZONE', 'off': 'WYŁĄCZONE', 'open': 'OTWARTE', 'closed': 'ZAMKNIĘTE', 
                    'opening': 'OTWIERANIE', 'closing': 'ZAMYKANIE', 'locked': 'ZAMKNIĘTE', 'unlocked': 'OTWARTE'},
@@ -118,7 +95,6 @@ def index():
         }
         dic = T.get(lang, T['pl'])
 
-        # --- YAML HEADER ---
         generated_yaml += f"# --- JOAN 6 E-INK DASHBOARD ---\n"
         generated_yaml += f"# File: {dashboard_filename}\n"
         generated_yaml += f"# Location: \\\\IP_HA\\addon_configs\\appdaemon\\dashboards\\\n"
@@ -131,7 +107,6 @@ def index():
         generated_yaml += "columns: 6\n"
         generated_yaml += "rows: 9\n"
         
-        # --- GLOBAL PARAMETERS (Styles & Defaults) ---
         generated_yaml += "global_parameters:\n"
         generated_yaml += "  use_comma: 0\n"
         generated_yaml += "  precision: 1\n"
@@ -147,7 +122,6 @@ def index():
         
         generated_yaml += "skin: simplyred\n\n"
         
-        # --- LAYOUT GENERATION ---
         layout_data_str = request.form.get('layout_data_json')
         if layout_data_str:
             try:
@@ -160,13 +134,10 @@ def index():
                     row_parts = []
                     for w in row:
                         widget_str = w['id']
-                        
-                        # Add size if present (e.g., "(2x2)")
                         size = w.get('size', '').strip()
                         if size:
                             if not size.startswith('('): size = f"({size})"
                             widget_str += size
-                            
                         row_parts.append(widget_str)
                     
                     row_str = ", ".join(row_parts)
@@ -188,11 +159,12 @@ def index():
                     generated_yaml += f"{w_id}:\n"
                     generated_yaml += f"  title: \"{w_name}\"\n"
                     
-                    # 1. NAVIGATE (DASHBOARD)
+                    # 1. NAVIGATE
                     if w_type == 'navigate':
                         dashboard_name = w_id.replace('navigate.', '')
                         generated_yaml += f"  widget_type: navigate\n"
                         generated_yaml += f"  dashboard: {dashboard_name}\n"
+                        # Dla navigate ikona jest wymagana lub domyślna
                         nav_icon = w_icon if w_icon else 'mdi-arrow-right-circle'
                         generated_yaml += f"  icon_inactive: {nav_icon}\n"
                         generated_yaml += f"  widget_style: \"background-color: #FFFFFF !important; border-radius: 8px !important; padding: 10px !important; color: #000000 !important;\"\n"
@@ -213,14 +185,15 @@ def index():
                         generated_yaml += f"  entity: {w_id}\n"
                         generated_yaml += f"  truncate_name: 20\n"
                         generated_yaml += f"  step: 5\n"
-                        
-                    # 4. CLIMATE
-                    elif w_type == 'climate':
-                        generated_yaml += f"  widget_type: climate\n"
-                        generated_yaml += f"  entity: {w_id}\n"
-                        generated_yaml += f"  step: 1\n"
 
-                    # 5. OTHERS (Switch, Cover, Script, Input Boolean)
+                    # 4. LABEL / SCENE
+                    elif w_type == 'label':
+                         generated_yaml += f"  widget_type: label\n"
+                         generated_yaml += f"  text: \"{w_name}\"\n" # Name is text
+                         if w_icon:
+                             generated_yaml += f"  icon: {w_icon}\n"
+
+                    # 5. OTHERS (Switch, Cover, etc.)
                     else:
                         ad_type = w_type
                         if w_type == 'binary_sensor': ad_type = 'binary_sensor'
@@ -229,13 +202,16 @@ def index():
                         generated_yaml += f"  widget_type: {ad_type}\n"
                         generated_yaml += f"  entity: {w_id}\n"
                         
-                        # Icon Logic
-                        icon_on, icon_off = get_icon_pair(w_icon, ad_type)
-                        generated_yaml += f"  icon_on: {icon_on}\n"
-                        generated_yaml += f"  icon_off: {icon_off}\n"
+                        # --- IKONY ---
+                        # Generujemy tylko jeśli użytkownik podał ikonę
+                        if w_icon:
+                            icon_on, icon_off = get_icon_pair(w_icon, ad_type)
+                            # Jeśli get_icon_pair zwróciło coś sensownego
+                            if icon_on: generated_yaml += f"  icon_on: {icon_on}\n"
+                            if icon_off: generated_yaml += f"  icon_off: {icon_off}\n"
+                        
                         generated_yaml += f"  state_text: 1\n"
                         
-                        # State Translation
                         generated_yaml += "  state_map:\n"
                         generated_yaml += f"    \"on\": \"{dic['on']}\"\n"
                         generated_yaml += f"    \"off\": \"{dic['off']}\"\n"
@@ -257,6 +233,5 @@ def index():
     return render_template('index.html', generated_yaml=generated_yaml, entities=ha_entities, filename=dashboard_filename)
 
 if __name__ == "__main__":
-    # Only runs during local testing, NOT with Gunicorn
     print("🚀 3. Starting Dev Server...")
     app.run(host='0.0.0.0', port=5000, debug=False)
