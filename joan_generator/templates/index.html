@@ -1,1 +1,125 @@
 
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generator Joan E-Ink Dashboard</title>
+    <style>
+        body { font-family: 'Roboto', sans-serif; background-color: #f5f5f5; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        h1 { color: #333; }
+        .section { margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 20px; }
+        label { display: block; margin-top: 10px; font-weight: bold; }
+        input, select, textarea { width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        .row-container { display: flex; gap: 10px; align-items: flex-end; background: #fafafa; padding: 10px; margin-bottom: 10px; border: 1px solid #eee; }
+        .btn { padding: 10px 20px; background-color: #03a9f4; color: white; border: none; cursor: pointer; border-radius: 4px; font-size: 16px; }
+        .btn-add { background-color: #4caf50; margin-top: 10px; }
+        .btn-remove { background-color: #f44336; padding: 5px 10px; margin-left: auto; }
+        textarea.output { height: 400px; font-family: monospace; background: #333; color: #fff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Generator Joan 6 E-Ink (AppDaemon)</h1>
+        
+        <form method="POST">
+            <!-- Ustawienia globalne -->
+            <div class="section">
+                <h3>1. Ustawienia Główne</h3>
+                <div style="display: flex; gap: 20px;">
+                    <div style="flex: 1;">
+                        <label>Tytuł Dashboardu</label>
+                        <input type="text" name="title" value="JoanNowy" required>
+                    </div>
+                    <div style="flex: 1;">
+                        <label>Liczba Kolumn</label>
+                        <input type="number" name="columns" value="6">
+                    </div>
+                    <div style="flex: 1;">
+                        <label>Liczba Wierszy</label>
+                        <input type="number" name="rows" value="9">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kreator Widgetów -->
+            <div class="section">
+                <h3>2. Zdefiniuj Widgety</h3>
+                <p>Dodaj encje, które chcesz użyć. Skrypt automatycznie doda style E-Ink.</p>
+                <div id="widgets-container">
+                    <!-- Tu JavaScript wstawi pola -->
+                </div>
+                <button type="button" class="btn btn-add" onclick="addWidget()">+ Dodaj Widget</button>
+            </div>
+
+            <!-- Układ -->
+            <div class="section">
+                <h3>3. Układ (Layout)</h3>
+                <p>Wpisz encje w wierszach oddzielając je przecinkami (skopiuj ID z góry). Np: <code>switch.swiatlo, sensor.temp</code></p>
+                <div id="layout-container">
+                    <input type="text" name="layout_row" placeholder="Wiersz 1 (np. sensor.temp1, sensor.temp2)">
+                </div>
+                <button type="button" class="btn btn-add" onclick="addLayoutRow()">+ Dodaj Wiersz</button>
+            </div>
+
+            <button type="submit" class="btn">GENERUJ KOD .DASH</button>
+        </form>
+
+        {% if generated_yaml %}
+        <div class="section">
+            <h3>Wynikowy kod YAML</h3>
+            <p>Skopiuj poniższy kod i wklej do pliku .dash w AppDaemon.</p>
+            <textarea class="output">{{ generated_yaml }}</textarea>
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        function addWidget() {
+            const container = document.getElementById('widgets-container');
+            const div = document.createElement('div');
+            div.className = 'row-container';
+            div.innerHTML = `
+                <div style="flex: 2;">
+                    <label>ID Encji (np. switch.kuchnia)</label>
+                    <input type="text" name="widget_id" placeholder="switch.example" onchange="updateLayoutHint(this)">
+                </div>
+                <div style="flex: 1;">
+                    <label>Typ Widgetu</label>
+                    <select name="widget_type">
+                        <option value="switch">Przełącznik (Switch/Light)</option>
+                        <option value="sensor">Sensor (Wartość)</option>
+                        <option value="cover">Roleta/Brama</option>
+                        <option value="navigate">Nawigacja</option>
+                        <option value="script">Skrypt</option>
+                        <option value="fan">Wentylator</option>
+                    </select>
+                </div>
+                <div style="flex: 1;">
+                    <label>Nazwa (Title)</label>
+                    <input type="text" name="widget_name" placeholder="Światło">
+                </div>
+                <div style="flex: 1;">
+                    <label>Ikona (MDI)</label>
+                    <input type="text" name="widget_icon" placeholder="mdi-lightbulb">
+                </div>
+                <button type="button" class="btn btn-remove" onclick="this.parentElement.remove()">Usuń</button>
+            `;
+            container.appendChild(div);
+        }
+
+        function addLayoutRow() {
+            const container = document.getElementById('layout-container');
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.name = 'layout_row';
+            input.placeholder = 'Kolejny wiersz...';
+            container.appendChild(input);
+        }
+        
+        // Dodaj jeden pusty widget na start
+        addWidget();
+    </script>
+</body>
+</html>
