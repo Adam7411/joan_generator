@@ -36,15 +36,20 @@
         .eink-widget:hover .ew-delete { display: block; }
         textarea.output { width: 100%; height: 500px; font-family: monospace; background: #263238; color: #eceff1; border: none; padding: 15px; border-radius: 4px; }
         .status-bar { padding: 10px; margin-bottom: 20px; border-radius: 4px; text-align: center; font-weight: bold; }
-        
-        /* Ukrywanie/Pokazywanie pól zależnie od typu */
         .hidden { display: none !important; }
+        
+        /* FILE PATH INFO */
+        .file-path-info {
+            background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb;
+            padding: 15px; margin-bottom: 15px; border-radius: 4px; font-family: monospace; font-size: 14px;
+        }
+        .file-path-info code { background: rgba(255,255,255,0.5); padding: 2px 5px; border-radius: 3px; font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header-row">
-            <h1>Joan Dashboard Generator</h1>
+            <h1>Joan 6 E-Ink Generator</h1>
             <div class="lang-switch">
                 <button type="button" onclick="setLang('pl')" id="btn-pl" class="active">PL</button>
                 <button type="button" onclick="setLang('en')" id="btn-en">EN</button>
@@ -68,7 +73,7 @@
                 <div class="section-title" data-i18n="sec_settings">1. Ustawienia</div>
                 <div class="flex-row">
                     <div class="flex-col">
-                        <label data-i18n="dash_title">Tytuł pliku .dash</label>
+                        <label data-i18n="dash_title">Tytuł Dashboardu (Nazwa pliku)</label>
                         <input type="text" name="title" value="JoanDashboard">
                     </div>
                 </div>
@@ -81,7 +86,7 @@
                         <label data-i18n="label_type">Typ Widgetu</label>
                         <select id="new-widget-type" onchange="toggleInputs()">
                             <option value="switch">Switch / Light</option>
-                            <option value="navigate">Navigate / Dashboard Button</option> <!-- NOWOŚĆ -->
+                            <option value="navigate">Navigate / Dashboard Button</option>
                             <option value="sensor">Sensor</option>
                             <option value="binary_sensor">Binary Sensor</option>
                             <option value="cover">Cover / Gate</option>
@@ -90,7 +95,6 @@
                         </select>
                     </div>
                     
-                    <!-- INPUT DLA ZWYKŁYCH ENCJI -->
                     <div class="flex-col" id="group-entity">
                         <label data-i18n="label_entity">Wybierz Encję (Home Assistant)</label>
                         <input list="entities-list" id="new-entity-id" placeholder="np. light.salon..." oninput="megaAutoConfig()">
@@ -101,11 +105,9 @@
                         </datalist>
                     </div>
 
-                    <!-- INPUT DLA NAWIGACJI (UKRYTY DOMYŚLNIE) -->
                     <div class="flex-col hidden" id="group-nav">
                         <label data-i18n="label_dashboard">Nazwa pliku dashboardu</label>
                         <input type="text" id="new-dashboard-name" placeholder="np. joan3 (bez .dash)">
-                        <small style="color: #666; font-size: 10px;">To nazwa pliku .dash, który ma się otworzyć.</small>
                     </div>
 
                     <div class="flex-col">
@@ -135,7 +137,7 @@
             </div>
 
             <div class="section">
-                <div class="section-title" data-i18n="sec_preview">3. Podgląd Dashboardu</div>
+                <div class="section-title" data-i18n="sec_preview">3. Podgląd Dashboardu (E-Ink Preview)</div>
                 <div id="rows-container" class="preview-area"></div>
                 <button type="button" class="btn btn-row" onclick="addNewRow()">
                     <span data-i18n="btn_new_row">+ Dodaj Nowy Wiersz</span>
@@ -151,35 +153,42 @@
         {% if generated_yaml %}
         <div class="section">
             <h3 data-i18n="sec_code">Twój kod YAML:</h3>
+            
+            <div class="file-path-info">
+                <strong data-i18n="info_save">Zapisz ten kod w pliku:</strong><br>
+                <code style="font-size: 16px;">\\IP_HA\addon_configs\appdaemon\dashboards\{{ filename }}</code>
+            </div>
+
             <textarea class="output" readonly>{{ generated_yaml }}</textarea>
         </div>
         {% endif %}
     </div>
 
     <script>
-        // TRANSLATIONS
         const translations = {
             pl: {
                 status_ok: "✓ Połączono z Home Assistant", status_error: "⚠ Brak połączenia z API. Sprawdź token.",
-                sec_settings: "1. Ustawienia", sec_add: "2. Dodaj Widget", sec_preview: "3. Podgląd Dashboardu", sec_code: "Twój kod YAML:",
-                dash_title: "Tytuł pliku .dash", 
+                sec_settings: "1. Ustawienia", sec_add: "2. Dodaj Widget", sec_preview: "3. Podgląd Dashboardu (E-Ink)", sec_code: "Twój kod YAML:",
+                dash_title: "Tytuł Dashboardu (Nazwa pliku)", 
                 label_entity: "Wybierz Encję (Home Assistant)",
                 label_dashboard: "Nazwa pliku dashboardu (np. joan3)",
                 label_type: "Typ Widgetu", label_name: "Tytuł na ekranie",
                 label_icon: "Ikona (Automatyczna)", label_preview: "Ikona", 
                 btn_add: "+ DODAJ DO WIERSZA", btn_new_row: "+ Dodaj Nowy Wiersz", btn_generate: "GENERUJ KOD .DASH",
-                state_on: "WŁĄCZONE", state_open: "OTWARTE"
+                state_on: "WŁĄCZONE", state_open: "OTWARTE",
+                info_save: "Zapisz ten kod w pliku:"
             },
             en: {
                 status_ok: "✓ Connected to Home Assistant", status_error: "⚠ No API Connection. Check Token.",
-                sec_settings: "1. Settings", sec_add: "2. Add Widget", sec_preview: "3. Dashboard Preview", sec_code: "Your YAML Code:",
-                dash_title: "Dashboard Title", 
+                sec_settings: "1. Settings", sec_add: "2. Add Widget", sec_preview: "3. Dashboard Preview (E-Ink)", sec_code: "Your YAML Code:",
+                dash_title: "Dashboard Title (Filename)", 
                 label_entity: "Select Entity (Home Assistant)",
                 label_dashboard: "Dashboard Filename (e.g. joan3)",
                 label_type: "Widget Type", label_name: "Title on Screen",
                 label_icon: "Icon (Automatic)", label_preview: "Icon", 
                 btn_add: "+ ADD TO ROW", btn_new_row: "+ Add New Row", btn_generate: "GENERATE .DASH CODE",
-                state_on: "ON", state_open: "OPEN"
+                state_on: "ON", state_open: "OPEN",
+                info_save: "Save this code to file:"
             }
         };
 
@@ -197,19 +206,15 @@
             renderRows();
         }
 
-        // --- UI LOGIC ---
         function toggleInputs() {
             const type = document.getElementById('new-widget-type').value;
             const groupEntity = document.getElementById('group-entity');
             const groupNav = document.getElementById('group-nav');
-            const nameInput = document.getElementById('new-widget-name');
             const iconInput = document.getElementById('new-widget-icon');
 
             if (type === 'navigate') {
                 groupEntity.classList.add('hidden');
                 groupNav.classList.remove('hidden');
-                
-                // Defaults for Navigation
                 if(!iconInput.value) {
                     iconInput.value = 'mdi-arrow-right-circle';
                     updateIconPreview();
@@ -323,7 +328,6 @@
             rows[activeRowIndex].push({ id, type, name, icon });
             renderRows();
             
-            // Reset fields
             document.getElementById('new-entity-id').value = '';
             document.getElementById('new-dashboard-name').value = '';
             nameInput.value = '';
@@ -343,7 +347,7 @@
             const typeSelect = document.getElementById('new-widget-type');
             const iconInput = document.getElementById('new-widget-icon');
 
-            if(typeSelect.value === 'navigate') return; // Don't auto-change if in navigate mode
+            if(typeSelect.value === 'navigate') return; 
 
             if(id.startsWith('sensor.')) typeSelect.value = 'sensor';
             else if(id.startsWith('binary_sensor.')) typeSelect.value = 'binary_sensor';
@@ -357,9 +361,9 @@
                 'battery': 'mdi-battery', 'bateria': 'mdi-battery',
                 'temp': 'mdi-thermometer', 'heat': 'mdi-radiator',
                 'humid': 'mdi-water-percent', 'wilgot': 'mdi-water-percent',
-                'light': 'mdi-lightbulb', 'lamp': 'mdi-lightbulb',
+                'light': 'mdi-lightbulb', 'lamp': 'mdi-lightbulb', 'swiatlo': 'mdi-lightbulb',
                 'garage': 'mdi-garage', 'garaz': 'mdi-garage', 'brama': 'mdi-gate', 'gate': 'mdi-gate',
-                'lock': 'mdi-lock', 'zamek': 'mdi-lock',
+                'lock': 'mdi-lock', 'zamek': 'mdi-lock', 'drzwi': 'mdi-door', 'door': 'mdi-door',
                 'fan': 'mdi-fan', 'wentylator': 'mdi-fan', 'tv': 'mdi-television', 'speaker': 'mdi-speaker'
             };
 
@@ -372,7 +376,6 @@
             }
         }
         
-        // Init
         if(rows.length === 0) addNewRow();
     </script>
 </body>
