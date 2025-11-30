@@ -1,16 +1,17 @@
 {
   "name": "Joan Dashboard Generator",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "slug": "joan_generator",
   "description": "Generator dashboardow E-Ink",
   "url": "https://github.com/Adam7411/joan_generator",
   "arch": ["aarch64", "amd64", "armv7"],
   "startup": "application",
   "boot": "auto",
-  "init": false,  
+  "init": false,
   "ports": {
     "5000/tcp": 5000
   },
+  "webui": "http://[HOST]:[PORT:5000]/",
   "options": {},
   "schema": {}
 }
