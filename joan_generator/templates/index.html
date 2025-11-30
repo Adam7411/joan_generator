@@ -48,7 +48,7 @@
         body.dark-mode .import-box { background: #3e2723; border-color: #5d4037; color: #fff; }
         .import-box.visible { display: block; }
 
-        .add-widget-box { background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #2196f3; color: #000; }
+        .add-widget-box { background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #2196f3; color: #000; transition: background 0.3s; }
         body.dark-mode .add-widget-box { background: #0d47a1; border-color: #1565c0; color: #fff; }
         .add-widget-box.editing { background: #fff8e1; border-color: #ffc107; border: 2px solid #ffc107; }
         body.dark-mode .add-widget-box.editing { background: #3e2723; border-color: #ffb300; }
@@ -103,20 +103,10 @@
 
         textarea.output { width: 100%; height: 500px; font-family: monospace; background: #263238; color: #eceff1; border: none; padding: 15px; border-radius: 4px; }
         .hidden { display: none !important; }
-        
-        /* RESULT INSTRUCTIONS */
-        .file-path-info { 
-            background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; padding: 15px; margin-bottom: 15px; border-radius: 4px; font-family: monospace; font-size: 14px; line-height: 1.5;
-        }
+        .file-path-info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; padding: 15px; margin-bottom: 15px; border-radius: 4px; font-family: monospace; font-size: 14px; }
         body.dark-mode .file-path-info { background-color: #263238; color: #eceff1; border-color: #37474f; }
-        .file-path-info strong { font-size: 1.1em; display: block; margin-top: 10px; }
-        .file-path-info strong:first-child { margin-top: 0; }
-        .file-path-info code, .file-path-info a { 
-            background: rgba(255,255,255,0.5); padding: 2px 6px; border-radius: 3px; font-weight: bold; color: #0056b3; text-decoration: none;
-        }
-        body.dark-mode .file-path-info code, body.dark-mode .file-path-info a { background: rgba(0,0,0,0.3); color: #82b1ff; }
-        .file-path-info a:hover { text-decoration: underline; }
-
+        .file-path-info code { background: rgba(255,255,255,0.5); padding: 2px 5px; border-radius: 3px; font-weight: bold; }
+        body.dark-mode .file-path-info code { background: rgba(0,0,0,0.3); }
     </style>
 </head>
 <body>
@@ -265,7 +255,6 @@
         {% if generated_yaml %}
         <div class="section">
             <h3 data-i18n="sec_code">Twój kod YAML:</h3>
-            
             <div class="file-path-info">
                 <strong data-i18n="info_step1">1. Zapisz kod w pliku:</strong>
                 <code id="path-code">\\IP_HA\addon_configs\appdaemon\dashboards\{{ filename }}</code>
@@ -273,7 +262,6 @@
                 <strong data-i18n="info_step2">2. Uruchom ponownie AppDaemon i sprawdź dashboard:</strong>
                 <a href="#" id="dashboard-link" target="_blank">http://IP_HA:5050/{{ dash_name }}</a>
             </div>
-
             <textarea class="output" readonly>{{ generated_yaml }}</textarea>
         </div>
         {% endif %}
@@ -327,7 +315,9 @@
                 return id.replace("navigate.", "");
             }
             let name = id.split('.').pop();
+            // Replace underscores with spaces
             name = name.replace(/_/g, ' ');
+            // Capitalize First Letters
             return name.replace(/\b\w/g, l => l.toUpperCase());
         }
 
@@ -514,6 +504,7 @@
 
                 for (let i = 0; i < lines.length; i++) {
                     let lineRaw = lines[i];
+                    // Remove comments
                     let line = lineRaw.split('#')[0].trim();
                     if (!line) continue;
 
@@ -539,6 +530,7 @@
                             else { currentWidgetId = null; }
                         } else if (currentWidgetId && line.includes(':')) {
                             let val = line.substring(line.indexOf(':') + 1).trim();
+                            // Clean quotes
                             if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
                                 val = val.slice(1, -1);
                             }
@@ -563,7 +555,9 @@
                         
                         let type = def.widget_type || 'switch';
                         if (id.startsWith('navigate.')) type = 'navigate';
+                        else if (id.startsWith('sensor.')) type = 'sensor';
                         
+                        // --- FALLBACK NAME GENERATOR ---
                         let name = def.title;
                         if(!name) name = formatNameFromId(id);
 
@@ -614,7 +608,7 @@
 
         function saveWidget() {
             const type = document.getElementById('new-widget-type').value;
-            const name = document.getElementById('new-widget-name').value;
+            let name = document.getElementById('new-widget-name').value;
             let icon = document.getElementById('new-widget-icon').value;
             const size = document.getElementById('new-widget-size').value;
             let id = '';
@@ -626,7 +620,10 @@
                 id = document.getElementById('new-entity-id').value;
                 if(!id) { alert("Entity required"); return; }
             }
+            
+            // AUTO NAME
             if (!name) name = formatNameFromId(id);
+
             if(icon && !icon.startsWith('mdi-') && icon !== '') icon = 'mdi-' + icon;
             const newWidget = { id, type, name, icon, size };
 
@@ -747,15 +744,11 @@
         
         // --- DYNAMIC HA IP ---
         window.addEventListener('DOMContentLoaded', (event) => {
-            // IP Replacement logic
             const haHost = window.location.hostname;
             const codePath = document.getElementById('path-code');
             const linkDash = document.getElementById('dashboard-link');
             
-            if(codePath) {
-                // Replace IP_HA placeholder
-                codePath.innerHTML = codePath.innerHTML.replace('IP_HA', haHost);
-            }
+            if(codePath) codePath.innerHTML = codePath.innerHTML.replace('IP_HA', haHost);
             if(linkDash) {
                 const currentHref = linkDash.getAttribute('href');
                 if(currentHref.includes('IP_HA')) {
