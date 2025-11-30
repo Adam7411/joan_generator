@@ -387,7 +387,7 @@
             const ent = entitiesData.find(e => e.id === id);
             if (ent) {
                 if (ent.state === 'on') return translations[currentLang].state_on;
-                if (ent.state === 'off') return 'OFF';
+                if (ent.state === 'off') return currentLang === 'pl' ? 'WYŁĄCZONE' : 'OFF';
                 let val = ent.state;
                 if (!isNaN(parseFloat(val)) && val.includes('.')) val = parseFloat(val).toFixed(1);
                 if (ent.unit) val += ' ' + ent.unit;
