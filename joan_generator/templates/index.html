@@ -9,78 +9,45 @@
     <style>
         body { font-family: 'Roboto', sans-serif; background-color: #e0e0e0; padding: 20px; color: #333; }
         .container { max-width: 1200px; margin: 0 auto; background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        
-        /* HEADER */
         .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 15px; }
-        h1 { color: #d32f2f; margin: 0; font-size: 24px; }
+        h1 { color: #d32f2f; margin: 0; }
         .lang-switch button { padding: 8px 15px; border: 1px solid #ccc; background: #f0f0f0; cursor: pointer; border-radius: 4px; font-weight: bold; }
         .lang-switch button.active { background: #d32f2f; color: white; border-color: #b71c1c; }
-
-        .status-bar { padding: 10px; margin-bottom: 20px; border-radius: 4px; text-align: center; font-weight: bold; }
-
-        /* SEKCJE */
         .section { margin-bottom: 30px; border: 1px solid #ddd; padding: 20px; border-radius: 8px; background: #fafafa; }
         .section-title { font-size: 1.2em; font-weight: bold; color: #555; margin-bottom: 15px; border-bottom: 2px solid #d32f2f; display: inline-block; }
         
         /* IMPORT BOX */
         .import-box { background: #fff3e0; border: 1px solid #ffe0b2; display: none; }
         .import-box.visible { display: block; }
-        
+
+        label { display: block; margin-top: 10px; font-weight: bold; font-size: 0.9em; }
+        input, select, textarea { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
         .add-widget-box { background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #2196f3; }
+        .flex-row { display: flex; gap: 15px; align-items: flex-end; }
+        .flex-col { flex: 1; }
+        .icon-preview-box { width: 42px; height: 42px; background: #fff; border: 1px solid #ccc; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #333; margin-bottom: 1px; }
         
-        .flex-row { display: flex; gap: 15px; align-items: flex-end; margin-bottom: 10px; flex-wrap: wrap; }
-        .flex-col { flex: 1; min-width: 150px; }
-        
-        label { display: block; margin-top: 10px; font-weight: bold; font-size: 0.9em; margin-bottom: 5px; }
-        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-
-        /* IKONY */
-        .icon-preview-wrapper { width: 60px; text-align: center; }
-        .icon-preview-box { width: 50px; height: 42px; background: #fff; border: 1px solid #ccc; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 28px; color: #333; }
-
-        /* BUTTONS */
         .btn { padding: 10px 20px; border: none; cursor: pointer; border-radius: 4px; font-weight: bold; text-transform: uppercase; }
         .btn-primary { background-color: #d32f2f; color: white; width: 100%; font-size: 18px; margin-top: 20px; }
         .btn-add { background-color: #4caf50; color: white; width: 100%; }
         .btn-row { background-color: #2196f3; color: white; margin-top: 10px; }
         .btn-import { background-color: #ff9800; color: white; margin-bottom: 10px; }
-        .btn-remove-row { font-size: 10px; padding: 5px; margin-left: auto; background-color: #757575; color: white; }
-
-        /* PREVIEW AREA (GRID) */
+        
         .preview-area { background-color: #f0f0f0; padding: 20px; border-radius: 8px; border: 2px solid #ccc; overflow-x: auto; min-height: 150px; }
-        
-        .eink-row { 
-            display: flex; flex-wrap: wrap; gap: 10px; 
-            margin-bottom: 15px; padding: 15px 10px; 
-            border: 2px dashed #bbb; background: #fff; border-radius: 4px; 
-            align-items: flex-start; position: relative; min-height: 100px; 
-        }
+        .eink-row { display: flex; gap: 8px; margin-bottom: 8px; padding: 10px; border: 2px dashed #bbb; background: #fff; border-radius: 4px; align-items: center; position: relative; }
         .eink-row.active { border-color: #2196f3; background: #e3f2fd; }
-        
-        /* DYNAMICZNY WIDGET E-INK */
-        .eink-widget {
-            /* Bazowe wymiary dla 1x1 */
-            --base-w: 60px;
-            --base-h: 60px;
-            --gap: 5px;
-            
-            background-color: #FFFFFF; border: 2px solid #000; color: #000; 
-            display: flex; flex-direction: column; align-items: center; justify-content: space-between;
-            padding: 4px; box-sizing: border-box; position: relative; 
-            cursor: pointer; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); flex-shrink: 0;
-            overflow: hidden;
-        }
-        .eink-widget:hover { transform: translateY(-2px); box-shadow: 4px 4px 8px rgba(0,0,0,0.2); z-index: 10; }
-        
-        .ew-title { font-size: 11px; font-weight: 700; text-align: center; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.2; }
-        .ew-icon { font-size: 24px; }
-        .ew-state { font-size: 10px; font-weight: 700; text-transform: uppercase; }
-        .ew-delete { position: absolute; top: 0; right: 0; background: red; color: white; width: 18px; height: 18px; text-align: center; line-height: 18px; font-size: 10px; display: none; }
+        .eink-widget { width: 140px; height: 100px; background-color: #FFFFFF; border: 2px solid #000; color: #000; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 5px; box-sizing: border-box; position: relative; cursor: pointer; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); }
+        .ew-title { font-size: 14px; font-weight: 700; text-align: center; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .ew-icon { font-size: 36px; }
+        .ew-state { font-size: 12px; font-weight: 700; text-transform: uppercase; }
+        .ew-delete { position: absolute; top: 0; right: 0; background: red; color: white; width: 20px; height: 20px; text-align: center; line-height: 20px; font-size: 12px; display: none; }
         .eink-widget:hover .ew-delete { display: block; }
-
-        textarea.output { width: 100%; height: 400px; font-family: monospace; background: #263238; color: #eceff1; border: none; padding: 15px; margin-top: 20px; border-radius: 4px; }
+        
+        textarea.output { width: 100%; height: 500px; font-family: monospace; background: #263238; color: #eceff1; border: none; padding: 15px; border-radius: 4px; }
+        .status-bar { padding: 10px; margin-bottom: 20px; border-radius: 4px; text-align: center; font-weight: bold; }
         .hidden { display: none !important; }
         .file-path-info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; padding: 15px; margin-bottom: 15px; border-radius: 4px; font-family: monospace; font-size: 14px; }
+        .file-path-info code { background: rgba(255,255,255,0.5); padding: 2px 5px; border-radius: 3px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -118,7 +85,7 @@
                 <div class="section-title" data-i18n="sec_settings">1. Ustawienia</div>
                 <div class="flex-row">
                     <div class="flex-col">
-                        <label data-i18n="dash_title">Tytuł Dashboardu</label>
+                        <label data-i18n="dash_title">Tytuł Dashboardu (Nazwa pliku)</label>
                         <input type="text" name="title" id="dash-title" value="JoanDashboard">
                     </div>
                 </div>
@@ -246,14 +213,12 @@
         };
 
         let currentLang = 'pl';
-        let rows = [];
-        let activeRowIndex = 0;
-
         function setLang(lang) {
             currentLang = lang;
             document.getElementById('ui_language').value = lang;
             document.getElementById('btn-pl').className = lang === 'pl' ? 'active' : '';
             document.getElementById('btn-en').className = lang === 'en' ? 'active' : '';
+            
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
                 if(translations[lang][key]) el.innerText = translations[lang][key];
@@ -272,77 +237,98 @@
             if (!code) return;
 
             try {
-                // 1. Parse lines to find widget definitions
                 const lines = code.split('\n');
                 const widgetDefs = {};
                 let currentWidgetId = null;
-                let title = "Imported";
-
-                lines.forEach(line => {
+                
+                // 1. Zczytanie tytułu globalnego
+                for(let line of lines) {
                     const l = line.trim();
-                    if (l.startsWith('title:')) {
-                        title = l.split(':')[1].trim().replace(/['"]/g, '');
-                        document.getElementById('dash-title').value = title;
-                    }
-                    else if (l.includes(':') && !l.startsWith('widget_') && !l.startsWith('global_') && !l.startsWith('-')) {
-                        // Potential widget definition start or property
-                        if (line.match(/^\S+:/)) { // Top level key (widget ID)
-                            currentWidgetId = l.split(':')[0].trim();
-                            widgetDefs[currentWidgetId] = {};
-                        } else if (currentWidgetId && l.includes(':')) {
-                            // Property
-                            const parts = l.split(':');
-                            const key = parts[0].trim();
-                            let val = parts.slice(1).join(':').trim().replace(/['"]/g, '');
-                            widgetDefs[currentWidgetId][key] = val;
+                    if (l.startsWith('title:') && !l.includes('style')) {
+                        // Sprawdź czy to nie jest title widgetu (z wcięciem)
+                        if (!line.startsWith(' ') && !line.startsWith('\t')) {
+                            const t = l.split(':')[1].trim().replace(/['"]/g, '');
+                            document.getElementById('dash-title').value = t;
+                            break;
                         }
                     }
+                }
+
+                // 2. Parsowanie definicji widgetów
+                lines.forEach(line => {
+                    if (line.match(/^\S+:/)) { // Top level key (widget ID), np. light.kurnik:
+                        const key = line.split(':')[0].trim();
+                        if (key !== 'layout' && key !== 'global_parameters' && key !== 'skin' && key !== 'title' && key !== 'widget_dimensions' && key !== 'widget_size' && key !== 'widget_margins' && key !== 'columns' && key !== 'rows') {
+                            currentWidgetId = key;
+                            widgetDefs[currentWidgetId] = {};
+                        } else {
+                            currentWidgetId = null; // System keys ignored
+                        }
+                    } else if (currentWidgetId && line.includes(':')) {
+                        const parts = line.split(':');
+                        const key = parts[0].trim();
+                        let val = parts.slice(1).join(':').trim().replace(/['"]/g, '');
+                        widgetDefs[currentWidgetId][key] = val;
+                    }
                 });
 
-                // 2. Parse Layout
+                // 3. Parsowanie Layoutu (POPRAWIONE)
                 rows = [];
                 let layoutStarted = false;
-                lines.forEach(line => {
+                
+                for(let i=0; i<lines.length; i++) {
+                    const line = lines[i];
                     const l = line.trim();
-                    if (l.startsWith('layout:')) { layoutStarted = true; return; }
-                    if (layoutStarted && l.startsWith('-')) {
-                        const rowItems = l.substring(1).split(',');
-                        const newRow = [];
-                        rowItems.forEach(item => {
-                            let raw = item.trim();
-                            // Detect size (2x2)
-                            let size = "";
-                            const sizeMatch = raw.match(/\(\d+x\d+\)/);
-                            if (sizeMatch) {
-                                size = sizeMatch[0];
-                                raw = raw.replace(size, '');
-                            }
-                            
-                            const id = raw;
-                            const def = widgetDefs[id] || {};
-                            
-                            // Map back to our structure
-                            let type = def.widget_type || 'switch';
-                            // Special case for navigate
-                            if(type === 'navigate') {
-                                // id usually navigate.something
-                            }
-
-                            // Icons: check icon, icon_on, or icon_inactive
-                            let icon = def.icon || def.icon_on || def.icon_inactive || 'mdi-help-circle';
-
-                            newRow.push({
-                                id: id,
-                                type: type,
-                                name: def.title || id,
-                                icon: icon,
-                                size: size
-                            });
-                        });
-                        rows.push(newRow);
+                    
+                    if (l.startsWith('layout:')) { 
+                        layoutStarted = true; 
+                        continue; 
                     }
-                    if (layoutStarted && l === '' && rows.length > 0) layoutStarted = false; // End of layout block guess
-                });
+                    
+                    if (layoutStarted) {
+                        // Jeśli linia jest pusta, ignoruj (NIE KOŃCZ)
+                        if (l === '') continue;
+                        
+                        // Koniec sekcji layout: jeśli linia nie ma wcięcia i nie zaczyna się od myślnika
+                        if (!line.startsWith(' ') && !line.startsWith('\t') && !l.startsWith('-')) {
+                            layoutStarted = false;
+                            continue;
+                        }
+
+                        if (l.startsWith('-')) {
+                            const rowItems = l.substring(1).split(',');
+                            const newRow = [];
+                            rowItems.forEach(item => {
+                                let raw = item.trim();
+                                // Wyciąganie rozmiaru (2x2)
+                                let size = "";
+                                const sizeMatch = raw.match(/\(\d+x\d+\)/);
+                                if (sizeMatch) {
+                                    size = sizeMatch[0];
+                                    raw = raw.replace(size, '');
+                                }
+                                
+                                const id = raw;
+                                const def = widgetDefs[id] || {};
+                                
+                                let type = def.widget_type || 'switch';
+                                // Poprawka dla Navigate: ID często wygląda jak navigate.cos
+                                if (id.startsWith('navigate.')) { type = 'navigate'; }
+
+                                let icon = def.icon || def.icon_on || def.icon_inactive || 'mdi-help-circle-outline';
+
+                                newRow.push({
+                                    id: id,
+                                    type: type,
+                                    name: def.title || id,
+                                    icon: icon,
+                                    size: size
+                                });
+                            });
+                            rows.push(newRow);
+                        }
+                    }
+                }
 
                 if (rows.length === 0) {
                     alert("Nie znaleziono sekcji 'layout' lub jest pusta.");
@@ -381,10 +367,6 @@
                     wDiv.className = 'eink-widget';
                     
                     // --- SIZE CALCULATION ---
-                    // Base unit: 60px. Gap: 5px.
-                    // 1x1 = 60x60
-                    // 2x1 = 125x60 (2*60 + 5)
-                    // 2x2 = 125x125
                     let w = 125; // Default 2x1 width
                     let h = 60;  // Default 2x1 height
                     
@@ -392,23 +374,13 @@
                         const dims = widget.size.replace(/[()]/g, '').split('x');
                         const cols = parseInt(dims[0]);
                         const rows = parseInt(dims[1]);
-                        
-                        // Width = (cols * 60) + ((cols - 1) * 5)
                         w = (cols * 60) + ((cols - 1) * 5);
-                        // Height = (rows * 60) + ((rows - 1) * 5)
                         h = (rows * 60) + ((rows - 1) * 5);
-                    } else {
-                        // Default logic logic (mostly 2x1)
-                        // If user didn't specify size, assume 2x1 (Standard AppDaemon default)
                     }
 
                     wDiv.style.width = w + 'px';
                     wDiv.style.height = h + 'px';
-                    
-                    // Adjust font sizes for tiny widgets
-                    if (h < 70) {
-                        wDiv.style.fontSize = '0.9em';
-                    }
+                    if (h < 70) wDiv.style.fontSize = '0.9em';
 
                     const iconClass = widget.icon ? widget.icon : 'mdi-help-circle-outline';
                     
@@ -433,7 +405,7 @@
             highlightActiveRow();
         }
 
-        // --- REST OF LOGIC (Same as before) ---
+        // --- REST OF LOGIC ---
         function toggleInputs() {
             const type = document.getElementById('new-widget-type').value;
             const groupEntity = document.getElementById('group-entity');
