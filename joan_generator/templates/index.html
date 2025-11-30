@@ -20,6 +20,7 @@
             --link-color: #0056b3;
             --link-border: #bee5eb;
         }
+
         body.dark-mode {
             --bg-color: #121212;
             --container-bg: #1e1e1e;
@@ -33,24 +34,34 @@
             --link-color: #80d8ff;
             --link-border: #37474f;
         }
+
         body { font-family: 'Roboto', sans-serif; background-color: var(--bg-color); color: var(--text-color); padding: 20px; transition: background-color 0.3s; }
         .container { max-width: 1200px; margin: 0 auto; background: var(--container-bg); padding: 25px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); transition: background-color 0.3s; }
+        
         .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid var(--border-color); padding-bottom: 15px; }
         h1 { color: var(--accent-color); margin: 0; font-size: 24px; }
+        
         .controls { display: flex; gap: 10px; align-items: center; }
         .lang-switch button, .theme-switch button { padding: 8px 12px; border: 1px solid var(--border-color); background: var(--section-bg); color: var(--text-color); cursor: pointer; border-radius: 4px; font-weight: bold; }
         .lang-switch button.active { background: var(--accent-color); color: white; border-color: var(--accent-color); }
+
         .status-bar { padding: 10px; margin-bottom: 20px; border-radius: 4px; text-align: center; font-weight: bold; }
+        
         .section { margin-bottom: 30px; border: 1px solid var(--border-color); padding: 20px; border-radius: 8px; background: var(--section-bg); }
         .section-title { font-size: 1.2em; font-weight: bold; color: var(--text-color); margin-bottom: 15px; border-bottom: 2px solid var(--accent-color); display: inline-block; }
+        
         .import-box { background: #fff3e0; border: 1px solid #ffe0b2; color: #000; display: none; }
         body.dark-mode .import-box { background: #3e2723; border-color: #5d4037; color: #fff; }
         .import-box.visible { display: block; }
+
         .add-widget-box { background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #2196f3; color: #000; transition: background 0.3s; }
         body.dark-mode .add-widget-box { background: #0d47a1; border-color: #1565c0; color: #fff; }
         .add-widget-box.editing { background: #fff8e1; border-color: #ffc107; border: 2px solid #ffc107; }
+        body.dark-mode .add-widget-box.editing { background: #3e2723; border-color: #ffb300; }
+
         .flex-row { display: flex; gap: 15px; align-items: flex-end; margin-bottom: 10px; flex-wrap: wrap; }
         .flex-col { flex: 1; min-width: 150px; }
+        
         label { display: block; margin-top: 10px; font-weight: bold; font-size: 0.9em; margin-bottom: 5px; color: var(--text-color); }
         input, select, textarea { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; box-sizing: border-box; background: var(--input-bg); color: var(--text-color); }
 
@@ -65,36 +76,62 @@
         .btn-import { background-color: #ff9800; color: white; margin-bottom: 10px; }
         .btn-remove-row { font-size: 10px; padding: 5px; margin-left: auto; background-color: #757575; color: white; }
 
-        /* Powiększony podgląd, zachowuje styl */
-        .preview-area { background-color: var(--preview-bg); padding: 24px; border-radius: 8px; border: 2px solid var(--border-color); overflow-x: auto; min-height: 220px; }
-        .eink-row { display: flex; gap: 12px; margin-bottom: 12px; padding: 18px 12px; border: 2px dashed #999; background: transparent; border-radius: 6px; align-items: center; position: relative; min-height: 120px; cursor: pointer; }
+        /* PREVIEW AREA */
+        .preview-area { background-color: var(--preview-bg); padding: 20px; border-radius: 8px; border: 2px solid var(--border-color); overflow-x: auto; min-height: 150px; }
+        
+        .eink-row { 
+            display: flex; gap: 8px; margin-bottom: 8px; padding: 15px 10px; 
+            border: 2px dashed #999; background: transparent; border-radius: 4px; 
+            align-items: center; position: relative; min-height: 80px; cursor: pointer;
+        }
         .eink-row:hover { border-color: #2196f3; }
-        .eink-row.active { border-color: #2196f3; background: rgba(33, 150, 243, 0.08); }
-        .eink-widget { background-color: #FFFFFF; border: 2px solid #000; color: #000; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 10px; box-sizing: border-box; position: relative; cursor: pointer; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); flex-shrink: 0; transition: transform 0.1s; min-width: 160px; min-height: 120px; border-radius: 6px; }
+        .eink-row.active { border-color: #2196f3; background: rgba(33, 150, 243, 0.1); }
+        
+        .eink-widget {
+            background-color: #FFFFFF; border: 2px solid #000; color: #000; 
+            display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+            padding: 5px; box-sizing: border-box; position: relative; cursor: pointer; 
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.1); flex-shrink: 0;
+            transition: transform 0.1s;
+        }
         .eink-widget:hover { transform: translateY(-2px); box-shadow: 4px 4px 8px rgba(0,0,0,0.2); z-index: 5; }
-        .eink-widget.being-edited { border: 3px solid #ff9800; transform: scale(1.03); z-index: 10; }
-        .ew-title { font-size: 13px; font-weight: 700; text-align: center; width: 100%; white-space: normal; overflow: hidden; line-height: 1.3; min-height: 36px; padding: 0 4px; }
-        .ew-icon { font-size: 38px; }
-        .ew-state { font-size: 11px; font-weight: 700; text-transform: uppercase; min-height: 18px; display: flex; align-items: center; }
+        .eink-widget.being-edited { border: 3px solid #ff9800; transform: scale(1.05); z-index: 10; }
 
-        .ew-edit-overlay { position: absolute; top:0; left:0; right:0; bottom:0; background: rgba(33, 150, 243, 0.15); display:none; pointer-events: none;}
+        .ew-title { font-size: 11px; font-weight: 700; text-align: center; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.2; }
+        .ew-icon { font-size: 28px; }
+        .ew-state { font-size: 10px; font-weight: 700; text-transform: uppercase; }
+        
+        .ew-edit-overlay { position: absolute; top:0; left:0; right:0; bottom:0; background: rgba(33, 150, 243, 0.2); display:none; pointer-events: none;}
         .eink-widget:hover .ew-edit-overlay { display: block; }
 
-        .ew-delete { position: absolute; top: 6px; right: 6px; background: red; color: white; width: 22px; height: 22px; text-align: center; line-height: 22px; font-size: 12px; display: none; z-index: 20; border-radius: 6px; }
+        .ew-delete { position: absolute; top: 0; right: 0; background: red; color: white; width: 18px; height: 18px; text-align: center; line-height: 18px; font-size: 10px; display: none; z-index: 20; }
         .eink-widget:hover .ew-delete { display: block; }
 
         textarea.output { width: 100%; height: 500px; font-family: monospace; background: #263238; color: #eceff1; border: none; padding: 15px; border-radius: 4px; }
         .hidden { display: none !important; }
-
-        .file-path-info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; padding: 20px; margin-bottom: 20px; border-radius: 6px; font-family: monospace; font-size: 16px; line-height: 1.6; }
+        
+        /* RESULT INSTRUCTIONS */
+        .file-path-info { 
+            background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; padding: 20px; margin-bottom: 20px; border-radius: 6px; font-family: monospace; font-size: 16px; line-height: 1.6;
+        }
         body.dark-mode .file-path-info { background-color: #263238; color: #eceff1; border-color: #37474f; }
+        
         .file-path-info strong { font-size: 1.3em; display: block; margin-top: 15px; color: #004085; }
         body.dark-mode .file-path-info strong { color: #90caf9; }
-        .file-path-info code { background: rgba(255,255,255,0.6); padding: 5px 10px; border-radius: 4px; font-weight: bold; color: #d63384; display: block; margin-top: 5px; word-break: break-all; }
+        .file-path-info strong:first-child { margin-top: 0; }
+        
+        .file-path-info code { 
+            background: rgba(255,255,255,0.6); padding: 5px 10px; border-radius: 4px; font-weight: bold; color: #d63384; display: block; margin-top: 5px; word-break: break-all;
+        }
         body.dark-mode .file-path-info code { background: rgba(0,0,0,0.3); color: #f48fb1; }
-        .file-path-info a { background: var(--link-bg); padding: 6px 10px; border-radius: 4px; font-weight: bold; color: var(--link-color); text-decoration: none; display: inline-block; margin-top: 6px; word-break: break-all; border: 1px solid var(--link-border); }
+        
+        /* POPRAWKA KOLORU LINKU W CIEMNYM MOTYWIE */
+        .file-path-info a { 
+            background: var(--link-bg); padding: 5px 10px; border-radius: 4px; font-weight: bold; color: var(--link-color); text-decoration: none; display: block; margin-top: 5px; word-break: break-all; border: 1px solid var(--link-border);
+        }
         .file-path-info a:hover { text-decoration: underline; background-color: #fff; }
         body.dark-mode .file-path-info a:hover { background-color: #444; }
+
     </style>
 </head>
 <body>
@@ -122,7 +159,7 @@
             </div>
         {% endif %}
 
-        <!-- Import -->
+        <!-- IMPORT SECTION -->
         <button type="button" class="btn btn-import" onclick="toggleImport()">
             <span data-i18n="btn_import_toggle">📂 Importuj / Edytuj Kod</span>
         </button>
@@ -148,7 +185,7 @@
                 </div>
             </div>
 
-            <!-- Formularz widgetu -->
+            <!-- ADD / EDIT WIDGET BOX -->
             <div class="add-widget-box" id="widget-form-box">
                 <h4 style="margin-top:0" id="form-header" data-i18n="sec_add">2. Dodaj Widget</h4>
                 
@@ -170,7 +207,7 @@
                     
                     <div class="flex-col" id="group-entity">
                         <label data-i18n="label_entity">Wybierz Encję (Home Assistant)</label>
-                        <input list="entities-list" id="new-entity-id" placeholder="np. light.salon..." oninput="smartAutoFill()">
+                        <input list="entities-list" id="new-entity-id" placeholder="np. light.salon..." oninput="megaAutoConfig()">
                         <datalist id="entities-list">
                             {% for entity in entities %}
                             <option value="{{ entity.id }}">{{ entity.id }}</option>
@@ -217,7 +254,7 @@
                     </div>
                 </div>
 
-                <!-- Ikony ON/OFF dla typów akcyjnych (switch/cover itd.) -->
+                <!-- IKONY ON/OFF DLA SWITCH/COVER -->
                 <div class="flex-row" style="margin-top: 10px;">
                     <div class="flex-col">
                         <label>Ikona ON (switch/cover)</label>
@@ -806,7 +843,7 @@
         function highlightActiveRow() {
             document.querySelectorAll('.eink-row').forEach(el => el.classList.remove('active'));
             const active = document.getElementById('row-' + activeRowIndex);
-            if (active) active.classList.add('active');
+            if(active) active.classList.add('active');
         }
 
         function addNewRow() { rows.push([]); renderRows(); activeRowIndex = rows.length - 1; refreshUIText(); highlightActiveRow(); }
