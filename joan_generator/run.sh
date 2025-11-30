@@ -1,4 +1,4 @@
 #!/bin/bash
 echo "Startuje Joan Generator..."
-# Flaga -u sprawia, ze bledy Pythona pokazuja sie w logach natychmiast
+# Flaga -u jest KLUCZOWA do debugowania
 python3 -u /app/run.py
