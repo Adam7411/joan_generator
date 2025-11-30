@@ -20,6 +20,7 @@
             --link-color: #0056b3;
             --link-border: #bee5eb;
         }
+
         body.dark-mode {
             --bg-color: #121212;
             --container-bg: #1e1e1e;
@@ -33,28 +34,39 @@
             --link-color: #80d8ff;
             --link-border: #37474f;
         }
+
         body { font-family: 'Roboto', sans-serif; background-color: var(--bg-color); color: var(--text-color); padding: 20px; transition: background-color 0.3s; }
         .container { max-width: 1200px; margin: 0 auto; background: var(--container-bg); padding: 25px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); transition: background-color 0.3s; }
+        
         .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid var(--border-color); padding-bottom: 15px; }
         h1 { color: var(--accent-color); margin: 0; font-size: 24px; }
+        
         .controls { display: flex; gap: 10px; align-items: center; }
         .lang-switch button, .theme-switch button { padding: 8px 12px; border: 1px solid var(--border-color); background: var(--section-bg); color: var(--text-color); cursor: pointer; border-radius: 4px; font-weight: bold; }
         .lang-switch button.active { background: var(--accent-color); color: white; border-color: var(--accent-color); }
+
         .status-bar { padding: 10px; margin-bottom: 20px; border-radius: 4px; text-align: center; font-weight: bold; }
+        
         .section { margin-bottom: 30px; border: 1px solid var(--border-color); padding: 20px; border-radius: 8px; background: var(--section-bg); }
         .section-title { font-size: 1.2em; font-weight: bold; color: var(--text-color); margin-bottom: 15px; border-bottom: 2px solid var(--accent-color); display: inline-block; }
+        
         .import-box { background: #fff3e0; border: 1px solid #ffe0b2; color: #000; display: none; }
         body.dark-mode .import-box { background: #3e2723; border-color: #5d4037; color: #fff; }
         .import-box.visible { display: block; }
+
         .add-widget-box { background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #2196f3; color: #000; transition: background 0.3s; }
         body.dark-mode .add-widget-box { background: #0d47a1; border-color: #1565c0; color: #fff; }
         .add-widget-box.editing { background: #fff8e1; border-color: #ffc107; border: 2px solid #ffc107; }
         body.dark-mode .add-widget-box.editing { background: #3e2723; border-color: #ffb300; }
+
         .flex-row { display: flex; gap: 15px; align-items: flex-end; margin-bottom: 10px; flex-wrap: wrap; }
         .flex-col { flex: 1; min-width: 150px; }
+        
         label { display: block; margin-top: 10px; font-weight: bold; font-size: 0.9em; margin-bottom: 5px; color: var(--text-color); }
         input, select, textarea { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; box-sizing: border-box; background: var(--input-bg); color: var(--text-color); }
+
         .icon-preview-box { width: 42px; height: 42px; background: #fff; border: 1px solid #ccc; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #333; margin-bottom: 1px; }
+
         .btn { padding: 10px 20px; border: none; cursor: pointer; border-radius: 4px; font-weight: bold; text-transform: uppercase; }
         .btn-primary { background-color: var(--accent-color); color: white; width: 100%; font-size: 18px; margin-top: 20px; }
         .btn-add { background-color: #4caf50; color: white; width: 100%; }
@@ -63,36 +75,65 @@
         .btn-row { background-color: #2196f3; color: white; margin-top: 10px; }
         .btn-import { background-color: #ff9800; color: white; margin-bottom: 10px; }
         .btn-remove-row { font-size: 10px; padding: 5px; margin-left: auto; background-color: #757575; color: white; }
-        
+
+        /* PREVIEW AREA */
         .preview-area { background-color: var(--preview-bg); padding: 24px; border-radius: 8px; border: 2px solid var(--border-color); overflow-x: auto; min-height: 220px; }
-        .eink-row { display: flex; gap: 12px; margin-bottom: 12px; padding: 18px 12px; border: 2px dashed #999; background: transparent; border-radius: 6px; align-items: center; position: relative; min-height: 120px; cursor: pointer; }
+        
+        .eink-row { 
+            display: flex; gap: 12px; margin-bottom: 12px; padding: 18px 12px; 
+            border: 2px dashed #999; background: transparent; border-radius: 6px; 
+            align-items: center; position: relative; min-height: 120px; cursor: pointer;
+        }
         .eink-row:hover { border-color: #2196f3; }
         .eink-row.active { border-color: #2196f3; background: rgba(33, 150, 243, 0.08); }
-        .eink-widget { background-color: #FFFFFF; border: 2px solid #000; color: #000; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 8px 4px; box-sizing: border-box; position: relative; cursor: pointer; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); flex-shrink: 0; transition: transform 0.1s; border-radius: 6px; }
+        
+        .eink-widget {
+            background-color: #FFFFFF; border: 2px solid #000; color: #000; 
+            display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+            padding: 8px 4px; box-sizing: border-box; position: relative; cursor: pointer; 
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.1); flex-shrink: 0;
+            transition: transform 0.1s;
+            border-radius: 6px;
+            min-width: 100px; /* Zabezpieczenie przed zniknięciem */
+        }
         .eink-widget:hover { transform: translateY(-2px); box-shadow: 4px 4px 8px rgba(0,0,0,0.2); z-index: 5; }
         .eink-widget.being-edited { border: 3px solid #ff9800; transform: scale(1.03); z-index: 10; }
-        
-        .ew-title { font-size: 12px; font-weight: 700; text-align: center; width: 100%; white-space: normal; line-height: 1.2; min-height: 30px; padding: 0 4px; display: flex; align-items: center; justify-content: center; }
+
+        .ew-title { font-size: 12px; font-weight: 700; text-align: center; width: 100%; white-space: normal; overflow: hidden; line-height: 1.2; min-height: 30px; padding: 0 4px; display: flex; align-items: center; justify-content: center; }
         .ew-icon { font-size: 32px; }
         .ew-state { font-size: 11px; font-weight: 700; text-transform: uppercase; min-height: 18px; display: flex; align-items: center; }
+        
         .ew-edit-overlay { position: absolute; top:0; left:0; right:0; bottom:0; background: rgba(33, 150, 243, 0.15); display:none; pointer-events: none;}
         .eink-widget:hover .ew-edit-overlay { display: block; }
+
         .ew-delete { position: absolute; top: 4px; right: 4px; background: red; color: white; width: 20px; height: 20px; text-align: center; line-height: 20px; font-size: 12px; display: none; z-index: 20; border-radius: 4px; }
         .eink-widget:hover .ew-delete { display: block; }
-        
+
         textarea.output { width: 100%; height: 500px; font-family: monospace; background: #263238; color: #eceff1; border: none; padding: 15px; border-radius: 4px; }
         .hidden { display: none !important; }
-
-        .file-path-info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; padding: 20px; margin-bottom: 20px; border-radius: 6px; font-family: monospace; font-size: 16px; line-height: 1.6; }
+        
+        /* RESULT INSTRUCTIONS */
+        .file-path-info { 
+            background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; padding: 20px; margin-bottom: 20px; border-radius: 6px; font-family: monospace; font-size: 16px; line-height: 1.6;
+        }
         body.dark-mode .file-path-info { background-color: #263238; color: #eceff1; border-color: #37474f; }
+        
         .file-path-info strong { font-size: 1.3em; display: block; margin-top: 15px; color: #004085; }
         body.dark-mode .file-path-info strong { color: #90caf9; }
         .file-path-info strong:first-child { margin-top: 0; }
-        .file-path-info code { background: rgba(255,255,255,0.6); padding: 5px 10px; border-radius: 4px; font-weight: bold; color: #d63384; display: block; margin-top: 5px; word-break: break-all; }
+        
+        .file-path-info code { 
+            background: rgba(255,255,255,0.6); padding: 5px 10px; border-radius: 4px; font-weight: bold; color: #d63384; display: block; margin-top: 5px; word-break: break-all;
+        }
         body.dark-mode .file-path-info code { background: rgba(0,0,0,0.3); color: #f48fb1; }
-        .file-path-info a { background: var(--link-bg); padding: 5px 10px; border-radius: 4px; font-weight: bold; color: var(--link-color); text-decoration: none; display: block; margin-top: 5px; word-break: break-all; border: 1px solid var(--link-border); font-size: 18px; }
+        
+        /* POPRAWKA KOLORU LINKU W CIEMNYM MOTYWIE */
+        .file-path-info a { 
+            background: var(--link-bg); padding: 5px 10px; border-radius: 4px; font-weight: bold; color: var(--link-color); text-decoration: none; display: block; margin-top: 5px; word-break: break-all; border: 1px solid var(--link-border); font-size: 18px;
+        }
         .file-path-info a:hover { text-decoration: underline; background-color: #fff; }
         body.dark-mode .file-path-info a:hover { background-color: #444; }
+
     </style>
 </head>
 <body>
@@ -134,6 +175,7 @@
 
         <form method="POST" id="main-form">
             <input type="hidden" name="ui_language" id="ui_language" value="pl">
+            <input type="hidden" name="ui_theme" id="ui_theme" value="light">
             
             <div class="section">
                 <div class="section-title" data-i18n="sec_settings">1. Ustawienia</div>
@@ -212,27 +254,15 @@
                         <input list="icons-list" id="new-widget-icon" placeholder="np. mdi-home" oninput="updateIconPreview()">
                         <datalist id="icons-list"></datalist>
                     </div>
-                </div>
-
-                <!-- IKONY ON/OFF DLA SWITCH/COVER -->
-                <div class="flex-row" style="margin-top: 10px;">
-                    <div class="flex-col">
-                        <label>Ikona ON (switch/cover)</label>
-                        <input list="icons-list" id="new-widget-icon-on" placeholder="np. mdi-lightbulb-on" oninput="updateIconPreview()">
+                    
+                    <div class="flex-col" style="display:flex; align-items: flex-end;">
+                        <button type="button" id="btn-action" class="btn btn-add" onclick="saveWidget()">
+                            <span data-i18n="btn_add">+ DODAJ DO WIERSZA</span>
+                        </button>
+                        <button type="button" id="btn-cancel" class="btn btn-cancel hidden" onclick="cancelEdit()">
+                            <span data-i18n="btn_cancel">Anuluj</span>
+                        </button>
                     </div>
-                    <div class="flex-col">
-                        <label>Ikona OFF (switch/cover)</label>
-                        <input list="icons-list" id="new-widget-icon-off" placeholder="np. mdi-lightbulb-outline" oninput="updateIconPreview()">
-                    </div>
-                </div>
-                
-                <div class="flex-row" style="display:flex; align-items: flex-end; gap: 10px;">
-                    <button type="button" id="btn-action" class="btn btn-add" onclick="saveWidget()">
-                        <span data-i18n="btn_add">+ DODAJ DO WIERSZA</span>
-                    </button>
-                    <button type="button" id="btn-cancel" class="btn btn-cancel hidden" onclick="cancelEdit()">
-                        <span data-i18n="btn_cancel">Anuluj</span>
-                    </button>
                 </div>
             </div>
 
@@ -276,7 +306,6 @@
         let editingIndices = null; 
         let importedDefsMap = {}; 
 
-        // --- UI & HELPERS ---
         function formatNameFromId(id) {
             if (!id) return "";
             const last = id.includes('.') ? id.split('.').pop() : id;
@@ -284,14 +313,9 @@
         }
 
         function resolveImportedTitle(id) {
-            // 1. Exact match
             if (importedDefsMap[id] && importedDefsMap[id].title) return importedDefsMap[id].title;
-            
-            // 2. Short ID match (e.g. hydrofor instead of switch.hydrofor)
             const shortId = id.split('.').pop();
             if (importedDefsMap[shortId] && importedDefsMap[shortId].title) return importedDefsMap[shortId].title;
-
-            // 3. Entity match (reverse lookup)
             for(let key in importedDefsMap) {
                 if(importedDefsMap[key].entity === id && importedDefsMap[key].title) return importedDefsMap[key].title;
             }
@@ -307,6 +331,7 @@
             refreshUIText();
             renderRows();
         }
+
         function refreshUIText() {
             const dict = {
                 pl: {
@@ -324,7 +349,8 @@
                     sec_settings: "1. Settings", sec_add: "2. Add Widget", sec_edit: "2. Edit Widget",
                     sec_preview: "3. Dashboard Preview (Click to Edit)", sec_code: "Your YAML Code:",
                     dash_title: "Dashboard Title (Filename)", label_entity: "Select Entity (Home Assistant)",
-                    label_dashboard: "Dashboard Filename (e.g. joan3)", label_type: "Widget Type", label_name: "Title on Screen", label_icon: "Icon (Empty = None)", label_preview: "Icon", label_size: "Size",
+                    label_dashboard: "Dashboard Filename (e.g. joan3)", label_type: "Widget Type", label_name: "Title on Screen",
+                    label_icon: "Icon (Empty = None)", label_preview: "Icon", label_size: "Size",
                     btn_add: "+ ADD TO ROW", btn_update: "UPDATE WIDGET", btn_new_row: "+ Add New Row", btn_generate: "GENERATE .DASH CODE", btn_cancel: "Cancel",
                     state_on: "ON", state_off: "OFF", state_open: "OPEN", state_closed: "CLOSED",
                     info_step1: "1. Save code to file:", info_step2: "2. Restart AppDaemon and check dashboard:",
@@ -369,19 +395,12 @@
 
         function getLiveIcon(widget) {
             const ent = entitiesData.find(e => e.id === widget.id);
-            // If explicit icons are set in widget, prioritize them
-            const wOn = widget.icon_on || widget.icon;
-            const wOff = widget.icon_off || widget.icon;
-            
-            if (!ent) return wOff; // Default to off/base icon if no state
-
-            const i = (widget.icon || '').toLowerCase();
+            let baseIcon = widget.icon;
+            if (!baseIcon || !ent) return baseIcon; 
+            const i = baseIcon.toLowerCase();
             const state = ent.state;
             const is_on = (state === 'on' || state === 'open' || state === 'unlocked');
-
             if (is_on) {
-                if(widget.icon_on) return widget.icon_on; // Explicit ON icon
-                // Auto-guess ON
                 if (i.includes('garage')) return 'mdi-garage-open';
                 if (i.includes('gate')) return 'mdi-gate-open';
                 if (i.includes('light') || i.includes('bulb')) return 'mdi-lightbulb-on';
@@ -392,8 +411,6 @@
                 if (i.includes('-outline')) return i.replace('-outline', '');
                 return i;
             } else {
-                if(widget.icon_off) return widget.icon_off; // Explicit OFF icon
-                // Auto-guess OFF
                 if (i.includes('garage')) return 'mdi-garage';
                 if (i.includes('gate')) return 'mdi-gate';
                 if (i.includes('light') || i.includes('bulb')) return 'mdi-lightbulb-outline';
@@ -415,7 +432,7 @@
                 rowDiv.className = 'eink-row';
                 rowDiv.id = 'row-' + index;
                 rowDiv.onclick = () => { if(editingIndices) cancelEdit(); activeRowIndex = index; highlightActiveRow(); };
-
+                
                 const rowLabel = document.createElement('div');
                 rowLabel.style.position = 'absolute'; rowLabel.style.top = '-10px'; rowLabel.style.left='5px'; 
                 rowLabel.style.fontWeight = 'bold'; rowLabel.style.fontSize = '10px'; rowLabel.style.color='#666';
@@ -436,7 +453,7 @@
                         h = (rowsVal * 80) + ((rowsVal - 1) * 8);
                     }
                     wDiv.style.width = w + 'px'; wDiv.style.height = h + 'px';
-
+                    
                     wDiv.onclick = (e) => { e.stopPropagation(); editWidget(index, wIndex); };
 
                     const liveIcon = getLiveIcon(widget);
@@ -444,13 +461,9 @@
                     let iconHtml = iconClass ? `<i class="mdi ${iconClass} ew-icon"></i>` : `<div style="height:38px"></div>`;
                     let displayState = getEntityState(widget.id) || defaultStates[widget.type] || '---';
 
-                    // FIXED TITLE DISPLAY:
-                    // 1. Use widget.name if edited
-                    // 2. Use title from import if available
-                    // 3. Fallback to generating from ID
+                    // --- FIX: TITLE DISPLAY ---
                     const importedTitle = resolveImportedTitle(widget.id);
                     let safeName = (widget.name && widget.name.trim()) ? widget.name : (importedTitle || formatNameFromId(widget.id));
-                    
                     if(!safeName || safeName.trim() === "") safeName = widget.id.split('.').pop();
 
                     wDiv.innerHTML = `<div class="ew-title">${safeName}</div>${iconHtml}<div class="ew-state">${displayState}</div><div class="ew-delete" onclick="removeWidget(${index}, ${wIndex}); event.stopPropagation();">X</div><div class="ew-edit-overlay"></div>`;
@@ -471,7 +484,6 @@
 
         function toggleImport() { document.getElementById('import-area').classList.toggle('visible'); }
         
-        // --- ROBUST IMPORT ---
         function importYaml() {
             const code = document.getElementById('import-code').value;
             if (!code) return;
@@ -482,31 +494,27 @@
                 const layoutLines = [];
                 let parsingLayout = false;
 
-                const ignoreKeys = ['global_parameters','widget_dimensions','widget_size','widget_margins','columns','rows','skin','title'];
-
                 for (let i = 0; i < lines.length; i++) {
                     let lineRaw = lines[i];
                     let line = lineRaw.split('#')[0].trim();
                     if (!line) continue;
 
                     if (line.startsWith('layout:')) { parsingLayout = true; continue; }
-
                     if (!parsingLayout && lineRaw.match(/^title:/)) {
                         const parts = lineRaw.split(':');
                         document.getElementById('dash-title').value = parts.slice(1).join(':').trim().replace(/['"]/g, '');
                         continue;
                     }
-
                     if (parsingLayout) {
                         if (line.startsWith('-')) layoutLines.push(line);
                         else if (lineRaw.match(/^\S+:/)) parsingLayout = false;
                     }
-
                     if (!parsingLayout) {
                         const matchRoot = lineRaw.match(/^([a-zA-Z0-9_\.\-]+)\s*:/);
                         if (matchRoot) {
                             const key = matchRoot[1];
-                            if (!ignoreKeys.includes(key)) { currentKey = key; rawDefs[currentKey] = {}; } else { currentKey = null; }
+                            const ignore = ['global_parameters','widget_dimensions','widget_size','widget_margins','columns','rows','skin','title'];
+                            if (!ignore.includes(key)) { currentKey = key; rawDefs[currentKey] = {}; } else { currentKey = null; }
                         } else if (currentKey && line.includes(':')) {
                             let val = line.substring(line.indexOf(':') + 1).trim();
                             if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) val = val.slice(1, -1);
@@ -533,7 +541,6 @@
                         if (sm) { size = sm[0]; id = id.replace(sm[0],'').trim(); }
 
                         const def = importedDefsMap[id] || importedDefsMap[id.split('.').pop()] || null;
-
                         let type = def && def.widget_type;
                         if (!type) {
                             if (id.startsWith('navigate.')) type='navigate';
@@ -546,18 +553,16 @@
                             else type='switch';
                         }
 
-                        // IMPORT: Get Title -> Def -> Auto
                         let name = resolveImportedTitle(id);
                         if (!name && def && def.title) name = def.title;
                         if (!name) name = formatNameFromId(id);
 
                         let icon = (def && def.icon) || '';
                         let icon_on = def && (def.icon_on || def.icon_active) || '';
-                        let icon_off= def && (def.icon_off || def.icon_inactive) || '';
-                        
-                        [icon,icon_on,icon_off] = [icon,icon_on,icon_off].map(x => (x && !x.startsWith('mdi-')) ? ('mdi-'+x) : x);
+                        if(!icon && icon_on) icon = icon_on;
+                        [icon] = [icon].map(x => (x && !x.startsWith('mdi-')) ? ('mdi-'+x) : x);
 
-                        newRow.push({ id, type, name, icon, icon_on, icon_off, size });
+                        newRow.push({ id, type, name, icon, size });
                     });
                     if (newRow.length) rows.push(newRow);
                 });
@@ -579,8 +584,6 @@
             else document.getElementById('new-entity-id').value = widget.id;
             document.getElementById('new-widget-name').value = widget.name || '';
             document.getElementById('new-widget-icon').value = widget.icon || '';
-            document.getElementById('new-widget-icon-on').value = widget.icon_on || '';
-            document.getElementById('new-widget-icon-off').value = widget.icon_off || '';
             document.getElementById('new-widget-size').value = widget.size || '';
             updateIconPreview();
             document.getElementById('widget-form-box').classList.add('editing');
@@ -592,18 +595,16 @@
             const type = document.getElementById('new-widget-type').value;
             let name = document.getElementById('new-widget-name').value.trim();
             let icon = document.getElementById('new-widget-icon').value.trim();
-            let icon_on = (document.getElementById('new-widget-icon-on')?.value || '').trim();
-            let icon_off= (document.getElementById('new-widget-icon-off')?.value || '').trim();
             const size = document.getElementById('new-widget-size').value;
             let id = '';
             if (type === 'navigate') { const dashName = document.getElementById('new-dashboard-name').value.trim(); if (!dashName) { alert(currentLang === 'pl' ? "Wymagana nazwa dashboardu" : "Dashboard name required"); return; } id = 'navigate.' + dashName; } else { id = document.getElementById('new-entity-id').value.trim(); if(!id) { alert(currentLang === 'pl' ? "Wymagana encja" : "Entity required"); return; } }
             if (!name) name = formatNameFromId(id);
             if(icon && !icon.startsWith('mdi-') && icon !== '') icon = 'mdi-' + icon;
-            const newWidget = { id, type, name, icon, icon_on, icon_off, size };
+            const newWidget = { id, type, name, icon, size };
             if (editingIndices) { rows[editingIndices.r][editingIndices.w] = newWidget; cancelEdit(); } else { if (!rows.length) addNewRow(); rows[activeRowIndex].push(newWidget); clearForm(); }
             renderRows();
         }
-        function clearForm() { document.getElementById('new-entity-id').value = ''; document.getElementById('new-dashboard-name').value = ''; document.getElementById('new-widget-name').value = ''; document.getElementById('new-widget-icon').value = ''; document.getElementById('new-widget-icon-on').value = ''; document.getElementById('new-widget-icon-off').value = ''; document.getElementById('new-widget-size').value = ''; updateIconPreview(); }
+        function clearForm() { document.getElementById('new-entity-id').value = ''; document.getElementById('new-dashboard-name').value = ''; document.getElementById('new-widget-name').value = ''; document.getElementById('new-widget-icon').value = ''; document.getElementById('new-widget-size').value = ''; updateIconPreview(); }
         function removeWidget(r, w) { if (editingIndices && editingIndices.r === r && editingIndices.w === w) cancelEdit(); rows[r].splice(w, 1); renderRows(); }
         function toggleInputs() { const type = document.getElementById('new-widget-type').value; const groupEntity = document.getElementById('group-entity'); const groupNav = document.getElementById('group-nav'); const iconInput = document.getElementById('new-widget-icon'); const sizeInput = document.getElementById('new-widget-size'); if (type === 'navigate') { groupEntity.classList.add('hidden'); groupNav.classList.remove('hidden'); if(!iconInput.value) { iconInput.value = 'mdi-arrow-right-circle'; updateIconPreview(); } } else { groupEntity.classList.remove('hidden'); groupNav.classList.add('hidden'); } if((type === 'media_player' || type === 'climate') && !sizeInput.value) { sizeInput.value = '(2x2)'; } }
         async function fetchIcons() { const dataList = document.getElementById('icons-list'); try { const response = await fetch('https://raw.githubusercontent.com/Templarian/MaterialDesign/master/meta.json'); const icons = await response.json(); dataList.innerHTML = ''; icons.forEach(i => { const opt = document.createElement('option'); opt.value = 'mdi-' + i.name; dataList.appendChild(opt); }); } catch (e) {} } fetchIcons();
