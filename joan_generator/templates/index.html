@@ -50,8 +50,7 @@
             </div>
         {% else %}
             <div class="status-bar" style="background: #f8d7da; color: #721c24; display: block;">
-                ⚠ Brak połączenia z Home Assistant API (Lista encji pusta). <br>
-                Odinstaluj i zainstaluj dodatek ponownie, aby nadać uprawnienia.
+                ⚠ Brak połączenia z HA API. Sprawdź token w konfiguracji.
             </div>
         {% endif %}
         
@@ -60,7 +59,8 @@
             <div class="flex-row">
                 <div class="flex-col" style="flex: 2;">
                     <label>Wybierz Encję</label>
-                    <input list="entities-list" id="new-entity-id" placeholder="Zacznij pisać..." onchange="guessType()">
+                    <!-- Dodano zdarzenie oninput, aby reagowalo od razu -->
+                    <input list="entities-list" id="new-entity-id" placeholder="Zacznij pisać..." oninput="autoConfig()">
                     <datalist id="entities-list">
                         {% for entity in entities %}
                         <option value="{{ entity }}">
@@ -72,9 +72,12 @@
                     <select id="new-widget-type">
                         <option value="switch">Przełącznik (Switch/Light)</option>
                         <option value="sensor">Sensor (Wartość)</option>
-                        <option value="cover">Roleta/Brama</option>
+                        <option value="binary_sensor">Sensor Binarny (Otwarte/Zamk)</option>
+                        <option value="cover">Roleta/Brama/Garaż</option>
+                        <option value="media_player">Odtwarzacz (Media)</option>
+                        <option value="input_boolean">Przełącznik Pomocniczy</option>
+                        <option value="script">Skrypt/Scena</option>
                         <option value="navigate">Nawigacja</option>
-                        <option value="script">Skrypt</option>
                     </select>
                 </div>
                 <div class="flex-col">
@@ -84,7 +87,7 @@
             </div>
             <div class="flex-row" style="margin-top: 10px;">
                 <div class="flex-col">
-                    <label>Ikona (MDI)</label>
+                    <label>Ikona (Automatyczna lub MDI)</label>
                     <input list="icons-list" id="new-widget-icon" placeholder="np. mdi-lightbulb">
                     <datalist id="icons-list"></datalist>
                 </div>
@@ -156,7 +159,7 @@
                 rowWidgets.forEach((widget, wIndex) => {
                     const wCard = document.createElement('div');
                     wCard.className = 'widget-card';
-                    wCard.innerHTML = `<span style="font-size:16px;">${widget.icon ? '<i class="mdi '+widget.icon+'"></i> ' : ''}</span> <span>${widget.name}</span> <span class="btn-del-widget" onclick="removeWidget(${index}, ${wIndex}); event.stopPropagation();">x</span>`;
+                    wCard.innerHTML = `<span style="font-size:16px;">${widget.icon ? '<i class="mdi '+widget.icon+'"></i> ' : ''}</span> <span>${widget.name}</span> <small>(${widget.type})</small> <span class="btn-del-widget" onclick="removeWidget(${index}, ${wIndex}); event.stopPropagation();">x</span>`;
                     rowDiv.appendChild(wCard);
                 });
 
@@ -202,14 +205,78 @@
             document.getElementById('layout_data_json').value = JSON.stringify(rows);
             document.getElementById('main-form').submit();
         }
+        
+        // --- INTELIGENTNE WYKRYWANIE TYPU I IKONY ---
+        function autoConfig() {
+            guessType();
+            guessIcon();
+        }
+
         function guessType() {
             const id = document.getElementById('new-entity-id').value;
             const typeSelect = document.getElementById('new-widget-type');
+            
             if(id.startsWith('sensor.')) typeSelect.value = 'sensor';
+            else if(id.startsWith('binary_sensor.')) typeSelect.value = 'binary_sensor';
             else if(id.startsWith('cover.')) typeSelect.value = 'cover';
+            else if(id.startsWith('media_player.')) typeSelect.value = 'media_player';
+            else if(id.startsWith('input_boolean.')) typeSelect.value = 'input_boolean';
             else if(id.startsWith('light.') || id.startsWith('switch.')) typeSelect.value = 'switch';
             else if(id.startsWith('navigate.')) typeSelect.value = 'navigate';
+            else if(id.startsWith('script.') || id.startsWith('scene.')) typeSelect.value = 'script';
         }
+
+        function guessIcon() {
+            const id = document.getElementById('new-entity-id').value.toLowerCase();
+            const iconInput = document.getElementById('new-widget-icon');
+            
+            // Jeśli użytkownik już coś wpisał, nie nadpisujemy
+            if(iconInput.value) return;
+
+            // Słownik mapowania (ciąg znaków -> ikona mdi)
+            const map = {
+                'battery': 'mdi-battery',
+                'bateria': 'mdi-battery',
+                'temp': 'mdi-thermometer',
+                'humid': 'mdi-water-percent',
+                'wilgot': 'mdi-water-percent',
+                'light': 'mdi-lightbulb',
+                'swiatlo': 'mdi-lightbulb',
+                'garage': 'mdi-garage',
+                'garaz': 'mdi-garage',
+                'gate': 'mdi-gate',
+                'brama': 'mdi-gate',
+                'lock': 'mdi-lock',
+                'zamek': 'mdi-lock',
+                'plug': 'mdi-power-socket',
+                'gniazdo': 'mdi-power-socket',
+                'contact': 'mdi-door',
+                'drzwi': 'mdi-door',
+                'okno': 'mdi-window-closed',
+                'window': 'mdi-window-closed',
+                'motion': 'mdi-motion-sensor',
+                'ruch': 'mdi-motion-sensor',
+                'fan': 'mdi-fan',
+                'wentylator': 'mdi-fan',
+                'tv': 'mdi-television',
+                'speaker': 'mdi-speaker',
+                'glosnik': 'mdi-speaker',
+                'weather': 'mdi-weather-partly-cloudy',
+                'pogoda': 'mdi-weather-partly-cloudy',
+                'solar': 'mdi-solar-power',
+                'pv': 'mdi-solar-power',
+                'energy': 'mdi-lightning-bolt',
+                'energia': 'mdi-lightning-bolt'
+            };
+
+            for (const [key, icon] of Object.entries(map)) {
+                if (id.includes(key)) {
+                    iconInput.value = icon;
+                    break;
+                }
+            }
+        }
+
         if(rows.length === 0) addNewRow();
     </script>
 </body>
