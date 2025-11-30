@@ -472,15 +472,11 @@
                 const pair = iconPairFor(val);
                 if(!iconOnInput.value) iconOnInput.value = pair[0];
                 if(!iconOffInput.value) iconOffInput.value = pair[1];
-                // czyścić bazową ikonę, żeby podgląd użył pary on/off
                 if(iconInput.value.trim()==='') iconInput.value = '';
             }else{
                 if(!iconInput.value){
                     iconInput.value = pickAutoIcon(typeSel.value, val);
                 }
-                // wyczyść parę on/off dla nieakcyjnych
-                iconOnInput.value = iconOnInput.value; // zostaw jeśli user wpisał ręcznie
-                iconOffInput.value= iconOffInput.value;
             }
             updateIconPreview();
         }
@@ -597,8 +593,8 @@
                         } else if (currentKey && line.includes(':')) {
                             let val = line.substring(line.indexOf(':') + 1).trim();
                             if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) val = val.slice(1, -1);
-                            const key = line.split(':')[0].trim();
-                            rawDefs[currentKey][key] = val;
+                            const k = line.split(':')[0].trim();
+                            rawDefs[currentKey][k] = val;
                         }
                     }
                 }
@@ -612,34 +608,33 @@
 
                 rows = [];
                 layoutLines.forEach(l => {
-                    const rowStr = l.substring(1).trim(); 
-                    const items = rowStr.split(',');
+                    const items = l.substring(1).trim().split(',');
                     const newRow = [];
                     items.forEach(itemRaw => {
                         let id = itemRaw.trim();
                         let size = "";
-                        const sizeMatch = id.match(/\(\d+x\d+\)/);
-                        if (sizeMatch) { size = sizeMatch[0]; id = id.replace(size, '').trim(); }
+                        const sm = id.match(/\(\d+x\d+\)/);
+                        if (sm) { size = sm[0]; id = id.replace(sm[0],'').trim(); }
 
                         const def = importedDefsMap[id] || importedDefsMap[id.split('.').pop()] || null;
 
                         let type = def && def.widget_type;
                         if (!type) {
-                            if (id.startsWith('navigate.')) type = 'navigate';
-                            else if (id.startsWith('sensor.')) type = 'sensor';
-                            else if (id.startsWith('binary_sensor.')) type = 'binary_sensor';
-                            else if (id.startsWith('cover.')) type = 'cover';
-                            else if (id.startsWith('media_player.')) type = 'media_player';
-                            else if (id.startsWith('climate.')) type = 'climate';
-                            else if (id.startsWith('light.') || id.startsWith('switch.') || id.startsWith('input_boolean.')) type = 'switch';
-                            else type = 'switch';
+                            if (id.startsWith('navigate.')) type='navigate';
+                            else if (id.startsWith('sensor.')) type='sensor';
+                            else if (id.startsWith('binary_sensor.')) type='binary_sensor';
+                            else if (id.startsWith('cover.')) type='cover';
+                            else if (id.startsWith('media_player.')) type='media_player';
+                            else if (id.startsWith('climate.')) type='climate';
+                            else if (id.startsWith('light.') || id.startsWith('switch.') || id.startsWith('input_boolean.')) type='switch';
+                            else type='switch';
                         }
 
                         let name = resolveImportedTitle(id);
                         if (!name && def && def.entity) name = formatNameFromId(def.entity);
                         if (!name) name = formatNameFromId(id);
 
-                        // ikony z importu (icon/icon_on/icon_off)
+                        // ikony z importu
                         let icon    = (def && def.icon) || '';
                         let icon_on = def && (def.icon_on || def.icon_active) || '';
                         let icon_off= def && (def.icon_off || def.icon_inactive) || '';
@@ -689,8 +684,8 @@
 
             document.getElementById('new-widget-name').value = widget.name || '';
             document.getElementById('new-widget-icon').value = widget.icon || '';
-            const onEl = document.getElementById('new-widget-icon-on'); if(onEl) onEl.value = widget.icon_on || '';
-            const offEl= document.getElementById('new-widget-icon-off'); if(offEl) offEl.value= widget.icon_off || '';
+            document.getElementById('new-widget-icon-on').value = widget.icon_on || '';
+            document.getElementById('new-widget-icon-off').value = widget.icon_off || '';
             document.getElementById('new-widget-size').value = widget.size || '';
             updateIconPreview();
 
@@ -757,8 +752,8 @@
             document.getElementById('new-dashboard-name').value = '';
             document.getElementById('new-widget-name').value = '';
             document.getElementById('new-widget-icon').value = '';
-            const onEl = document.getElementById('new-widget-icon-on'); if(onEl) onEl.value = '';
-            const offEl= document.getElementById('new-widget-icon-off'); if(offEl) offEl.value= '';
+            document.getElementById('new-widget-icon-on').value = '';
+            document.getElementById('new-widget-icon-off').value = '';
             document.getElementById('new-widget-size').value = '';
             updateIconPreview();
         }
