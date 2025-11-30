@@ -16,6 +16,9 @@
             --input-bg: #fff;
             --section-bg: #fafafa;
             --preview-bg: #f0f0f0;
+            --link-bg: #ffffff;
+            --link-color: #0056b3;
+            --link-border: #bee5eb;
         }
 
         body.dark-mode {
@@ -27,6 +30,9 @@
             --input-bg: #2c2c2c;
             --section-bg: #252525;
             --preview-bg: #121212;
+            --link-bg: rgba(0,0,0,0.3);
+            --link-color: #80d8ff;
+            --link-border: #37474f;
         }
 
         body { font-family: 'Roboto', sans-serif; background-color: var(--bg-color); color: var(--text-color); padding: 20px; transition: background-color 0.3s; }
@@ -119,17 +125,21 @@
         }
         body.dark-mode .file-path-info code { background: rgba(0,0,0,0.3); color: #f48fb1; }
         
-        /* POPRAWKA KOLORU LINKU W CIEMNYM MOTYWIE */
+        /* Link na białym tle, zawsze klikalny */
         .file-path-info a { 
-            background: rgba(255,255,255,0.6); padding: 5px 10px; border-radius: 4px; font-weight: bold; color: #0056b3; text-decoration: none; display: block; margin-top: 5px; word-break: break-all;
-        }
-        body.dark-mode .file-path-info a { 
-            background: rgba(0,0,0,0.3); 
-            color: #80d8ff !important; /* JASNY BŁĘKIT W DARK MODE */
+            background: var(--link-bg);
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            color: var(--link-color);
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 6px;
+            word-break: break-all;
+            border: 1px solid var(--link-border);
         }
         .file-path-info a:hover { text-decoration: underline; background-color: #fff; }
         body.dark-mode .file-path-info a:hover { background-color: #444; }
-
     </style>
 </head>
 <body>
@@ -468,7 +478,8 @@
                     let iconHtml = iconClass ? `<i class="mdi ${iconClass} ew-icon"></i>` : `<div style="height:28px"></div>`;
                     let displayState = getEntityState(widget.id) || defaultStates[widget.type] || '---';
 
-                    const safeName = widget.name || formatNameFromId(widget.id);
+                    // Tytuł na ekranie – zawsze pokazuj nazwę; jeśli brak, zbuduj z encji/id
+                    const safeName = widget.name || formatNameFromEntity(widget.id) || formatNameFromId(widget.id);
                     wDiv.innerHTML = `<div class="ew-title">${safeName}</div>${iconHtml}<div class="ew-state">${displayState}</div><div class="ew-delete" onclick="removeWidget(${index}, ${wIndex}); event.stopPropagation();">X</div><div class="ew-edit-overlay"></div>`;
                     rowDiv.appendChild(wDiv);
                 });
@@ -487,7 +498,7 @@
 
         function toggleImport() { document.getElementById('import-area').classList.toggle('visible'); }
         
-        // --- IMPROVED IMPORT LOGIC (FIXED TITLES & TYPES) ---
+        // --- IMPORT LOGIC (wyciąganie tytułów) ---
         function importYaml() {
             const code = document.getElementById('import-code').value;
             if (!code) return;
@@ -637,7 +648,7 @@
             } else {
                 groupEntity.classList.remove('hidden'); groupNav.classList.add('hidden');
             }
-            if((type === 'media_player' || type === 'climate') && !sizeInput.value) { sizeInput.value = '(2x2)'; }
+            if((detectedType === 'media_player' || detectedType === 'climate') && !sizeInput.value) { sizeInput.value = '(2x2)'; }
         }
 
         async function fetchIcons() {
@@ -707,14 +718,21 @@
             const haHost = window.location.hostname;
             const codePath = document.getElementById('path-code');
             const linkDash = document.getElementById('dashboard-link');
-            
-            if(codePath) codePath.innerHTML = codePath.innerHTML.replace('IP_HA', haHost);
-            if(linkDash) {
-                let currentHref = linkDash.getAttribute('href');
-                currentHref = currentHref.replace('IP_HA', haHost);
-                linkDash.setAttribute('href', currentHref);
-                linkDash.innerText = currentHref;
+
+            // Ustal docelowy URL dashboardu i wymuś klikalność + biały background
+            const dashNameEl = "{{ dash_name }}";
+            const dashNameStr = (dashNameEl && dashNameEl !== 'None') ? dashNameEl : '';
+            const finalHref = `http://${haHost}:5050/${dashNameStr}`;
+
+            if (linkDash) {
+                linkDash.setAttribute('href', finalHref);
+                linkDash.innerText = finalHref;
+                linkDash.style.background = 'var(--link-bg)';
+                linkDash.style.color = 'var(--link-color)';
+                linkDash.style.border = '1px solid var(--link-border)';
             }
+
+            if(codePath) codePath.innerHTML = codePath.innerHTML.replace('IP_HA', haHost);
 
             const savedLang = localStorage.getItem('joan_lang') || 'pl';
             const savedTheme = localStorage.getItem('joan_theme') || 'light';
