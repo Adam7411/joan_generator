@@ -103,10 +103,28 @@
 
         textarea.output { width: 100%; height: 500px; font-family: monospace; background: #263238; color: #eceff1; border: none; padding: 15px; border-radius: 4px; }
         .hidden { display: none !important; }
-        .file-path-info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; padding: 15px; margin-bottom: 15px; border-radius: 4px; font-family: monospace; font-size: 14px; }
+        
+        /* RESULT INSTRUCTIONS - POWIĘKSZONE */
+        .file-path-info { 
+            background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; padding: 20px; margin-bottom: 20px; border-radius: 6px; font-family: monospace; font-size: 16px; line-height: 1.6;
+        }
         body.dark-mode .file-path-info { background-color: #263238; color: #eceff1; border-color: #37474f; }
-        .file-path-info code { background: rgba(255,255,255,0.5); padding: 2px 5px; border-radius: 3px; font-weight: bold; }
-        body.dark-mode .file-path-info code { background: rgba(0,0,0,0.3); }
+        
+        .file-path-info strong { font-size: 1.3em; display: block; margin-top: 15px; color: #004085; }
+        body.dark-mode .file-path-info strong { color: #90caf9; }
+        .file-path-info strong:first-child { margin-top: 0; }
+        
+        .file-path-info code { 
+            background: rgba(255,255,255,0.6); padding: 5px 10px; border-radius: 4px; font-weight: bold; color: #d63384; display: block; margin-top: 5px; word-break: break-all;
+        }
+        body.dark-mode .file-path-info code { background: rgba(0,0,0,0.3); color: #f48fb1; }
+        
+        .file-path-info a { 
+            background: rgba(255,255,255,0.6); padding: 5px 10px; border-radius: 4px; font-weight: bold; color: #0056b3; text-decoration: none; display: block; margin-top: 5px; word-break: break-all;
+        }
+        body.dark-mode .file-path-info a { background: rgba(0,0,0,0.3); color: #82b1ff; }
+        .file-path-info a:hover { text-decoration: underline; background-color: #fff; }
+
     </style>
 </head>
 <body>
@@ -255,6 +273,7 @@
         {% if generated_yaml %}
         <div class="section">
             <h3 data-i18n="sec_code">Twój kod YAML:</h3>
+            
             <div class="file-path-info">
                 <strong data-i18n="info_step1">1. Zapisz kod w pliku:</strong>
                 <code id="path-code">\\IP_HA\addon_configs\appdaemon\dashboards\{{ filename }}</code>
@@ -262,6 +281,7 @@
                 <strong data-i18n="info_step2">2. Uruchom ponownie AppDaemon i sprawdź dashboard:</strong>
                 <a href="#" id="dashboard-link" target="_blank">http://IP_HA:5050/{{ dash_name }}</a>
             </div>
+
             <textarea class="output" readonly>{{ generated_yaml }}</textarea>
         </div>
         {% endif %}
@@ -315,9 +335,7 @@
                 return id.replace("navigate.", "");
             }
             let name = id.split('.').pop();
-            // Replace underscores with spaces
             name = name.replace(/_/g, ' ');
-            // Capitalize First Letters
             return name.replace(/\b\w/g, l => l.toUpperCase());
         }
 
@@ -504,7 +522,6 @@
 
                 for (let i = 0; i < lines.length; i++) {
                     let lineRaw = lines[i];
-                    // Remove comments
                     let line = lineRaw.split('#')[0].trim();
                     if (!line) continue;
 
@@ -530,7 +547,6 @@
                             else { currentWidgetId = null; }
                         } else if (currentWidgetId && line.includes(':')) {
                             let val = line.substring(line.indexOf(':') + 1).trim();
-                            // Clean quotes
                             if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
                                 val = val.slice(1, -1);
                             }
