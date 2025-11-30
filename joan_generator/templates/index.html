@@ -282,7 +282,8 @@
         let rows = [];
         let activeRowIndex = 0;
         let editingIndices = null; 
-        let importedDefsMap = {}; // mapa: id -> { title, entity, ... }
+        // Mapa definicji – trzymamy pod dwoma kluczami: id definicji oraz entity
+        let importedDefsMap = {}; 
 
         function formatNameFromId(id) {
             if (!id) return "";
@@ -390,7 +391,6 @@
             }
         }
 
-        // Auto-ikonowanie: dobiera domyślną ikonę na podstawie typu i ID encji
         function pickAutoIcon(type, id) {
             const v = (id || '').toLowerCase();
             const mapByKeyword = [
@@ -412,7 +412,6 @@
             for (const item of mapByKeyword) {
                 if (item.k.some(kw => v.includes(kw))) return item.icon;
             }
-            // fallback by type
             const typeFallback = {
                 switch: 'mdi-toggle-switch',
                 sensor: 'mdi-gauge',
@@ -462,23 +461,31 @@
 
                     wDiv.addEventListener('click', (e) => { e.stopPropagation(); editWidget(index, wIndex); });
 
-                    // Jeśli brak ikony (np. po imporcie), dobierz auto-ikonę do podglądu
                     const previewIcon = (widget.icon && widget.icon.trim()) ? widget.icon : pickAutoIcon(widget.type, widget.id);
-                    const liveIcon = previewIcon ? previewIcon : '';
-                    const iconHtml = liveIcon ? `<i class="mdi ${liveIcon} ew-icon"></i>` : `<div style="height:28px"></div>`;
-
+                    const iconHtml = previewIcon ? `<i class="mdi ${previewIcon} ew-icon"></i>` : `<div style="height:28px"></div>`;
                     let displayState = getEntityState(widget.id) || defaultStates[widget.type] || '---';
 
-                    // Tytuł z wczytanego kodu
+                    // NAZWA Z IMPORTU: sprawdź definicję po id ORAZ po entity
                     let importedTitle = '';
-                    const def = importedDefsMap[widget.id];
-                    if (def && def.title) importedTitle = def.title;
+                    let defById = importedDefsMap[widget.id];
+                    let defByEntity = undefined;
+                    if (!defById && widget.id.includes('.')) {
+                        // spróbuj bez domeny
+                        const noDomainKey = widget.id.split('.').slice(1).join('.');
+                        defById = importedDefsMap[noDomainKey];
+                    }
+                    if (defById && defById.entity) {
+                        defByEntity = importedDefsMap[defById.entity];
+                    }
+
+                    if (defById && defById.title) importedTitle = defById.title;
+                    else if (defByEntity && defByEntity.title) importedTitle = defByEntity.title;
 
                     const safeName = (widget.name && widget.name.trim())
                         ? widget.name
                         : (importedTitle && importedTitle.trim())
                             ? importedTitle
-                            : (def && def.entity ? formatNameFromEntity(def.entity) : formatNameFromId(widget.id));
+                            : (defById && defById.entity ? formatNameFromEntity(defById.entity) : formatNameFromId(widget.id));
 
                     const delBtn = `<div class="ew-delete" onclick="removeWidget(${index}, ${wIndex}); event.stopPropagation();">X</div>`;
                     wDiv.innerHTML = `<div class="ew-title">${safeName}</div>${iconHtml}<div class="ew-state">${displayState}</div>${delBtn}<div class="ew-edit-overlay"></div>`;
@@ -542,9 +549,16 @@
                     }
                 }
 
-                rows = [];
-                importedDefsMap = widgetDefs;
+                // Zapisz definicje pod kluczem definicji ORAZ pod kluczem entity (jeśli jest)
+                importedDefsMap = {};
+                Object.entries(widgetDefs).forEach(([key, def]) => {
+                    importedDefsMap[key] = def;
+                    if (def.entity) {
+                        importedDefsMap[def.entity] = def;
+                    }
+                });
 
+                rows = [];
                 layoutLines.forEach(l => {
                     const rowStr = l.substring(1).trim(); 
                     const items = rowStr.split(',');
@@ -555,9 +569,16 @@
                         const sizeMatch = item.match(/\(\d+x\d+\)/);
                         if (sizeMatch) { size = sizeMatch[0]; item = item.replace(size, ''); }
                         const id = item;
-                        const def = widgetDefs[id] || {};
-                        
-                        let type = def.widget_type || '';
+
+                        // Pobierz definicję po id lub po wariantach (z domeną/bez domeny)
+                        let def = importedDefsMap[id] || null;
+                        if (!def && id.includes('.')) {
+                            const noDomainKey = id.split('.').slice(1).join('.');
+                            def = importedDefsMap[noDomainKey] || null;
+                        }
+
+                        // Detekcja typu
+                        let type = (def && def.widget_type) || '';
                         if (!type) {
                             if (id.startsWith('navigate.')) type = 'navigate';
                             else if (id.startsWith('sensor.')) type = 'sensor';
@@ -565,15 +586,18 @@
                             else if (id.startsWith('cover.')) type = 'cover';
                             else if (id.startsWith('media_player.')) type = 'media_player';
                             else if (id.startsWith('climate.')) type = 'climate';
-                            else if (id.startsWith('light.') || id.startsWith('switch.')) type = 'switch';
+                            else if (id.startsWith('light.') || id.startsWith('switch.') || id.startsWith('input_boolean.')) type = 'switch';
                             else type = 'switch';
                         }
 
-                        let name = def.title && def.title.trim() ? def.title : '';
-                        if (!name && def.entity) name = formatNameFromEntity(def.entity);
+                        // Nazwa: title z definicji (główna poprawka), fallback na entity lub id
+                        let name = (def && def.title) ? def.title : '';
+                        if (!name && def && def.entity) name = formatNameFromEntity(def.entity);
                         if (!name) name = formatNameFromId(id);
 
-                        let icon = def.icon || def.icon_on || def.icon_off || def.icon_inactive || '';
+                        // Ikona
+                        let icon = (def && (def.icon || def.icon_on || def.icon_off || def.icon_inactive)) || '';
+                        if (!icon) icon = pickAutoIcon(type, def && def.entity ? def.entity : id);
                         if (icon && !icon.startsWith('mdi-')) icon = 'mdi-' + icon;
 
                         newRow.push({ id, type, name, icon, size });
@@ -647,7 +671,6 @@
                     : formatNameFromId(id);
             }
 
-            // AUTO IKONA: jeśli brak, dobierz automatycznie
             if (!icon) {
                 icon = pickAutoIcon(type, id);
             }
