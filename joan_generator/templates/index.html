@@ -20,7 +20,6 @@
             --link-color: #0056b3;
             --link-border: #bee5eb;
         }
-
         body.dark-mode {
             --bg-color: #121212;
             --container-bg: #1e1e1e;
@@ -34,39 +33,28 @@
             --link-color: #80d8ff;
             --link-border: #37474f;
         }
-
         body { font-family: 'Roboto', sans-serif; background-color: var(--bg-color); color: var(--text-color); padding: 20px; transition: background-color 0.3s; }
         .container { max-width: 1200px; margin: 0 auto; background: var(--container-bg); padding: 25px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); transition: background-color 0.3s; }
-        
         .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid var(--border-color); padding-bottom: 15px; }
         h1 { color: var(--accent-color); margin: 0; font-size: 24px; }
-        
         .controls { display: flex; gap: 10px; align-items: center; }
         .lang-switch button, .theme-switch button { padding: 8px 12px; border: 1px solid var(--border-color); background: var(--section-bg); color: var(--text-color); cursor: pointer; border-radius: 4px; font-weight: bold; }
         .lang-switch button.active { background: var(--accent-color); color: white; border-color: var(--accent-color); }
-
         .status-bar { padding: 10px; margin-bottom: 20px; border-radius: 4px; text-align: center; font-weight: bold; }
-        
         .section { margin-bottom: 30px; border: 1px solid var(--border-color); padding: 20px; border-radius: 8px; background: var(--section-bg); }
         .section-title { font-size: 1.2em; font-weight: bold; color: var(--text-color); margin-bottom: 15px; border-bottom: 2px solid var(--accent-color); display: inline-block; }
-        
         .import-box { background: #fff3e0; border: 1px solid #ffe0b2; color: #000; display: none; }
         body.dark-mode .import-box { background: #3e2723; border-color: #5d4037; color: #fff; }
         .import-box.visible { display: block; }
-
         .add-widget-box { background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #2196f3; color: #000; transition: background 0.3s; }
         body.dark-mode .add-widget-box { background: #0d47a1; border-color: #1565c0; color: #fff; }
         .add-widget-box.editing { background: #fff8e1; border-color: #ffc107; border: 2px solid #ffc107; }
         body.dark-mode .add-widget-box.editing { background: #3e2723; border-color: #ffb300; }
-
         .flex-row { display: flex; gap: 15px; align-items: flex-end; margin-bottom: 10px; flex-wrap: wrap; }
         .flex-col { flex: 1; min-width: 150px; }
-        
         label { display: block; margin-top: 10px; font-weight: bold; font-size: 0.9em; margin-bottom: 5px; color: var(--text-color); }
         input, select, textarea { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; box-sizing: border-box; background: var(--input-bg); color: var(--text-color); }
-
         .icon-preview-box { width: 42px; height: 42px; background: #fff; border: 1px solid #ccc; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #333; margin-bottom: 1px; }
-
         .btn { padding: 10px 20px; border: none; cursor: pointer; border-radius: 4px; font-weight: bold; text-transform: uppercase; }
         .btn-primary { background-color: var(--accent-color); color: white; width: 100%; font-size: 18px; margin-top: 20px; }
         .btn-add { background-color: #4caf50; color: white; width: 100%; }
@@ -75,65 +63,32 @@
         .btn-row { background-color: #2196f3; color: white; margin-top: 10px; }
         .btn-import { background-color: #ff9800; color: white; margin-bottom: 10px; }
         .btn-remove-row { font-size: 10px; padding: 5px; margin-left: auto; background-color: #757575; color: white; }
-
-        /* PREVIEW AREA */
         .preview-area { background-color: var(--preview-bg); padding: 24px; border-radius: 8px; border: 2px solid var(--border-color); overflow-x: auto; min-height: 220px; }
-        
-        .eink-row { 
-            display: flex; gap: 12px; margin-bottom: 12px; padding: 18px 12px; 
-            border: 2px dashed #999; background: transparent; border-radius: 6px; 
-            align-items: center; position: relative; min-height: 120px; cursor: pointer;
-        }
+        .eink-row { display: flex; gap: 12px; margin-bottom: 12px; padding: 18px 12px; border: 2px dashed #999; background: transparent; border-radius: 6px; align-items: center; position: relative; min-height: 120px; cursor: pointer; }
         .eink-row:hover { border-color: #2196f3; }
         .eink-row.active { border-color: #2196f3; background: rgba(33, 150, 243, 0.08); }
-        
-        .eink-widget {
-            background-color: #FFFFFF; border: 2px solid #000; color: #000; 
-            display: flex; flex-direction: column; align-items: center; justify-content: space-between;
-            padding: 8px 4px; box-sizing: border-box; position: relative; cursor: pointer; 
-            box-shadow: 2px 2px 5px rgba(0,0,0,0.1); flex-shrink: 0;
-            transition: transform 0.1s;
-            border-radius: 6px;
-            min-width: 100px; /* Zabezpieczenie przed zniknięciem */
-        }
+        .eink-widget { background-color: #FFFFFF; border: 2px solid #000; color: #000; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 8px 4px; box-sizing: border-box; position: relative; cursor: pointer; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); flex-shrink: 0; transition: transform 0.1s; border-radius: 6px; }
         .eink-widget:hover { transform: translateY(-2px); box-shadow: 4px 4px 8px rgba(0,0,0,0.2); z-index: 5; }
         .eink-widget.being-edited { border: 3px solid #ff9800; transform: scale(1.03); z-index: 10; }
-
-        .ew-title { font-size: 12px; font-weight: 700; text-align: center; width: 100%; white-space: normal; overflow: hidden; line-height: 1.2; min-height: 30px; padding: 0 4px; display: flex; align-items: center; justify-content: center; }
+        .ew-title { font-size: 12px; font-weight: 700; text-align: center; width: 100%; white-space: normal; line-height: 1.2; min-height: 30px; padding: 0 4px; display: flex; align-items: center; justify-content: center; word-break: break-word; }
         .ew-icon { font-size: 32px; }
         .ew-state { font-size: 11px; font-weight: 700; text-transform: uppercase; min-height: 18px; display: flex; align-items: center; }
-        
         .ew-edit-overlay { position: absolute; top:0; left:0; right:0; bottom:0; background: rgba(33, 150, 243, 0.15); display:none; pointer-events: none;}
         .eink-widget:hover .ew-edit-overlay { display: block; }
-
         .ew-delete { position: absolute; top: 4px; right: 4px; background: red; color: white; width: 20px; height: 20px; text-align: center; line-height: 20px; font-size: 12px; display: none; z-index: 20; border-radius: 4px; }
         .eink-widget:hover .ew-delete { display: block; }
-
         textarea.output { width: 100%; height: 500px; font-family: monospace; background: #263238; color: #eceff1; border: none; padding: 15px; border-radius: 4px; }
         .hidden { display: none !important; }
-        
-        /* RESULT INSTRUCTIONS */
-        .file-path-info { 
-            background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; padding: 20px; margin-bottom: 20px; border-radius: 6px; font-family: monospace; font-size: 16px; line-height: 1.6;
-        }
+        .file-path-info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; padding: 20px; margin-bottom: 20px; border-radius: 6px; font-family: monospace; font-size: 16px; line-height: 1.6; }
         body.dark-mode .file-path-info { background-color: #263238; color: #eceff1; border-color: #37474f; }
-        
         .file-path-info strong { font-size: 1.3em; display: block; margin-top: 15px; color: #004085; }
         body.dark-mode .file-path-info strong { color: #90caf9; }
         .file-path-info strong:first-child { margin-top: 0; }
-        
-        .file-path-info code { 
-            background: rgba(255,255,255,0.6); padding: 5px 10px; border-radius: 4px; font-weight: bold; color: #d63384; display: block; margin-top: 5px; word-break: break-all;
-        }
+        .file-path-info code { background: rgba(255,255,255,0.6); padding: 5px 10px; border-radius: 4px; font-weight: bold; color: #d63384; display: block; margin-top: 5px; word-break: break-all; }
         body.dark-mode .file-path-info code { background: rgba(0,0,0,0.3); color: #f48fb1; }
-        
-        /* POPRAWKA KOLORU LINKU W CIEMNYM MOTYWIE */
-        .file-path-info a { 
-            background: var(--link-bg); padding: 5px 10px; border-radius: 4px; font-weight: bold; color: var(--link-color); text-decoration: none; display: block; margin-top: 5px; word-break: break-all; border: 1px solid var(--link-border); font-size: 18px;
-        }
+        .file-path-info a { background: var(--link-bg); padding: 5px 10px; border-radius: 4px; font-weight: bold; color: var(--link-color); text-decoration: none; display: block; margin-top: 5px; word-break: break-all; border: 1px solid var(--link-border); font-size: 18px; }
         .file-path-info a:hover { text-decoration: underline; background-color: #fff; }
         body.dark-mode .file-path-info a:hover { background-color: #444; }
-
     </style>
 </head>
 <body>
@@ -161,7 +116,6 @@
             </div>
         {% endif %}
 
-        <!-- IMPORT SECTION -->
         <button type="button" class="btn btn-import" onclick="toggleImport()">
             <span data-i18n="btn_import_toggle">📂 Importuj / Edytuj Kod</span>
         </button>
@@ -266,7 +220,6 @@
                 </div>
             </div>
 
-            <!-- Podgląd -->
             <div class="section">
                 <div class="section-title" data-i18n="sec_preview">3. Podgląd Dashboardu (Kliknij, aby edytować)</div>
                 <div id="rows-container" class="preview-area"></div>
@@ -284,15 +237,12 @@
         {% if generated_yaml %}
         <div class="section">
             <h3 data-i18n="sec_code">Twój kod YAML:</h3>
-            
             <div class="file-path-info">
                 <strong data-i18n="info_step1">1. Zapisz kod w pliku:</strong>
                 <code id="path-code">\\IP_HA\addon_configs\appdaemon\dashboards\{{ filename }}</code>
-                
                 <strong data-i18n="info_step2">2. Uruchom ponownie AppDaemon i sprawdź dashboard:</strong>
                 <a href="#" id="dashboard-link" target="_blank">http://IP_HA:5050/{{ dash_name }}</a>
             </div>
-
             <textarea class="output" readonly>{{ generated_yaml }}</textarea>
         </div>
         {% endif %}
@@ -306,16 +256,26 @@
         let editingIndices = null; 
         let importedDefsMap = {}; 
 
+        // --- CORE FUNCTIONS ---
+        
+        // Generator nazwy z ID (np. swiatlo_podworko -> Swiatlo Podworko)
         function formatNameFromId(id) {
             if (!id) return "";
             const last = id.includes('.') ? id.split('.').pop() : id;
+            // Zamień _ na spację, + duże litery
             return last.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
         }
 
+        // Logika rozwiązywania nazwy przy imporcie
         function resolveImportedTitle(id) {
+            // 1. Dokładne ID
             if (importedDefsMap[id] && importedDefsMap[id].title) return importedDefsMap[id].title;
+            
+            // 2. Skrócone ID (np. hydrofor w layout, switch.hydrofor w def)
             const shortId = id.split('.').pop();
             if (importedDefsMap[shortId] && importedDefsMap[shortId].title) return importedDefsMap[shortId].title;
+
+            // 3. Wyszukiwanie po polu 'entity' w definicjach
             for(let key in importedDefsMap) {
                 if(importedDefsMap[key].entity === id && importedDefsMap[key].title) return importedDefsMap[key].title;
             }
@@ -349,8 +309,7 @@
                     sec_settings: "1. Settings", sec_add: "2. Add Widget", sec_edit: "2. Edit Widget",
                     sec_preview: "3. Dashboard Preview (Click to Edit)", sec_code: "Your YAML Code:",
                     dash_title: "Dashboard Title (Filename)", label_entity: "Select Entity (Home Assistant)",
-                    label_dashboard: "Dashboard Filename (e.g. joan3)", label_type: "Widget Type", label_name: "Title on Screen",
-                    label_icon: "Icon (Empty = None)", label_preview: "Icon", label_size: "Size",
+                    label_dashboard: "Dashboard Filename (e.g. joan3)", label_type: "Widget Type", label_name: "Title on Screen", label_icon: "Icon (Empty = None)", label_preview: "Icon", label_size: "Size",
                     btn_add: "+ ADD TO ROW", btn_update: "UPDATE WIDGET", btn_new_row: "+ Add New Row", btn_generate: "GENERATE .DASH CODE", btn_cancel: "Cancel",
                     state_on: "ON", state_off: "OFF", state_open: "OPEN", state_closed: "CLOSED",
                     info_step1: "1. Save code to file:", info_step2: "2. Restart AppDaemon and check dashboard:",
@@ -432,7 +391,7 @@
                 rowDiv.className = 'eink-row';
                 rowDiv.id = 'row-' + index;
                 rowDiv.onclick = () => { if(editingIndices) cancelEdit(); activeRowIndex = index; highlightActiveRow(); };
-                
+
                 const rowLabel = document.createElement('div');
                 rowLabel.style.position = 'absolute'; rowLabel.style.top = '-10px'; rowLabel.style.left='5px'; 
                 rowLabel.style.fontWeight = 'bold'; rowLabel.style.fontSize = '10px'; rowLabel.style.color='#666';
@@ -453,7 +412,7 @@
                         h = (rowsVal * 80) + ((rowsVal - 1) * 8);
                     }
                     wDiv.style.width = w + 'px'; wDiv.style.height = h + 'px';
-                    
+
                     wDiv.onclick = (e) => { e.stopPropagation(); editWidget(index, wIndex); };
 
                     const liveIcon = getLiveIcon(widget);
@@ -461,10 +420,13 @@
                     let iconHtml = iconClass ? `<i class="mdi ${iconClass} ew-icon"></i>` : `<div style="height:38px"></div>`;
                     let displayState = getEntityState(widget.id) || defaultStates[widget.type] || '---';
 
-                    // --- FIX: TITLE DISPLAY ---
+                    // --- TITLE FIX ---
+                    // 1. Check if title is set in the widget object (e.g. edited)
+                    // 2. Check if title was found in imported defs
+                    // 3. Generate from ID
                     const importedTitle = resolveImportedTitle(widget.id);
-                    let safeName = (widget.name && widget.name.trim()) ? widget.name : (importedTitle || formatNameFromId(widget.id));
-                    if(!safeName || safeName.trim() === "") safeName = widget.id.split('.').pop();
+                    let safeName = (widget.name && widget.name.trim()) ? widget.name : importedTitle;
+                    if (!safeName || safeName.trim() === "") safeName = formatNameFromId(widget.id);
 
                     wDiv.innerHTML = `<div class="ew-title">${safeName}</div>${iconHtml}<div class="ew-state">${displayState}</div><div class="ew-delete" onclick="removeWidget(${index}, ${wIndex}); event.stopPropagation();">X</div><div class="ew-edit-overlay"></div>`;
                     rowDiv.appendChild(wDiv);
@@ -484,6 +446,7 @@
 
         function toggleImport() { document.getElementById('import-area').classList.toggle('visible'); }
         
+        // --- IMPORT LOGIC ---
         function importYaml() {
             const code = document.getElementById('import-code').value;
             if (!code) return;
@@ -500,15 +463,18 @@
                     if (!line) continue;
 
                     if (line.startsWith('layout:')) { parsingLayout = true; continue; }
+                    
                     if (!parsingLayout && lineRaw.match(/^title:/)) {
                         const parts = lineRaw.split(':');
                         document.getElementById('dash-title').value = parts.slice(1).join(':').trim().replace(/['"]/g, '');
                         continue;
                     }
+
                     if (parsingLayout) {
                         if (line.startsWith('-')) layoutLines.push(line);
                         else if (lineRaw.match(/^\S+:/)) parsingLayout = false;
                     }
+
                     if (!parsingLayout) {
                         const matchRoot = lineRaw.match(/^([a-zA-Z0-9_\.\-]+)\s*:/);
                         if (matchRoot) {
@@ -541,6 +507,7 @@
                         if (sm) { size = sm[0]; id = id.replace(sm[0],'').trim(); }
 
                         const def = importedDefsMap[id] || importedDefsMap[id.split('.').pop()] || null;
+
                         let type = def && def.widget_type;
                         if (!type) {
                             if (id.startsWith('navigate.')) type='navigate';
@@ -553,6 +520,7 @@
                             else type='switch';
                         }
 
+                        // TITLE: Priority: Def -> ID
                         let name = resolveImportedTitle(id);
                         if (!name && def && def.title) name = def.title;
                         if (!name) name = formatNameFromId(id);
@@ -582,7 +550,12 @@
             document.getElementById('new-widget-type').value = widget.type; toggleInputs();
             if (widget.type === 'navigate') document.getElementById('new-dashboard-name').value = widget.id.replace('navigate.', '');
             else document.getElementById('new-entity-id').value = widget.id;
-            document.getElementById('new-widget-name').value = widget.name || '';
+            
+            // FIX TITLE IN EDIT
+            let displayTitle = widget.name;
+            if (!displayTitle) displayTitle = resolveImportedTitle(widget.id) || formatNameFromId(widget.id);
+            document.getElementById('new-widget-name').value = displayTitle;
+
             document.getElementById('new-widget-icon').value = widget.icon || '';
             document.getElementById('new-widget-size').value = widget.size || '';
             updateIconPreview();
@@ -598,7 +571,9 @@
             const size = document.getElementById('new-widget-size').value;
             let id = '';
             if (type === 'navigate') { const dashName = document.getElementById('new-dashboard-name').value.trim(); if (!dashName) { alert(currentLang === 'pl' ? "Wymagana nazwa dashboardu" : "Dashboard name required"); return; } id = 'navigate.' + dashName; } else { id = document.getElementById('new-entity-id').value.trim(); if(!id) { alert(currentLang === 'pl' ? "Wymagana encja" : "Entity required"); return; } }
+            
             if (!name) name = formatNameFromId(id);
+
             if(icon && !icon.startsWith('mdi-') && icon !== '') icon = 'mdi-' + icon;
             const newWidget = { id, type, name, icon, size };
             if (editingIndices) { rows[editingIndices.r][editingIndices.w] = newWidget; cancelEdit(); } else { if (!rows.length) addNewRow(); rows[activeRowIndex].push(newWidget); clearForm(); }
