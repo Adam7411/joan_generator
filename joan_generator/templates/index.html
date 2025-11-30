@@ -25,8 +25,7 @@
     .status-bar{padding:10px;border-radius:6px;font-weight:700;margin-bottom:20px;}
     .section{margin-bottom:28px;padding:20px;border:1px solid var(--border-color);border-radius:10px;background:var(--section-bg);}
     .section-title{font-weight:900;font-size:1.15em;margin:0 0 15px;padding:0 0 6px;border-bottom:2px solid var(--accent-color);}
-    .import-box{display:none}
-    .import-box.visible{display:block}
+    .import-box{display:none}.import-box.visible{display:block}
     label{display:block;font-size:.85em;font-weight:700;margin:10px 0 6px;}
     input,select,textarea{width:100%;padding:10px;border:1px solid var(--border-color);border-radius:6px;background:var(--input-bg);color:var(--text-color);font-family:inherit;font-size:.95em;}
     textarea.output{min-height:520px;font-family:monospace;background:#263238;color:#eceff1;border:none;resize:vertical;border-radius:6px;padding:14px;}
@@ -167,6 +166,7 @@
           <div class="flex-col">
             <label data-i18n="label_icon">Ikona</label>
             <input id="new-widget-icon" list="icons-list" placeholder="np. mdi-lightbulb">
+            <datalist id="icons-list"></datalist>
           </div>
           <div class="flex-col" style="display:flex;gap:10px;align-items:flex-end;">
             <button type="button" id="btn-action" class="btn btn-add"><span data-i18n="btn_add">+ DODAJ DO WIERSZA</span></button>
@@ -197,51 +197,78 @@
   </div>
 
   <script>
-    const entitiesData = {{ entities | tojson }};
+    const entitiesData={{ entities | tojson }};
     let currentLang='pl', rows=[], activeRowIndex=0, editingIndices=null, importedDefsMap={};
 
     const i18n={pl:{status_ok:"✓ Połączono z Home Assistant",status_error:"⚠ Brak połączenia z API. Sprawdź token.",sec_settings:"1. Ustawienia",sec_add:"2. Dodaj / Edytuj Widget",sec_preview:"3. Podgląd Dashboardu (Kliknij, aby edytować)",sec_code:"Twój kod YAML (Klient):",dash_title:"Tytuł Dashboardu (Nazwa pliku)",label_entity:"Wybierz Encję (Home Assistant)",label_dashboard:"Nazwa pliku dashboardu (np. joan3)",label_type:"Typ Widgetu",label_name:"Tytuł na ekranie",label_icon:"Ikona",label_preview:"Podgląd",label_size:"Rozmiar",btn_add:"+ DODAJ DO WIERSZA",btn_update:"ZAPISZ ZMIANY",btn_cancel:"Anuluj",btn_new_row:"+ Dodaj Nowy Wiersz",btn_generate:"GENERUJ KOD .DASH",btn_import_toggle:"📂 Importuj / Edytuj Kod",header_paste_code:"Wklej kod pliku .dash tutaj:",btn_load_dash:"Wczytaj Dashboard",info_step1:"1. Zapisz kod w pliku:",info_step2:"2. Podgląd dashboardu:",state_on:"WŁĄCZONE",state_off:"WYŁĄCZONE",state_open:"OTWARTA",state_closed:"ZAMKNIĘTA"},en:{status_ok:"✓ Connected to Home Assistant",status_error:"⚠ No API Connection. Check Token.",sec_settings:"1. Settings",sec_add:"2. Add / Edit Widget",sec_preview:"3. Dashboard Preview (Click to Edit)",sec_code:"Your YAML Code (Client):",dash_title:"Dashboard Title (Filename)",label_entity:"Select Entity (Home Assistant)",label_dashboard:"Dashboard filename (e.g. joan3)",label_type:"Widget Type",label_name:"Title on Screen",label_icon:"Icon",label_preview:"Preview",label_size:"Size",btn_add:"+ ADD TO ROW",btn_update:"SAVE CHANGES",btn_cancel:"Cancel",btn_new_row:"+ Add New Row",btn_generate:"GENERATE .DASH CODE",btn_import_toggle:"📂 Import / Edit Code",header_paste_code:"Paste .dash file here:",btn_load_dash:"Load Dashboard",info_step1:"1. Save code to file:",info_step2:"2. Dashboard preview:",state_on:"ON",state_off:"OFF",state_open:"OPEN",state_closed:"CLOSED"}};
 
-    function formatNameFromId(id){ if(!id) return ""; const last=id.includes('.')?id.split('.').pop():id; return last.replace(/_/g,' ').replace(/\b\w/g,l=>l.toUpperCase()); }
-    function ensureMdi(icon){ if(!icon) return ""; return icon.startsWith('mdi-')?icon:'mdi-'+icon; }
-
+    // THEME & LANG
     function toggleTheme(){ const toDark=!document.body.classList.contains('dark-mode'); document.body.classList.toggle('dark-mode',toDark); document.getElementById('ui_theme').value=toDark?'dark':'light'; document.getElementById('btn-theme').innerText=toDark?'☀️':'🌙'; localStorage.setItem('joan_theme',toDark?'dark':'light'); }
     function setLang(lang){ currentLang=lang; localStorage.setItem('joan_lang',lang); document.getElementById('ui_language').value=lang; document.getElementById('btn-pl').classList.toggle('active',lang==='pl'); document.getElementById('btn-en').classList.toggle('active',lang==='en'); applyTranslations(); renderRows(); }
     function applyTranslations(){ const t=i18n[currentLang]; document.querySelectorAll('[data-i18n]').forEach(el=>{const k=el.getAttribute('data-i18n'); if(t[k]) el.innerText=t[k];}); const act=document.getElementById('btn-action').querySelector('span'); act.innerText=editingIndices?i18n[currentLang].btn_update:`${i18n[currentLang].btn_add} (${currentLang==='pl'?'Wiersz':'Row'} ${activeRowIndex+1})`; document.getElementById('form-header').innerText=editingIndices?i18n[currentLang].btn_update:i18n[currentLang].sec_add; }
 
-    function iconPairFor(id){
-      const v=id.toLowerCase();
-      if(v.startsWith('light.')||v.includes('swiatlo')||v.includes('light')) return ['mdi-lightbulb-on','mdi-lightbulb-outline'];
-      if(v.startsWith('cover.')||v.includes('roleta')||v.includes('blind')||v.includes('brama')||v.includes('gate')||v.includes('window')) return ['mdi-window-shutter-open','mdi-window-shutter'];
-      if(v.includes('garaz')||v.includes('garage')) return ['mdi-garage-open','mdi-garage'];
-      if(v.includes('radiator')||v.includes('grzejnik')||v.includes('ogrzew')) return ['mdi-radiator','mdi-radiator-off'];
-      if(v.includes('cwu')||v.includes('woda')||v.includes('water')) return ['mdi-water-outline','mdi-water-off'];
-      if(v.startsWith('fan.')||v.includes('wentyl')) return ['mdi-fan','mdi-fan-off'];
-      if(v.startsWith('media_player.')) return ['mdi-speaker','mdi-speaker-off'];
-      if(v.startsWith('climate.')) return ['mdi-thermometer','mdi-thermometer-off'];
+    // SMART ENGINE
+    function formatNameFromId(id){
+      if(!id) return "";
+      const last=id.includes('.')?id.split('.').pop():id;
+      let n=last.replace(/[_\-]+/g,' ').trim();
+      // skróty i porządki
+      n=n.replace(/\b(esp|node|sensor|switch|light|binary sensor|input boolean|media player|climate|script)\b/gi,'');
+      n=n.replace(/\s{2,}/g,' ').trim();
+      // kapitalizacja słów
+      n=n.toLowerCase().replace(/\b\w/g,l=>l.toUpperCase());
+      return n;
+    }
+    // Słowniki ikon (PL/EN)
+    const smartIconMap=[
+      {k:['hydrofor','pump','water pump','zbiornik','tank'],on:'mdi-water-pump','off':'mdi-water-pump-off'},
+      {k:['cwu','boiler','woda','water'],on:'mdi-water-outline','off':'mdi-water-off'},
+      {k:['grzejnik','radiator','ogrzew'],on:'mdi-radiator','off':'mdi-radiator-off'},
+      {k:['gate','brama'],on:'mdi-gate-open','off':'mdi-gate'},
+      {k:['garage','garaz','garaż'],on:'mdi-garage-open','off':'mdi-garage'},
+      {k:['blind','roleta','shutter','okno','window'],on:'mdi-window-shutter-open','off':'mdi-window-shutter'},
+      {k:['door','drzwi'],on:'mdi-door-open','off':'mdi-door-closed'},
+      {k:['lock','zamek'],on:'mdi-lock-open','off':'mdi-lock'},
+      {k:['light','lamp','swiatlo','światło','zarowka','żarówka'],on:'mdi-lightbulb-on','off':'mdi-lightbulb-outline'},
+      {k:['fan','wentyl'],on:'mdi-fan','off':'mdi-fan-off'},
+      {k:['speaker','radio','media_player','spotify','audio'],on:'mdi-speaker','off':'mdi-speaker-off'},
+      {k:['climate','klima','hvac','thermostat','temp','temperatura','temperature'],on:'mdi-thermometer','off':'mdi-thermometer-off'},
+      {k:['battery','bateria'],base:'mdi-battery'},
+      {k:['wilgotn','humid','humidity'],base:'mdi-water-percent'},
+      {k:['pressure','cisnienie','ciśnienie'],base:'mdi-gauge'},
+      {k:['temp','temperatur','temperature'],base:'mdi-thermometer'},
+      {k:['sensor','czujnik'],base:'mdi-gauge'},
+      {k:['power','moc','energia'],base:'mdi-flash'},
+    ];
+    function findIconPairById(id){
+      const lower=id.toLowerCase();
+      for(const e of smartIconMap){
+        if(e.k && e.k.some(k=>lower.includes(k))){
+          if(e.on && e.off) return [e.on,e.off];
+          if(e.base) return [e.base,e.base];
+        }
+      }
+      // domena
+      if(lower.startsWith('light.')||lower.includes('swiatlo')) return ['mdi-lightbulb-on','mdi-lightbulb-outline'];
+      if(lower.startsWith('cover.')) return ['mdi-window-shutter-open','mdi-window-shutter'];
+      if(lower.startsWith('switch.')||lower.startsWith('input_boolean.')) return ['mdi-toggle-switch','mdi-toggle-switch-off'];
+      if(lower.startsWith('media_player.')) return ['mdi-speaker','mdi-speaker-off'];
+      if(lower.startsWith('climate.')) return ['mdi-thermometer','mdi-thermometer-off'];
+      if(lower.startsWith('fan.')) return ['mdi-fan','mdi-fan-off'];
+      if(lower.startsWith('script.')) return ['mdi-script-text-outline','mdi-script-text-outline'];
       return ['mdi-toggle-switch','mdi-toggle-switch-off'];
     }
-    function autoBaseIcon(type,id){
-      const v=id.toLowerCase();
-      const map=[
-        {k:['hydrofor','tank','zbiornik'],i:'mdi-water-pump'},
-        {k:['cwu','woda','water'],i:'mdi-water-outline'},
-        {k:['ogrzew','grzejnik','radiator'],i:'mdi-radiator'},
-        {k:['brama','gate'],i:'mdi-gate'},
-        {k:['garaz','garage'],i:'mdi-garage'},
-        {k:['wilgotn','humid'],i:'mdi-water-percent'},
-        {k:['temp','temperatur','temperature'],i:'mdi-thermometer'},
-        {k:['bateria','battery'],i:'mdi-battery'},
-        {k:['swiatlo','light','bulb'],i:'mdi-lightbulb'},
-        {k:['speaker','radio','media_player'],i:'mdi-speaker'},
-        {k:['klima','climate','hvac'],i:'mdi-home-thermometer'},
-        {k:['sensor','czujnik'],i:'mdi-gauge'},
-        {k:['fan','wentyl'],i:'mdi-fan'}
-      ];
-      for(const m of map) if(m.k.some(kw=>v.includes(kw))) return m.i;
-      const fallback={switch:'mdi-toggle-switch',binary_sensor:'mdi-alert-circle-outline',sensor:'mdi-gauge',cover:'mdi-window-shutter',media_player:'mdi-speaker',climate:'mdi-thermometer',script:'mdi-script-text-outline',navigate:'mdi-arrow-right-circle',fan:'mdi-fan',label:'mdi-label-outline'};
-      return fallback[type]||'mdi-help-circle-outline';
+    function findBaseIconByIdAndType(id,type){
+      const lower=id.toLowerCase();
+      for(const e of smartIconMap){
+        if(e.k && e.k.some(k=>lower.includes(k))){
+          return ensureMdi(e.base || e.on || 'mdi-help-circle-outline');
+        }
+      }
+      const fallback={switch:'mdi-toggle-switch',binary_sensor:'mdi-alert-circle-outline',sensor:'mdi-gauge',cover:'mdi-window-shutter',media_player:'mdi-speaker',climate:'mdi-thermometer',script:'mdi-script-text-outline',navigate:'mdi-arrow-right-circle',fan:'mdi-fan',label:'mdi-label-outline',light:'mdi-lightbulb'};
+      return ensureMdi(fallback[type]||'mdi-help-circle-outline');
     }
+
     function getLiveStateText(ent,type){
       if(!ent) return '';
       const raw=String(ent.state).toLowerCase();
@@ -256,9 +283,10 @@
         if(raw==='closed') return t.state_closed;
         return raw.toUpperCase();
       }
+      // actionable
       if(['switch','binary_sensor','script','media_player','climate','fan','light'].includes(type) || ent.id.startsWith('input_boolean.')){
-        if(['on','playing','open','unlocked','heat','cool','true','1'].includes(raw)) return t.state_on;
-        if(['off','closed','locked','idle','stopped','standby','false','0'].includes(raw)) return t.state_off;
+        if(['on','playing','open','unlocked','heat','cool','true','1','opening'].includes(raw)) return t.state_on;
+        if(['off','closed','locked','idle','stopped','standby','false','0','closing'].includes(raw)) return t.state_off;
         return raw.toUpperCase();
       }
       return '';
@@ -267,14 +295,15 @@
       const ent=entitiesData.find(e=>e.id===widget.id);
       const actionable=['switch','binary_sensor','cover','media_player','climate','script','fan','light'].includes(widget.type) || widget.id.startsWith('input_boolean.');
       if(actionable){
-        const pair=iconPairFor(widget.id);
+        const pair=findIconPairById(widget.id);
         const state=ent?String(ent.state).toLowerCase():'off';
         const isOn=['on','open','playing','unlocked','heat','cool','true','1','opening'].includes(state);
         return ensureMdi(isOn?(widget.icon_on||pair[0]):(widget.icon_off||pair[1]));
       }
-      return ensureMdi(widget.icon||autoBaseIcon(widget.type,widget.id));
+      return ensureMdi(widget.icon||findBaseIconByIdAndType(widget.id,widget.type));
     }
 
+    // IMPORT: zachowaj title z pliku
     function toggleImport(){document.getElementById('import-area').classList.toggle('visible');}
     function importYaml(){
       const code=document.getElementById('import-code').value; if(!code) return;
@@ -287,8 +316,7 @@
         for(const raw of lines){
           const cut=raw.split('#')[0]; const line=(cut||'').trim(); if(!line) continue;
           if(!parsingLayout && /^title\s*:/i.test(line) && !globalTitleSet){
-            const val=line.split(':').slice(1).join(':').trim().replace(/^["']|["']$/g,'');
-            if(val) document.getElementById('dash-title').value=val; globalTitleSet=true; continue;
+            const val=line.split(':').slice(1).join(':').trim().replace(/^["']|["']$/g,''); if(val) document.getElementById('dash-title').value=val; globalTitleSet=true; continue;
           }
           if(/^layout\s*:/i.test(line)){ parsingLayout=true; continue; }
           if(parsingLayout){
@@ -308,8 +336,7 @@
           }
         }
 
-        importedDefsMap={};
-        Object.entries(defs).forEach(([k,v])=>{ importedDefsMap[k]=v; if(v.entity) importedDefsMap[v.entity]=v; });
+        importedDefsMap={}; Object.entries(defs).forEach(([k,v])=>{ importedDefsMap[k]=v; if(v.entity) importedDefsMap[v.entity]=v; });
 
         rows=[];
         layoutLines.forEach(l=>{
@@ -320,7 +347,7 @@
             const sizeMatch=item.match(/\(\d+x\d+\)/); const size=sizeMatch?sizeMatch[0]:'';
             const id=item.replace(size,'').trim();
             const def=importedDefsMap[id]||importedDefsMap[id.split('.').pop()]||{};
-            // type detect
+            // type detection
             let type=def.widget_type;
             if(!type){
               const lower=id.toLowerCase();
@@ -331,25 +358,25 @@
               else if(lower.startsWith('climate.')) type='climate';
               else if(lower.startsWith('fan.')) type='fan';
               else if(lower.startsWith('script.')) type='script';
+              else if(lower.startsWith('light.')||lower.startsWith('switch.')||lower.startsWith('input_boolean.')) type='switch';
               else if(lower.startsWith('navigate.')) type='navigate';
               else type='switch';
             }
-            // CRITICAL: preserve title from file
-            let name = def.title ? def.title : formatNameFromId(id);
+            // NAZWA: jeśli jest w pliku -> bierz z pliku
+            const name = def.title ? def.title : formatNameFromId(id);
 
-            // icons: keep from file; else smart
+            // IKONY: bierz z pliku, uzupełnij brakujące smart
             let icon = ensureMdi(def.icon||def.icon_inactive||'');
             let icon_on = ensureMdi(def.icon_on||def.icon_active||'');
             let icon_off = ensureMdi(def.icon_off||def.icon_inactive||'');
 
             const actionable=['switch','binary_sensor','cover','media_player','climate','script','fan','light'].includes(type) || id.startsWith('input_boolean.');
             if(actionable){
-              const pair=iconPairFor(id);
+              const pair=findIconPairById(id);
               if(!icon_on) icon_on=ensureMdi(pair[0]);
               if(!icon_off) icon_off=ensureMdi(pair[1]);
-              // optional base icon not used in preview for actionable
             }else{
-              if(!icon) icon=ensureMdi(autoBaseIcon(type,id));
+              if(!icon) icon=ensureMdi(findBaseIconByIdAndType(id,type));
               icon_on=''; icon_off='';
             }
 
@@ -364,7 +391,8 @@
       }catch(e){ alert((currentLang==='pl'?'Błąd importu: ':'Import error: ')+e.message); }
     }
 
-    function autoFillForm(){
+    // SMART dla formularza (tylko gdy pola puste albo nowy widget)
+    function applySmartForForm(){
       const typeSel=document.getElementById('new-widget-type');
       const entityInput=document.getElementById('new-entity-id');
       const nameInput=document.getElementById('new-widget-name');
@@ -373,20 +401,18 @@
       const groupEntity=document.getElementById('group-entity');
       const groupNav=document.getElementById('group-nav');
       const sizeInput=document.getElementById('new-widget-size');
-      let id=(entityInput.value||'').trim();
 
+      // navigate
       if(typeSel.value==='navigate'){
         groupEntity.classList.add('hidden'); groupNav.classList.remove('hidden');
         if(!iconInput.value) iconInput.value='mdi-arrow-right-circle';
-        if(!navName.value && id) navName.value=id;
         updateIconPreview(); return;
-      }else{
-        groupEntity.classList.remove('hidden'); groupNav.classList.add('hidden');
-      }
+      } else { groupEntity.classList.remove('hidden'); groupNav.classList.add('hidden'); }
 
-      if(!id){ updateIconPreview(); return; }
-
+      let id=(entityInput.value||'').trim(); if(!id){ updateIconPreview(); return; }
       const lower=id.toLowerCase();
+
+      // Typ po domenie
       if(lower.startsWith('sensor.')) typeSel.value='sensor';
       else if(lower.startsWith('binary_sensor.')) typeSel.value='binary_sensor';
       else if(lower.startsWith('cover.')) typeSel.value='cover';
@@ -394,19 +420,21 @@
       else if(lower.startsWith('climate.')) typeSel.value='climate';
       else if(lower.startsWith('fan.')) typeSel.value='fan';
       else if(lower.startsWith('script.')) typeSel.value='script';
+      else if(lower.startsWith('light.')||lower.startsWith('switch.')||lower.startsWith('input_boolean.')) typeSel.value='switch';
       else typeSel.value='switch';
 
       if((typeSel.value==='media_player'||typeSel.value==='climate') && !sizeInput.value) sizeInput.value='(2x2)';
 
-      // SMART: only set name if empty (do not override imported names)
+      // Nazwa tylko gdy pusta
       if(!nameInput.value.trim()) nameInput.value=formatNameFromId(id);
 
+      // Ikony
       const actionable=['switch','binary_sensor','cover','media_player','climate','script','fan','light'].includes(typeSel.value) || lower.startsWith('input_boolean.');
       if(actionable){
-        const pair=iconPairFor(id);
-        if(!iconInput.value) iconInput.value=pair[0]; // preview ON icon
+        const pair=findIconPairById(id);
+        if(!iconInput.value) iconInput.value=pair[0]; // podgląd pokazuje ikonę ON
       }else{
-        if(!iconInput.value) iconInput.value=autoBaseIcon(typeSel.value,id);
+        if(!iconInput.value) iconInput.value=findBaseIconByIdAndType(id,typeSel.value);
       }
       updateIconPreview();
     }
@@ -416,9 +444,11 @@
       document.getElementById('icon-preview-i').className=(icon && icon.startsWith('mdi-'))?'mdi '+icon:'mdi mdi-help-circle-outline';
     }
 
+    // CRUD UI
     function saveWidget(){
       const type=document.getElementById('new-widget-type').value;
       let id='';
+
       if(type==='navigate'){
         const dashName=document.getElementById('new-dashboard-name').value.trim();
         if(!dashName){ alert(currentLang==='pl'?'Wymagana nazwa dashboardu':'Dashboard name required'); return; }
@@ -427,6 +457,10 @@
         id=document.getElementById('new-entity-id').value.trim();
         if(!id){ alert(currentLang==='pl'?'Wymagana encja':'Entity required'); return; }
       }
+
+      // Zastosuj smart na końcu, żeby mieć pewność uzupełnienia
+      applySmartForForm();
+
       let name=document.getElementById('new-widget-name').value.trim();
       if(!name) name=formatNameFromId(id);
       let icon=ensureMdi(document.getElementById('new-widget-icon').value.trim());
@@ -435,10 +469,10 @@
       const actionable=['switch','binary_sensor','cover','media_player','climate','script','fan','light'].includes(type) || id.startsWith('input_boolean.');
       let icon_on='',icon_off='';
       if(actionable){
-        const pair=iconPairFor(id);
+        const pair=findIconPairById(id);
         icon_on=ensureMdi(pair[0]); icon_off=ensureMdi(pair[1]);
       }else{
-        if(!icon) icon=ensureMdi(autoBaseIcon(type,id));
+        if(!icon) icon=ensureMdi(findBaseIconByIdAndType(id,type));
       }
 
       const widget={id,type,name,icon,icon_on,icon_off,size};
@@ -467,12 +501,14 @@
         document.getElementById('new-dashboard-name').value='';
         document.getElementById('new-entity-id').value=widget.id;
       }
-      document.getElementById('new-widget-name').value=widget.name; // keep imported name
+      document.getElementById('new-widget-name').value=widget.name; // nie nadpisuj tytułu z importu
       document.getElementById('new-widget-icon').value=widget.icon||widget.icon_on||widget.icon_off||'';
       document.getElementById('new-widget-size').value=widget.size||'';
       document.getElementById('btn-cancel').classList.remove('hidden');
       document.getElementById('widget-form-box').classList.add('editing');
-      autoFillForm(); // fills missing only
+
+      // Uzupełnij tylko brakujące pola
+      applySmartForForm();
       applyTranslations(); renderRows();
     }
 
@@ -538,6 +574,8 @@
       highlightActiveRow();
     }
 
+    // YAML
+    function ensureMdi(icon){ if(!icon) return ""; return icon.startsWith('mdi-')?icon:'mdi-'+icon; }
     function buildHeader(title){
       return [
         "# --- JOAN 6 E-INK DASHBOARD ---",
@@ -581,8 +619,9 @@
       lines.push(`  title: "${w.name.replace(/"/g,'\\"')}"`);
       const actionable=['switch','binary_sensor','cover','media_player','climate','script','fan','light'].includes(w.type)||w.id.startsWith('input_boolean.');
       if(actionable){
-        lines.push(`  icon_on: ${ensureMdi(w.icon_on||iconPairFor(w.id)[0])}`);
-        lines.push(`  icon_off: ${ensureMdi(w.icon_off||iconPairFor(w.id)[1])}`);
+        const pair=findIconPairById(w.id);
+        lines.push(`  icon_on: ${ensureMdi(w.icon_on||pair[0])}`);
+        lines.push(`  icon_off: ${ensureMdi(w.icon_off||pair[1])}`);
         lines.push(`  state_text: 1`);
         lines.push(`  title_style: "color:#000; font-size:20px; font-weight:700; text-align:center; padding-top:3px; width:100%;"`);
         lines.push(`  text_style: "color:#000 !important; font-weight:700 !important;"`);
@@ -600,14 +639,14 @@
         lines.push(`  icon_style_active: "color:#000 !important;"`);
         lines.push(`  icon_style_inactive: "color:#000 !important;"`);
       }else if(w.type==='sensor'){
-        lines.push(`  icon: ${ensureMdi(w.icon||autoBaseIcon('sensor',w.id))}`);
+        lines.push(`  icon: ${ensureMdi(w.icon||findBaseIconByIdAndType(w.id,'sensor'))}`);
         lines.push(`  title_style: "color:#000; font-size:20px; font-weight:700; text-align:center; padding-top:5px; width:100%;"`);
         lines.push(`  text_style: "color:#000 !important;"`);
         lines.push(`  value_style: "color:#000 !important; font-size:44px !important; font-weight:700 !important;"`);
         lines.push(`  unit_style: "color:#000 !important;"`);
         lines.push(`  widget_style: "color:#000 !important; background-color:#FFFFFF !important;"`);
       }else{
-        lines.push(`  icon: ${ensureMdi(w.icon||autoBaseIcon(w.type,w.id))}`);
+        lines.push(`  icon: ${ensureMdi(w.icon||findBaseIconByIdAndType(w.id,w.type))}`);
         lines.push(`  title_style: "color:#000; font-size:20px; font-weight:700; text-align:center; padding-top:3px; width:100%;"`);
         lines.push(`  widget_style: "color:#000 !important; background-color:#FFFFFF !important;"`);
       }
@@ -629,7 +668,7 @@
       const link=`http://${host}:5050/${title}`; const linkEl=document.getElementById('client-dashboard-link'); linkEl.href=link; linkEl.innerText=link;
     }
 
-    // Events
+    // EVENTS
     document.getElementById('btn-theme').addEventListener('click',toggleTheme);
     document.getElementById('btn-pl').addEventListener('click',()=>setLang('pl'));
     document.getElementById('btn-en').addEventListener('click',()=>setLang('en'));
@@ -638,11 +677,11 @@
     document.getElementById('btn-action').addEventListener('click',saveWidget);
     document.getElementById('btn-cancel').addEventListener('click',cancelEdit);
     document.getElementById('btn-new-row').addEventListener('click',addNewRow);
-    document.getElementById('new-entity-id').addEventListener('input',autoFillForm);
-    document.getElementById('new-widget-type').addEventListener('change',autoFillForm);
+    document.getElementById('new-entity-id').addEventListener('input',applySmartForForm);
+    document.getElementById('new-widget-type').addEventListener('change',applySmartForForm);
     document.getElementById('new-widget-icon').addEventListener('input',updateIconPreview);
 
-    // Icons datalist
+    // ICONS list
     async function fetchIcons(){ const dl=document.getElementById('icons-list'); try{ const res=await fetch('https://raw.githubusercontent.com/Templarian/MaterialDesign/master/meta.json'); const icons=await res.json(); dl.innerHTML=''; icons.forEach(i=>{ const opt=document.createElement('option'); opt.value='mdi-'+i.name; dl.appendChild(opt); }); }catch(e){} }
 
     window.addEventListener('DOMContentLoaded',()=>{
