@@ -35,32 +35,26 @@
         }
         body { font-family: 'Roboto', sans-serif; background-color: var(--bg-color); color: var(--text-color); padding: 20px; transition: background-color 0.3s; }
         .container { max-width: 1200px; margin: 0 auto; background: var(--container-bg); padding: 25px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); transition: background-color 0.3s; }
-        
         .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid var(--border-color); padding-bottom: 15px; }
         h1 { color: var(--accent-color); margin: 0; font-size: 24px; }
         .controls { display: flex; gap: 10px; align-items: center; }
         .lang-switch button, .theme-switch button { padding: 8px 12px; border: 1px solid var(--border-color); background: var(--section-bg); color: var(--text-color); cursor: pointer; border-radius: 4px; font-weight: bold; }
         .lang-switch button.active { background: var(--accent-color); color: white; border-color: var(--accent-color); }
         .status-bar { padding: 10px; margin-bottom: 20px; border-radius: 4px; text-align: center; font-weight: bold; }
-        
         .section { margin-bottom: 30px; border: 1px solid var(--border-color); padding: 20px; border-radius: 8px; background: var(--section-bg); }
         .section-title { font-size: 1.2em; font-weight: bold; color: var(--text-color); margin-bottom: 15px; border-bottom: 2px solid var(--accent-color); display: inline-block; }
-        
         .import-box { background: #fff3e0; border: 1px solid #ffe0b2; color: #000; display: none; }
         body.dark-mode .import-box { background: #3e2723; border-color: #5d4037; color: #fff; }
         .import-box.visible { display: block; }
-
         .add-widget-box { background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #2196f3; color: #000; transition: background 0.3s; }
         body.dark-mode .add-widget-box { background: #0d47a1; border-color: #1565c0; color: #fff; }
         .add-widget-box.editing { background: #fff8e1; border-color: #ffc107; border: 2px solid #ffc107; }
         body.dark-mode .add-widget-box.editing { background: #3e2723; border-color: #ffb300; }
-
         .flex-row { display: flex; gap: 15px; align-items: flex-end; margin-bottom: 10px; flex-wrap: wrap; }
         .flex-col { flex: 1; min-width: 150px; }
         label { display: block; margin-top: 10px; font-weight: bold; font-size: 0.9em; margin-bottom: 5px; color: var(--text-color); }
         input, select, textarea { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; box-sizing: border-box; background: var(--input-bg); color: var(--text-color); }
         .icon-preview-box { width: 42px; height: 42px; background: #fff; border: 1px solid #ccc; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #333; margin-bottom: 1px; }
-        
         .btn { padding: 10px 20px; border: none; cursor: pointer; border-radius: 4px; font-weight: bold; text-transform: uppercase; }
         .btn-primary { background-color: var(--accent-color); color: white; width: 100%; font-size: 18px; margin-top: 20px; }
         .btn-add { background-color: #4caf50; color: white; width: 100%; }
@@ -69,36 +63,26 @@
         .btn-row { background-color: #2196f3; color: white; margin-top: 10px; }
         .btn-import { background-color: #ff9800; color: white; margin-bottom: 10px; }
         .btn-remove-row { font-size: 10px; padding: 5px; margin-left: auto; background-color: #757575; color: white; }
-
-        /* PREVIEW AREA */
+        
         .preview-area { background-color: var(--preview-bg); padding: 24px; border-radius: 8px; border: 2px solid var(--border-color); overflow-x: auto; min-height: 220px; }
         .eink-row { display: flex; gap: 12px; margin-bottom: 12px; padding: 18px 12px; border: 2px dashed #999; background: transparent; border-radius: 6px; align-items: center; position: relative; min-height: 120px; cursor: pointer; }
         .eink-row:hover { border-color: #2196f3; }
         .eink-row.active { border-color: #2196f3; background: rgba(33, 150, 243, 0.08); }
-        
-        .eink-widget { 
-            background-color: #FFFFFF; border: 2px solid #000; color: #000; 
-            display: flex; flex-direction: column; align-items: center; justify-content: space-between; 
-            padding: 8px 4px; box-sizing: border-box; position: relative; cursor: pointer; 
-            box-shadow: 2px 2px 5px rgba(0,0,0,0.1); flex-shrink: 0; transition: transform 0.1s; 
-            border-radius: 6px;
-        }
+        .eink-widget { background-color: #FFFFFF; border: 2px solid #000; color: #000; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 8px 4px; box-sizing: border-box; position: relative; cursor: pointer; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); flex-shrink: 0; transition: transform 0.1s; border-radius: 6px; }
         .eink-widget:hover { transform: translateY(-2px); box-shadow: 4px 4px 8px rgba(0,0,0,0.2); z-index: 5; }
         .eink-widget.being-edited { border: 3px solid #ff9800; transform: scale(1.03); z-index: 10; }
         
         .ew-title { font-size: 12px; font-weight: 700; text-align: center; width: 100%; white-space: normal; line-height: 1.2; min-height: 30px; padding: 0 4px; display: flex; align-items: center; justify-content: center; }
         .ew-icon { font-size: 32px; }
         .ew-state { font-size: 11px; font-weight: 700; text-transform: uppercase; min-height: 18px; display: flex; align-items: center; }
-        
         .ew-edit-overlay { position: absolute; top:0; left:0; right:0; bottom:0; background: rgba(33, 150, 243, 0.15); display:none; pointer-events: none;}
         .eink-widget:hover .ew-edit-overlay { display: block; }
-
         .ew-delete { position: absolute; top: 4px; right: 4px; background: red; color: white; width: 20px; height: 20px; text-align: center; line-height: 20px; font-size: 12px; display: none; z-index: 20; border-radius: 4px; }
         .eink-widget:hover .ew-delete { display: block; }
-
+        
         textarea.output { width: 100%; height: 500px; font-family: monospace; background: #263238; color: #eceff1; border: none; padding: 15px; border-radius: 4px; }
         .hidden { display: none !important; }
-        
+
         .file-path-info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; padding: 20px; margin-bottom: 20px; border-radius: 6px; font-family: monospace; font-size: 16px; line-height: 1.6; }
         body.dark-mode .file-path-info { background-color: #263238; color: #eceff1; border-color: #37474f; }
         .file-path-info strong { font-size: 1.3em; display: block; margin-top: 15px; color: #004085; }
@@ -230,7 +214,7 @@
                     </div>
                 </div>
 
-                <!-- IKONY ON/OFF -->
+                <!-- IKONY ON/OFF DLA SWITCH/COVER -->
                 <div class="flex-row" style="margin-top: 10px;">
                     <div class="flex-col">
                         <label>Ikona ON (switch/cover)</label>
@@ -270,12 +254,15 @@
         {% if generated_yaml %}
         <div class="section">
             <h3 data-i18n="sec_code">Twój kod YAML:</h3>
+            
             <div class="file-path-info">
                 <strong data-i18n="info_step1">1. Zapisz kod w pliku:</strong>
                 <code id="path-code">\\IP_HA\addon_configs\appdaemon\dashboards\{{ filename }}</code>
+                
                 <strong data-i18n="info_step2">2. Uruchom ponownie AppDaemon i sprawdź dashboard:</strong>
                 <a href="#" id="dashboard-link" target="_blank">http://IP_HA:5050/{{ dash_name }}</a>
             </div>
+
             <textarea class="output" readonly>{{ generated_yaml }}</textarea>
         </div>
         {% endif %}
@@ -289,15 +276,13 @@
         let editingIndices = null; 
         let importedDefsMap = {}; 
 
-        // --- LOGIC ---
-
+        // --- UI & HELPERS ---
         function formatNameFromId(id) {
             if (!id) return "";
             const last = id.includes('.') ? id.split('.').pop() : id;
             return last.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
         }
 
-        // ULEPSZONY RESOLVER NAZW
         function resolveImportedTitle(id) {
             // 1. Exact match
             if (importedDefsMap[id] && importedDefsMap[id].title) return importedDefsMap[id].title;
@@ -313,7 +298,6 @@
             return '';
         }
 
-        // UI Helpers
         function setLang(lang) {
             currentLang = lang;
             localStorage.setItem('joan_lang', lang);
@@ -325,7 +309,8 @@
         }
         function refreshUIText() {
             const dict = {
-                pl: { sec_settings: "1. Ustawienia", sec_add: "2. Dodaj Widget", sec_edit: "2. Edytuj Widget", 
+                pl: {
+                    sec_settings: "1. Ustawienia", sec_add: "2. Dodaj Widget", sec_edit: "2. Edytuj Widget", 
                     sec_preview: "3. Podgląd Dashboardu (Kliknij, aby edytować)", sec_code: "Twój kod YAML:",
                     dash_title: "Tytuł Dashboardu (Nazwa pliku)", label_entity: "Wybierz Encję (Home Assistant)",
                     label_dashboard: "Nazwa pliku dashboardu (np. joan3)", label_type: "Typ Widgetu",
@@ -335,18 +320,21 @@
                     info_step1: "1. Zapisz kod w pliku:", info_step2: "2. Uruchom ponownie AppDaemon i sprawdź dashboard:",
                     btn_import_toggle: "📂 Importuj / Edytuj Kod", header_paste_code: "Wklej kod pliku .dash tutaj:", btn_load_dash: "Wczytaj Dashboard"
                 },
-                en: { sec_settings: "1. Settings", sec_add: "2. Add Widget", sec_edit: "2. Edit Widget",
+                en: {
+                    sec_settings: "1. Settings", sec_add: "2. Add Widget", sec_edit: "2. Edit Widget",
                     sec_preview: "3. Dashboard Preview (Click to Edit)", sec_code: "Your YAML Code:",
                     dash_title: "Dashboard Title (Filename)", label_entity: "Select Entity (Home Assistant)",
-                    label_dashboard: "Dashboard Filename (e.g. joan3)", label_type: "Widget Type", label_name: "Title on Screen",
-                    label_icon: "Icon (Empty = None)", label_preview: "Icon", label_size: "Size",
+                    label_dashboard: "Dashboard Filename (e.g. joan3)", label_type: "Widget Type", label_name: "Title on Screen", label_icon: "Icon (Empty = None)", label_preview: "Icon", label_size: "Size",
                     btn_add: "+ ADD TO ROW", btn_update: "UPDATE WIDGET", btn_new_row: "+ Add New Row", btn_generate: "GENERATE .DASH CODE", btn_cancel: "Cancel",
                     state_on: "ON", state_off: "OFF", state_open: "OPEN", state_closed: "CLOSED",
                     info_step1: "1. Save code to file:", info_step2: "2. Restart AppDaemon and check dashboard:",
                     btn_import_toggle: "📂 Import / Edit Code", header_paste_code: "Paste .dash file code here:", btn_load_dash: "Load Dashboard"
                 }
             }[currentLang];
-            document.querySelectorAll('[data-i18n]').forEach(el => { const key = el.getAttribute('data-i18n'); if (dict[key]) el.innerText = dict[key]; });
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (dict[key]) el.innerText = dict[key];
+            });
             const btn = document.getElementById('btn-action');
             const rowNum = activeRowIndex + 1;
             if (btn) btn.querySelector('span').innerText = (editingIndices ? dict.btn_update : `${dict.btn_add} (${currentLang==='pl'?'Wiersz':'Row'} ${rowNum})`);
@@ -456,11 +444,13 @@
                     let iconHtml = iconClass ? `<i class="mdi ${iconClass} ew-icon"></i>` : `<div style="height:38px"></div>`;
                     let displayState = getEntityState(widget.id) || defaultStates[widget.type] || '---';
 
-                    // TITLE DISPLAY LOGIC (FIXED)
+                    // FIXED TITLE DISPLAY:
+                    // 1. Use widget.name if edited
+                    // 2. Use title from import if available
+                    // 3. Fallback to generating from ID
                     const importedTitle = resolveImportedTitle(widget.id);
                     let safeName = (widget.name && widget.name.trim()) ? widget.name : (importedTitle || formatNameFromId(widget.id));
                     
-                    // If still empty, force ID tail
                     if(!safeName || safeName.trim() === "") safeName = widget.id.split('.').pop();
 
                     wDiv.innerHTML = `<div class="ew-title">${safeName}</div>${iconHtml}<div class="ew-state">${displayState}</div><div class="ew-delete" onclick="removeWidget(${index}, ${wIndex}); event.stopPropagation();">X</div><div class="ew-edit-overlay"></div>`;
@@ -480,7 +470,8 @@
         }
 
         function toggleImport() { document.getElementById('import-area').classList.toggle('visible'); }
-
+        
+        // --- ROBUST IMPORT ---
         function importYaml() {
             const code = document.getElementById('import-code').value;
             if (!code) return;
@@ -491,27 +482,31 @@
                 const layoutLines = [];
                 let parsingLayout = false;
 
+                const ignoreKeys = ['global_parameters','widget_dimensions','widget_size','widget_margins','columns','rows','skin','title'];
+
                 for (let i = 0; i < lines.length; i++) {
                     let lineRaw = lines[i];
                     let line = lineRaw.split('#')[0].trim();
                     if (!line) continue;
 
                     if (line.startsWith('layout:')) { parsingLayout = true; continue; }
+
                     if (!parsingLayout && lineRaw.match(/^title:/)) {
                         const parts = lineRaw.split(':');
                         document.getElementById('dash-title').value = parts.slice(1).join(':').trim().replace(/['"]/g, '');
                         continue;
                     }
+
                     if (parsingLayout) {
                         if (line.startsWith('-')) layoutLines.push(line);
                         else if (lineRaw.match(/^\S+:/)) parsingLayout = false;
                     }
+
                     if (!parsingLayout) {
                         const matchRoot = lineRaw.match(/^([a-zA-Z0-9_\.\-]+)\s*:/);
                         if (matchRoot) {
                             const key = matchRoot[1];
-                            const ignore = ['global_parameters','widget_dimensions','widget_size','widget_margins','columns','rows','skin','title'];
-                            if (!ignore.includes(key)) { currentKey = key; rawDefs[currentKey] = {}; } else { currentKey = null; }
+                            if (!ignoreKeys.includes(key)) { currentKey = key; rawDefs[currentKey] = {}; } else { currentKey = null; }
                         } else if (currentKey && line.includes(':')) {
                             let val = line.substring(line.indexOf(':') + 1).trim();
                             if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) val = val.slice(1, -1);
@@ -592,7 +587,6 @@
             document.getElementById('btn-cancel').classList.remove('hidden');
             refreshUIText(); renderRows();
         }
-
         function cancelEdit() { editingIndices = null; clearForm(); document.getElementById('widget-form-box').classList.remove('editing'); document.getElementById('btn-cancel').classList.add('hidden'); refreshUIText(); renderRows(); }
         function saveWidget() {
             const type = document.getElementById('new-widget-type').value;
