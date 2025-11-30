@@ -191,6 +191,11 @@
     </div>
 
     <script>
+        // --- DATA ---
+        let rows = [];
+        let activeRowIndex = 0;
+        let currentLang = 'pl';
+
         const translations = {
             pl: {
                 status_ok: "✓ Połączono z Home Assistant", status_error: "⚠ Brak połączenia z API. Sprawdź token.",
@@ -212,7 +217,7 @@
             }
         };
 
-        let currentLang = 'pl';
+        // --- CORE FUNCTIONS ---
         function setLang(lang) {
             currentLang = lang;
             document.getElementById('ui_language').value = lang;
@@ -226,7 +231,7 @@
             renderRows();
         }
 
-        // --- IMPORT LOGIC ---
+        // --- ADVANCED IMPORT LOGIC ---
         function toggleImport() {
             const box = document.getElementById('import-area');
             box.classList.toggle('visible');
@@ -237,175 +242,117 @@
             if (!code) return;
 
             try {
+                // 1. Pre-process lines (strip comments, handle empty lines)
                 const lines = code.split('\n');
                 const widgetDefs = {};
+                const layoutLines = [];
                 let currentWidgetId = null;
+                let parsingLayout = false;
                 
-                // 1. Zczytanie tytułu globalnego
-                for(let line of lines) {
-                    const l = line.trim();
-                    if (l.startsWith('title:') && !l.includes('style')) {
-                        // Sprawdź czy to nie jest title widgetu (z wcięciem)
-                        if (!line.startsWith(' ') && !line.startsWith('\t')) {
-                            const t = l.split(':')[1].trim().replace(/['"]/g, '');
-                            document.getElementById('dash-title').value = t;
-                            break;
+                // System keys to ignore when parsing definitions
+                const sysKeys = ['widget_dimensions', 'widget_size', 'widget_margins', 'columns', 'rows', 'global_parameters', 'skin'];
+
+                for (let i = 0; i < lines.length; i++) {
+                    // Strip comment
+                    let line = lines[i];
+                    if(line.includes('#')) line = line.split('#')[0];
+                    const trimmed = line.trim();
+                    if (!trimmed) continue; // Skip empty lines
+
+                    // Identify Layout Block
+                    if (trimmed.startsWith('layout:')) {
+                        parsingLayout = true;
+                        continue;
+                    }
+
+                    // Handle Global Title
+                    if (!parsingLayout && line.match(/^title:/)) {
+                        const t = line.split(':')[1].trim().replace(/['"]/g, '');
+                        document.getElementById('dash-title').value = t;
+                        continue;
+                    }
+
+                    if (parsingLayout) {
+                        // Check if we are still in layout block (must start with -)
+                        if (trimmed.startsWith('-')) {
+                            layoutLines.push(trimmed);
+                        } else if (line.match(/^\S+:/)) {
+                            // Found a new root key -> layout block ended
+                            parsingLayout = false;
+                            // Fall through to definition parsing
+                        }
+                    }
+
+                    if (!parsingLayout) {
+                        // Parse Definitions
+                        const matchRoot = line.match(/^([a-zA-Z0-9_\.]+):/);
+                        if (matchRoot) {
+                            const key = matchRoot[1];
+                            if (!sysKeys.includes(key)) {
+                                currentWidgetId = key;
+                                widgetDefs[currentWidgetId] = {};
+                            } else {
+                                currentWidgetId = null;
+                            }
+                        } else if (currentWidgetId && line.includes(':')) {
+                            const parts = line.split(':');
+                            const key = parts[0].trim();
+                            let val = parts.slice(1).join(':').trim().replace(/['"]/g, '');
+                            widgetDefs[currentWidgetId][key] = val;
                         }
                     }
                 }
 
-                // 2. Parsowanie definicji widgetów
-                lines.forEach(line => {
-                    if (line.match(/^\S+:/)) { // Top level key (widget ID), np. light.kurnik:
-                        const key = line.split(':')[0].trim();
-                        if (key !== 'layout' && key !== 'global_parameters' && key !== 'skin' && key !== 'title' && key !== 'widget_dimensions' && key !== 'widget_size' && key !== 'widget_margins' && key !== 'columns' && key !== 'rows') {
-                            currentWidgetId = key;
-                            widgetDefs[currentWidgetId] = {};
-                        } else {
-                            currentWidgetId = null; // System keys ignored
+                // 2. Reconstruct Layout
+                rows = [];
+                layoutLines.forEach(l => {
+                    const rowStr = l.substring(1).trim(); // remove "-"
+                    const items = rowStr.split(',');
+                    const newRow = [];
+                    
+                    items.forEach(itemRaw => {
+                        let item = itemRaw.trim();
+                        // Extract Size (2x2)
+                        let size = "";
+                        const sizeMatch = item.match(/\(\d+x\d+\)/);
+                        if (sizeMatch) {
+                            size = sizeMatch[0];
+                            item = item.replace(size, '');
                         }
-                    } else if (currentWidgetId && line.includes(':')) {
-                        const parts = line.split(':');
-                        const key = parts[0].trim();
-                        let val = parts.slice(1).join(':').trim().replace(/['"]/g, '');
-                        widgetDefs[currentWidgetId][key] = val;
-                    }
+                        
+                        const id = item;
+                        const def = widgetDefs[id] || {};
+                        
+                        // Fallback logic
+                        let type = def.widget_type || 'switch';
+                        if (id.startsWith('navigate.')) type = 'navigate';
+                        else if (id.startsWith('sensor.')) type = 'sensor';
+                        else if (id.startsWith('cover.')) type = 'cover';
+                        
+                        let name = def.title || id;
+                        let icon = def.icon || def.icon_on || def.icon_inactive || 'mdi-help-circle-outline';
+
+                        newRow.push({ id, type, name, icon, size });
+                    });
+                    if(newRow.length > 0) rows.push(newRow);
                 });
 
-                // 3. Parsowanie Layoutu (POPRAWIONE)
-                rows = [];
-                let layoutStarted = false;
-                
-                for(let i=0; i<lines.length; i++) {
-                    const line = lines[i];
-                    const l = line.trim();
-                    
-                    if (l.startsWith('layout:')) { 
-                        layoutStarted = true; 
-                        continue; 
-                    }
-                    
-                    if (layoutStarted) {
-                        // Jeśli linia jest pusta, ignoruj (NIE KOŃCZ)
-                        if (l === '') continue;
-                        
-                        // Koniec sekcji layout: jeśli linia nie ma wcięcia i nie zaczyna się od myślnika
-                        if (!line.startsWith(' ') && !line.startsWith('\t') && !l.startsWith('-')) {
-                            layoutStarted = false;
-                            continue;
-                        }
-
-                        if (l.startsWith('-')) {
-                            const rowItems = l.substring(1).split(',');
-                            const newRow = [];
-                            rowItems.forEach(item => {
-                                let raw = item.trim();
-                                // Wyciąganie rozmiaru (2x2)
-                                let size = "";
-                                const sizeMatch = raw.match(/\(\d+x\d+\)/);
-                                if (sizeMatch) {
-                                    size = sizeMatch[0];
-                                    raw = raw.replace(size, '');
-                                }
-                                
-                                const id = raw;
-                                const def = widgetDefs[id] || {};
-                                
-                                let type = def.widget_type || 'switch';
-                                // Poprawka dla Navigate: ID często wygląda jak navigate.cos
-                                if (id.startsWith('navigate.')) { type = 'navigate'; }
-
-                                let icon = def.icon || def.icon_on || def.icon_inactive || 'mdi-help-circle-outline';
-
-                                newRow.push({
-                                    id: id,
-                                    type: type,
-                                    name: def.title || id,
-                                    icon: icon,
-                                    size: size
-                                });
-                            });
-                            rows.push(newRow);
-                        }
-                    }
-                }
-
                 if (rows.length === 0) {
-                    alert("Nie znaleziono sekcji 'layout' lub jest pusta.");
+                    alert("No layout found. Please check YAML structure.");
                     return;
                 }
 
                 renderRows();
                 toggleImport();
-                alert("Zaimportowano pomyślnie!");
+                alert("Dashboard imported successfully!");
 
             } catch (e) {
-                alert("Błąd importu: " + e.message);
+                alert("Import Error: " + e.message);
                 console.error(e);
             }
         }
 
-        // --- RENDER LOGIC WITH SIZING ---
-        function renderRows() {
-            const container = document.getElementById('rows-container');
-            container.innerHTML = '';
-            
-            rows.forEach((rowWidgets, index) => {
-                const rowDiv = document.createElement('div');
-                rowDiv.className = 'eink-row';
-                rowDiv.id = 'row-' + index;
-                rowDiv.onclick = () => { activeRowIndex = index; highlightActiveRow(); };
-
-                const rowLabel = document.createElement('div');
-                rowLabel.style.position = 'absolute'; rowLabel.style.top = '-10px'; rowLabel.style.left='5px'; 
-                rowLabel.style.fontWeight = 'bold'; rowLabel.style.fontSize = '10px'; rowLabel.style.color='#666';
-                rowLabel.innerText = (currentLang === 'pl' ? 'WIERSZ ' : 'ROW ') + (index + 1);
-                rowDiv.appendChild(rowLabel);
-
-                rowWidgets.forEach((widget, wIndex) => {
-                    const wDiv = document.createElement('div');
-                    wDiv.className = 'eink-widget';
-                    
-                    // --- SIZE CALCULATION ---
-                    let w = 125; // Default 2x1 width
-                    let h = 60;  // Default 2x1 height
-                    
-                    if (widget.size) {
-                        const dims = widget.size.replace(/[()]/g, '').split('x');
-                        const cols = parseInt(dims[0]);
-                        const rows = parseInt(dims[1]);
-                        w = (cols * 60) + ((cols - 1) * 5);
-                        h = (rows * 60) + ((rows - 1) * 5);
-                    }
-
-                    wDiv.style.width = w + 'px';
-                    wDiv.style.height = h + 'px';
-                    if (h < 70) wDiv.style.fontSize = '0.9em';
-
-                    const iconClass = widget.icon ? widget.icon : 'mdi-help-circle-outline';
-                    
-                    wDiv.innerHTML = `
-                        <div class="ew-title">${widget.name}</div>
-                        <i class="mdi ${iconClass} ew-icon"></i>
-                        <div class="ew-state"> ${widget.size || ''}</div>
-                        <div class="ew-delete" onclick="removeWidget(${index}, ${wIndex}); event.stopPropagation();">X</div>
-                    `;
-                    rowDiv.appendChild(wDiv);
-                });
-
-                if(rows.length > 1) {
-                    const del = document.createElement('button');
-                    del.innerText = 'USUŃ'; del.className='btn-remove-row btn';
-                    del.style.position='absolute'; del.style.right='5px'; del.style.top='5px';
-                    del.onclick = (e) => { e.stopPropagation(); deleteRow(index); };
-                    rowDiv.appendChild(del);
-                }
-                container.appendChild(rowDiv);
-            });
-            highlightActiveRow();
-        }
-
-        // --- REST OF LOGIC ---
+        // --- UI LOGIC ---
         function toggleInputs() {
             const type = document.getElementById('new-widget-type').value;
             const groupEntity = document.getElementById('group-entity');
@@ -474,12 +421,12 @@
 
             if (type === 'navigate') {
                 const dashName = document.getElementById('new-dashboard-name').value.trim();
-                if (!dashName) { alert("Wpisz nazwę dashboardu!"); return; }
+                if (!dashName) { alert("Type dashboard name!"); return; }
                 id = 'navigate.' + dashName;
                 if (!name) name = dashName.charAt(0).toUpperCase() + dashName.slice(1);
             } else {
                 id = document.getElementById('new-entity-id').value;
-                if(!id) { alert("Wybierz encję!"); return; }
+                if(!id) { alert("Select Entity!"); return; }
                 if(!name) name = id.split('.')[1] || id;
             }
 
@@ -489,12 +436,75 @@
             rows[activeRowIndex].push({ id, type, name, icon, size });
             renderRows();
             
+            // Reset
             document.getElementById('new-entity-id').value = '';
             document.getElementById('new-dashboard-name').value = '';
             nameInput.value = '';
             iconInput.value = '';
-            if(type !== 'media_player') sizeInput.value = '';
+            if(type !== 'media_player' && type !== 'climate') sizeInput.value = '';
             updateIconPreview();
+        }
+
+        // --- E-INK RENDERING WITH SIZE ---
+        function renderRows() {
+            const container = document.getElementById('rows-container');
+            container.innerHTML = '';
+            const T = translations[currentLang];
+            const states = {
+                'switch': T.state_on, 'sensor': '21.5 °C', 'cover': T.state_open,
+                'media_player': 'PLAYING', 'navigate': 'GO', 'binary_sensor': T.state_open, 'script': 'RUN', 'climate': '21°'
+            };
+
+            rows.forEach((rowWidgets, index) => {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'eink-row';
+                rowDiv.id = 'row-' + index;
+                rowDiv.onclick = () => { activeRowIndex = index; highlightActiveRow(); };
+
+                const rowLabel = document.createElement('div');
+                rowLabel.style.position = 'absolute'; rowLabel.style.top = '-10px'; rowLabel.style.left='5px'; 
+                rowLabel.style.fontWeight = 'bold'; rowLabel.style.fontSize = '10px'; rowLabel.style.color='#666';
+                rowLabel.innerText = (currentLang === 'pl' ? 'WIERSZ ' : 'ROW ') + (index + 1);
+                rowDiv.appendChild(rowLabel);
+
+                rowWidgets.forEach((widget, wIndex) => {
+                    const wDiv = document.createElement('div');
+                    wDiv.className = 'eink-widget';
+                    
+                    // --- SIZE CALCULATION ---
+                    let w = 125; let h = 60;
+                    if (widget.size) {
+                        const dims = widget.size.replace(/[()]/g, '').split('x');
+                        const cols = parseInt(dims[0]);
+                        const rows = parseInt(dims[1]);
+                        w = (cols * 60) + ((cols - 1) * 5);
+                        h = (rows * 60) + ((rows - 1) * 5);
+                    }
+                    wDiv.style.width = w + 'px';
+                    wDiv.style.height = h + 'px';
+                    if (h < 70) wDiv.style.fontSize = '0.9em';
+
+                    const iconClass = widget.icon ? widget.icon : 'mdi-help-circle-outline';
+                    
+                    wDiv.innerHTML = `
+                        <div class="ew-title">${widget.name}</div>
+                        <i class="mdi ${iconClass} ew-icon"></i>
+                        <div class="ew-state">${states[widget.type] || '---'} <span style="font-size:8px;color:blue">${widget.size||''}</span></div>
+                        <div class="ew-delete" onclick="removeWidget(${index}, ${wIndex}); event.stopPropagation();">X</div>
+                    `;
+                    rowDiv.appendChild(wDiv);
+                });
+
+                if(rows.length > 1) {
+                    const del = document.createElement('button');
+                    del.innerText = 'USUŃ'; del.className='btn-remove-row btn';
+                    del.style.position='absolute'; del.style.right='5px'; del.style.top='5px';
+                    del.onclick = (e) => { e.stopPropagation(); deleteRow(index); };
+                    rowDiv.appendChild(del);
+                }
+                container.appendChild(rowDiv);
+            });
+            highlightActiveRow();
         }
 
         function megaAutoConfig() {
