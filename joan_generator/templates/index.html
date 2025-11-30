@@ -17,35 +17,28 @@
         .section-title { font-size: 1.2em; font-weight: bold; color: #555; margin-bottom: 15px; border-bottom: 2px solid #d32f2f; display: inline-block; }
         label { display: block; margin-top: 10px; font-weight: bold; font-size: 0.9em; }
         input, select { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        
+        .add-widget-box { background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #2196f3; }
+        .flex-row { display: flex; gap: 15px; align-items: flex-end; }
+        .flex-col { flex: 1; }
+        .icon-preview-box { width: 42px; height: 42px; background: #fff; border: 1px solid #ccc; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #333; margin-bottom: 1px; }
+        .btn { padding: 10px 20px; border: none; cursor: pointer; border-radius: 4px; font-weight: bold; text-transform: uppercase; }
+        .btn-primary { background-color: #d32f2f; color: white; width: 100%; font-size: 18px; margin-top: 20px; }
+        .btn-add { background-color: #4caf50; color: white; width: 100%; }
+        .btn-row { background-color: #2196f3; color: white; margin-top: 10px; }
         .preview-area { background-color: #f0f0f0; padding: 20px; border-radius: 8px; border: 2px solid #ccc; overflow-x: auto; min-height: 150px; }
         .eink-row { display: flex; gap: 8px; margin-bottom: 8px; padding: 10px; border: 2px dashed #bbb; background: #fff; border-radius: 4px; align-items: center; position: relative; }
         .eink-row.active { border-color: #2196f3; background: #e3f2fd; }
-        
-        .eink-widget {
-            width: 140px; height: 100px; background-color: #FFFFFF; border: 2px solid #000;
-            color: #000; display: flex; flex-direction: column; align-items: center; justify-content: space-between;
-            padding: 5px; box-sizing: border-box; position: relative; cursor: pointer; box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
-        }
-        .eink-widget:hover { transform: translateY(-2px); box-shadow: 4px 4px 8px rgba(0,0,0,0.2); }
+        .eink-widget { width: 140px; height: 100px; background-color: #FFFFFF; border: 2px solid #000; color: #000; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 5px; box-sizing: border-box; position: relative; cursor: pointer; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); }
         .ew-title { font-size: 14px; font-weight: 700; text-align: center; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .ew-icon { font-size: 36px; }
         .ew-state { font-size: 12px; font-weight: 700; text-transform: uppercase; }
         .ew-delete { position: absolute; top: 0; right: 0; background: red; color: white; width: 20px; height: 20px; text-align: center; line-height: 20px; font-size: 12px; display: none; }
         .eink-widget:hover .ew-delete { display: block; }
-
-        .add-widget-box { background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #2196f3; }
-        .flex-row { display: flex; gap: 15px; align-items: flex-end; }
-        .flex-col { flex: 1; }
-        .icon-preview-box { width: 42px; height: 42px; background: #fff; border: 1px solid #ccc; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #333; margin-bottom: 1px; }
-
-        .btn { padding: 10px 20px; border: none; cursor: pointer; border-radius: 4px; font-weight: bold; text-transform: uppercase; }
-        .btn-primary { background-color: #d32f2f; color: white; width: 100%; font-size: 18px; margin-top: 20px; }
-        .btn-add { background-color: #4caf50; color: white; width: 100%; }
-        .btn-row { background-color: #2196f3; color: white; margin-top: 10px; }
-        
         textarea.output { width: 100%; height: 500px; font-family: monospace; background: #263238; color: #eceff1; border: none; padding: 15px; border-radius: 4px; }
         .status-bar { padding: 10px; margin-bottom: 20px; border-radius: 4px; text-align: center; font-weight: bold; }
+        
+        /* Ukrywanie/Pokazywanie pól zależnie od typu */
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
@@ -84,30 +77,40 @@
             <div class="add-widget-box">
                 <h4 style="margin-top:0" data-i18n="sec_add">2. Dodaj Widget</h4>
                 <div class="flex-row">
-                    <div class="flex-col" style="flex: 2;">
-                        <label data-i18n="label_entity">Wybierz Encję / Nawigację (np. navigate.kuchnia)</label>
-                        <input list="entities-list" id="new-entity-id" placeholder="np. light.salon lub navigate.joan2" oninput="megaAutoConfig()">
+                    <div class="flex-col">
+                        <label data-i18n="label_type">Typ Widgetu</label>
+                        <select id="new-widget-type" onchange="toggleInputs()">
+                            <option value="switch">Switch / Light</option>
+                            <option value="navigate">Navigate / Dashboard Button</option> <!-- NOWOŚĆ -->
+                            <option value="sensor">Sensor</option>
+                            <option value="binary_sensor">Binary Sensor</option>
+                            <option value="cover">Cover / Gate</option>
+                            <option value="media_player">Media Player</option>
+                            <option value="script">Script</option>
+                        </select>
+                    </div>
+                    
+                    <!-- INPUT DLA ZWYKŁYCH ENCJI -->
+                    <div class="flex-col" id="group-entity">
+                        <label data-i18n="label_entity">Wybierz Encję (Home Assistant)</label>
+                        <input list="entities-list" id="new-entity-id" placeholder="np. light.salon..." oninput="megaAutoConfig()">
                         <datalist id="entities-list">
                             {% for entity in entities %}
                             <option value="{{ entity }}">
                             {% endfor %}
                         </datalist>
                     </div>
-                    <div class="flex-col">
-                        <label data-i18n="label_type">Typ</label>
-                        <select id="new-widget-type">
-                            <option value="switch">Switch / Light</option>
-                            <option value="sensor">Sensor</option>
-                            <option value="binary_sensor">Binary Sensor</option>
-                            <option value="cover">Cover / Gate</option>
-                            <option value="media_player">Media Player</option>
-                            <option value="navigate">Navigate / Dashboard</option>
-                            <option value="script">Script</option>
-                        </select>
+
+                    <!-- INPUT DLA NAWIGACJI (UKRYTY DOMYŚLNIE) -->
+                    <div class="flex-col hidden" id="group-nav">
+                        <label data-i18n="label_dashboard">Nazwa pliku dashboardu</label>
+                        <input type="text" id="new-dashboard-name" placeholder="np. joan3 (bez .dash)">
+                        <small style="color: #666; font-size: 10px;">To nazwa pliku .dash, który ma się otworzyć.</small>
                     </div>
+
                     <div class="flex-col">
-                        <label data-i18n="label_name">Nazwa</label>
-                        <input type="text" id="new-widget-name" placeholder="np. Lampa">
+                        <label data-i18n="label_name">Tytuł na ekranie</label>
+                        <input type="text" id="new-widget-name" placeholder="np. Kuchnia">
                     </div>
                 </div>
                 
@@ -119,7 +122,7 @@
                         </div>
                     </div>
                     <div class="flex-col">
-                        <label data-i18n="label_icon">Ikona (Automatyczna)</label>
+                        <label data-i18n="label_icon">Ikona</label>
                         <input list="icons-list" id="new-widget-icon" placeholder="np. mdi-home" oninput="updateIconPreview()">
                         <datalist id="icons-list"></datalist>
                     </div>
@@ -154,22 +157,28 @@
     </div>
 
     <script>
-        // Tłumaczenia UI
+        // TRANSLATIONS
         const translations = {
             pl: {
                 status_ok: "✓ Połączono z Home Assistant", status_error: "⚠ Brak połączenia z API. Sprawdź token.",
                 sec_settings: "1. Ustawienia", sec_add: "2. Dodaj Widget", sec_preview: "3. Podgląd Dashboardu", sec_code: "Twój kod YAML:",
-                dash_title: "Tytuł pliku .dash", label_entity: "Wybierz Encję / Nawigację", label_type: "Typ", label_name: "Nazwa",
-                label_icon: "Ikona (Wpisz aby wyszukać)", label_preview: "Ikona", btn_add: "+ DODAJ DO WIERSZA",
-                btn_new_row: "+ Dodaj Nowy Wiersz", btn_generate: "GENERUJ KOD .DASH",
+                dash_title: "Tytuł pliku .dash", 
+                label_entity: "Wybierz Encję (Home Assistant)",
+                label_dashboard: "Nazwa pliku dashboardu (np. joan3)",
+                label_type: "Typ Widgetu", label_name: "Tytuł na ekranie",
+                label_icon: "Ikona (Automatyczna)", label_preview: "Ikona", 
+                btn_add: "+ DODAJ DO WIERSZA", btn_new_row: "+ Dodaj Nowy Wiersz", btn_generate: "GENERUJ KOD .DASH",
                 state_on: "WŁĄCZONE", state_open: "OTWARTE"
             },
             en: {
                 status_ok: "✓ Connected to Home Assistant", status_error: "⚠ No API Connection. Check Token.",
                 sec_settings: "1. Settings", sec_add: "2. Add Widget", sec_preview: "3. Dashboard Preview", sec_code: "Your YAML Code:",
-                dash_title: "Dashboard Title", label_entity: "Select Entity / Navigate", label_type: "Type", label_name: "Name",
-                label_icon: "Icon (Type to search)", label_preview: "Preview", btn_add: "+ ADD TO ROW",
-                btn_new_row: "+ Add New Row", btn_generate: "GENERATE .DASH CODE",
+                dash_title: "Dashboard Title", 
+                label_entity: "Select Entity (Home Assistant)",
+                label_dashboard: "Dashboard Filename (e.g. joan3)",
+                label_type: "Widget Type", label_name: "Title on Screen",
+                label_icon: "Icon (Automatic)", label_preview: "Icon", 
+                btn_add: "+ ADD TO ROW", btn_new_row: "+ Add New Row", btn_generate: "GENERATE .DASH CODE",
                 state_on: "ON", state_open: "OPEN"
             }
         };
@@ -180,11 +189,35 @@
             document.getElementById('ui_language').value = lang;
             document.getElementById('btn-pl').className = lang === 'pl' ? 'active' : '';
             document.getElementById('btn-en').className = lang === 'en' ? 'active' : '';
+            
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
                 if(translations[lang][key]) el.innerText = translations[lang][key];
             });
             renderRows();
+        }
+
+        // --- UI LOGIC ---
+        function toggleInputs() {
+            const type = document.getElementById('new-widget-type').value;
+            const groupEntity = document.getElementById('group-entity');
+            const groupNav = document.getElementById('group-nav');
+            const nameInput = document.getElementById('new-widget-name');
+            const iconInput = document.getElementById('new-widget-icon');
+
+            if (type === 'navigate') {
+                groupEntity.classList.add('hidden');
+                groupNav.classList.remove('hidden');
+                
+                // Defaults for Navigation
+                if(!iconInput.value) {
+                    iconInput.value = 'mdi-arrow-right-circle';
+                    updateIconPreview();
+                }
+            } else {
+                groupEntity.classList.remove('hidden');
+                groupNav.classList.add('hidden');
+            }
         }
 
         async function fetchIcons() {
@@ -228,7 +261,8 @@
                 rowDiv.onclick = () => { activeRowIndex = index; highlightActiveRow(); };
 
                 const rowLabel = document.createElement('div');
-                rowLabel.style.position = 'absolute'; rowLabel.style.top = '-20px'; rowLabel.style.fontWeight = 'bold'; rowLabel.style.fontSize = '12px';
+                rowLabel.style.position = 'absolute'; rowLabel.style.top = '-10px'; rowLabel.style.left='5px'; 
+                rowLabel.style.fontWeight = 'bold'; rowLabel.style.fontSize = '10px'; rowLabel.style.color='#666';
                 rowLabel.innerText = (currentLang === 'pl' ? 'WIERSZ ' : 'ROW ') + (index + 1);
                 rowDiv.appendChild(rowLabel);
 
@@ -264,21 +298,36 @@
         }
 
         function addWidgetToStaging() {
-            const id = document.getElementById('new-entity-id').value;
             const type = document.getElementById('new-widget-type').value;
-            const name = document.getElementById('new-widget-name').value;
-            let icon = document.getElementById('new-widget-icon').value;
+            const nameInput = document.getElementById('new-widget-name');
+            const iconInput = document.getElementById('new-widget-icon');
+            
+            let id = '';
+            let name = nameInput.value;
+            let icon = iconInput.value;
 
-            if(!id) { alert("Wybierz encję!"); return; }
+            if (type === 'navigate') {
+                const dashName = document.getElementById('new-dashboard-name').value.trim();
+                if (!dashName) { alert("Wpisz nazwę dashboardu!"); return; }
+                id = 'navigate.' + dashName;
+                if (!name) name = dashName.charAt(0).toUpperCase() + dashName.slice(1);
+            } else {
+                id = document.getElementById('new-entity-id').value;
+                if(!id) { alert("Wybierz encję!"); return; }
+                if(!name) name = id.split('.')[1] || id;
+            }
+
             if(icon && !icon.startsWith('mdi-')) icon = 'mdi-' + icon;
 
             if (rows.length === 0) addNewRow();
-            rows[activeRowIndex].push({ id, type, name: name || id, icon });
+            rows[activeRowIndex].push({ id, type, name, icon });
             renderRows();
             
+            // Reset fields
             document.getElementById('new-entity-id').value = '';
-            document.getElementById('new-widget-name').value = '';
-            document.getElementById('new-widget-icon').value = '';
+            document.getElementById('new-dashboard-name').value = '';
+            nameInput.value = '';
+            iconInput.value = '';
             updateIconPreview();
         }
 
@@ -294,13 +343,7 @@
             const typeSelect = document.getElementById('new-widget-type');
             const iconInput = document.getElementById('new-widget-icon');
 
-            // Wykrywanie NAWIGACJI
-            if (id.startsWith('navigate.')) {
-                typeSelect.value = 'navigate';
-                iconInput.value = 'mdi-arrow-right-circle';
-                updateIconPreview();
-                return;
-            }
+            if(typeSelect.value === 'navigate') return; // Don't auto-change if in navigate mode
 
             if(id.startsWith('sensor.')) typeSelect.value = 'sensor';
             else if(id.startsWith('binary_sensor.')) typeSelect.value = 'binary_sensor';
@@ -311,12 +354,12 @@
             if(iconInput.value) return; 
 
             const keywords = {
-                'battery': 'mdi-battery', 'bateria': 'mdi-battery', 'poziom': 'mdi-battery',
-                'temp': 'mdi-thermometer', 'heat': 'mdi-radiator', 'grzejnik': 'mdi-radiator',
+                'battery': 'mdi-battery', 'bateria': 'mdi-battery',
+                'temp': 'mdi-thermometer', 'heat': 'mdi-radiator',
                 'humid': 'mdi-water-percent', 'wilgot': 'mdi-water-percent',
-                'light': 'mdi-lightbulb', 'lamp': 'mdi-lightbulb', 'swiatlo': 'mdi-lightbulb',
+                'light': 'mdi-lightbulb', 'lamp': 'mdi-lightbulb',
                 'garage': 'mdi-garage', 'garaz': 'mdi-garage', 'brama': 'mdi-gate', 'gate': 'mdi-gate',
-                'lock': 'mdi-lock', 'zamek': 'mdi-lock', 'drzwi': 'mdi-door', 'door': 'mdi-door',
+                'lock': 'mdi-lock', 'zamek': 'mdi-lock',
                 'fan': 'mdi-fan', 'wentylator': 'mdi-fan', 'tv': 'mdi-television', 'speaker': 'mdi-speaker'
             };
 
@@ -328,6 +371,8 @@
                 }
             }
         }
+        
+        // Init
         if(rows.length === 0) addNewRow();
     </script>
 </body>
