@@ -7,14 +7,18 @@ RUN apk add --no-cache python3 py3-pip
 # Katalog roboczy
 WORKDIR /app
 
-# Kopiowanie plików requirements
+# Kopiowanie requirements
 COPY requirements.txt .
 
-# TU JEST ZMIANA: Dodano flagę --break-system-packages
+# Instalacja zależności (z fixem dla Alpine)
 RUN pip3 install --no-cache-dir -r requirements.txt --break-system-packages
 
-# Kopiowanie reszty plików
+# Kopiowanie skryptu startowego i nadanie uprawnień (TO JEST NOWE)
+COPY run.sh /
+RUN chmod a+x /run.sh
+
+# Kopiowanie reszty plików aplikacji
 COPY . .
 
-# Uruchomienie aplikacji
-CMD [ "python3", "run.py" ]
+# Uruchomienie przez skrypt run.sh zamiast bezpośrednio pythona
+CMD [ "/run.sh" ]
