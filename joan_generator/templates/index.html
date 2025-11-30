@@ -19,6 +19,7 @@
     .import-box{background:#fff3e0;border:1px solid #ffe0b2;color:#000;display:none;}
     .import-box.visible{display:block;}
     .add-widget-box{background:#e3f2fd;padding:15px;border-radius:8px;margin-bottom:20px;border:1px solid #2196f3;color:#000;}
+    .add-widget-box.editing{background:#fff8e1;border-color:#ffc107;border:2px solid #ffc107;}
     .flex-row{display:flex;gap:15px;align-items:flex-end;margin-bottom:10px;flex-wrap:wrap;}
     .flex-col{flex:1;min-width:150px;}
     label{display:block;margin-top:10px;font-weight:bold;font-size:.9em;margin-bottom:5px;}
@@ -116,7 +117,7 @@
           </div>
           <div class="flex-col" id="group-entity">
             <label data-i18n="label_entity">Wybierz Encję (Home Assistant)</label>
-            <input list="entities-list" id="new-entity-id" placeholder="np. light.swiatlo_kuchnia" oninput="smartAutoFill()" onchange="smartAutoFill()" autocomplete="off">
+            <input list="entities-list" id="new-entity-id" placeholder="np. light.swiatlo_kuchnia" oninput="smartAutoFillNew()" onchange="smartAutoFillNew()" autocomplete="off">
             <datalist id="entities-list">
               {% for entity in entities %}
               <option value="{{ entity.id }}">{{ entity.id }}</option>
@@ -176,7 +177,6 @@
       <button type="submit" class="btn btn-primary"><span data-i18n="btn_generate">GENERUJ KOD .DASH</span></button>
     </form>
 
-    <!-- Serwerowy YAML (jeśli backend zwróci) -->
     {% if generated_yaml %}
     <div class="section">
       <h3 data-i18n="sec_code">Twój kod YAML (Serwer):</h3>
@@ -190,7 +190,6 @@
     </div>
     {% endif %}
 
-    <!-- Klientowy YAML zawsze widoczny po generacji -->
     <div class="section" id="client-yaml-section" style="display:none;">
       <h3>Wygenerowany kod (Klient – skopiuj do pliku .dash)</h3>
       <div class="file-path-info">
@@ -204,7 +203,7 @@
   </div>
 
   <script>
-    const translations={pl:{status_ok:"✓ Połączono z Home Assistant",status_error:"⚠ Brak połączenia z API. Sprawdź token.",sec_settings:"1. Ustawienia",sec_add:"2. Dodaj Widget",sec_edit:"2. Edytuj Widget",sec_preview:"3. Podgląd Dashboardu (Kliknij, aby edytować)",sec_code:"Twój kod YAML:",dash_title:"Tytuł Dashboardu (Nazwa pliku)",label_entity:"Wybierz Encję (Home Assistant)",label_type:"Typ Widgetu",label_name:"Tytuł na ekranie",label_icon:"Ikona (Automatyczna)",label_preview:"Ikona",label_size:"Rozmiar",btn_add:"+ DODAJ DO WIERSZA",btn_update:"ZAPISZ ZMIANY",btn_new_row:"+ Dodaj Nowy Wiersz",btn_generate:"GENERUJ KOD .DASH",btn_cancel:"Anuluj",state_on:"WŁĄCZONE",state_off:"WYŁĄCZONE",state_open:"OTWARTE",state_closed:"ZAMKNIĘTE",btn_import_toggle:"📂 Importuj / Edytuj Kod",header_paste_code:"Wklej kod pliku .dash tutaj:",btn_load_dash:"Wczytaj Dashboard"},en:{status_ok:"✓ Connected to Home Assistant",status_error:"⚠ No API Connection. Check Token.",sec_settings:"1. Settings",sec_add:"2. Add Widget",sec_edit:"2. Edit Widget",sec_preview:"3. Dashboard Preview (Click to Edit)",sec_code:"Your YAML Code:",dash_title:"Dashboard Title (Filename)",label_entity:"Select Entity (Home Assistant)",label_type:"Widget Type",label_name:"Title on Screen",label_icon:"Icon (Automatic)",label_preview:"Icon",label_size:"Size",btn_add:"+ ADD TO ROW",btn_update:"UPDATE WIDGET",btn_new_row:"+ Add New Row",btn_generate:"GENERATE .DASH CODE",btn_cancel:"Cancel",state_on:"ON",state_off:"OFF",state_open:"OPEN",state_closed:"CLOSED",btn_import_toggle:"📂 Import / Edit Code",header_paste_code:"Paste .dash file code here:",btn_load_dash:"Load Dashboard"}};
+    const translations={pl:{status_ok:"✓ Połączono z Home Assistant",status_error:"⚠ Brak połączenia z API. Sprawdź token.",sec_settings:"1. Ustawienia",sec_add:"2. Dodaj Widget",sec_edit:"2. Edytuj Widget",sec_preview:"3. Podgląd Dashboardu (Kliknij, aby edytować)",sec_code:"Twój kod YAML:",dash_title:"Tytuł Dashboardu (Nazwa pliku)",label_entity:"Wybierz Encję (Home Assistant)",label_type:"Typ Widgetu",label_name:"Tytuł na ekranie",label_icon:"Ikona (Automatyczna)",label_preview:"Ikona",label_size:"Rozmiar",btn_add:"+ DODAJ DO WIERSZA",btn_update:"ZAPISZ ZMIANY",btn_new_row:"+ Dodaj Nowy Wiersz",btn_generate:"GENERUJ KOD .DASH",btn_cancel:"Anuluj",state_on:"WŁĄCZONE",state_off:"WYŁĄCZONE",state_open:"OTWARTE",state_closed:"ZAMKNIĘTE",btn_import_toggle:"📂 Importuj / Edytuj Kod",header_paste_code:"Wklej kod pliku .dash tutaj:",btn_load_dash:"Wczytaj Dashboard"},en:{status_ok:"✓ Connected to Home Assistant",status_error:"⚠ No API Connection. Check Token.",sec_settings:"1. Settings",sec_add:"2. Add Widget",sec_edit:"2. Edit Widget",sec_preview:"3. Dashboard Preview (Click to Edit)",sec_code:"Your YAML Code:",dash_title:"Dashboard Title (Filename)",label_entity:"Select Entity (Home Assistant)",label_type:"Widget Type",label_name:"Title on Screen",label_icon:"Icon (Automatic)",label_preview:"Icon",label_size:"Size",btn_add:"+ ADD TO ROW",btn_update:"UPDATE WIDGET",btn_new_row:"+ Add New Row",btn_generate:"GENERATE .DASH CODE",btn_cancel:"Cancel",btn_import_toggle:"📂 Import / Edit Code",header_paste_code:"Paste .dash file code here:",btn_load_dash:"Load Dashboard"}};
 
     const entitiesData={{ entities | tojson }};
     let currentLang='pl',rows=[],activeRowIndex=0,editingIndices=null,importedDefsMap={};
@@ -262,7 +261,8 @@
       document.getElementById('icon-preview-i').className=(val && val.startsWith('mdi-'))?'mdi '+val:'mdi mdi-help-circle-outline';
     }
 
-    function smartAutoFill(){
+    // Smart autofill ONLY for adding new widgets from the form
+    function smartAutoFillNew(){
       const idField=document.getElementById('new-entity-id');
       const nameInput=document.getElementById('new-widget-name');
       const typeSel=document.getElementById('new-widget-type');
@@ -284,20 +284,23 @@
 
       if((typeSel.value==='media_player'||typeSel.value==='climate') && !sizeInput.value) sizeInput.value='(2x2)';
 
-      const autoName=formatNameFromId(id);
-      if(!userEditedName || nameInput.value===lastAutoName || nameInput.value.trim()===''){
+      // Suggest name only if user hasn't typed one
+      if(!nameInput.value.trim()){
+        const autoName=formatNameFromId(id);
         nameInput.value=autoName; lastAutoName=autoName;
       }
 
       const actionable=['switch','cover','binary_sensor','media_player','climate','script','fan'].includes(typeSel.value) || id.startsWith('input_boolean.');
       if(actionable){
-        if(!userEditedIconPairFlag){ const p=iconPairFor(id); iconOnInput.value=p[0]; iconOffInput.value=p[1]; }
-        if(!userEditedIconFlag){ iconInput.value=''; }
+        if(!iconOnInput.value && !iconOffInput.value){
+          const p=iconPairFor(id); iconOnInput.value=p[0]; iconOffInput.value=p[1];
+        }
+        if(!iconInput.value){ iconInput.value=''; }
       }else{
-        if(!userEditedIconFlag || iconInput.value===lastAutoIcon || iconInput.value.trim()===''){
+        if(!iconInput.value){
           const autoIcon=pickAutoIcon(typeSel.value,id); iconInput.value=autoIcon; lastAutoIcon=autoIcon;
         }
-        if(!userEditedIconPairFlag){ iconOnInput.value=''; iconOffInput.value=''; }
+        iconOnInput.value=''; iconOffInput.value='';
       }
       updateIconPreview();
     }
@@ -403,7 +406,7 @@
         const lines=code.split('\n');
         const rawDefs={};
         let currentKey=null;
-        let parsingLayout=false;
+        let parsingLayout=false; let globalTitleSeen=false;
         const layoutLines=[];
         const ignoreGlobal=['global_parameters','widget_dimensions','widget_size','widget_margins','columns','rows','skin'];
 
@@ -412,10 +415,11 @@
           const stripped=leadingTrim.split('#')[0].trim();
           if(!stripped) continue;
 
-          // GLOBAL title (only before layout)
-          if(!parsingLayout && /^title\s*:/i.test(leadingTrim)){
+          // Only read global title BEFORE layout; ignore widget titles later
+          if(!parsingLayout && /^title\s*:/i.test(leadingTrim) && !globalTitleSeen){
             let val=leadingTrim.split(':').slice(1).join(':').trim().replace(/^["']|["']$/g,'');
             if(val) document.getElementById('dash-title').value=val;
+            globalTitleSeen=true;
             continue;
           }
 
@@ -474,7 +478,7 @@
               else if(id.startsWith('switch.')||id.startsWith('input_boolean.')||id.startsWith('light.')||id.startsWith('script.')) type='switch';
               else type='switch';
             }
-            // IMPORTANT: Prefer title from widget definition, fallback to formatted id
+            // Use widget title from code; fallback to formatted id
             const name = def.title ? def.title : formatNameFromId(id);
 
             let icon=def.icon||def.icon_inactive||'';
@@ -602,7 +606,6 @@
       document.getElementById('generated_yaml_client').value=yaml;
       document.getElementById('layout_data_json').value=JSON.stringify(rows.map(r=>r.map(w=>w.id+(w.size? " "+w.size:""))));
       document.getElementById('widgets_full_json').value=JSON.stringify(rows);
-      // Klientowy blok i link
       const host=window.location.hostname;
       const title=(document.getElementById('dash-title').value||'Joan2').replace(/"/g,'');
       document.getElementById('client-yaml-section').style.display='block';
@@ -611,8 +614,7 @@
       const link=`http://${host}:5050/${title}`;
       const linkEl=document.getElementById('client-dashboard-link');
       linkEl.href=link; linkEl.innerText=link;
-      // Jeśli chcesz również submit na backend, odkomentuj:
-      // e.target.submit();
+      // e.target.submit(); // odkomentuj, jeśli chcesz wysłać na backend
     }
 
     async function fetchIcons(){
