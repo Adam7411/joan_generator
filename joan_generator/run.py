@@ -7,31 +7,33 @@ print("--> 2. Biblioteki zaladowane.")
 
 app = Flask(__name__)
 
-# --- KONFIGURACJA TOKENA ---
-# 1. Najpierw sprawdzamy zmienną środowiskową (automatyczną)
+# --- KONFIGURACJA TOKENA I URL ---
+# Domyślnie (automat) używamy Supervisora
 TOKEN = os.environ.get('SUPERVISOR_TOKEN')
+API_URL = "http://supervisor/core/api" 
 TOKEN_SOURCE = "System (Supervisor)"
 
-# 2. Sprawdzamy, czy użytkownik wpisał ręczny token w konfiguracji
+# Sprawdzamy ręczny token
 try:
     with open('/data/options.json', 'r') as f:
         options = json.load(f)
         manual_token = options.get('manual_token')
         if manual_token and len(manual_token) > 10:
             TOKEN = manual_token
+            # !!! TU JEST ZMIANA !!!
+            # Ręczny token wymaga bezpośredniego adresu do Home Assistant, a nie Supervisora
+            API_URL = "http://homeassistant:8123/api"
             TOKEN_SOURCE = "Reczny (Konfiguracja)"
-            print("--> Znaleziono ręczny token w ustawieniach.")
+            print("--> Znaleziono ręczny token. Zmieniam adres API na http://homeassistant:8123/api")
 except Exception as e:
-    print(f"--> Info: Nie udalo sie odczytac opcji (to normalne przy pierwszym uruchomieniu): {e}")
-
-HASSIO_URL = "http://supervisor/core/api"
+    print(f"--> Info: Nie udalo sie odczytac opcji: {e}")
 
 # DEBUGOWANIE
 if not TOKEN:
     print("!!! UWAGA: Brak tokena (ani systemowego, ani ręcznego) !!!")
 else:
     print(f"--> Uzywany Token: {TOKEN_SOURCE}")
-    # print(f"--> Token start: {TOKEN[:10]}...") # Odkomentuj tylko do testow
+    print(f"--> Adres API: {API_URL}")
 
 def get_ha_entities():
     if not TOKEN:
@@ -43,14 +45,15 @@ def get_ha_entities():
     }
     
     try:
-        print(f"--> Pobieram encje z: {HASSIO_URL}/states")
-        response = requests.get(f"{HASSIO_URL}/states", headers=headers, timeout=10)
+        # Używamy dynamicznego API_URL
+        print(f"--> Pobieram encje z: {API_URL}/states")
+        response = requests.get(f"{API_URL}/states", headers=headers, timeout=10)
         
         if response.status_code == 200:
             data = response.json()
             entities = [state['entity_id'] for state in data]
             entities.sort()
-            print(f"--> Pobrano {len(entities)} encji.")
+            print(f"--> SUKCES! Pobrano {len(entities)} encji.")
             return entities
         else:
             print(f"!!! Blad API Home Assistant: {response.status_code} - {response.text}")
@@ -59,7 +62,7 @@ def get_ha_entities():
     
     return []
 
-# STYLE BEZ ZMIAN...
+# STYLE BEZ ZMIAN
 STYLES = {
     "title": "color: #000000; font-size: 20px; font-weight: 700; text-align: center; padding-top: 5px; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif;",
     "widget": "color: #000000 !important; background-color: #FFFFFF !important;",
