@@ -1,3 +1,4 @@
-name: Moje Dodatki Joan
-url: 'https://github.com/Adam7411/joan_generator'
-maintainer: Adam7411
+{
+  "name": "Joan Generator",
+  "url": "https://github.com/Adam7411/joan_generator"
+}
