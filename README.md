@@ -37,10 +37,10 @@ Ten dodatek to wizualny kreator (GUI), który pozwala "wyklikać" układ ekranu 
 
 ## ⚙️ Konfiguracja
 
-Dodatek zazwyczaj działa automatycznie, pobierając token z systemu Supervisor.
+Dodatek zazwyczaj działa automatycznie, pobierając token z systemu HA.
 
 Jeśli jednak lista encji jest pusta, możesz ręcznie wygenerować token:
-1. Kliknij swój profil w HA (lewy dolny róg) -> **Długoterminowe tokeny dostępu** -> **Utwórz token**.
+1. Kliknij swój profil w HA (lewy dolny róg) -> Bezpieczeństwo -> Przewiń na sam dół a tam -> Długotrwałe tokeny dostępu -> Stwórz token
 2. W konfiguracji dodatku wklej token w pole `manual_token`.
 
 ## 📖 Jak używać?
