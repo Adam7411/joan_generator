@@ -1,1 +1,15 @@
 
+{
+  "name": "Joan Dashboard Generator",
+  "version": "1.0",
+  "slug": "joan_generator",
+  "description": "Generator plików .dash dla AppDaemon pod ekrany E-Ink Joan.",
+  "arch": ["aarch64", "amd64", "armv7"],
+  "startup": "application",
+  "boot": "auto",
+  "ports": {
+    "5000/tcp": 5000
+  },
+  "options": {},
+  "schema": {}
+}
