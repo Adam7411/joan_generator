@@ -1,8 +1,8 @@
 ARG BUILD_FROM
 FROM $BUILD_FROM
 
-# Instalacja Pythona i pip
-RUN apk add --no-cache python3 py3-pip
+# Instalacja Python, pip oraz dos2unix (do naprawy plikow z Windows)
+RUN apk add --no-cache python3 py3-pip dos2unix
 
 # Katalog roboczy
 WORKDIR /app
@@ -10,15 +10,17 @@ WORKDIR /app
 # Kopiowanie requirements
 COPY requirements.txt .
 
-# Instalacja zależności (z fixem dla Alpine)
+# Instalacja zależności
 RUN pip3 install --no-cache-dir -r requirements.txt --break-system-packages
 
-# Kopiowanie skryptu startowego i nadanie uprawnień (TO JEST NOWE)
+# Kopiowanie skryptu startowego
 COPY run.sh /
-RUN chmod a+x /run.sh
 
-# Kopiowanie reszty plików aplikacji
+# NAPRAWA PLIKU Z WINDOWS (usuwa znaki CRLF) i nadanie uprawnień
+RUN dos2unix /run.sh && chmod a+x /run.sh
+
+# Kopiowanie reszty plików
 COPY . .
 
-# Uruchomienie przez skrypt run.sh zamiast bezpośrednio pythona
+# Uruchomienie
 CMD [ "/run.sh" ]
