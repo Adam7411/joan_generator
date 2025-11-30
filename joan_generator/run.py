@@ -45,49 +45,31 @@ def get_ha_entities():
         print(f"!!! Blad API: {e}")
     return []
 
-# Style z Twoich plików Joan (czarny tekst, białe tło)
-STYLES = {
-    "title": "color: #000000; font-size: 20px; font-weight: 700; text-align: center; padding-top: 5px; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif;",
-    "widget": "color: #000000 !important; background-color: #FFFFFF !important;",
-    "text": "color: #000000 !important; font-weight: 700 !important;",
-    "value": "color: #000000 !important; font-size: 44px !important; font-weight: 700 !important;",
-    "unit": "color: #000000 !important;",
-    "icon": "color: #000000 !important;"
-}
+# Style - DEFINICJA
+# Kluczowe dla E-Ink: Wymuszenie czarnego koloru i pogrubienia
+CSS_BLACK = "color: #000000 !important; font-weight: 700 !important;"
+CSS_BG_WHITE = "background-color: #FFFFFF !important;"
 
 # --- INTELIGENTNE IKONY ---
 def get_icon_pair(base_icon, w_type):
-    """Zwraca (icon_on, icon_off) na podstawie wybranej ikony bazowej."""
     if not base_icon:
-        # Domyślne jeśli brak ikony
         if w_type == 'cover': return 'mdi-window-shutter-open', 'mdi-window-shutter'
         if w_type == 'lock': return 'mdi-lock-open', 'mdi-lock'
         if w_type == 'binary_sensor': return 'mdi-checkbox-marked-circle', 'mdi-radiobox-blank'
         return 'mdi-toggle-switch', 'mdi-toggle-switch-off'
 
     i = base_icon.lower()
-
-    # Logika dla bram i garaży
+    # Logika parowania ikon
     if 'garage' in i: return 'mdi-garage-open', 'mdi-garage'
     if 'gate' in i: return 'mdi-gate-open', 'mdi-gate'
-    
-    # Logika dla świateł
     if 'light' in i or 'bulb' in i: return 'mdi-lightbulb-on', 'mdi-lightbulb-outline'
-    
-    # Logika dla zamków
     if 'lock' in i: return 'mdi-lock-open', 'mdi-lock'
-    
-    # Logika dla drzwi/okien
     if 'door' in i: return 'mdi-door-open', 'mdi-door-closed'
     if 'window' in i or 'blind' in i or 'shutter' in i: return 'mdi-window-shutter-open', 'mdi-window-shutter'
-
-    # Domyślne dla reszty (po prostu ta sama ikona lub próba dodania -off)
-    # W AppDaemon często używa się tej samej ikony + icon_style do zmiany koloru, 
-    # ale tu mamy E-Ink (czarno-biały), więc lepiej zmieniać kształt.
+    
     if 'off' in i or 'outline' in i:
         return i.replace('-off', '').replace('-outline', ''), i
-    
-    return i, i + '-outline' # Prosta proba zgadywania
+    return i, i + '-outline'
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -98,9 +80,8 @@ def index():
         title = request.form.get('title', 'JoanDashboard')
         lang = request.form.get('ui_language', 'pl')
         
-        # Tłumaczenia stanów
         T = {
-            'pl': {'on': 'WŁĄCZONE', 'off': 'WYŁĄCZONE', 'open': 'OTWARTA', 'closed': 'ZAMKNIĘTA', 
+            'pl': {'on': 'WŁĄCZONE', 'off': 'WYŁĄCZONE', 'open': 'OTWARTE', 'closed': 'ZAMKNIĘTE', 
                    'opening': 'OTWIERANIE', 'closing': 'ZAMYKANIE', 'locked': 'ZAMKNIĘTE', 'unlocked': 'OTWARTE'},
             'en': {'on': 'ON', 'off': 'OFF', 'open': 'OPEN', 'closed': 'CLOSED', 
                    'opening': 'OPENING', 'closing': 'CLOSING', 'locked': 'LOCKED', 'unlocked': 'UNLOCKED'}
@@ -113,8 +94,22 @@ def index():
         generated_yaml += "widget_margins: [8, 8]\n"
         generated_yaml += "columns: 6\n"
         generated_yaml += "rows: 9\n"
+        
+        # --- GLOBAL PARAMETERS (TU JEST KLUCZ DO SUKCESU) ---
         generated_yaml += "global_parameters:\n"
-        generated_yaml += "  use_comma: 0\n  precision: 1\n  use_hass_icon: 1\n  namespace: default\n"
+        generated_yaml += "  use_comma: 0\n"
+        generated_yaml += "  precision: 1\n"
+        generated_yaml += "  use_hass_icon: 1\n"
+        generated_yaml += "  namespace: default\n"
+        generated_yaml += "  state_text: 1\n" # Wymuszenie globalne tekstu stanu
+        # Style globalne
+        generated_yaml += f"  title_style: \"{CSS_BLACK} font-size: 20px; padding-top: 5px; font-family: 'Roboto', sans-serif;\"\n"
+        generated_yaml += f"  text_style: \"{CSS_BLACK}\"\n"
+        generated_yaml += f"  state_text_style: \"{CSS_BLACK} font-size: 14px; text-transform: uppercase; margin-top: 5px;\"\n"
+        generated_yaml += f"  widget_style: \"{CSS_BLACK} {CSS_BG_WHITE}\"\n"
+        generated_yaml += f"  icon_style_active: \"{CSS_BLACK}\"\n"
+        generated_yaml += f"  icon_style_inactive: \"{CSS_BLACK}\"\n"
+        
         generated_yaml += "skin: simplyred\n\n"
         
         layout_data_str = request.form.get('layout_data_json')
@@ -140,74 +135,53 @@ def index():
                     
                     w_type = w['type']
                     w_name = w['name']
-                    w_icon = w['icon'] # To jest np. 'mdi-garage'
+                    w_icon = w['icon']
                     
                     generated_yaml += f"{w_id}:\n"
+                    generated_yaml += f"  title: \"{w_name}\"\n"
                     
                     # 1. NAWIGACJA
                     if w_type == 'navigate':
                         dashboard_name = w_id.replace('navigate.', '')
                         generated_yaml += f"  widget_type: navigate\n"
                         generated_yaml += f"  dashboard: {dashboard_name}\n"
-                        generated_yaml += f"  title: \"{w_name}\"\n"
                         generated_yaml += f"  icon_inactive: {w_icon if w_icon else 'mdi-arrow-left-circle'}\n"
-                        generated_yaml += f"  widget_style: \"background-color: #FFFFFF !important; border-radius: 8px !important; padding: 10px !important; color: #000000 !important;\"\n"
-                        generated_yaml += f"  title_style: \"{STYLES['title']}\"\n"
+                        generated_yaml += f"  widget_style: \"{CSS_BG_WHITE} border-radius: 8px !important;\"\n"
                     
                     # 2. SENSOR
                     elif w_type == 'sensor':
                         generated_yaml += f"  widget_type: sensor\n"
                         generated_yaml += f"  entity: {w_id}\n"
-                        generated_yaml += f"  title: {w_name}\n"
-                        generated_yaml += f"  title_style: \"{STYLES['title']}\"\n"
-                        generated_yaml += f"  text_style: \"{STYLES['text']}\"\n"
-                        generated_yaml += f"  value_style: \"{STYLES['value']}\"\n"
-                        generated_yaml += f"  unit_style: \"{STYLES['unit']}\"\n"
-                        generated_yaml += f"  widget_style: \"{STYLES['widget']}\"\n"
+                        generated_yaml += f"  value_style: \"{CSS_BLACK} font-size: 44px !important;\"\n"
+                        generated_yaml += f"  unit_style: \"{CSS_BLACK}\"\n"
                         if w_icon:
                             generated_yaml += f"  icon: {w_icon}\n"
-                            generated_yaml += f"  icon_style: \"{STYLES['icon']}\"\n"
-                        generated_yaml += f"  precision: 1\n"
-
+                    
                     # 3. MEDIA PLAYER
                     elif w_type == 'media_player':
                         generated_yaml += f"  widget_type: media_player\n"
                         generated_yaml += f"  entity: {w_id}\n"
-                        generated_yaml += f"  title: {w_name}\n"
                         generated_yaml += f"  truncate_name: 20\n"
                         generated_yaml += f"  step: 5\n"
-                        generated_yaml += f"  title_style: \"{STYLES['title']}\"\n"
-                        generated_yaml += f"  text_style: \"{STYLES['text']}\"\n"
-                        generated_yaml += f"  widget_style: \"{STYLES['widget']}\"\n"
-                        generated_yaml += f"  icon_style: \"{STYLES['icon']}\"\n"
 
-                    # 4. SWITCH / COVER / INPUT_BOOLEAN / SCRIPT / BINARY_SENSOR
+                    # 4. PRZEŁĄCZNIKI I INNE (Tu najważniejszy jest STAN)
                     else:
                         ad_type = w_type
                         if w_type == 'binary_sensor': ad_type = 'binary_sensor'
                         if w_type == 'input_boolean': ad_type = 'switch'
-                        # Scripts often act as switches or just icons
                         
                         generated_yaml += f"  widget_type: {ad_type}\n"
                         generated_yaml += f"  entity: {w_id}\n"
-                        generated_yaml += f"  title: {w_name}\n"
                         
-                        # --- GENEROWANIE IKON ON/OFF ---
+                        # Generowanie ikon
                         icon_on, icon_off = get_icon_pair(w_icon, ad_type)
                         generated_yaml += f"  icon_on: {icon_on}\n"
                         generated_yaml += f"  icon_off: {icon_off}\n"
 
-                        # --- KLUCZOWE DLA WYŚWIETLANIA STANU ---
+                        # Wymuszenie stanu per widget (dla pewności)
                         generated_yaml += f"  state_text: 1\n"
                         
-                        # Style
-                        generated_yaml += f"  title_style: \"{STYLES['title']}\"\n"
-                        generated_yaml += f"  text_style: \"{STYLES['text']}\"\n" 
-                        generated_yaml += f"  widget_style: \"{STYLES['widget']}\"\n"
-                        generated_yaml += f"  icon_style_active: \"{STYLES['icon']}\"\n"
-                        generated_yaml += f"  icon_style_inactive: \"{STYLES['icon']}\"\n"
-                        
-                        # --- MAPOWANIE STANÓW (Tłumaczenia) ---
+                        # Mapowanie stanów (PL/EN)
                         generated_yaml += "  state_map:\n"
                         generated_yaml += f"    \"on\": \"{dic['on']}\"\n"
                         generated_yaml += f"    \"off\": \"{dic['off']}\"\n"
