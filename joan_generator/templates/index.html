@@ -12,7 +12,7 @@
             --container-bg: #ffffff;
             --text-color: #222;
             --border-color: #bbb;
-            --accent-color: #d32f2f;
+            --accent-color: #1976d2;
             --input-bg: #fff;
             --section-bg: #f9f9f9;
             --preview-bg: #f4f4f4;
@@ -25,7 +25,7 @@
             --container-bg: #1e1e1e;
             --text-color: #e0e0e0;
             --border-color: #444;
-            --accent-color: #ff5252;
+            --accent-color: #64b5f6;
             --input-bg: #2c2c2c;
             --section-bg: #252525;
             --preview-bg: #1d1d1d;
@@ -41,6 +41,7 @@
         .controls button { padding: 10px 14px; border: 1px solid var(--border-color); background: var(--section-bg); color: var(--text-color); cursor: pointer; border-radius: 6px; font-weight: 700; }
         .lang-switch button.active { background: var(--accent-color); color:#fff; border-color: var(--accent-color); }
         .status-bar { padding: 12px; margin-bottom: 20px; border-radius: 6px; font-weight: 700; text-align:center; }
+
         .section { margin-bottom: 32px; border: 1px solid var(--border-color); padding: 22px; border-radius: 10px; background: var(--section-bg); }
         .section-title { font-size: 1.25em; font-weight: 900; margin-bottom: 18px; padding-bottom: 6px; border-bottom: 3px solid var(--accent-color); display:block; }
         label { display:block; margin:10px 0 4px; font-size:.85em; font-weight:700; text-transform:uppercase; letter-spacing:.5px; }
@@ -59,7 +60,7 @@
         .btn-import { background:#ff9800; color:#fff; margin-bottom:14px; }
         .btn-primary { background:var(--accent-color); color:#fff; font-size:18px; margin-top:10px; }
 
-        /* PREVIEW AREA (powiększone) */
+        /* PREVIEW AREA */
         .preview-area {
             background: var(--preview-bg);
             padding: 30px;
@@ -70,7 +71,6 @@
             flex-direction: column;
             gap: 24px;
         }
-
         .eink-row {
             display: flex;
             gap: 16px;
@@ -84,8 +84,8 @@
             cursor: pointer;
             flex-wrap: wrap;
         }
-        .eink-row.active { border-color:#1976d2; background:rgba(25,118,210,.12); }
-        .eink-row:hover { border-color:#1976d2; }
+        .eink-row.active { border-color: var(--accent-color); background: rgba(25,118,210,.12); }
+        .eink-row:hover { border-color: var(--accent-color); }
 
         .row-label-chip {
             position: absolute;
@@ -137,7 +137,7 @@
             justify-content:center;
             padding:0 4px;
         }
-        .ew-icon { font-size: 42px; margin: 2px 0 4px; }
+        .ew-icon { font-size: 42px; margin: 2px 0 4px; transition: color .15s ease; }
         .ew-state {
             font-size: 12px;
             font-weight: 800;
@@ -174,24 +174,6 @@
         }
         .eink-widget:hover .ew-edit-overlay { display:block; }
 
-        /* Tooltip for full title (fallback if very long) */
-        .eink-widget[data-title]:hover:after {
-            content: attr(data-title);
-            position:absolute;
-            bottom: -6px;
-            left:50%;
-            transform:translate(-50%,100%);
-            background:#000;
-            color:#fff;
-            padding:6px 10px;
-            font-size:11px;
-            border-radius:6px;
-            white-space:nowrap;
-            box-shadow:0 2px 8px rgba(0,0,0,.4);
-            z-index:20;
-        }
-
-        /* Output */
         textarea.output { width:100%; height:520px; font-family:monospace; background:#263238; color:#eceff1; border:none; padding:18px; border-radius:8px; font-size:13px; }
 
         .file-path-info {
@@ -208,8 +190,6 @@
         body.dark-mode .file-path-info code { background:#2b3a45; }
         .file-path-info a { background: var(--link-bg); padding:6px 10px; border-radius:6px; font-weight:700; color:var(--link-color); text-decoration:none; display:inline-block; margin-top:8px; border:1px solid var(--link-border); }
         .file-path-info a:hover { text-decoration:underline; background:#fff; }
-        body.dark-mode .file-path-info a:hover { background:#2b3a45; }
-
         .hidden { display:none !important; }
     </style>
 </head>
@@ -354,6 +334,7 @@
 
     <script>
         const entitiesData = {{ entities | tojson }};
+
         let currentLang='pl', rows=[], activeRowIndex=0, editingIndices=null, importedDefsMap={};
 
         function formatNameFromId(id){
@@ -361,6 +342,7 @@
             const last=id.includes('.')?id.split('.').pop():id;
             return last.replace(/_/g,' ').replace(/\b\w/g,l=>l.toUpperCase());
         }
+
         function resolveImportedTitle(id){
             const tries=[id];
             if(id.includes('.')) tries.push(id.split('.').pop());
@@ -374,6 +356,7 @@
             }
             return '';
         }
+
         function toggleTheme(){
             document.body.classList.toggle('dark-mode');
             document.getElementById('btn-theme').innerText=document.body.classList.contains('dark-mode')?'☀️':'🌙';
@@ -386,8 +369,8 @@
         }
         function refreshUIText(){
             const dict=currentLang==='pl'
-             ? {btn_add:"+ DODAJ DO WIERSZA",btn_update:"ZAPISZ ZMIANY",sec_add:"2. Dodaj Widget",sec_edit:"2. Edytuj Widget"}
-             : {btn_add:"+ ADD TO ROW",btn_update:"UPDATE WIDGET",sec_add:"2. Add Widget",sec_edit:"2. Edit Widget"};
+             ? {btn_add:"+ DODAJ DO WIERSZA",btn_update:"ZAPISZ ZMIANY",sec_add:"2. Dodaj Widget",sec_edit:"2. Edytuj Widget", on:"WŁĄCZONE", off:"WYŁĄCZONE", open:"OTWARTE", closed:"ZAMKNIĘTE"}
+             : {btn_add:"+ ADD TO ROW",btn_update:"UPDATE WIDGET",sec_add:"2. Add Widget",sec_edit:"2. Edit Widget", on:"ON", off:"OFF", open:"OPEN", closed:"CLOSED"};
             const btn=document.getElementById('btn-action');
             const header=document.getElementById('form-header');
             if(btn){
@@ -395,35 +378,84 @@
             }
             if(header) header.innerText=editingIndices?dict.sec_edit:dict.sec_add;
         }
-        function normalizeState(s){
+
+        // Entity helpers
+        function getEntityData(id){ return entitiesData.find(e=>e.id===id)||null; }
+        function normalizeStateText(s){
             if(s==null) return null;
             s=String(s).toLowerCase().trim();
-            const PL={on:"WŁĄCZONE",off:"WYŁĄCZONE",open:"OTWARTE",closed:"ZAMKNIĘTE"};
-            const EN={on:"ON",off:"OFF",open:"OPEN",closed:"CLOSED"};
-            const T=currentLang==='pl'?PL:EN;
+            const T=currentLang==='pl'
+                ? {on:"WŁĄCZONE", off:"WYŁĄCZONE", open:"OTWARTE", closed:"ZAMKNIĘTE"}
+                : {on:"ON", off:"OFF", open:"OPEN", closed:"CLOSED"};
             if(['1','true','on'].includes(s)) return T.on;
             if(['0','false','off'].includes(s)) return T.off;
             if(s==='open') return T.open;
             if(s==='closed') return T.closed;
             return null;
         }
-        function getEntityData(id){ return entitiesData.find(e=>e.id===id)||null; }
+
+        // Icon state mapping: reflect ON/OFF/Open/Closed visually for switches/covers etc.
+        function getStateAwareIcon(widget){
+            const baseIcon = (widget.icon && widget.icon.trim()) ? widget.icon : pickAutoIcon(widget.type, widget.id);
+            const ent = getEntityData(widget.id);
+            if(!ent) return baseIcon;
+
+            const s = String(ent.state).toLowerCase().trim();
+            const i = (baseIcon || '').toLowerCase();
+
+            const isOn = (s==='on' || s==='true' || s==='1' || s==='open' || s==='unlocked');
+
+            // Rules only for actionable types
+            if(['switch','binary_sensor','cover','media_player','climate','script'].includes(widget.type)){
+                // Lights
+                if(i.includes('lightbulb')){
+                    return isOn ? 'mdi-lightbulb-on' : 'mdi-lightbulb-outline';
+                }
+                // Gate/Garage/Cover
+                if(i.includes('gate')) return isOn ? 'mdi-gate-open' : 'mdi-gate';
+                if(i.includes('garage')) return isOn ? 'mdi-garage-open' : 'mdi-garage';
+                if(i.includes('window-shutter')) return isOn ? 'mdi-window-shutter-open' : 'mdi-window-shutter';
+                // Lock
+                if(i.includes('lock')) return isOn ? 'mdi-lock-open' : 'mdi-lock';
+                // Media player
+                if(i.includes('play-circle') || i.includes('pause') || i.includes('stop')){
+                    if(s.includes('play')) return 'mdi-play-circle';
+                    if(s.includes('pause')) return 'mdi-pause-circle';
+                    if(s.includes('stop')) return 'mdi-stop-circle';
+                    return isOn ? 'mdi-play-circle' : 'mdi-play-circle-outline';
+                }
+                // Radiator / heating
+                if(i.includes('radiator')) return isOn ? 'mdi-radiator' : 'mdi-radiator-off';
+                // Water
+                if(i.includes('water-outline') || i.includes('water-off')){
+                    return isOn ? 'mdi-water-outline' : 'mdi-water-off';
+                }
+                // Toggle generic
+                if(i.includes('toggle-switch')) return isOn ? 'mdi-toggle-switch' : 'mdi-toggle-switch-off';
+            }
+            return baseIcon;
+        }
+
         function getDisplayState(id,type){
             const ent=getEntityData(id);
             if(!ent) return '';
-            if(['label','navigate'].includes(type)) return '';
-            const norm=normalizeState(ent.state);
-            if(type==='sensor'){
-                const raw=String(ent.state).trim();
-                if((raw==='1'||raw==='0')&&!ent.unit) return '';
-                if(!isNaN(parseFloat(raw)) && raw.includes('.')){
-                    const v=parseFloat(raw).toFixed(1);
-                    return ent.unit?`${v} ${ent.unit}`:v;
+            if(['label','navigate','sensor'].includes(type)) {
+                // sensors already show numeric/units elsewhere; for simplicity we hide ON/OFF here
+                if(type==='sensor'){
+                    const raw=String(ent.state).trim();
+                    if((raw==='1'||raw==='0') && !ent.unit) return '';
+                    if(!isNaN(parseFloat(raw)) && raw.includes('.')){
+                        const v=parseFloat(raw).toFixed(1);
+                        return ent.unit?`${v} ${ent.unit}`:v;
+                    }
+                    return ent.unit?`${raw} ${ent.unit}`:raw;
                 }
-                return ent.unit?`${raw} ${ent.unit}`:raw;
+                return '';
             }
-            return norm || String(ent.state).toUpperCase();
+            const norm = normalizeStateText(ent.state);
+            return norm || '';
         }
+
         function pickAutoIcon(type,id){
             const v=(id||'').toLowerCase();
             const map=[
@@ -446,6 +478,7 @@
             const f={switch:'mdi-toggle-switch',sensor:'mdi-gauge',cover:'mdi-gate',media_player:'mdi-play-circle',climate:'mdi-home-thermometer',binary_sensor:'mdi-alert-circle-outline',script:'mdi-script-text-outline',navigate:'mdi-arrow-right-circle',label:'mdi-label'};
             return f[type]||'mdi-help-circle-outline';
         }
+
         function renderRows(){
             const c=document.getElementById('rows-container');
             c.innerHTML='';
@@ -465,7 +498,7 @@
                     wDiv.dataset.title=w.name || resolveImportedTitle(w.id) || formatNameFromId(w.id);
                     if(editingIndices && editingIndices.r===rowIdx && editingIndices.w===i) wDiv.classList.add('being-edited');
 
-                    // sizing (make wider for multi-line titles)
+                    // sizing
                     let width= w.size ? parseInt(w.size.replace(/[()]/,'').split('x')[0]) : 2;
                     let height= w.size ? parseInt(w.size.replace(/[()]/,'').split('x')[1]) : 1;
                     const baseW=160, baseH=130;
@@ -474,16 +507,18 @@
 
                     wDiv.addEventListener('click',(e)=>{ e.stopPropagation(); editWidget(rowIdx,i); });
 
+                    // Title
                     const importedTitle=resolveImportedTitle(w.id);
                     const safeName=w.name && w.name.trim()?w.name:(importedTitle||formatNameFromId(w.id));
 
-                    const iconClass=w.icon && w.icon.trim()?w.icon:pickAutoIcon(w.type,w.id);
-                    const state=getDisplayState(w.id,w.type);
+                    // State-aware icon
+                    const iconClass = getStateAwareIcon(w);
+                    const stateText = getDisplayState(w.id, w.type);
 
                     wDiv.innerHTML=`
                         <div class="ew-title">${safeName}</div>
                         ${iconClass?`<i class="mdi ${iconClass} ew-icon"></i>`:`<div style="height:42px"></div>`}
-                        ${state?`<div class="ew-state">${state}</div>`:`<div style="height:14px"></div>`}
+                        ${stateText?`<div class="ew-state">${stateText}</div>`:`<div style="height:14px"></div>`}
                         <div class="ew-delete" onclick="removeWidget(${rowIdx},${i}); event.stopPropagation();">X</div>
                         <div class="ew-edit-overlay"></div>
                     `;
@@ -504,12 +539,15 @@
             });
             highlightActiveRow();
         }
+
         function highlightActiveRow(){
             document.querySelectorAll('.eink-row').forEach(r=>r.classList.remove('active'));
             const active=document.getElementById('row-'+activeRowIndex);
             if(active) active.classList.add('active');
         }
+
         function toggleImport(){ document.getElementById('import-area').classList.toggle('visible'); }
+
         function importYaml(){
             const code=document.getElementById('import-code').value;
             if(!code) return;
@@ -585,6 +623,7 @@
                 alert("Import OK");
             }catch(e){ alert("Import błąd: "+e.message); }
         }
+
         function editWidget(r,w){
             editingIndices={r,w};
             const wid=rows[r][w];
@@ -609,6 +648,7 @@
             refreshUIText();
             renderRows();
         }
+
         function cancelEdit(){
             editingIndices=null;
             clearForm();
@@ -617,6 +657,7 @@
             refreshUIText();
             renderRows();
         }
+
         function saveWidget(){
             const type=document.getElementById('new-widget-type').value;
             let name=document.getElementById('new-widget-name').value.trim();
@@ -646,6 +687,7 @@
             renderRows();
             refreshUIText();
         }
+
         function clearForm(){
             document.getElementById('new-entity-id').value='';
             document.getElementById('new-dashboard-name').value='';
