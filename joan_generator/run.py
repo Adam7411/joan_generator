@@ -7,48 +7,37 @@ print("--> 2. Biblioteki zaladowane.")
 
 app = Flask(__name__)
 
-# --- KONFIGURACJA TOKENA I URL ---
-# Domyślnie (automat) używamy Supervisora
+# --- KONFIGURACJA TOKENA ---
 TOKEN = os.environ.get('SUPERVISOR_TOKEN')
 API_URL = "http://supervisor/core/api" 
 TOKEN_SOURCE = "System (Supervisor)"
 
-# Sprawdzamy ręczny token
 try:
     with open('/data/options.json', 'r') as f:
         options = json.load(f)
         manual_token = options.get('manual_token')
         if manual_token and len(manual_token) > 10:
             TOKEN = manual_token
-            # !!! TU JEST ZMIANA !!!
-            # Ręczny token wymaga bezpośredniego adresu do Home Assistant, a nie Supervisora
             API_URL = "http://homeassistant:8123/api"
             TOKEN_SOURCE = "Reczny (Konfiguracja)"
             print("--> Znaleziono ręczny token. Zmieniam adres API na http://homeassistant:8123/api")
 except Exception as e:
     print(f"--> Info: Nie udalo sie odczytac opcji: {e}")
 
-# DEBUGOWANIE
 if not TOKEN:
     print("!!! UWAGA: Brak tokena (ani systemowego, ani ręcznego) !!!")
 else:
     print(f"--> Uzywany Token: {TOKEN_SOURCE}")
-    print(f"--> Adres API: {API_URL}")
 
 def get_ha_entities():
     if not TOKEN:
         return []
     
-    headers = {
-        "Authorization": f"Bearer {TOKEN}",
-        "Content-Type": "application/json",
-    }
+    headers = {"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json"}
     
     try:
-        # Używamy dynamicznego API_URL
         print(f"--> Pobieram encje z: {API_URL}/states")
         response = requests.get(f"{API_URL}/states", headers=headers, timeout=10)
-        
         if response.status_code == 200:
             data = response.json()
             entities = [state['entity_id'] for state in data]
@@ -59,10 +48,8 @@ def get_ha_entities():
             print(f"!!! Blad API Home Assistant: {response.status_code} - {response.text}")
     except Exception as e:
         print(f"!!! Wyjatek podczas pobierania encji: {e}")
-    
     return []
 
-# STYLE BEZ ZMIAN
 STYLES = {
     "title": "color: #000000; font-size: 20px; font-weight: 700; text-align: center; padding-top: 5px; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif;",
     "widget": "color: #000000 !important; background-color: #FFFFFF !important;",
@@ -117,6 +104,7 @@ def index():
                     
                     generated_yaml += f"{w_id}:\n"
                     
+                    # --- 1. NAWIGACJA ---
                     if w_type == 'navigate':
                         dashboard_name = w_id.replace('navigate.', '')
                         generated_yaml += f"  widget_type: navigate\n"
@@ -126,6 +114,7 @@ def index():
                         generated_yaml += f"  widget_style: \"background-color: #FFFFFF !important; border-radius: 8px !important; padding: 10px !important; color: #000000 !important;\"\n"
                         generated_yaml += f"  title_style: \"{STYLES['title']}\"\n"
                     
+                    # --- 2. SENSOR (liczbowy) ---
                     elif w_type == 'sensor':
                         generated_yaml += f"  widget_type: sensor\n"
                         generated_yaml += f"  entity: {w_id}\n"
@@ -139,22 +128,61 @@ def index():
                             generated_yaml += f"  icon: {w_icon}\n"
                             generated_yaml += f"  icon_style: \"{STYLES['icon']}\"\n"
 
-                    else:
-                        generated_yaml += f"  widget_type: {w_type}\n"
+                    # --- 3. MEDIA PLAYER ---
+                    elif w_type == 'media_player':
+                        generated_yaml += f"  widget_type: media_player\n"
                         generated_yaml += f"  entity: {w_id}\n"
                         generated_yaml += f"  title: {w_name}\n"
-                        generated_yaml += f"  icon_on: {w_icon if w_icon else 'mdi-toggle-switch'}\n"
-                        generated_yaml += f"  icon_off: {w_icon if w_icon else 'mdi-toggle-switch-off'}\n"
+                        generated_yaml += f"  truncate_name: 20\n" # Przycinanie dlugich tytulow piosenek
+                        generated_yaml += f"  step: 5\n"
+                        generated_yaml += f"  title_style: \"{STYLES['title']}\"\n"
+                        generated_yaml += f"  text_style: \"{STYLES['text']}\"\n"
+                        generated_yaml += f"  widget_style: \"{STYLES['widget']}\"\n"
+                        generated_yaml += f"  icon_style: \"{STYLES['icon']}\"\n"
+
+                    # --- 4. POZOSTAŁE (Switch, Light, Binary Sensor, Cover, Input Boolean) ---
+                    else:
+                        # Mapowanie typu z formularza na typ AppDaemon
+                        ad_type = w_type
+                        if w_type == 'binary_sensor': ad_type = 'binary_sensor'
+                        if w_type == 'input_boolean': ad_type = 'switch'
+                        
+                        generated_yaml += f"  widget_type: {ad_type}\n"
+                        generated_yaml += f"  entity: {w_id}\n"
+                        generated_yaml += f"  title: {w_name}\n"
+                        
+                        # Obsluga ikon
+                        if w_icon:
+                            generated_yaml += f"  icon_on: {w_icon}\n"
+                            generated_yaml += f"  icon_off: {w_icon}\n" # AppDaemon czasem wymaga obu
+                            # Dla niektorych typow uzywa sie po prostu 'icon'
+                            if w_type == 'script' or w_type == 'scene':
+                                generated_yaml += f"  icon: {w_icon}\n"
+                        else:
+                             generated_yaml += f"  icon_on: mdi-toggle-switch\n"
+                             generated_yaml += f"  icon_off: mdi-toggle-switch-off\n"
+
                         generated_yaml += f"  state_text: 1\n"
                         generated_yaml += f"  title_style: \"{STYLES['title']}\"\n"
                         generated_yaml += f"  widget_style: \"{STYLES['widget']}\"\n"
                         generated_yaml += f"  icon_style_active: \"{STYLES['icon']}\"\n"
                         generated_yaml += f"  icon_style_inactive: \"{STYLES['icon']}\"\n"
+                        
+                        # Generowanie mapowania stanow (state_map)
                         generated_yaml += "  state_map:\n"
-                        generated_yaml += "    \"on\": \"WL\"\n    \"off\": \"WYL\"\n"
-                        if w_type == 'cover':
-                            generated_yaml += "    \"open\": \"OTWARTA\"\n    \"closed\": \"ZAMKNIETA\"\n"
-                    
+                        generated_yaml += "    \"on\": \"WŁĄCZONE\"\n"
+                        generated_yaml += "    \"off\": \"WYŁĄCZONE\"\n"
+                        
+                        if w_type == 'cover' or w_type == 'binary_sensor':
+                            generated_yaml += "    \"open\": \"OTWARTE\"\n"
+                            generated_yaml += "    \"closed\": \"ZAMKNIĘTE\"\n"
+                            generated_yaml += "    \"opening\": \"OTWIERANIE\"\n"
+                            generated_yaml += "    \"closing\": \"ZAMYKANIE\"\n"
+                        
+                        if w_type == 'lock':
+                             generated_yaml += "    \"locked\": \"ZAMKNIĘTE\"\n"
+                             generated_yaml += "    \"unlocked\": \"OTWARTE\"\n"
+
                     generated_yaml += "\n"
             except Exception as e:
                 print(f"Blad przetwarzania JSON: {e}")
