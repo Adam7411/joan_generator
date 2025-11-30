@@ -1,15 +1,15 @@
 #!/bin/bash
-# Wersja produkcyjna z Emojis
+# Production Version with English Logs
 
 echo " "
-echo "🚀 URUCHAMIANIE GENERATORA JOAN 6..."
+echo "🚀 STARTING JOAN 6 DASHBOARD GENERATOR..."
 echo "---------------------------------------------------"
 
-# Naprawa formatowania (na wypadek edycji w Windows)
-echo "🔧 Naprawiam formatowanie plików (dos2unix)..."
+# Fix line endings (just in case)
+echo "🔧 Fixing file formatting (dos2unix)..."
 dos2unix /app/run.py
 
-# Uruchamiamy aplikację
-echo "🐍 Startuje Python..."
+# Start App
+echo "🐍 Starting Python..."
 echo "---------------------------------------------------"
 python3 -u /app/run.py
