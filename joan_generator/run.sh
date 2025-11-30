@@ -1,12 +1,15 @@
 #!/bin/bash
-echo "Startuje Joan Generator (Production Mode)..."
+# Wersja produkcyjna z Emojis
 
-# Naprawa formatowania
+echo " "
+echo "🚀 URUCHAMIANIE GENERATORA JOAN 6..."
+echo "---------------------------------------------------"
+
+# Naprawa formatowania (na wypadek edycji w Windows)
+echo "🔧 Naprawiam formatowanie plików (dos2unix)..."
 dos2unix /app/run.py
 
-# Uruchomienie przez GUNICORN (Serwer produkcyjny)
-# -w 2: Dwa procesy (szybciej)
-# -b: Port 5000
-# --chdir /app: Katalog pracy
-# run:app : Plik run.py, aplikacja o nazwie 'app'
-gunicorn -w 2 -b 0.0.0.0:5000 --chdir /app run:app
+# Uruchamiamy aplikację
+echo "🐍 Startuje Python..."
+echo "---------------------------------------------------"
+python3 -u /app/run.py
