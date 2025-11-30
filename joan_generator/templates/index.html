@@ -136,6 +136,7 @@
 
         <form method="POST" id="main-form">
             <input type="hidden" name="ui_language" id="ui_language" value="pl">
+            <input type="hidden" name="ui_theme" id="ui_theme" value="light">
             
             <div class="section">
                 <div class="section-title" data-i18n="sec_settings">1. Ustawienia</div>
@@ -214,15 +215,27 @@
                         <input list="icons-list" id="new-widget-icon" placeholder="np. mdi-home" oninput="updateIconPreview()">
                         <datalist id="icons-list"></datalist>
                     </div>
-                    
-                    <div class="flex-col" style="display:flex; align-items: flex-end; gap: 10px;">
-                        <button type="button" id="btn-action" class="btn btn-add" onclick="saveWidget()">
-                            <span data-i18n="btn_add">+ DODAJ DO WIERSZA</span>
-                        </button>
-                        <button type="button" id="btn-cancel" class="btn btn-cancel hidden" onclick="cancelEdit()">
-                            <span data-i18n="btn_cancel">Anuluj</span>
-                        </button>
+                </div>
+
+                <!-- Ikony ON/OFF dla typów akcyjnych (switch/cover itd.) -->
+                <div class="flex-row" style="margin-top: 10px;">
+                    <div class="flex-col">
+                        <label>Ikona ON (switch/cover)</label>
+                        <input list="icons-list" id="new-widget-icon-on" placeholder="np. mdi-lightbulb-on" oninput="updateIconPreview()">
                     </div>
+                    <div class="flex-col">
+                        <label>Ikona OFF (switch/cover)</label>
+                        <input list="icons-list" id="new-widget-icon-off" placeholder="np. mdi-lightbulb-outline" oninput="updateIconPreview()">
+                    </div>
+                </div>
+                
+                <div class="flex-row" style="display:flex; align-items: flex-end; gap: 10px;">
+                    <button type="button" id="btn-action" class="btn btn-add" onclick="saveWidget()">
+                        <span data-i18n="btn_add">+ DODAJ DO WIERSZA</span>
+                    </button>
+                    <button type="button" id="btn-cancel" class="btn btn-cancel hidden" onclick="cancelEdit()">
+                        <span data-i18n="btn_cancel">Anuluj</span>
+                    </button>
                 </div>
             </div>
 
@@ -330,9 +343,12 @@
 
         // Theme
         function toggleTheme() {
-            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.toggle('dark-mode');
+            localStorage.setItem('joan_theme', isDark ? 'dark' : 'light');
+            const themeInput = document.getElementById('ui_theme');
+            if (themeInput) themeInput.value = isDark ? 'dark' : 'light';
             const btn = document.getElementById('btn-theme');
-            btn.innerText = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
+            btn.innerText = isDark ? '☀️' : '🌙';
         }
 
         // States
@@ -368,7 +384,18 @@
             return norm || String(ent.state).toUpperCase();
         }
 
-        // Icons
+        // Smart ikony: para on/off i dobór po encji
+        function iconPairFor(id){
+            const v=(id||'').toLowerCase();
+            if(v.startsWith('light.')||v.includes('swiatlo')||v.includes('light')) return ['mdi-lightbulb-on','mdi-lightbulb-outline'];
+            if(v.startsWith('cover.')||v.includes('brama')||v.includes('gate')) return ['mdi-gate-open','mdi-gate'];
+            if(v.includes('garage')||v.includes('garaz')||v.includes('garaż')) return ['mdi-garage-open','mdi-garage'];
+            if(v.includes('radiator')||v.includes('ogrzew')||v.includes('grzejnik')) return ['mdi-radiator','mdi-radiator-off'];
+            if(v.includes('cwu')||v.includes('woda')||v.includes('water')) return ['mdi-water-outline','mdi-water-off'];
+            if(v.includes('window')||v.includes('roleta')||v.includes('blind')) return ['mdi-window-shutter-open','mdi-window-shutter'];
+            if(v.startsWith('input_boolean.')) return ['mdi-toggle-switch','mdi-toggle-switch-off'];
+            return ['mdi-toggle-switch','mdi-toggle-switch-off'];
+        }
         function pickAutoIcon(type, id) {
             const v = (id || '').toLowerCase();
             const map = [
@@ -395,6 +422,23 @@
                 navigate:'mdi-arrow-right-circle', label:'mdi-label'
             };
             return fallback[type] || 'mdi-help-circle-outline';
+        }
+        function pickPreviewIcon(widget){
+            const ent = getEntityData(widget.id);
+            const actionable = ['switch','cover','binary_sensor','media_player','climate','script'].includes(widget.type) || widget.id.startsWith('input_boolean.');
+            if(actionable){
+                let on = widget.icon_on, off = widget.icon_off;
+                if(!on || !off){
+                    const p = iconPairFor(widget.id);
+                    on = on || p[0];
+                    off= off|| p[1];
+                }
+                const st = ent ? String(ent.state).toLowerCase().trim() : 'off';
+                const isOn = (st==='on'||st==='true'||st==='1'||st==='open'||st==='unlocked');
+                return isOn ? on : off;
+            } else {
+                return (widget.icon && widget.icon.trim()) ? widget.icon : pickAutoIcon(widget.type, widget.id);
+            }
         }
 
         // Render
@@ -438,7 +482,7 @@
                     const importedTitle = resolveImportedTitle(widget.id);
                     const safeName = (widget.name && widget.name.trim()) ? widget.name : (importedTitle || formatNameFromId(widget.id));
 
-                    const iconClass = (widget.icon && widget.icon.trim()) ? widget.icon : pickAutoIcon(widget.type, widget.id);
+                    const iconClass = pickPreviewIcon(widget);
                     const iconHtml = iconClass ? `<i class="mdi ${iconClass} ew-icon"></i>` : `<div style="height:38px"></div>`;
 
                     const displayState = getDisplayState(widget.id, widget.type);
@@ -515,6 +559,7 @@
                     }
                 }
 
+                // mapa: definicja pod nazwą i pod entity
                 importedDefsMap = {};
                 Object.entries(rawDefs).forEach(([k, def]) => {
                     importedDefsMap[k] = def;
@@ -550,11 +595,20 @@
                         if (!name && def && def.entity) name = formatNameFromId(def.entity);
                         if (!name) name = formatNameFromId(id);
 
-                        let icon = (def && (def.icon || def.icon_on || def.icon_off || def.icon_inactive)) || '';
-                        if (!icon) icon = pickAutoIcon(type, def && def.entity ? def.entity : id);
-                        if (icon && !icon.startsWith('mdi-')) icon = 'mdi-' + icon;
+                        // ikony z importu (icon/icon_on/icon_off)
+                        let icon    = (def && def.icon) || '';
+                        let icon_on = def && (def.icon_on || def.icon_active) || '';
+                        let icon_off= def && (def.icon_off || def.icon_inactive) || '';
 
-                        newRow.push({ id, type, name, icon, size });
+                        const actionable = ['switch','cover','binary_sensor','media_player','climate','script'].includes(type) || id.startsWith('input_boolean.');
+                        if(actionable && (!icon_on || !icon_off)){
+                            const pair = iconPairFor(def && def.entity ? def.entity : id);
+                            icon_on = icon_on || pair[0];
+                            icon_off= icon_off|| pair[1];
+                        }
+                        [icon,icon_on,icon_off] = [icon,icon_on,icon_off].map(x => (x && !x.startsWith('mdi-')) ? ('mdi-'+x) : x);
+
+                        newRow.push({ id, type, name, icon, icon_on, icon_off, size });
                     });
                     if (newRow.length) rows.push(newRow);
                 });
@@ -591,6 +645,8 @@
 
             document.getElementById('new-widget-name').value = widget.name || '';
             document.getElementById('new-widget-icon').value = widget.icon || '';
+            const onEl = document.getElementById('new-widget-icon-on'); if(onEl) onEl.value = widget.icon_on || '';
+            const offEl= document.getElementById('new-widget-icon-off'); if(offEl) offEl.value= widget.icon_off || '';
             document.getElementById('new-widget-size').value = widget.size || '';
             updateIconPreview();
 
@@ -611,6 +667,8 @@
             const type = document.getElementById('new-widget-type').value;
             let name = document.getElementById('new-widget-name').value.trim();
             let icon = document.getElementById('new-widget-icon').value.trim();
+            let icon_on = (document.getElementById('new-widget-icon-on')?.value || '').trim();
+            let icon_off= (document.getElementById('new-widget-icon-off')?.value || '').trim();
             const size = document.getElementById('new-widget-size').value;
             let id = '';
 
@@ -624,10 +682,19 @@
             }
 
             if (!name) name = formatNameFromId(id);
-            if (!icon) icon = pickAutoIcon(type, id);
-            if (icon && !icon.startsWith('mdi-')) icon = 'mdi-' + icon;
 
-            const newWidget = { id, type, name, icon, size };
+            const actionable = ['switch','cover','binary_sensor','media_player','climate','script'].includes(type) || id.startsWith('input_boolean.');
+            if(actionable && (!icon_on || !icon_off)){
+                const pair = iconPairFor(id);
+                icon_on = icon_on || pair[0];
+                icon_off= icon_off|| pair[1];
+            }
+            if(!actionable && !icon){
+                icon = pickAutoIcon(type, id);
+            }
+            [icon,icon_on,icon_off] = [icon,icon_on,icon_off].map(x => (x && !x.startsWith('mdi-')) ? ('mdi-'+x) : x);
+
+            const newWidget = { id, type, name, icon, icon_on, icon_off, size };
 
             if (editingIndices) {
                 rows[editingIndices.r][editingIndices.w] = newWidget;
@@ -646,6 +713,8 @@
             document.getElementById('new-dashboard-name').value = '';
             document.getElementById('new-widget-name').value = '';
             document.getElementById('new-widget-icon').value = '';
+            const onEl = document.getElementById('new-widget-icon-on'); if(onEl) onEl.value = '';
+            const offEl= document.getElementById('new-widget-icon-off'); if(offEl) offEl.value= '';
             document.getElementById('new-widget-size').value = '';
             updateIconPreview();
         }
@@ -688,7 +757,9 @@
         }
         fetchIcons();
         function updateIconPreview() {
-            const val = document.getElementById('new-widget-icon').value;
+            const val = (document.getElementById('new-widget-icon-on')?.value || '').trim()
+                     || (document.getElementById('new-widget-icon-off')?.value || '').trim()
+                     || document.getElementById('new-widget-icon').value.trim();
             const preview = document.getElementById('icon-preview-i');
             preview.className = (val && val.startsWith('mdi-')) ? 'mdi ' + val : 'mdi mdi-help-circle-outline';
         }
@@ -719,9 +790,19 @@
             }
 
             const savedLang = localStorage.getItem('joan_lang') || 'pl';
-            const savedTheme = localStorage.getItem('joan_theme') || 'light';
             setLang(savedLang);
-            if (savedTheme === 'dark') document.body.classList.add('dark-mode');
+
+            const themeInput = document.getElementById('ui_theme');
+            const persistedTheme = themeInput && themeInput.value ? themeInput.value : (localStorage.getItem('joan_theme') || 'light');
+            if (persistedTheme === 'dark') {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+            const btn = document.getElementById('btn-theme');
+            btn.innerText = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
+            if (themeInput) themeInput.value = document.body.classList.contains('dark-mode') ? 'dark' : 'light';
+
             if (!rows.length) addNewRow();
         });
     </script>
