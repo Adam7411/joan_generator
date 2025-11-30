@@ -125,7 +125,6 @@
         }
         body.dark-mode .file-path-info code { background: rgba(0,0,0,0.3); color: #f48fb1; }
         
-        /* Link na białym tle, zawsze klikalny */
         .file-path-info a { 
             background: var(--link-bg);
             padding: 6px 10px;
@@ -260,7 +259,7 @@
                         <datalist id="icons-list"></datalist>
                     </div>
                     
-                    <div class="flex-col" style="display:flex; align-items: flex-end;">
+                    <div class="flex-col" style="display:flex; align-items: flex-end; gap: 10px;">
                         <button type="button" id="btn-action" class="btn btn-add" onclick="saveWidget()">
                             <span data-i18n="btn_add">+ DODAJ DO WIERSZA</span>
                         </button>
@@ -338,12 +337,12 @@
         let currentLang = 'pl';
         let rows = [];
         let activeRowIndex = 0;
-        let editingIndices = null; 
+        let editingIndices = null;
 
-        // --- HELPERS ---
+        // Build title from id/entity when missing
         function formatNameFromId(id) {
             if (!id) return "";
-            if (id.includes("navigate.")) return id.replace("navigate.", "");
+            if (id.startsWith("navigate.")) return id.replace("navigate.", "");
             let name = id.split('.').pop();
             name = name.replace(/_/g, ' ');
             return name.replace(/\b\w/g, l => l.toUpperCase());
@@ -369,9 +368,7 @@
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
                 if(translations[currentLang][key]) {
-                    if(el.tagName === 'SPAN' && el.parentElement.tagName === 'BUTTON') el.innerText = translations[currentLang][key];
-                    else if (el.tagName === 'STRONG') el.innerText = translations[currentLang][key];
-                    else el.innerText = translations[currentLang][key];
+                    el.innerText = translations[currentLang][key];
                 }
             });
             const btn = document.getElementById('btn-action');
@@ -439,6 +436,7 @@
             }
         }
 
+        // IMPORTANT: Always show button title, keep edit working
         function renderRows() {
             const container = document.getElementById('rows-container');
             container.innerHTML = '';
@@ -449,7 +447,7 @@
                 const rowDiv = document.createElement('div');
                 rowDiv.className = 'eink-row';
                 rowDiv.id = 'row-' + index;
-                rowDiv.onclick = () => { if(editingIndices) cancelEdit(); activeRowIndex = index; highlightActiveRow(); };
+                rowDiv.addEventListener('click', () => { if(editingIndices) cancelEdit(); activeRowIndex = index; highlightActiveRow(); });
 
                 const rowLabel = document.createElement('div');
                 rowLabel.style.position = 'absolute'; rowLabel.style.top = '-10px'; rowLabel.style.left='5px'; 
@@ -471,16 +469,22 @@
                         h = (rowsVal * 60) + ((rowsVal - 1) * 5);
                     }
                     wDiv.style.width = w + 'px'; wDiv.style.height = h + 'px'; if (h < 70) wDiv.style.fontSize = '0.9em';
-                    wDiv.onclick = (e) => { e.stopPropagation(); editWidget(index, wIndex); };
+
+                    // Edit click: keep working
+                    wDiv.addEventListener('click', (e) => { e.stopPropagation(); editWidget(index, wIndex); });
 
                     const liveIcon = getLiveIcon(widget);
                     const iconClass = liveIcon ? liveIcon : ''; 
                     let iconHtml = iconClass ? `<i class="mdi ${iconClass} ew-icon"></i>` : `<div style="height:28px"></div>`;
                     let displayState = getEntityState(widget.id) || defaultStates[widget.type] || '---';
 
-                    // Tytuł na ekranie – zawsze pokazuj nazwę; jeśli brak, zbuduj z encji/id
-                    const safeName = widget.name || formatNameFromEntity(widget.id) || formatNameFromId(widget.id);
-                    wDiv.innerHTML = `<div class="ew-title">${safeName}</div>${iconHtml}<div class="ew-state">${displayState}</div><div class="ew-delete" onclick="removeWidget(${index}, ${wIndex}); event.stopPropagation();">X</div><div class="ew-edit-overlay"></div>`;
+                    // Title for button: prefer widget.name (Tytuł na ekranie)
+                    const safeName = widget.name && widget.name.trim() ? widget.name : (formatNameFromEntity(widget.id) || formatNameFromId(widget.id));
+
+                    // Delete button keeps edit
+                    const delBtn = `<div class="ew-delete" onclick="removeWidget(${index}, ${wIndex}); event.stopPropagation();">X</div>`;
+
+                    wDiv.innerHTML = `<div class="ew-title">${safeName}</div>${iconHtml}<div class="ew-state">${displayState}</div>${delBtn}<div class="ew-edit-overlay"></div>`;
                     rowDiv.appendChild(wDiv);
                 });
 
@@ -488,7 +492,7 @@
                     const del = document.createElement('button');
                     del.innerText = 'USUŃ'; del.className='btn-remove-row btn';
                     del.style.position='absolute'; del.style.right='5px'; del.style.top='5px';
-                    del.onclick = (e) => { e.stopPropagation(); deleteRow(index); };
+                    del.addEventListener('click', (e) => { e.stopPropagation(); deleteRow(index); });
                     rowDiv.appendChild(del);
                 }
                 container.appendChild(rowDiv);
@@ -498,7 +502,6 @@
 
         function toggleImport() { document.getElementById('import-area').classList.toggle('visible'); }
         
-        // --- IMPORT LOGIC (wyciąganie tytułów) ---
         function importYaml() {
             const code = document.getElementById('import-code').value;
             if (!code) return;
@@ -555,7 +558,7 @@
                         const id = item;
                         const def = widgetDefs[id] || {};
                         
-                        // Detekcja typu
+                        // Type detection
                         let type = def.widget_type || '';
                         if (!type) {
                             if (id.startsWith('navigate.')) type = 'navigate';
@@ -565,15 +568,15 @@
                             else if (id.startsWith('media_player.')) type = 'media_player';
                             else if (id.startsWith('climate.')) type = 'climate';
                             else if (id.startsWith('light.') || id.startsWith('switch.')) type = 'switch';
-                            else type = 'switch'; // domyślnie
+                            else type = 'switch';
                         }
 
-                        // Nazwa: preferuj title, jeśli brak, z entity, jeśli też brak – z id
-                        let name = def.title;
+                        // Title: prefer def.title; else from def.entity; else from id
+                        let name = def.title && def.title.trim() ? def.title : '';
                         if (!name && def.entity) name = formatNameFromEntity(def.entity);
                         if (!name) name = formatNameFromId(id);
 
-                        // Ikona: wybierz najlepszą dostępną
+                        // Icon normalize
                         let icon = def.icon || def.icon_on || def.icon_off || def.icon_inactive || '';
                         if (icon && !icon.startsWith('mdi-')) icon = 'mdi-' + icon;
 
@@ -587,68 +590,119 @@
             } catch (e) { alert("Import failed: " + e.message); }
         }
 
+        // Keep edit working for new buttons
         function editWidget(r, w) {
-            editingIndices = { r, w }; const widget = rows[r][w]; activeRowIndex = r; highlightActiveRow();
-            document.getElementById('new-widget-type').value = widget.type; toggleInputs();
-            if (widget.type === 'navigate') document.getElementById('new-dashboard-name').value = widget.id.replace('navigate.', '');
-            else document.getElementById('new-entity-id').value = widget.id;
-            document.getElementById('new-widget-name').value = widget.name;
-            document.getElementById('new-widget-icon').value = widget.icon;
+            editingIndices = { r, w };
+            const widget = rows[r][w];
+            activeRowIndex = r;
+            highlightActiveRow();
+
+            document.getElementById('new-widget-type').value = widget.type;
+            toggleInputs();
+
+            if (widget.type === 'navigate') {
+                document.getElementById('new-dashboard-name').value = widget.id.replace('navigate.', '');
+                document.getElementById('group-nav').classList.remove('hidden');
+                document.getElementById('group-entity').classList.add('hidden');
+            } else {
+                document.getElementById('new-entity-id').value = widget.id;
+                document.getElementById('group-entity').classList.remove('hidden');
+                document.getElementById('group-nav').classList.add('hidden');
+            }
+
+            document.getElementById('new-widget-name').value = widget.name || '';
+            document.getElementById('new-widget-icon').value = widget.icon || '';
             document.getElementById('new-widget-size').value = widget.size || '';
             updateIconPreview();
+
             document.getElementById('widget-form-box').classList.add('editing');
             document.getElementById('btn-cancel').classList.remove('hidden');
-            refreshUIText(); renderRows();
+            refreshUIText();
+            renderRows();
         }
 
         function cancelEdit() {
-            editingIndices = null; clearForm();
+            editingIndices = null;
+            clearForm();
             document.getElementById('widget-form-box').classList.remove('editing');
             document.getElementById('btn-cancel').classList.add('hidden');
-            refreshUIText(); renderRows();
+            refreshUIText();
+            renderRows();
         }
 
+        // Ensure new button shows title and can be edited
         function saveWidget() {
             const type = document.getElementById('new-widget-type').value;
-            let name = document.getElementById('new-widget-name').value;
-            let icon = document.getElementById('new-widget-icon').value;
+            let name = document.getElementById('new-widget-name').value.trim();
+            let icon = document.getElementById('new-widget-icon').value.trim();
             const size = document.getElementById('new-widget-size').value;
             let id = '';
+
             if (type === 'navigate') {
                 const dashName = document.getElementById('new-dashboard-name').value.trim();
-                if (!dashName) { alert("Dashboard name required"); return; }
+                if (!dashName) { alert(currentLang === 'pl' ? "Wymagana nazwa dashboardu" : "Dashboard name required"); return; }
                 id = 'navigate.' + dashName;
             } else {
-                id = document.getElementById('new-entity-id').value;
-                if(!id) { alert("Entity required"); return; }
+                id = document.getElementById('new-entity-id').value.trim();
+                if(!id) { alert(currentLang === 'pl' ? "Wymagana encja" : "Entity required"); return; }
             }
-            if (!name) name = formatNameFromId(id);
-            if(icon && !icon.startsWith('mdi-') && icon !== '') icon = 'mdi-' + icon;
+
+            // Title fallback – ALWAYS produce a visible name
+            if (!name) {
+                name = type === 'navigate' ? dashNameFromId(id) : formatNameFromId(id);
+            }
+            function dashNameFromId(navId) {
+                return navId.replace('navigate.', '').replace(/_/g,' ').replace(/\b\w/g, l => l.toUpperCase());
+            }
+
+            if(icon && !icon.startsWith('mdi-')) icon = 'mdi-' + icon;
+
             const newWidget = { id, type, name, icon, size };
-            if (editingIndices) { rows[editingIndices.r][editingIndices.w] = newWidget; cancelEdit(); } 
-            else { if (rows.length === 0) addNewRow(); rows[activeRowIndex].push(newWidget); clearForm(); }
+
+            if (editingIndices) {
+                rows[editingIndices.r][editingIndices.w] = newWidget;
+                cancelEdit();
+            } else {
+                if (rows.length === 0) addNewRow();
+                rows[activeRowIndex].push(newWidget);
+                clearForm();
+                document.getElementById('widget-form-box').classList.remove('editing');
+                document.getElementById('btn-cancel').classList.add('hidden');
+            }
             renderRows();
         }
 
         function clearForm() {
-            document.getElementById('new-entity-id').value = ''; document.getElementById('new-dashboard-name').value = '';
-            document.getElementById('new-widget-name').value = ''; document.getElementById('new-widget-icon').value = '';
-            document.getElementById('new-widget-size').value = ''; updateIconPreview();
+            document.getElementById('new-entity-id').value = '';
+            document.getElementById('new-dashboard-name').value = '';
+            document.getElementById('new-widget-name').value = '';
+            document.getElementById('new-widget-icon').value = '';
+            document.getElementById('new-widget-size').value = '';
+            updateIconPreview();
         }
 
-        function removeWidget(r, w) { if (editingIndices && editingIndices.r === r && editingIndices.w === w) cancelEdit(); rows[r].splice(w, 1); renderRows(); }
+        function removeWidget(r, w) {
+            if (editingIndices && editingIndices.r === r && editingIndices.w === w) cancelEdit();
+            rows[r].splice(w, 1);
+            renderRows();
+        }
 
         function toggleInputs() {
             const type = document.getElementById('new-widget-type').value;
-            const groupEntity = document.getElementById('group-entity'); const groupNav = document.getElementById('group-nav');
-            const iconInput = document.getElementById('new-widget-icon'); const sizeInput = document.getElementById('new-widget-size');
+            const groupEntity = document.getElementById('group-entity');
+            const groupNav = document.getElementById('group-nav');
+            const iconInput = document.getElementById('new-widget-icon');
+            const sizeInput = document.getElementById('new-widget-size');
+
             if (type === 'navigate') {
-                groupEntity.classList.add('hidden'); groupNav.classList.remove('hidden');
+                groupEntity.classList.add('hidden');
+                groupNav.classList.remove('hidden');
                 if(!iconInput.value) { iconInput.value = 'mdi-arrow-right-circle'; updateIconPreview(); }
             } else {
-                groupEntity.classList.remove('hidden'); groupNav.classList.add('hidden');
+                groupEntity.classList.remove('hidden');
+                groupNav.classList.add('hidden');
             }
-            if((detectedType === 'media_player' || detectedType === 'climate') && !sizeInput.value) { sizeInput.value = '(2x2)'; }
+            if((type === 'media_player' || type === 'climate') && !sizeInput.value) { sizeInput.value = '(2x2)'; }
         }
 
         async function fetchIcons() {
@@ -687,41 +741,14 @@
         function addNewRow() { rows.push([]); renderRows(); activeRowIndex = rows.length - 1; highlightActiveRow(); }
         function deleteRow(i) { rows.splice(i, 1); if(activeRowIndex >= rows.length) activeRowIndex = rows.length - 1; renderRows(); }
         function submitForm() { document.getElementById('layout_data_json').value = JSON.stringify(rows); document.getElementById('main-form').submit(); }
-        function addWidgetToStaging() { saveWidget(); }
 
-        function megaAutoConfig() {
-            const id = document.getElementById('new-entity-id').value.toLowerCase();
-            const typeSelect = document.getElementById('new-widget-type');
-            const iconInput = document.getElementById('new-widget-icon');
-            const sizeInput = document.getElementById('new-widget-size');
-            if(typeSelect.value === 'navigate') return; 
-            let detectedType = '';
-            if(id.startsWith('sensor.')) detectedType = 'sensor';
-            else if(id.startsWith('binary_sensor.')) detectedType = 'binary_sensor';
-            else if(id.startsWith('cover.')) detectedType = 'cover';
-            else if(id.startsWith('media_player.')) detectedType = 'media_player';
-            else if(id.startsWith('climate.')) detectedType = 'climate';
-            else if(id.startsWith('light.') || id.startsWith('switch.')) detectedType = 'switch';
-            if(detectedType) {
-                typeSelect.value = detectedType;
-                if((detectedType === 'media_player' || detectedType === 'climate') && !sizeInput.value) sizeInput.value = '(2x2)';
-            }
-            if(iconInput.value) return; 
-            const keywords = { 'battery': 'mdi-battery', 'temp': 'mdi-thermometer', 'light': 'mdi-lightbulb', 'garage': 'mdi-garage', 'lock': 'mdi-lock', 'fan': 'mdi-fan' };
-            for (const [key, icon] of Object.entries(keywords)) {
-                if (id.includes(key)) { iconInput.value = icon; updateIconPreview(); break; }
-            }
-        }
-
-        // --- IP REPLACEMENT & INIT ---
-        window.addEventListener('DOMContentLoaded', (event) => {
+        // Link fix and init
+        window.addEventListener('DOMContentLoaded', () => {
             const haHost = window.location.hostname;
             const codePath = document.getElementById('path-code');
             const linkDash = document.getElementById('dashboard-link');
 
-            // Ustal docelowy URL dashboardu i wymuś klikalność + biały background
-            const dashNameEl = "{{ dash_name }}";
-            const dashNameStr = (dashNameEl && dashNameEl !== 'None') ? dashNameEl : '';
+            const dashNameStr = "{{ dash_name }}" && "{{ dash_name }}" !== 'None' ? "{{ dash_name }}" : '';
             const finalHref = `http://${haHost}:5050/${dashNameStr}`;
 
             if (linkDash) {
@@ -731,7 +758,6 @@
                 linkDash.style.color = 'var(--link-color)';
                 linkDash.style.border = '1px solid var(--link-border)';
             }
-
             if(codePath) codePath.innerHTML = codePath.innerHTML.replace('IP_HA', haHost);
 
             const savedLang = localStorage.getItem('joan_lang') || 'pl';
