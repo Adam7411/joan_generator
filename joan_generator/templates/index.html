@@ -56,6 +56,7 @@
         .icon-preview-box { width: 42px; height: 42px; background: #fff; border: 1px solid #ccc; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #333; margin-bottom: 1px; }
         .btn { padding: 10px 20px; border: none; cursor: pointer; border-radius: 4px; font-weight: bold; text-transform: uppercase; }
         .btn-primary { background-color: var(--accent-color); color: white; width: 100%; font-size: 18px; margin-top: 20px; }
+        .btn-secondary { background-color: #607d8b; color:#fff; width:100%; margin-top:10px; }
         .btn-add { background-color: #4caf50; color: white; width: 100%; }
         .btn-update { background-color: #ff9800; color: white; width: 100%; }
         .btn-cancel { background-color: #9e9e9e; color: white; margin-left: 10px; }
@@ -129,7 +130,9 @@
         <form method="POST" id="main-form">
             <input type="hidden" name="ui_language" id="ui_language" value="pl">
             <input type="hidden" name="ui_theme" id="ui_theme" value="light">
-            
+            <input type="hidden" name="layout_data_json" id="layout_data_json">
+            <input type="hidden" name="generated_yaml_client" id="generated_yaml_client">
+
             <div class="section">
                 <div class="section-title" data-i18n="sec_settings">1. Ustawienia</div>
                 <div class="flex-row">
@@ -175,6 +178,7 @@
                         <input type="text" id="new-widget-name" placeholder="np. Kuchnia">
                     </div>
                 </div>
+
                 <div class="flex-row" style="margin-top: 10px; align-items: flex-end;">
                     <div class="flex-col" style="max-width: 150px;">
                         <label data-i18n="label_size">Rozmiar</label>
@@ -208,6 +212,7 @@
                         <input list="icons-list" id="new-widget-icon-off" placeholder="np. mdi-lightbulb-outline" oninput="userEditedIconPair();updateIconPreview()" autocomplete="off">
                     </div>
                 </div>
+
                 <div class="flex-row" style="display:flex; align-items: flex-end; gap: 10px;">
                     <button type="button" id="btn-action" class="btn btn-add" onclick="saveWidget()">
                         <span data-i18n="btn_add">+ DODAJ DO WIERSZA</span>
@@ -226,15 +231,28 @@
                 </button>
             </div>
 
-            <input type="hidden" name="layout_data_json" id="layout_data_json">
+            <button type="button" class="btn btn-secondary" onclick="generateLocalYaml()">
+                LOKALNY PODGLĄD YAML (z ikonami)
+            </button>
             <button type="button" class="btn btn-primary" onclick="submitForm()">
-                <span data-i18n="btn_generate">GENERUJ KOD .DASH</span>
+                <span data-i18n="btn_generate">GENERUJ KOD .DASH (SERWER)</span>
             </button>
         </form>
 
+        <div id="local-yaml-section" class="section hidden">
+            <h3>Podgląd YAML (Lokalny - do skopiowania)</h3>
+            <div class="file-path-info">
+                <strong>1. Zapisz plik:</strong>
+                <code id="local-path-code">\\IP_HA\addon_configs\appdaemon\dashboards\<span id="local-filename">JoanDashboard.dash</span></code>
+                <strong>2. Restart AppDaemon i otwórz dashboard:</strong>
+                <a href="#" id="local-dashboard-link" target="_blank">http://IP_HA:5050/<span id="local-dashname">JoanDashboard</span></a>
+            </div>
+            <textarea id="local-yaml-output" class="output" readonly></textarea>
+        </div>
+
         {% if generated_yaml %}
         <div class="section">
-            <h3 data-i18n="sec_code">Twój kod YAML:</h3>
+            <h3 data-i18n="sec_code">Twój kod YAML (Serwer):</h3>
             <div class="file-path-info">
                 <strong data-i18n="info_step1">1. Zapisz kod w pliku:</strong>
                 <code id="path-code">\\IP_HA\addon_configs\appdaemon\dashboards\{{ filename }}</code>
@@ -281,30 +299,31 @@
         };
 
         const entitiesData = {{ entities | tojson }};
-        let currentLang = 'pl';
-        let rows = [];
-        let activeRowIndex = 0;
-        let editingIndices = null;
-        let importedDefsMap = {};
-        let lastAutoName = '';
-        let userEditedName = false;
-        let lastAutoIcon = '';
-        let userEditedIconFlag = false;
-        let userEditedIconPairFlag = false;
+        let currentLang='pl';
+        let rows=[];
+        let activeRowIndex=0;
+        let editingIndices=null;
+        let importedDefsMap={};
 
-        function formatNameFromId(id) {
-            if (!id) return "";
-            if (id.startsWith('navigate.')) return id.replace('navigate.','').replace(/_/g,' ').replace(/\b\w/g,l=>l.toUpperCase());
-            const last = id.includes('.') ? id.split('.').pop() : id;
+        let lastAutoName='';
+        let userEditedName=false;
+        let lastAutoIcon='';
+        let userEditedIconFlag=false;
+        let userEditedIconPairFlag=false;
+
+        function formatNameFromId(id){
+            if(!id)return "";
+            if(id.startsWith('navigate.')) return id.replace('navigate.','').replace(/_/g,' ').replace(/\b\w/g,l=>l.toUpperCase());
+            const last=id.includes('.')?id.split('.').pop():id;
             return last.replace(/_/g,' ').replace(/\b\w/g,l=>l.toUpperCase());
         }
 
-        function resolveImportedTitle(id) {
-            if (importedDefsMap[id] && importedDefsMap[id].title) return importedDefsMap[id].title;
-            const shortId = id.split('.').pop();
-            if (importedDefsMap[shortId] && importedDefsMap[shortId].title) return importedDefsMap[shortId].title;
-            for (const k in importedDefsMap) {
-                if (importedDefsMap[k].entity === id && importedDefsMap[k].title) return importedDefsMap[k].title;
+        function resolveImportedTitle(id){
+            if(importedDefsMap[id] && importedDefsMap[id].title) return importedDefsMap[id].title;
+            const shortId=id.split('.').pop();
+            if(importedDefsMap[shortId] && importedDefsMap[shortId].title) return importedDefsMap[shortId].title;
+            for(const k in importedDefsMap){
+                if(importedDefsMap[k].entity===id && importedDefsMap[k].title) return importedDefsMap[k].title;
             }
             return '';
         }
@@ -327,7 +346,7 @@
             });
             const btn=document.getElementById('btn-action');
             const rowNum=activeRowIndex+1;
-            if(btn) btn.querySelector('span').innerText = (editingIndices?dict.btn_update:`${dict.btn_add} (${currentLang==='pl'?'Wiersz':'Row'} ${rowNum})`);
+            if(btn) btn.querySelector('span').innerText=(editingIndices?dict.btn_update:`${dict.btn_add} (${currentLang==='pl'?'Wiersz':'Row'} ${rowNum})`);
             const header=document.getElementById('form-header');
             if(header) header.innerText=editingIndices?dict.sec_edit:dict.sec_add;
         }
@@ -337,8 +356,7 @@
             localStorage.setItem('joan_theme',isDark?'dark':'light');
             const themeInput=document.getElementById('ui_theme');
             if(themeInput) themeInput.value=isDark?'dark':'light';
-            const btn=document.getElementById('btn-theme');
-            btn.innerText=isDark?'☀️':'🌙';
+            document.getElementById('btn-theme').innerText=isDark?'☀️':'🌙';
         }
 
         function normalizeState(state){
@@ -361,7 +379,7 @@
             const norm=normalizeState(ent.state);
             if(type==='sensor'){
                 const s=String(ent.state).trim();
-                if((s==='1'||s==='0')&&!ent.unit) return '';
+                if((s==='1'||s==='0') && !ent.unit) return '';
                 if(!isNaN(parseFloat(s)) && s.includes('.')){
                     const v=parseFloat(s).toFixed(1);
                     return ent.unit?`${v} ${ent.unit}`:v;
@@ -420,8 +438,7 @@
                 let on=widget.icon_on,off=widget.icon_off;
                 if(!on||!off){
                     const p=iconPairFor(widget.id);
-                    on=on||p[0];
-                    off=off||p[1];
+                    on=on||p[0]; off=off||p[1];
                 }
                 const st=ent?String(ent.state).toLowerCase().trim():'off';
                 const isOn=(st==='on'||st==='true'||st==='1'||st==='open'||st==='unlocked');
@@ -434,7 +451,6 @@
         function userEditedIcon(){ userEditedIconFlag=true; }
         function userEditedIconPair(){ userEditedIconPairFlag=true; }
         function userEditedNameCheck(){ userEditedName=true; }
-
         document.getElementById('new-widget-name').addEventListener('input', userEditedNameCheck);
 
         function smartAutoFill(){
@@ -450,7 +466,6 @@
             if(!raw) return;
             const id=raw.toLowerCase();
 
-            // Typ
             if(id.startsWith('sensor.')) typeSel.value='sensor';
             else if(id.startsWith('binary_sensor.')) typeSel.value='binary_sensor';
             else if(id.startsWith('cover.')) typeSel.value='cover';
@@ -461,7 +476,6 @@
 
             if((typeSel.value==='media_player'||typeSel.value==='climate')&&!sizeInput.value) sizeInput.value='(2x2)';
 
-            // Tytuł: ustaw zawsze jeśli użytkownik jeszcze nie edytował lub aktualna wartość równa poprzedni auto-tytuł
             const autoName=formatNameFromId(id);
             if(!userEditedName || nameInput.value===lastAutoName || nameInput.value.trim()===''){
                 nameInput.value=autoName;
@@ -476,7 +490,7 @@
                     iconOffInput.value=pair[1];
                 }
                 if(!userEditedIconFlag){
-                    iconInput.value=''; // używamy pary
+                    iconInput.value='';
                 }
             }else{
                 if(!userEditedIconFlag || iconInput.value===lastAutoIcon || iconInput.value.trim()===''){
@@ -548,7 +562,7 @@
 
                     wDiv.addEventListener('click',(e)=>{ e.stopPropagation(); editWidget(index,wIndex); });
 
-                    const safeName = widget.name && widget.name.trim() ? widget.name : formatNameFromId(widget.id);
+                    const safeName=widget.name && widget.name.trim()?widget.name:formatNameFromId(widget.id);
                     const iconClass=pickPreviewIcon(widget);
                     const iconHtml=iconClass?`<i class="mdi ${iconClass} ew-icon"></i>`:`<div style="height:38px"></div>`;
                     const displayState=getDisplayState(widget.id,widget.type);
@@ -570,10 +584,9 @@
                     del.style.position='absolute';
                     del.style.right='5px';
                     del.style.top='5px';
-                    del.addEventListener('click',(e)=>{ e.stopPropagation(); deleteRow(index); });
+                    del.addEventListener('click',(e)=>{e.stopPropagation();deleteRow(index);});
                     rowDiv.appendChild(del);
                 }
-
                 container.appendChild(rowDiv);
             });
             highlightActiveRow();
@@ -597,18 +610,15 @@
                     const line=lineRaw.split('#')[0].trim();
                     if(!line) continue;
                     if(line.startsWith('layout:')){ parsingLayout=true; continue; }
-
                     if(!parsingLayout && /^title:/.test(lineRaw)){
                         const parts=lineRaw.split(':');
                         document.getElementById('dash-title').value=parts.slice(1).join(':').trim().replace(/['"]/g,'');
                         continue;
                     }
-
                     if(parsingLayout){
                         if(line.startsWith('-')) layoutLines.push(line);
                         else if(/^\S+:/.test(lineRaw)) parsingLayout=false;
                     }
-
                     if(!parsingLayout){
                         const matchRoot=lineRaw.match(/^([a-zA-Z0-9_\.\-]+)\s*:/);
                         if(matchRoot){
@@ -676,9 +686,7 @@
                 highlightActiveRow();
                 toggleImport();
                 alert("Import successful!");
-            }catch(e){
-                alert("Import failed: "+e.message);
-            }
+            }catch(e){ alert("Import failed: "+e.message); }
         }
 
         function editWidget(r,w){
@@ -733,7 +741,6 @@
                 id=document.getElementById('new-entity-id').value.trim();
                 if(!id){ alert(currentLang==='pl'?"Wymagana encja":"Entity required"); return; }
             }
-
             if(!name) name=formatNameFromId(id);
 
             const actionable=['switch','cover','binary_sensor','media_player','climate','script'].includes(type)||id.startsWith('input_boolean.');
@@ -758,7 +765,6 @@
                 clearForm();
             }
             renderRows();
-            // reset helper flags after save
             lastAutoName='';
             userEditedName=false;
             lastAutoIcon='';
@@ -840,8 +846,83 @@
             renderRows();
         }
 
+        function buildLayoutLine(rowWidgets){
+            return '- ' + rowWidgets.map(w=>{
+                const base=w.id + (w.size?(' '+w.size):'');
+                return base;
+            }).join(', ');
+        }
+
+        function generateLocalYaml(){
+            if(!rows.length){ alert("Brak widgetów"); return; }
+            const title=document.getElementById('dash-title').value.trim()||'Dashboard';
+            const lang=currentLang;
+            const T=translations[lang];
+            let yaml=`title: "${title}"\n`;
+            yaml+=`widget_dimensions: [120,120]\nwidget_margins: [5,5]\nlayout:\n`;
+            rows.forEach(r=>{ yaml+=buildLayoutLine(r)+"\n"; });
+
+            // Widget definitions
+            rows.forEach(r=>{
+                r.forEach(w=>{
+                    // Klucz YAML = unikalna nazwa (id lub id z kropką)
+                    const key=w.id;
+                    yaml+=`${key}:\n`;
+                    yaml+=`  widget_type: ${w.type}\n`;
+                    yaml+=`  title: "${w.name.replace(/"/g,'\\"')}"\n`;
+                    if(w.type==='navigate'){
+                        const target=w.id.replace('navigate.','');
+                        yaml+=`  dashboard: ${target}\n`;
+                    }else{
+                        yaml+=`  entity: ${w.id}\n`;
+                    }
+                    const actionable=['switch','cover','binary_sensor','media_player','climate','script'].includes(w.type)||w.id.startsWith('input_boolean.');
+                    if(actionable){
+                        // Mapowanie stanów (tylko jeśli brak niestandardowych)
+                        yaml+=`  state_text: 1\n  state_map:\n`;
+                        if(w.type==='cover'){
+                            yaml+=`    "open": "${T.state_open}"\n    "closed": "${T.state_closed}"\n`;
+                        }else{
+                            yaml+=`    "on": "${T.state_on}"\n    "off": "${T.state_off}"\n`;
+                        }
+                        // Ikony on/off
+                        const pair=iconPairFor(w.id);
+                        const iconOn = w.icon_on || pair[0];
+                        const iconOff = w.icon_off || pair[1];
+                        yaml+=`  icon_on: "${iconOn}"\n  icon_off: "${iconOff}"\n`;
+                    }else{
+                        const baseIcon = w.icon || pickAutoIcon(w.type,w.id);
+                        yaml+=`  icon: "${baseIcon}"\n`;
+                    }
+                    // Rozmiar (opcjonalnie komentarz)
+                    if(w.size){
+                        yaml+=`  # size: ${w.size}\n`;
+                    }
+                });
+            });
+
+            document.getElementById('local-yaml-output').value=yaml;
+            document.getElementById('generated_yaml_client').value=yaml;
+            document.getElementById('local-filename').innerText=title+'.dash';
+            document.getElementById('local-dashname').innerText=title;
+            // Aktualizacja dynamicznego hosta
+            const haHost=window.location.hostname;
+            const link=`http://${haHost}:5050/${title}`;
+            const linkEl=document.getElementById('local-dashboard-link');
+            linkEl.href=link;
+            linkEl.innerText=link;
+            const pathEl=document.getElementById('local-path-code');
+            pathEl.innerHTML=pathEl.innerHTML.replace(/\\IP_HA/g,"\\\\"+haHost);
+
+            document.getElementById('local-yaml-section').classList.remove('hidden');
+            window.scrollTo({top:document.getElementById('local-yaml-section').offsetTop,behavior:'smooth'});
+        }
+
         function submitForm(){
             document.getElementById('layout_data_json').value=JSON.stringify(rows);
+            // Najpierw lokalny YAML (dla pewności)
+            generateLocalYaml();
+            // Można odkomentować jeśli nadal chcesz POST do serwera:
             document.getElementById('main-form').submit();
         }
 
@@ -863,8 +944,7 @@
             const themeInput=document.getElementById('ui_theme');
             const persistedTheme=themeInput && themeInput.value ? themeInput.value : (localStorage.getItem('joan_theme')||'light');
             if(persistedTheme==='dark') document.body.classList.add('dark-mode');
-            const btn=document.getElementById('btn-theme');
-            btn.innerText=document.body.classList.contains('dark-mode')?'☀️':'🌙';
+            document.getElementById('btn-theme').innerText=document.body.classList.contains('dark-mode')?'☀️':'🌙';
             if(themeInput) themeInput.value=document.body.classList.contains('dark-mode')?'dark':'light';
             if(!rows.length) addNewRow();
         });
