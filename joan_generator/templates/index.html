@@ -70,6 +70,10 @@
     .ew-state { font-size: 11px; font-weight: 700; text-transform: uppercase; min-height: 18px; display: flex; align-items: center; }
     .ew-delete { position: absolute; top: 4px; right: 4px; background: red; color: white; width: 20px; height: 20px; text-align: center; line-height: 20px; font-size: 12px; border-radius: 4px; display: none; }
     .eink-widget:hover .ew-delete { display: block; }
+    /* YAML output fixes */
+    .file-path-info code { white-space: pre; display: block; }
+    .file-path-info a { display: inline-block; margin-top: 8px; }
+    textarea.output { width: 100%; min-height: 500px; font-family: monospace; background: #263238; color: #eceff1; border: none; padding: 15px; border-radius: 4px; white-space: pre; }
   </style>
 </head>
 <body>
@@ -120,6 +124,8 @@ global_parameters:
       <input type="hidden" name="ui_language" id="ui_language" value="pl">
       <input type="hidden" name="ui_theme" id="ui_theme" value="light">
       <input type="hidden" name="layout_data_json" id="layout_data_json">
+      <!-- NEW: send full widget definitions (with icons, names, sizes) so backend can include them -->
+      <input type="hidden" name="widgets_full_json" id="widgets_full_json">
 
       <div class="section">
         <div class="section-title" data-i18n="sec_settings">1. Ustawienia</div>
@@ -278,7 +284,6 @@ global_parameters:
 
     function formatNameFromId(id){
       if(!id) return "";
-      if(id.startsWith('navigate.')) return id.replace('navigate.','').replace(/_/g,' ').replace(/\b\w/g,l=>l.toUpperCase());
       const last = id.includes('.') ? id.split('.').pop() : id;
       return last.replace(/_/g,' ').replace(/\b\w/g,l=>l.toUpperCase());
     }
@@ -648,7 +653,9 @@ global_parameters:
     fetchIcons();
 
     function submitForm(){
-      document.getElementById('layout_data_json').value=JSON.stringify(rows);
+      // send both layout and full widget data (with icons) to backend
+      document.getElementById('layout_data_json').value = JSON.stringify(rows.map(r => r.map(w => w.size ? `${w.id} ${w.size}` : w.id)));
+      document.getElementById('widgets_full_json').value = JSON.stringify(rows);
       document.getElementById('main-form').submit();
     }
 
