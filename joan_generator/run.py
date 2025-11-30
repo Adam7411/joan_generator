@@ -1,9 +1,9 @@
-print("--> 1. Importuje biblioteki...")
+print("📦 1. Importuje biblioteki...")
 from flask import Flask, render_template, request
 import os
 import requests
 import json
-print("--> 2. Biblioteki zaladowane.")
+print("✅ 2. Biblioteki zaladowane.")
 
 app = Flask(__name__)
 
@@ -20,35 +20,43 @@ try:
             TOKEN = manual_token
             API_URL = "http://homeassistant:8123/api"
             TOKEN_SOURCE = "Reczny (Konfiguracja)"
-            print("--> Znaleziono ręczny token. Zmieniam adres API na http://homeassistant:8123/api")
+            print("🔧 Znaleziono ręczny token. Zmieniam adres API na http://homeassistant:8123/api")
 except Exception as e:
-    print(f"--> Info: Nie udalo sie odczytac opcji: {e}")
+    print(f"ℹ️ Info: Nie udalo sie odczytac opcji: {e}")
 
 if not TOKEN:
-    print("!!! UWAGA: Brak tokena (ani systemowego, ani ręcznego) !!!")
+    print("❌ UWAGA: Brak tokena (ani systemowego, ani ręcznego) !!!")
 else:
-    print(f"--> Uzywany Token: {TOKEN_SOURCE}")
+    print(f"🔑 Uzywany Token: {TOKEN_SOURCE}")
 
 def get_ha_entities():
     if not TOKEN:
         return []
     headers = {"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json"}
     try:
-        print(f"--> Pobieram encje z: {API_URL}/states")
+        print(f"🌍 Pobieram encje z: {API_URL}/states")
         response = requests.get(f"{API_URL}/states", headers=headers, timeout=10)
         if response.status_code == 200:
             data = response.json()
             entities = [state['entity_id'] for state in data]
             entities.sort()
+            print(f"✅ SUKCES! Pobrano {len(entities)} encji.")
             return entities
+        else:
+            print(f"⚠️ Blad API Home Assistant: {response.status_code} - {response.text}")
     except Exception as e:
-        print(f"!!! Blad API: {e}")
+        print(f"❌ Wyjatek podczas pobierania encji: {e}")
     return []
 
-# Style - DEFINICJA
-# Kluczowe dla E-Ink: Wymuszenie czarnego koloru i pogrubienia
-CSS_BLACK = "color: #000000 !important; font-weight: 700 !important;"
-CSS_BG_WHITE = "background-color: #FFFFFF !important;"
+# Style E-Ink (Czarne na białym)
+STYLES = {
+    "title": "color: #000000; font-size: 20px; font-weight: 700; text-align: center; padding-top: 5px; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif;",
+    "widget": "color: #000000 !important; background-color: #FFFFFF !important;",
+    "text": "color: #000000 !important; font-weight: 700 !important;",
+    "value": "color: #000000 !important; font-size: 44px !important; font-weight: 700 !important;",
+    "unit": "color: #000000 !important;",
+    "icon": "color: #000000 !important;"
+}
 
 # --- INTELIGENTNE IKONY ---
 def get_icon_pair(base_icon, w_type):
@@ -59,7 +67,6 @@ def get_icon_pair(base_icon, w_type):
         return 'mdi-toggle-switch', 'mdi-toggle-switch-off'
 
     i = base_icon.lower()
-    # Logika parowania ikon
     if 'garage' in i: return 'mdi-garage-open', 'mdi-garage'
     if 'gate' in i: return 'mdi-gate-open', 'mdi-gate'
     if 'light' in i or 'bulb' in i: return 'mdi-lightbulb-on', 'mdi-lightbulb-outline'
@@ -95,20 +102,17 @@ def index():
         generated_yaml += "columns: 6\n"
         generated_yaml += "rows: 9\n"
         
-        # --- GLOBAL PARAMETERS (TU JEST KLUCZ DO SUKCESU) ---
+        # PARAMETRY GLOBALNE
         generated_yaml += "global_parameters:\n"
         generated_yaml += "  use_comma: 0\n"
         generated_yaml += "  precision: 1\n"
         generated_yaml += "  use_hass_icon: 1\n"
         generated_yaml += "  namespace: default\n"
-        generated_yaml += "  state_text: 1\n" # Wymuszenie globalne tekstu stanu
-        # Style globalne
-        generated_yaml += f"  title_style: \"{CSS_BLACK} font-size: 20px; padding-top: 5px; font-family: 'Roboto', sans-serif;\"\n"
-        generated_yaml += f"  text_style: \"{CSS_BLACK}\"\n"
-        generated_yaml += f"  state_text_style: \"{CSS_BLACK} font-size: 14px; text-transform: uppercase; margin-top: 5px;\"\n"
-        generated_yaml += f"  widget_style: \"{CSS_BLACK} {CSS_BG_WHITE}\"\n"
-        generated_yaml += f"  icon_style_active: \"{CSS_BLACK}\"\n"
-        generated_yaml += f"  icon_style_inactive: \"{CSS_BLACK}\"\n"
+        generated_yaml += "  state_text: 1\n"
+        generated_yaml += f"  title_style: \"{STYLES['title']}\"\n"
+        generated_yaml += f"  text_style: \"{STYLES['text']}\"\n"
+        generated_yaml += f"  state_text_style: \"color: #000000 !important; font-weight: 700 !important; font-size: 14px; text-transform: uppercase; margin-top: 5px;\"\n"
+        generated_yaml += f"  widget_style: \"{STYLES['widget']}\"\n"
         
         generated_yaml += "skin: simplyred\n\n"
         
@@ -140,22 +144,28 @@ def index():
                     generated_yaml += f"{w_id}:\n"
                     generated_yaml += f"  title: \"{w_name}\"\n"
                     
-                    # 1. NAWIGACJA
+                    # 1. NAWIGACJA (DASHBOARD SWITCHER)
                     if w_type == 'navigate':
+                        # Wyciągamy nazwę dashboardu z ID (np. navigate.joan3 -> joan3)
                         dashboard_name = w_id.replace('navigate.', '')
                         generated_yaml += f"  widget_type: navigate\n"
                         generated_yaml += f"  dashboard: {dashboard_name}\n"
-                        generated_yaml += f"  icon_inactive: {w_icon if w_icon else 'mdi-arrow-left-circle'}\n"
-                        generated_yaml += f"  widget_style: \"{CSS_BG_WHITE} border-radius: 8px !important;\"\n"
+                        # Używamy icon_inactive, bo navigate nie ma stanu on/off
+                        nav_icon = w_icon if w_icon else 'mdi-arrow-right-circle'
+                        generated_yaml += f"  icon_inactive: {nav_icon}\n"
+                        # Specjalny styl dla nawigacji (często ma inny wygląd)
+                        generated_yaml += f"  widget_style: \"background-color: #FFFFFF !important; border-radius: 8px !important; padding: 10px !important; color: #000000 !important;\"\n"
+                        generated_yaml += f"  icon_style_inactive: \"color: #000000 !important;\"\n"
                     
                     # 2. SENSOR
                     elif w_type == 'sensor':
                         generated_yaml += f"  widget_type: sensor\n"
                         generated_yaml += f"  entity: {w_id}\n"
-                        generated_yaml += f"  value_style: \"{CSS_BLACK} font-size: 44px !important;\"\n"
-                        generated_yaml += f"  unit_style: \"{CSS_BLACK}\"\n"
+                        generated_yaml += f"  value_style: \"{STYLES['value']}\"\n"
+                        generated_yaml += f"  unit_style: \"{STYLES['unit']}\"\n"
                         if w_icon:
                             generated_yaml += f"  icon: {w_icon}\n"
+                            generated_yaml += f"  icon_style: \"{STYLES['icon']}\"\n"
                     
                     # 3. MEDIA PLAYER
                     elif w_type == 'media_player':
@@ -164,7 +174,7 @@ def index():
                         generated_yaml += f"  truncate_name: 20\n"
                         generated_yaml += f"  step: 5\n"
 
-                    # 4. PRZEŁĄCZNIKI I INNE (Tu najważniejszy jest STAN)
+                    # 4. RESZTA (Switch, Cover itp.)
                     else:
                         ad_type = w_type
                         if w_type == 'binary_sensor': ad_type = 'binary_sensor'
@@ -173,15 +183,11 @@ def index():
                         generated_yaml += f"  widget_type: {ad_type}\n"
                         generated_yaml += f"  entity: {w_id}\n"
                         
-                        # Generowanie ikon
                         icon_on, icon_off = get_icon_pair(w_icon, ad_type)
                         generated_yaml += f"  icon_on: {icon_on}\n"
                         generated_yaml += f"  icon_off: {icon_off}\n"
-
-                        # Wymuszenie stanu per widget (dla pewności)
                         generated_yaml += f"  state_text: 1\n"
                         
-                        # Mapowanie stanów (PL/EN)
                         generated_yaml += "  state_map:\n"
                         generated_yaml += f"    \"on\": \"{dic['on']}\"\n"
                         generated_yaml += f"    \"off\": \"{dic['off']}\"\n"
@@ -198,9 +204,9 @@ def index():
 
                     generated_yaml += "\n"
             except Exception as e:
-                print(f"Blad przetwarzania JSON: {e}")
+                print(f"❌ Blad przetwarzania JSON: {e}")
 
     return render_template('index.html', generated_yaml=generated_yaml, entities=ha_entities)
 
-print("--> 3. Uruchamiam serwer Flask na porcie 5000...")
+print("🚀 3. Uruchamiam serwer Flask na porcie 5000...")
 app.run(host='0.0.0.0', port=5000, debug=False)
