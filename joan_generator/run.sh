@@ -1,15 +1,22 @@
 #!/bin/bash
-# Production Version with English Logs
+# Production Version (Gunicorn)
 
 echo " "
-echo "🚀 STARTING JOAN 6 DASHBOARD GENERATOR..."
+echo "🚀 STARTING JOAN 6 DASHBOARD GENERATOR (PRODUCTION)..."
 echo "---------------------------------------------------"
 
-# Fix line endings (just in case)
-echo "🔧 Fixing file formatting (dos2unix)..."
+# Naprawa formatowania
+echo "🔧 Fixing file formatting..."
 dos2unix /app/run.py
 
-# Start App
-echo "🐍 Starting Python..."
+# Uruchomienie serwera produkcyjnego Gunicorn
+# -w 2: Dwa procesy robocze (szybsze działanie)
+# -b: Port 5000
+# --chdir /app: Katalog aplikacji
+# --access-logfile -: Logi dostępu na ekran
+# --error-logfile -: Logi błędów na ekran
+# run:app: Plik 'run.py' i obiekt 'app' wewnątrz niego
+
+echo "🦄 Starting Gunicorn WSGI Server..."
 echo "---------------------------------------------------"
-python3 -u /app/run.py
+gunicorn -w 2 -b 0.0.0.0:5000 --chdir /app --access-logfile - --error-logfile - run:app
