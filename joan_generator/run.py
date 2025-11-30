@@ -86,7 +86,7 @@ def index():
     
     if request.method == 'POST':
         title = request.form.get('title', 'JoanDashboard')
-        # Ustalanie nazwy pliku na podstawie tytułu (male litery, bez spacji)
+        # Ustalanie nazwy pliku
         dashboard_filename = title.lower().replace(" ", "_") + ".dash"
         
         lang = request.form.get('ui_language', 'pl')
@@ -99,7 +99,6 @@ def index():
         }
         dic = T.get(lang, T['pl'])
 
-        # Nagłówek informacyjny w pliku
         generated_yaml += f"# --- JOAN 6 E-INK DASHBOARD ---\n"
         generated_yaml += f"# File: {dashboard_filename}\n"
         generated_yaml += f"# Location: \\\\IP_HA\\addon_configs\\appdaemon\\dashboards\\\n"
@@ -112,7 +111,7 @@ def index():
         generated_yaml += "columns: 6\n"
         generated_yaml += "rows: 9\n"
         
-        # GLOBAL PARAMS (E-ink Optimization)
+        # GLOBAL PARAMS
         generated_yaml += "global_parameters:\n"
         generated_yaml += "  use_comma: 0\n"
         generated_yaml += "  precision: 1\n"
@@ -137,7 +136,16 @@ def index():
                 
                 for row in layout_rows:
                     if not row: continue
-                    row_str = ", ".join([w['id'] for w in row])
+                    # --- NOWA LOGIKA ROZMIARÓW ---
+                    row_parts = []
+                    for w in row:
+                        widget_str = w['id']
+                        # Jeśli rozmiar jest zdefiniowany i nie jest pusty, dodajemy go, np. (2x2)
+                        if w.get('size'):
+                            widget_str += w['size']
+                        row_parts.append(widget_str)
+                    
+                    row_str = ", ".join(row_parts)
                     generated_yaml += f"  - {row_str}\n"
                     processed_widgets.extend(row)
                 
@@ -181,8 +189,14 @@ def index():
                         generated_yaml += f"  entity: {w_id}\n"
                         generated_yaml += f"  truncate_name: 20\n"
                         generated_yaml += f"  step: 5\n"
+                    
+                    # 4. CLIMATE
+                    elif w_type == 'climate':
+                        generated_yaml += f"  widget_type: climate\n"
+                        generated_yaml += f"  entity: {w_id}\n"
+                        generated_yaml += f"  step: 1\n"
 
-                    # 4. OTHERS
+                    # 5. OTHERS
                     else:
                         ad_type = w_type
                         if w_type == 'binary_sensor': ad_type = 'binary_sensor'
