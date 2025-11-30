@@ -37,12 +37,7 @@
         textarea.output { width: 100%; height: 500px; font-family: monospace; background: #263238; color: #eceff1; border: none; padding: 15px; border-radius: 4px; }
         .status-bar { padding: 10px; margin-bottom: 20px; border-radius: 4px; text-align: center; font-weight: bold; }
         .hidden { display: none !important; }
-        
-        /* FILE PATH INFO */
-        .file-path-info {
-            background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb;
-            padding: 15px; margin-bottom: 15px; border-radius: 4px; font-family: monospace; font-size: 14px;
-        }
+        .file-path-info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; padding: 15px; margin-bottom: 15px; border-radius: 4px; font-family: monospace; font-size: 14px; }
         .file-path-info code { background: rgba(255,255,255,0.5); padding: 2px 5px; border-radius: 3px; font-weight: bold; }
     </style>
 </head>
@@ -91,6 +86,7 @@
                             <option value="binary_sensor">Binary Sensor</option>
                             <option value="cover">Cover / Gate</option>
                             <option value="media_player">Media Player</option>
+                            <option value="climate">Climate / AC</option>
                             <option value="script">Script</option>
                         </select>
                     </div>
@@ -116,18 +112,33 @@
                     </div>
                 </div>
                 
+                <!-- DRUGI RZĄD: Rozmiar, Ikona -->
                 <div class="flex-row" style="margin-top: 10px; align-items: flex-end;">
+                    <div class="flex-col" style="max-width: 150px;">
+                        <label data-i18n="label_size">Rozmiar (Grid)</label>
+                        <select id="new-widget-size">
+                            <option value="">Domyślny (2x1)</option>
+                            <option value="(1x1)">1x1 (Mały kwadrat)</option>
+                            <option value="(2x1)">2x1 (Płaski - Std)</option>
+                            <option value="(2x2)">2x2 (Duży kwadrat)</option>
+                            <option value="(3x1)">3x1 (Szeroki)</option>
+                            <option value="(1x2)">1x2 (Wysoki)</option>
+                        </select>
+                    </div>
+
                     <div style="width: 50px;">
                         <label data-i18n="label_preview">Podgląd</label>
                         <div class="icon-preview-box">
                             <i id="icon-preview-i" class="mdi mdi-help-circle-outline"></i>
                         </div>
                     </div>
+                    
                     <div class="flex-col">
                         <label data-i18n="label_icon">Ikona</label>
                         <input list="icons-list" id="new-widget-icon" placeholder="np. mdi-home" oninput="updateIconPreview()">
                         <datalist id="icons-list"></datalist>
                     </div>
+                    
                     <div class="flex-col">
                         <button type="button" class="btn btn-add" onclick="addWidgetToStaging()">
                             <span data-i18n="btn_add">+ DODAJ DO WIERSZA</span>
@@ -153,12 +164,10 @@
         {% if generated_yaml %}
         <div class="section">
             <h3 data-i18n="sec_code">Twój kod YAML:</h3>
-            
             <div class="file-path-info">
                 <strong data-i18n="info_save">Zapisz ten kod w pliku:</strong><br>
                 <code style="font-size: 16px;">\\IP_HA\addon_configs\appdaemon\dashboards\{{ filename }}</code>
             </div>
-
             <textarea class="output" readonly>{{ generated_yaml }}</textarea>
         </div>
         {% endif %}
@@ -174,6 +183,7 @@
                 label_dashboard: "Nazwa pliku dashboardu (np. joan3)",
                 label_type: "Typ Widgetu", label_name: "Tytuł na ekranie",
                 label_icon: "Ikona (Automatyczna)", label_preview: "Ikona", 
+                label_size: "Rozmiar (Grid)",
                 btn_add: "+ DODAJ DO WIERSZA", btn_new_row: "+ Dodaj Nowy Wiersz", btn_generate: "GENERUJ KOD .DASH",
                 state_on: "WŁĄCZONE", state_open: "OTWARTE",
                 info_save: "Zapisz ten kod w pliku:"
@@ -186,6 +196,7 @@
                 label_dashboard: "Dashboard Filename (e.g. joan3)",
                 label_type: "Widget Type", label_name: "Title on Screen",
                 label_icon: "Icon (Automatic)", label_preview: "Icon", 
+                label_size: "Size (Grid)",
                 btn_add: "+ ADD TO ROW", btn_new_row: "+ Add New Row", btn_generate: "GENERATE .DASH CODE",
                 state_on: "ON", state_open: "OPEN",
                 info_save: "Save this code to file:"
@@ -211,6 +222,7 @@
             const groupEntity = document.getElementById('group-entity');
             const groupNav = document.getElementById('group-nav');
             const iconInput = document.getElementById('new-widget-icon');
+            const sizeInput = document.getElementById('new-widget-size');
 
             if (type === 'navigate') {
                 groupEntity.classList.add('hidden');
@@ -222,6 +234,14 @@
             } else {
                 groupEntity.classList.remove('hidden');
                 groupNav.classList.add('hidden');
+            }
+
+            // Auto-size for media/climate
+            if(type === 'media_player' || type === 'climate') {
+                sizeInput.value = '(2x2)';
+            } else {
+                // Reset to default only if it was 2x2
+                if(sizeInput.value === '(2x2)') sizeInput.value = '';
             }
         }
 
@@ -256,7 +276,7 @@
             const T = translations[currentLang];
             const states = {
                 'switch': T.state_on, 'sensor': '21.5 °C', 'cover': T.state_open,
-                'media_player': 'PLAYING', 'navigate': 'GO', 'binary_sensor': T.state_open, 'script': 'RUN'
+                'media_player': 'PLAYING', 'navigate': 'GO', 'binary_sensor': T.state_open, 'script': 'RUN', 'climate': '21°'
             };
 
             rows.forEach((rowWidgets, index) => {
@@ -276,10 +296,13 @@
                     wDiv.className = 'eink-widget';
                     const iconClass = widget.icon ? widget.icon : 'mdi-help-circle-outline';
                     
+                    // Show size indicator if not default
+                    const sizeLabel = widget.size ? `<span style="font-size:9px;color:blue;">${widget.size}</span>` : '';
+
                     wDiv.innerHTML = `
                         <div class="ew-title">${widget.name}</div>
                         <i class="mdi ${iconClass} ew-icon"></i>
-                        <div class="ew-state">${states[widget.type] || '---'}</div>
+                        <div class="ew-state">${states[widget.type] || '---'} ${sizeLabel}</div>
                         <div class="ew-delete" onclick="removeWidget(${index}, ${wIndex}); event.stopPropagation();">X</div>
                     `;
                     rowDiv.appendChild(wDiv);
@@ -287,7 +310,8 @@
 
                 if(rows.length > 1) {
                     const del = document.createElement('button');
-                    del.innerText = 'X'; del.style.position='absolute'; del.style.right='5px'; del.style.top='5px'; del.style.background='red'; del.style.color='white'; del.style.border='none'; del.style.cursor='pointer';
+                    del.innerText = 'USUŃ'; del.className='btn-remove-row btn';
+                    del.style.position='absolute'; del.style.right='5px'; del.style.top='5px';
                     del.onclick = (e) => { e.stopPropagation(); deleteRow(index); };
                     rowDiv.appendChild(del);
                 }
@@ -306,10 +330,12 @@
             const type = document.getElementById('new-widget-type').value;
             const nameInput = document.getElementById('new-widget-name');
             const iconInput = document.getElementById('new-widget-icon');
+            const sizeInput = document.getElementById('new-widget-size');
             
             let id = '';
             let name = nameInput.value;
             let icon = iconInput.value;
+            let size = sizeInput.value;
 
             if (type === 'navigate') {
                 const dashName = document.getElementById('new-dashboard-name').value.trim();
@@ -325,13 +351,16 @@
             if(icon && !icon.startsWith('mdi-')) icon = 'mdi-' + icon;
 
             if (rows.length === 0) addNewRow();
-            rows[activeRowIndex].push({ id, type, name, icon });
+            rows[activeRowIndex].push({ id, type, name, icon, size });
             renderRows();
             
             document.getElementById('new-entity-id').value = '';
             document.getElementById('new-dashboard-name').value = '';
             nameInput.value = '';
             iconInput.value = '';
+            // Reset size unless media player selected (logic in toggleInputs would handle this, but explicit reset is safe)
+            if(type !== 'media_player') sizeInput.value = '';
+            
             updateIconPreview();
         }
 
@@ -346,14 +375,27 @@
             const id = document.getElementById('new-entity-id').value.toLowerCase();
             const typeSelect = document.getElementById('new-widget-type');
             const iconInput = document.getElementById('new-widget-icon');
+            const sizeInput = document.getElementById('new-widget-size');
 
             if(typeSelect.value === 'navigate') return; 
 
-            if(id.startsWith('sensor.')) typeSelect.value = 'sensor';
-            else if(id.startsWith('binary_sensor.')) typeSelect.value = 'binary_sensor';
-            else if(id.startsWith('cover.')) typeSelect.value = 'cover';
-            else if(id.startsWith('media_player.')) typeSelect.value = 'media_player';
-            else if(id.startsWith('light.') || id.startsWith('switch.')) typeSelect.value = 'switch';
+            let detectedType = '';
+            if(id.startsWith('sensor.')) detectedType = 'sensor';
+            else if(id.startsWith('binary_sensor.')) detectedType = 'binary_sensor';
+            else if(id.startsWith('cover.')) detectedType = 'cover';
+            else if(id.startsWith('media_player.')) detectedType = 'media_player';
+            else if(id.startsWith('climate.')) detectedType = 'climate';
+            else if(id.startsWith('light.') || id.startsWith('switch.')) detectedType = 'switch';
+            
+            if(detectedType) {
+                typeSelect.value = detectedType;
+                // Auto-size for heavy widgets
+                if(detectedType === 'media_player' || detectedType === 'climate') {
+                    sizeInput.value = '(2x2)';
+                } else {
+                    sizeInput.value = ''; // Default for others
+                }
+            }
             
             if(iconInput.value) return; 
 
