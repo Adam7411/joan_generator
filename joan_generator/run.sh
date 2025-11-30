@@ -1,4 +1,3 @@
-#!/usr/bin/with-contenv bashio
-
-echo "Uruchamianie Joan Dashboard Generator..."
+#!/bin/bash
+echo "Startuje Joan Generator..."
 python3 /app/run.py
