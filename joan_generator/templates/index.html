@@ -337,9 +337,9 @@
         let currentLang = 'pl';
         let rows = [];
         let activeRowIndex = 0;
-        let editingIndices = null;
+        let editingIndices = null; 
+        let importedDefsMap = {}; // NEW: pamięć mapy definicji dla nazw z pliku
 
-        // Build title from id/entity when missing
         function formatNameFromId(id) {
             if (!id) return "";
             if (id.startsWith("navigate.")) return id.replace("navigate.", "");
@@ -436,7 +436,7 @@
             }
         }
 
-        // IMPORTANT: Always show button title, keep edit working
+        // Render podglądu – korzysta z nazw z importu jeśli są dostępne
         function renderRows() {
             const container = document.getElementById('rows-container');
             container.innerHTML = '';
@@ -470,7 +470,6 @@
                     }
                     wDiv.style.width = w + 'px'; wDiv.style.height = h + 'px'; if (h < 70) wDiv.style.fontSize = '0.9em';
 
-                    // Edit click: keep working
                     wDiv.addEventListener('click', (e) => { e.stopPropagation(); editWidget(index, wIndex); });
 
                     const liveIcon = getLiveIcon(widget);
@@ -478,12 +477,18 @@
                     let iconHtml = iconClass ? `<i class="mdi ${iconClass} ew-icon"></i>` : `<div style="height:28px"></div>`;
                     let displayState = getEntityState(widget.id) || defaultStates[widget.type] || '---';
 
-                    // Title for button: prefer widget.name (Tytuł na ekranie)
-                    const safeName = widget.name && widget.name.trim() ? widget.name : (formatNameFromEntity(widget.id) || formatNameFromId(widget.id));
+                    // NAZWA Z WCZYTANEGO KODU: jeśli import zawiera definicję z title, użyj jej
+                    let importedTitle = '';
+                    const def = importedDefsMap[widget.id];
+                    if (def && def.title) importedTitle = def.title;
 
-                    // Delete button keeps edit
+                    const safeName = (widget.name && widget.name.trim())
+                        ? widget.name
+                        : (importedTitle && importedTitle.trim())
+                            ? importedTitle
+                            : (def && def.entity ? formatNameFromEntity(def.entity) : formatNameFromId(widget.id));
+
                     const delBtn = `<div class="ew-delete" onclick="removeWidget(${index}, ${wIndex}); event.stopPropagation();">X</div>`;
-
                     wDiv.innerHTML = `<div class="ew-title">${safeName}</div>${iconHtml}<div class="ew-state">${displayState}</div>${delBtn}<div class="ew-edit-overlay"></div>`;
                     rowDiv.appendChild(wDiv);
                 });
@@ -502,6 +507,7 @@
 
         function toggleImport() { document.getElementById('import-area').classList.toggle('visible'); }
         
+        // Import YAML – buduje rows oraz mapę importedDefsMap do odczytu tytułów
         function importYaml() {
             const code = document.getElementById('import-code').value;
             if (!code) return;
@@ -546,6 +552,8 @@
                 }
 
                 rows = [];
+                importedDefsMap = widgetDefs; // ZAPISZ mapę dla renderRows
+
                 layoutLines.forEach(l => {
                     const rowStr = l.substring(1).trim(); 
                     const items = rowStr.split(',');
@@ -558,7 +566,6 @@
                         const id = item;
                         const def = widgetDefs[id] || {};
                         
-                        // Type detection
                         let type = def.widget_type || '';
                         if (!type) {
                             if (id.startsWith('navigate.')) type = 'navigate';
@@ -571,12 +578,11 @@
                             else type = 'switch';
                         }
 
-                        // Title: prefer def.title; else from def.entity; else from id
+                        // Preferuj title z definicji – to naprawia brak nazw w podglądzie
                         let name = def.title && def.title.trim() ? def.title : '';
                         if (!name && def.entity) name = formatNameFromEntity(def.entity);
                         if (!name) name = formatNameFromId(id);
 
-                        // Icon normalize
                         let icon = def.icon || def.icon_on || def.icon_off || def.icon_inactive || '';
                         if (icon && !icon.startsWith('mdi-')) icon = 'mdi-' + icon;
 
@@ -590,7 +596,6 @@
             } catch (e) { alert("Import failed: " + e.message); }
         }
 
-        // Keep edit working for new buttons
         function editWidget(r, w) {
             editingIndices = { r, w };
             const widget = rows[r][w];
@@ -610,6 +615,7 @@
                 document.getElementById('group-nav').classList.add('hidden');
             }
 
+            // W edycji pokaż tytuł z rows (który pochodzi z importu lub nazwy dodatkowej)
             document.getElementById('new-widget-name').value = widget.name || '';
             document.getElementById('new-widget-icon').value = widget.icon || '';
             document.getElementById('new-widget-size').value = widget.size || '';
@@ -630,7 +636,6 @@
             renderRows();
         }
 
-        // Ensure new button shows title and can be edited
         function saveWidget() {
             const type = document.getElementById('new-widget-type').value;
             let name = document.getElementById('new-widget-name').value.trim();
@@ -647,12 +652,10 @@
                 if(!id) { alert(currentLang === 'pl' ? "Wymagana encja" : "Entity required"); return; }
             }
 
-            // Title fallback – ALWAYS produce a visible name
             if (!name) {
-                name = type === 'navigate' ? dashNameFromId(id) : formatNameFromId(id);
-            }
-            function dashNameFromId(navId) {
-                return navId.replace('navigate.', '').replace(/_/g,' ').replace(/\b\w/g, l => l.toUpperCase());
+                name = type === 'navigate'
+                    ? id.replace('navigate.', '').replace(/_/g,' ').replace(/\b\w/g, l => l.toUpperCase())
+                    : formatNameFromId(id);
             }
 
             if(icon && !icon.startsWith('mdi-')) icon = 'mdi-' + icon;
@@ -742,7 +745,6 @@
         function deleteRow(i) { rows.splice(i, 1); if(activeRowIndex >= rows.length) activeRowIndex = rows.length - 1; renderRows(); }
         function submitForm() { document.getElementById('layout_data_json').value = JSON.stringify(rows); document.getElementById('main-form').submit(); }
 
-        // Link fix and init
         window.addEventListener('DOMContentLoaded', () => {
             const haHost = window.location.hostname;
             const codePath = document.getElementById('path-code');
