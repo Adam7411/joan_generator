@@ -74,7 +74,7 @@
         .ew-icon { font-size: 28px; }
         .ew-state { font-size: 10px; font-weight: 700; text-transform: uppercase; }
         .ew-edit-overlay { position: absolute; top:0; left:0; right:0; bottom:0; background: rgba(33, 150, 243, 0.2); display:none; pointer-events: none;}
-        .eink-widget:hover .ew-edit-overlay { display: block; }
+        .eink-widget:hover .ew-edit-overlay { display: 1block; }
         .ew-delete { position: absolute; top: 0; right: 0; background: red; color: white; width: 18px; height: 18px; text-align: center; line-height: 18px; font-size: 10px; display: none; z-index: 20; }
         .eink-widget:hover .ew-delete { display: block; }
         textarea.output { width: 100%; height: 500px; font-family: monospace; background: #263238; color: #eceff1; border: none; padding: 15px; border-radius: 4px; }
@@ -282,20 +282,18 @@
         let rows = [];
         let activeRowIndex = 0;
         let editingIndices = null; 
-        // Mapa definicji – trzymamy pod dwoma kluczami: id definicji oraz entity
         let importedDefsMap = {}; 
 
         function formatNameFromId(id) {
             if (!id) return "";
-            if (id.startsWith("navigate.")) return id.replace("navigate.", "");
-            let name = id.split('.').pop();
-            name = name.replace(/_/g, ' ');
+            const lastPart = id.includes('.') ? id.split('.').pop() : id;
+            const name = lastPart.replace(/_/g, ' ');
             return name.replace(/\b\w/g, l => l.toUpperCase());
         }
         function formatNameFromEntity(entity) {
             if (!entity) return "";
-            let name = entity.split('.').pop();
-            name = name.replace(/_/g, ' ');
+            const lastPart = entity.includes('.') ? entity.split('.').pop() : entity;
+            const name = lastPart.replace(/_/g, ' ');
             return name.replace(/\b\w/g, l => l.toUpperCase());
         }
 
@@ -350,45 +348,38 @@
             if (s === 'closed') return T.state_closed;
             return null;
         }
-        function getEntityState(id) {
+        function getEntityStateRaw(id) {
             const ent = entitiesData.find(e => e.id === id);
-            if (ent) {
-                const normalized = normalizeState(ent.state);
-                if (normalized) return normalized;
-                let val = ent.state;
-                if (!isNaN(parseFloat(val)) && String(val).includes('.')) val = parseFloat(val).toFixed(1);
-                if (ent.unit) val += ' ' + ent.unit;
-                return val;
-            }
-            return null;
+            return ent ? { state: ent.state, unit: ent.unit } : null;
         }
+        function getEntityStateDisplay(id, type) {
+            const data = getEntityStateRaw(id);
+            if (!data) return null;
+            const normalized = normalizeState(data.state);
 
-        function getLiveIcon(widget) {
-            const ent = entitiesData.find(e => e.id === widget.id);
-            let baseIcon = widget.icon;
-            if (!baseIcon || !ent) return baseIcon; 
-            const i = baseIcon.toLowerCase();
-            const state = String(ent.state).toLowerCase();
-            const is_on = (state === 'on' || state === 'open' || state === 'unlocked' || state === '1' || state === 'true');
-            if (is_on) {
-                if (i.includes('garage')) return 'mdi-garage-open';
-                if (i.includes('gate')) return 'mdi-gate-open';
-                if (i.includes('light') || i.includes('bulb')) return 'mdi-lightbulb-on';
-                if (i.includes('lock')) return 'mdi-lock-open';
-                if (i.includes('door')) return 'mdi-door-open';
-                if (i.includes('window') || i.includes('blind')) return 'mdi-window-shutter-open';
-                if (i.includes('-off')) return i.replace('-off', '');
-                if (i.includes('-outline')) return i.replace('-outline', '');
-                return i;
-            } else {
-                if (i.includes('garage')) return 'mdi-garage';
-                if (i.includes('gate')) return 'mdi-gate';
-                if (i.includes('light') || i.includes('bulb')) return 'mdi-lightbulb-outline';
-                if (i.includes('lock')) return 'mdi-lock';
-                if (i.includes('door')) return 'mdi-door-closed';
-                if (i.includes('window') || i.includes('blind')) return 'mdi-window-shutter';
-                return i;
+            // Nie pokazujemy stanu dla label/navigate
+            if (type === 'label' || type === 'navigate') return '';
+
+            // Dla przełączników/cover/binary/climate/media_player pokaż znormalizowany stan
+            if (type === 'switch' || type === 'cover' || type === 'binary_sensor' || type === 'climate' || type === 'media_player' || type === 'script') {
+                if (normalized) return normalized;
+                // media_player może mieć teksty typu PLAYING/PAUSED
+                return String(data.state).toUpperCase();
             }
+
+            // Dla sensorów: pokaż wartość z jednostką, ale jeśli to 1/0 bez jednostki, nie pokazuj nic
+            if (type === 'sensor') {
+                const s = String(data.state).trim();
+                const isNumeric = !isNaN(parseFloat(s)) && isFinite(s);
+                if ((s === '1' || s === '0') && !data.unit) return ''; // usuń niechciane "1"
+                if (isNumeric && s.includes('.')) {
+                    const v = parseFloat(s).toFixed(1);
+                    return data.unit ? `${v} ${data.unit}` : v;
+                }
+                return data.unit ? `${s} ${data.unit}` : s;
+            }
+
+            return '';
         }
 
         function pickAutoIcon(type, id) {
@@ -429,8 +420,6 @@
         function renderRows() {
             const container = document.getElementById('rows-container');
             container.innerHTML = '';
-            const T = translations[currentLang];
-            const defaultStates = { 'switch': T.state_off, 'sensor': '21.5 °C', 'cover': T.state_closed, 'media_player': 'PLAYING', 'navigate': 'GO', 'binary_sensor': T.state_closed, 'script': 'RUN', 'climate': '21°' };
 
             rows.forEach((rowWidgets, index) => {
                 const rowDiv = document.createElement('div');
@@ -463,23 +452,18 @@
 
                     const previewIcon = (widget.icon && widget.icon.trim()) ? widget.icon : pickAutoIcon(widget.type, widget.id);
                     const iconHtml = previewIcon ? `<i class="mdi ${previewIcon} ew-icon"></i>` : `<div style="height:28px"></div>`;
-                    let displayState = getEntityState(widget.id) || defaultStates[widget.type] || '---';
 
-                    // NAZWA Z IMPORTU: sprawdź definicję po id ORAZ po entity
-                    let importedTitle = '';
-                    let defById = importedDefsMap[widget.id];
-                    let defByEntity = undefined;
+                    // Pobierz definicję po id, po entity i bez domeny – żeby trafić zarówno "light.kurnik" jak i "kurnik"
+                    let defById = importedDefsMap[widget.id] || null;
                     if (!defById && widget.id.includes('.')) {
-                        // spróbuj bez domeny
-                        const noDomainKey = widget.id.split('.').slice(1).join('.');
-                        defById = importedDefsMap[noDomainKey];
+                        const noDomainKey = widget.id.split('.').pop();
+                        defById = importedDefsMap[noDomainKey] || null;
                     }
-                    if (defById && defById.entity) {
-                        defByEntity = importedDefsMap[defById.entity];
-                    }
-
+                    let importedTitle = '';
                     if (defById && defById.title) importedTitle = defById.title;
-                    else if (defByEntity && defByEntity.title) importedTitle = defByEntity.title;
+                    else if (defById && defById.entity && importedDefsMap[defById.entity] && importedDefsMap[defById.entity].title) {
+                        importedTitle = importedDefsMap[defById.entity].title;
+                    }
 
                     const safeName = (widget.name && widget.name.trim())
                         ? widget.name
@@ -487,8 +471,11 @@
                             ? importedTitle
                             : (defById && defById.entity ? formatNameFromEntity(defById.entity) : formatNameFromId(widget.id));
 
+                    // Stan do wyświetlenia – z regułami typów
+                    const displayState = getEntityStateDisplay(widget.id, widget.type) || '';
+
                     const delBtn = `<div class="ew-delete" onclick="removeWidget(${index}, ${wIndex}); event.stopPropagation();">X</div>`;
-                    wDiv.innerHTML = `<div class="ew-title">${safeName}</div>${iconHtml}<div class="ew-state">${displayState}</div>${delBtn}<div class="ew-edit-overlay"></div>`;
+                    wDiv.innerHTML = `<div class="ew-title">${safeName}</div>${iconHtml}${displayState ? `<div class="ew-state">${displayState}</div>` : `<div style="height:10px"></div>`}${delBtn}<div class="ew-edit-overlay"></div>`;
                     rowDiv.appendChild(wDiv);
                 });
 
@@ -549,7 +536,7 @@
                     }
                 }
 
-                // Zapisz definicje pod kluczem definicji ORAZ pod kluczem entity (jeśli jest)
+                // Zbuduj mapę definicji pod dwoma kluczami: nazwą i entity
                 importedDefsMap = {};
                 Object.entries(widgetDefs).forEach(([key, def]) => {
                     importedDefsMap[key] = def;
@@ -570,14 +557,13 @@
                         if (sizeMatch) { size = sizeMatch[0]; item = item.replace(size, ''); }
                         const id = item;
 
-                        // Pobierz definicję po id lub po wariantach (z domeną/bez domeny)
+                        // Spróbuj znaleźć definicję po id, po entity i bez domeny
                         let def = importedDefsMap[id] || null;
                         if (!def && id.includes('.')) {
-                            const noDomainKey = id.split('.').slice(1).join('.');
+                            const noDomainKey = id.split('.').pop();
                             def = importedDefsMap[noDomainKey] || null;
                         }
 
-                        // Detekcja typu
                         let type = (def && def.widget_type) || '';
                         if (!type) {
                             if (id.startsWith('navigate.')) type = 'navigate';
@@ -590,12 +576,10 @@
                             else type = 'switch';
                         }
 
-                        // Nazwa: title z definicji (główna poprawka), fallback na entity lub id
                         let name = (def && def.title) ? def.title : '';
                         if (!name && def && def.entity) name = formatNameFromEntity(def.entity);
                         if (!name) name = formatNameFromId(id);
 
-                        // Ikona
                         let icon = (def && (def.icon || def.icon_on || def.icon_off || def.icon_inactive)) || '';
                         if (!icon) icon = pickAutoIcon(type, def && def.entity ? def.entity : id);
                         if (icon && !icon.startsWith('mdi-')) icon = 'mdi-' + icon;
@@ -665,15 +649,8 @@
                 if(!id) { alert(currentLang === 'pl' ? "Wymagana encja" : "Entity required"); return; }
             }
 
-            if (!name) {
-                name = type === 'navigate'
-                    ? id.replace('navigate.', '').replace(/_/g,' ').replace(/\b\w/g, l => l.toUpperCase())
-                    : formatNameFromId(id);
-            }
-
-            if (!icon) {
-                icon = pickAutoIcon(type, id);
-            }
+            if (!name) name = formatNameFromId(id);
+            if (!icon) icon = pickAutoIcon(type, id);
             if (icon && !icon.startsWith('mdi-')) icon = 'mdi-' + icon;
 
             const newWidget = { id, type, name, icon, size };
