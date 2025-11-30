@@ -119,8 +119,14 @@
         </button>
         <div id="import-area" class="section import-box">
             <h4 style="margin-top:0" data-i18n="header_paste_code">Wklej kod pliku .dash tutaj:</h4>
-            <textarea id="import-code" style="height: 150px; background: #fff; color: #000;" placeholder='title: Joan2
+            <textarea id="import-code" style="height: 150px; background: #fff; color: #000;" placeholder='title: Joan3
 widget_dimensions: [117, 117]
+widget_size: [1, 1]
+widget_margins: [8, 8]
+columns: 6
+rows: 8
+global_parameters:
+  use_comma: 0
 ...'></textarea>
             <button type="button" class="btn btn-add" style="margin-top: 10px;" onclick="importYaml()">
                 <span data-i18n="btn_load_dash">Wczytaj Dashboard</span>
@@ -138,7 +144,7 @@ widget_dimensions: [117, 117]
                 <div class="flex-row">
                     <div class="flex-col">
                         <label data-i18n="dash_title">Tytuł Dashboardu (Nazwa pliku)</label>
-                        <input type="text" name="title" id="dash-title" value="Joan2">
+                        <input type="text" name="title" id="dash-title" value="Joan3">
                     </div>
                 </div>
             </div>
@@ -171,7 +177,7 @@ widget_dimensions: [117, 117]
                     </div>
                     <div class="flex-col hidden" id="group-nav">
                         <label data-i18n="label_dashboard">Nazwa pliku dashboardu</label>
-                        <input type="text" id="new-dashboard-name" placeholder="np. joan3 (bez .dash)" oninput="autoNameForNavigate()">
+                        <input type="text" id="new-dashboard-name" placeholder="np. joan2 (bez .dash)" oninput="autoNameForNavigate()">
                     </div>
                     <div class="flex-col">
                         <label data-i18n="label_name">Tytuł na ekranie</label>
@@ -182,11 +188,11 @@ widget_dimensions: [117, 117]
                     <div class="flex-col" style="max-width: 150px;">
                         <label data-i18n="label_size">Rozmiar</label>
                         <select id="new-widget-size">
-                            <option value="">Domyślny (2x1)</option>
+                            <option value="">Domyślny (1x1)</option>
                             <option value="(1x1)">1x1 (Mały)</option>
-                            <option value="(2x1)">2x1 (Standard)</option>
+                            <option value="(2x1)">2x1 (Szeroki)</option>
                             <option value="(2x2)">2x2 (Duży)</option>
-                            <option value="(3x1)">3x1 (Szeroki)</option>
+                            <option value="(3x1)">3x1 (Bardzo szeroki)</option>
                             <option value="(1x2)">1x2 (Wysoki)</option>
                             <option value="(3x2)">3x2 (Bardzo duży)</option>
                         </select>
@@ -230,7 +236,7 @@ widget_dimensions: [117, 117]
             </div>
 
             <button type="button" class="btn btn-secondary" onclick="generateLocalYaml()">
-                LOKALNY PODGLĄD YAML (Tablet E‑Ink)
+                LOKALNY PODGLĄD YAML (Tablet E‑Ink: Joan3)
             </button>
             <button type="button" class="btn btn-primary" onclick="submitForm()">
                 <span data-i18n="btn_generate">GENERUJ KOD .DASH (SERWER)</span>
@@ -241,9 +247,9 @@ widget_dimensions: [117, 117]
             <h3>Podgląd YAML (Tablet E‑Ink – do skopiowania)</h3>
             <div class="file-path-info">
                 <strong>1. Zapisz plik:</strong>
-                <code id="local-path-code">\\IP_HA\addon_configs\appdaemon\dashboards\<span id="local-filename">Joan2.dash</span></code>
+                <code id="local-path-code">\\IP_HA\addon_configs\appdaemon\dashboards\<span id="local-filename">Joan3.dash</span></code>
                 <strong>2. Restart AppDaemon i otwórz dashboard:</strong>
-                <a href="#" id="local-dashboard-link" target="_blank">http://IP_HA:5050/<span id="local-dashname">Joan2</span></a>
+                <a href="#" id="local-dashboard-link" target="_blank">http://IP_HA:5050/<span id="local-dashname">Joan3</span></a>
             </div>
             <textarea id="local-yaml-output" class="output" readonly></textarea>
         </div>
@@ -270,7 +276,7 @@ widget_dimensions: [117, 117]
                 sec_preview: "3. Podgląd Dashboardu (Kliknij, aby edytować)", sec_code: "Twój kod YAML:",
                 dash_title: "Tytuł Dashboardu (Nazwa pliku)",
                 label_entity: "Wybierz Encję (Home Assistant)",
-                label_dashboard: "Nazwa pliku dashboardu (np. joan3)",
+                label_dashboard: "Nazwa pliku dashboardu (np. joan2)",
                 label_type: "Typ Widgetu", label_name: "Tytuł na ekranie",
                 label_icon: "Ikona (Automatyczna)", label_preview: "Ikona", label_size: "Rozmiar",
                 btn_add: "+ DODAJ DO WIERSZA", btn_update: "ZAPISZ ZMIANY",
@@ -285,7 +291,7 @@ widget_dimensions: [117, 117]
                 sec_preview: "3. Dashboard Preview (Click to Edit)", sec_code: "Your YAML Code:",
                 dash_title: "Dashboard Title (Filename)",
                 label_entity: "Select Entity (Home Assistant)",
-                label_dashboard: "Dashboard Filename (e.g. joan3)",
+                label_dashboard: "Dashboard Filename (e.g. joan2)",
                 label_type: "Widget Type", label_name: "Title on Screen",
                 label_icon: "Icon (Automatic)", label_preview: "Icon", label_size: "Size",
                 btn_add: "+ ADD TO ROW", btn_update: "UPDATE WIDGET",
@@ -312,16 +318,6 @@ widget_dimensions: [117, 117]
             return last.replace(/_/g,' ').replace(/\b\w/g,l=>l.toUpperCase());
         }
 
-        function resolveImportedTitle(id){
-            if(importedDefsMap[id] && importedDefsMap[id].title) return importedDefsMap[id].title;
-            const shortId=id.split('.').pop();
-            if(importedDefsMap[shortId] && importedDefsMap[shortId].title) return importedDefsMap[shortId].title;
-            for(const k in importedDefsMap){
-                if(importedDefsMap[k].entity===id && importedDefsMap[k].title) return importedDefsMap[k].title;
-            }
-            return '';
-        }
-
         function setLang(lang){
             currentLang=lang;
             localStorage.setItem('joan_lang',lang);
@@ -331,7 +327,6 @@ widget_dimensions: [117, 117]
             refreshUIText();
             renderRows();
         }
-
         function refreshUIText(){
             const dict=translations[currentLang];
             document.querySelectorAll('[data-i18n]').forEach(el=>{
@@ -344,7 +339,6 @@ widget_dimensions: [117, 117]
             const header=document.getElementById('form-header');
             if(header) header.innerText=editingIndices?dict.sec_edit:dict.sec_add;
         }
-
         function toggleTheme(){
             const isDark=document.body.classList.toggle('dark-mode');
             localStorage.setItem('joan_theme',isDark?'dark':'light');
@@ -384,15 +378,14 @@ widget_dimensions: [117, 117]
         function iconPairFor(id){
             const v=(id||'').toLowerCase();
             if(v.startsWith('light.')||v.includes('swiatlo')||v.includes('light')) return ['mdi-lightbulb-on','mdi-lightbulb-outline'];
-            if(v.startsWith('cover.')||v.includes('brama')||v.includes('gate')) return ['mdi-gate-open','mdi-gate'];
+            if(v.startsWith('cover.')||v.includes('brama')||v.includes('gate')||v.includes('roleta')||v.includes('window')) return ['mdi-window-shutter-open','mdi-window-shutter'];
             if(v.includes('garage')||v.includes('garaz')||v.includes('garaż')) return ['mdi-garage-open','mdi-garage'];
             if(v.includes('radiator')||v.includes('ogrzew')||v.includes('grzejnik')) return ['mdi-radiator','mdi-radiator-off'];
             if(v.includes('cwu')||v.includes('woda')||v.includes('water')) return ['mdi-water-outline','mdi-water-off'];
-            if(v.includes('window')||v.includes('roleta')||v.includes('blind')) return ['mdi-window-shutter-open','mdi-window-shutter'];
-            if(v.startsWith('input_boolean.')) return ['mdi-toggle-switch','mdi-toggle-switch-off'];
+            if(v.startsWith('input_boolean.')||v.startsWith('script.')) return ['mdi-toggle-switch','mdi-toggle-switch-off'];
+            if(v.startsWith('fan.')||v.includes('wentyl')) return ['mdi-fan','mdi-fan-off'];
             return ['mdi-toggle-switch','mdi-toggle-switch-off'];
         }
-
         function pickAutoIcon(type,id){
             const v=(id||'').toLowerCase();
             const map=[
@@ -405,20 +398,19 @@ widget_dimensions: [117, 117]
                 {k:['temp','temperatur','temperature'],i:'mdi-thermometer'},
                 {k:['bateria','battery','akumulator'],i:'mdi-battery'},
                 {k:['swiatlo','light','bulb','lamp'],i:'mdi-lightbulb'},
-                {k:['media_player','spotify','radio'],i:'mdi-play-circle'},
+                {k:['media_player','spotify','radio','speaker'],i:'mdi-speaker'},
                 {k:['klima','climate','hvac'],i:'mdi-home-thermometer'},
                 {k:['sensor','czujnik'],i:'mdi-gauge'},
-                {k:['lock','zamek'],i:'mdi-lock'},
+                {k:['lock','zamek','door','drzwi'],i:'mdi-door'},
                 {k:['window','roleta','blind'],i:'mdi-window-shutter'},
-                {k:['fan','wentyl'],i:'mdi-fan'},
-                {k:['door','drzwi'],i:'mdi-door'}
+                {k:['fan','wentyl'],i:'mdi-fan'}
             ];
             for(const m of map) if(m.k.some(kw=>v.includes(kw))) return m.i;
             const fallback={
-                switch:'mdi-toggle-switch',sensor:'mdi-gauge',cover:'mdi-gate',
-                media_player:'mdi-play-circle',climate:'mdi-home-thermometer',
+                switch:'mdi-toggle-switch',sensor:'mdi-gauge',cover:'mdi-window-shutter',
+                media_player:'mdi-speaker',climate:'mdi-home-thermometer',
                 binary_sensor:'mdi-alert-circle-outline',script:'mdi-script-text-outline',
-                navigate:'mdi-arrow-right-circle',label:'mdi-label'
+                navigate:'mdi-arrow-left-circle',label:'mdi-label'
             };
             return fallback[type]||'mdi-help-circle-outline';
         }
@@ -467,11 +459,10 @@ widget_dimensions: [117, 117]
             else if(id.startsWith('cover.')) typeSel.value='cover';
             else if(id.startsWith('media_player.')) typeSel.value='media_player';
             else if(id.startsWith('climate.')) typeSel.value='climate';
-            else if(id.startsWith('switch.')||id.startsWith('light.')||id.startsWith('input_boolean.')) typeSel.value='switch';
+            else if(id.startsWith('switch.')||id.startsWith('light.')||id.startsWith('input_boolean.')||id.startsWith('fan.')) typeSel.value='switch';
             else typeSel.value='switch';
 
             if((typeSel.value==='media_player'||typeSel.value==='climate')&&!sizeInput.value) sizeInput.value='(2x2)';
-
             const autoName=formatNameFromId(id);
             if(!userEditedName || nameInput.value===lastAutoName || nameInput.value.trim()===''){
                 nameInput.value=autoName; lastAutoName=autoName;
@@ -508,11 +499,12 @@ widget_dimensions: [117, 117]
                     const wDiv=document.createElement('div'); wDiv.className='eink-widget';
                     if(editingIndices && editingIndices.r===index && editingIndices.w===wIndex) wDiv.classList.add('being-edited');
 
-                    let w=160,h=120;
+                    let w=117,h=117; // bazowe z nagłówka
                     if(widget.size){
                         const dims=widget.size.replace(/[()]/g,'').split('x');
-                        const cols=parseInt(dims[0])||2; const rowsVal=parseInt(dims[1])||1;
-                        w=(cols*80)+((cols-1)*8); h=(rowsVal*80)+((rowsVal-1)*8);
+                        const cols=parseInt(dims[0])||1; const rowsVal=parseInt(dims[1])||1;
+                        w = cols===1 ? 117 : (cols*117 + (cols-1)*8);
+                        h = rowsVal===1 ? 117 : (rowsVal*117 + (rowsVal-1)*8);
                     }
                     wDiv.style.width=w+'px'; wDiv.style.height=h+'px';
                     wDiv.addEventListener('click',(e)=>{ e.stopPropagation(); editWidget(index,wIndex); });
@@ -593,9 +585,10 @@ widget_dimensions: [117, 117]
                     const items=l.substring(1).trim().split(',');
                     const newRow=[];
                     items.forEach(itemRaw=>{
-                        let id=itemRaw.trim();
-                        let size=""; const sm=id.match(/\(\d+x\d+\)/);
-                        if(sm){ size=sm[0]; id=id.replace(sm[0],'').trim(); }
+                        let item=itemRaw.trim();
+                        let sizeMatch=item.match(/\(\d+x\d+\)/);
+                        let size = sizeMatch ? sizeMatch[0] : '';
+                        let id=item.replace(size,'').trim();
                         const def=importedDefsMap[id]||importedDefsMap[id.split('.').pop()]||null;
                         let type=def && def.widget_type;
                         if(!type){
@@ -605,13 +598,10 @@ widget_dimensions: [117, 117]
                             else if(id.startsWith('cover.')) type='cover';
                             else if(id.startsWith('media_player.')) type='media_player';
                             else if(id.startsWith('climate.')) type='climate';
-                            else if(id.startsWith('light.')||id.startsWith('switch.')||id.startsWith('input_boolean.')) type='switch';
+                            else if(id.startsWith('light.')||id.startsWith('switch.')||id.startsWith('input_boolean.')||id.startsWith('fan.')) type='switch';
                             else type='switch';
                         }
-                        let name=resolveImportedTitle(id);
-                        if(!name && def && def.title) name=def.title;
-                        if(!name) name=formatNameFromId(id);
-
+                        let name=(def && def.title) || formatNameFromId(id);
                         let icon=(def && (def.icon||def.icon_on||def.icon_off||def.icon_inactive))||'';
                         let icon_on=def && (def.icon_on||def.icon_active)||'';
                         let icon_off=def && (def.icon_off||def.icon_inactive)||'';
@@ -731,7 +721,7 @@ widget_dimensions: [117, 117]
             if(type==='navigate'){
                 groupEntity.classList.add('hidden');
                 groupNav.classList.remove('hidden');
-                if(!iconInput.value){ iconInput.value='mdi-arrow-right-circle'; updateIconPreview(); }
+                if(!iconInput.value){ iconInput.value='mdi-arrow-left-circle'; updateIconPreview(); }
             }else{
                 groupEntity.classList.remove('hidden');
                 groupNav.classList.add('hidden');
@@ -761,7 +751,6 @@ widget_dimensions: [117, 117]
         function addNewRow(){
             rows.push([]); renderRows(); activeRowIndex=rows.length-1; refreshUIText(); highlightActiveRow();
         }
-
         function deleteRow(i){
             rows.splice(i,1);
             if(activeRowIndex>=rows.length) activeRowIndex=rows.length-1;
@@ -785,19 +774,18 @@ widget_dimensions: [117, 117]
         const NAV_WIDGET_STYLE = "background-color: #FFFFFF !important; border-radius: 8px !important; padding: 10px !important; color: #000000 !important;";
 
         function buildLayoutLine(rowWidgets){
-            return "  - " + rowWidgets.map(w => w.id + (w.size ? '' : '')).join(", ");
+            // uwzględnia '(WxH)' w elementach
+            return "  - " + rowWidgets.map(w => w.id + (w.size ? w.size : '')).join(", ");
         }
-
         function buildHeader(title){
             return [
                 `title: ${title}`,
                 `widget_dimensions: [117, 117]`,
-                `widget_size: [2, 1]`,
+                `widget_size: [1, 1]`,
                 `widget_margins: [8, 8]`,
                 `columns: 6`,
-                `rows: 8 #9`,
+                `rows: 8`,
                 `global_parameters:`,
-                `  refresh: 0  #`,
                 `  use_comma: 0`,
                 `  precision: 1`,
                 `  use_hass_icon: 1`,
@@ -812,7 +800,6 @@ widget_dimensions: [117, 117]
                 `layout:`
             ].join("\n");
         }
-
         function buildSwitchYaml(w, T){
             const pair = iconPairFor(w.id);
             const iconOn = ensureMdi(w.icon_on || pair[0]);
@@ -825,17 +812,11 @@ widget_dimensions: [117, 117]
             lines.push(`  icon_on: ${iconOn}`);
             lines.push(`  icon_off: ${iconOff}`);
             lines.push(`  title_style: "${TITLE_STYLE}"`);
-            lines.push(`  state_text: 1`);
-            lines.push(`  text_style: "${TEXT_STYLE}"`);
             lines.push(`  widget_style: "${WIDGET_STYLE}"`);
-            lines.push(`  state_map:`);
-            lines.push(`    "on": "${T.state_on}"`);
-            lines.push(`    "off": "${T.state_off}"`);
             lines.push(`  icon_style_active: "${ICON_STYLE_ACTIVE}"`);
             lines.push(`  icon_style_inactive: "${ICON_STYLE_INACTIVE}"`);
             return lines.join("\n");
         }
-
         function buildCoverYaml(w, T){
             const pair = iconPairFor(w.id);
             const iconOn = ensureMdi(w.icon_on || pair[0]);
@@ -852,15 +833,12 @@ widget_dimensions: [117, 117]
             lines.push(`  text_style: "${TEXT_STYLE}"`);
             lines.push(`  widget_style: "${WIDGET_STYLE}"`);
             lines.push(`  state_map:`);
-            lines.push(`    "open": "${translations[currentLang].state_open}"`);
-            lines.push(`    "closed": "${translations[currentLang].state_closed}"`);
-            lines.push(`    "opening": "OTWIERANIE"`);
-            lines.push(`    "closing": "ZAMYKANIE"`);
+            lines.push(`    "open": "OTWARTA"`);
+            lines.push(`    "closed": "ZAMKNIĘTA"`);
             lines.push(`  icon_style_active: "${ICON_STYLE_ACTIVE}"`);
             lines.push(`  icon_style_inactive: "${ICON_STYLE_INACTIVE}"`);
             return lines.join("\n");
         }
-
         function buildSensorYaml(w){
             const baseIcon = ensureMdi(w.icon || pickAutoIcon(w.type, w.id));
             const lines = [];
@@ -869,14 +847,14 @@ widget_dimensions: [117, 117]
             lines.push(`  entity: ${w.id}`);
             lines.push(`  title: ${JSON.stringify(w.name)}`);
             lines.push(`  title_style: "${TITLE_STYLE_SENSOR_TOP5}"`);
-            lines.push(`  text_style: "color: #000000 !important;"`);
             lines.push(`  value_style: "${VALUE_STYLE}"`);
             lines.push(`  unit_style: "${UNIT_STYLE}"`);
             lines.push(`  widget_style: "${WIDGET_STYLE}"`);
+            lines.push(`  icon_style: "${ICON_STYLE_ACTIVE}"`);
             lines.push(`  icon: ${baseIcon}`);
+            lines.push(`  precision: 1`);
             return lines.join("\n");
         }
-
         function buildNavigateYaml(w){
             const iconInactive = ensureMdi(w.icon || 'mdi-arrow-left-circle');
             const dash = w.id.replace('navigate.','');
@@ -890,18 +868,14 @@ widget_dimensions: [117, 117]
             lines.push(`  widget_style: "${NAV_WIDGET_STYLE}"`);
             return lines.join("\n");
         }
-
         function buildScriptYaml(w){
-            const pair = iconPairFor(w.id);
-            const iconOn = ensureMdi(w.icon_on || w.icon || pair[0] || 'mdi-toggle-switch');
-            const iconOff = ensureMdi(w.icon_off || pair[1] || 'mdi-toggle-switch-off');
+            const iconOn = ensureMdi(w.icon_on || w.icon || 'mdi-radio');
             const lines = [];
             lines.push(`${w.id}:`);
             lines.push(`  widget_type: script`);
             lines.push(`  entity: ${w.id}`);
             lines.push(`  title: ${JSON.stringify(w.name)}`);
-            lines.push(`  icon_on: ${iconOn}`);
-            lines.push(`  icon_off: ${iconOff}`);
+            lines.push(`  icon: ${iconOn}`);
             lines.push(`  title_style: "${TITLE_STYLE_SENSOR_TOP5}"`);
             lines.push(`  widget_style: "${WIDGET_STYLE}"`);
             lines.push(`  icon_style: "${ICON_STYLE_ACTIVE}"`);
@@ -910,24 +884,24 @@ widget_dimensions: [117, 117]
 
         function generateLocalYaml(){
             if(!rows.length){ alert("Brak widgetów"); return; }
-            const titleRaw = document.getElementById('dash-title').value.trim() || 'Joan2';
+            const titleRaw = document.getElementById('dash-title').value.trim() || 'Joan3';
             const title = titleRaw.replace(/"/g,'');
             const T = translations[currentLang];
 
             let yaml = buildHeader(title) + "\n";
             rows.forEach(r => { yaml += buildLayoutLine(r) + "\n"; });
             yaml += "\n";
+            yaml += "# -------------------\n# DEFINICJE WIDŻETÓW\n# -------------------\n\n";
 
             rows.forEach(r=>{
                 r.forEach(w=>{
                     const name = (w.name && w.name.trim()) ? w.name : formatNameFromId(w.id);
                     const ww = { ...w, name };
-                    if(ww.type==='switch') yaml += buildSwitchYaml(ww, T) + "\n\n";
+                    if(ww.type==='switch' || ww.type==='binary_sensor' || ww.type==='climate' || ww.type==='media_player' || ww.id.startsWith('fan.')) yaml += buildSwitchYaml(ww, T) + "\n\n";
                     else if(ww.type==='cover') yaml += buildCoverYaml(ww, T) + "\n\n";
                     else if(ww.type==='sensor') yaml += buildSensorYaml(ww) + "\n\n";
                     else if(ww.type==='navigate') yaml += buildNavigateYaml(ww) + "\n\n";
                     else if(ww.type==='script') yaml += buildScriptYaml(ww) + "\n\n";
-                    else if(ww.type==='binary_sensor' || ww.type==='climate') yaml += buildSwitchYaml(ww, T) + "\n\n";
                     else yaml += buildSwitchYaml(ww, T) + "\n\n";
                 });
             });
