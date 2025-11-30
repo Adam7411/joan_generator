@@ -1,6 +1,6 @@
 {
   "name": "Joan Dashboard Generator",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "slug": "joan_generator",
   "description": "Generator dashboardow E-Ink",
   "url": "https://github.com/Adam7411/joan_generator",
@@ -8,6 +8,7 @@
   "startup": "application",
   "boot": "auto",
   "init": false,
+  "homeassistant_api": true,
   "ports": {
     "5000/tcp": 5000
   },
