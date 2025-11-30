@@ -20,7 +20,6 @@
             --link-color: #0056b3;
             --link-border: #bee5eb;
         }
-
         body.dark-mode {
             --bg-color: #121212;
             --container-bg: #1e1e1e;
@@ -34,39 +33,27 @@
             --link-color: #80d8ff;
             --link-border: #37474f;
         }
-
         body { font-family: 'Roboto', sans-serif; background-color: var(--bg-color); color: var(--text-color); padding: 20px; transition: background-color 0.3s; }
         .container { max-width: 1200px; margin: 0 auto; background: var(--container-bg); padding: 25px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); transition: background-color 0.3s; }
-        
         .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid var(--border-color); padding-bottom: 15px; }
         h1 { color: var(--accent-color); margin: 0; font-size: 24px; }
-        
         .controls { display: flex; gap: 10px; align-items: center; }
         .lang-switch button, .theme-switch button { padding: 8px 12px; border: 1px solid var(--border-color); background: var(--section-bg); color: var(--text-color); cursor: pointer; border-radius: 4px; font-weight: bold; }
         .lang-switch button.active { background: var(--accent-color); color: white; border-color: var(--accent-color); }
-
         .status-bar { padding: 10px; margin-bottom: 20px; border-radius: 4px; text-align: center; font-weight: bold; }
-        
         .section { margin-bottom: 30px; border: 1px solid var(--border-color); padding: 20px; border-radius: 8px; background: var(--section-bg); }
         .section-title { font-size: 1.2em; font-weight: bold; color: var(--text-color); margin-bottom: 15px; border-bottom: 2px solid var(--accent-color); display: inline-block; }
-        
         .import-box { background: #fff3e0; border: 1px solid #ffe0b2; color: #000; display: none; }
         body.dark-mode .import-box { background: #3e2723; border-color: #5d4037; color: #fff; }
         .import-box.visible { display: block; }
-
         .add-widget-box { background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #2196f3; color: #000; transition: background 0.3s; }
         body.dark-mode .add-widget-box { background: #0d47a1; border-color: #1565c0; color: #fff; }
         .add-widget-box.editing { background: #fff8e1; border-color: #ffc107; border: 2px solid #ffc107; }
-        body.dark-mode .add-widget-box.editing { background: #3e2723; border-color: #ffb300; }
-
         .flex-row { display: flex; gap: 15px; align-items: flex-end; margin-bottom: 10px; flex-wrap: wrap; }
         .flex-col { flex: 1; min-width: 150px; }
-        
         label { display: block; margin-top: 10px; font-weight: bold; font-size: 0.9em; margin-bottom: 5px; color: var(--text-color); }
         input, select, textarea { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; box-sizing: border-box; background: var(--input-bg); color: var(--text-color); }
-
         .icon-preview-box { width: 42px; height: 42px; background: #fff; border: 1px solid #ccc; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #333; margin-bottom: 1px; }
-
         .btn { padding: 10px 20px; border: none; cursor: pointer; border-radius: 4px; font-weight: bold; text-transform: uppercase; }
         .btn-primary { background-color: var(--accent-color); color: white; width: 100%; font-size: 18px; margin-top: 20px; }
         .btn-add { background-color: #4caf50; color: white; width: 100%; }
@@ -75,75 +62,32 @@
         .btn-row { background-color: #2196f3; color: white; margin-top: 10px; }
         .btn-import { background-color: #ff9800; color: white; margin-bottom: 10px; }
         .btn-remove-row { font-size: 10px; padding: 5px; margin-left: auto; background-color: #757575; color: white; }
-
-        /* PREVIEW AREA */
-        .preview-area { background-color: var(--preview-bg); padding: 20px; border-radius: 8px; border: 2px solid var(--border-color); overflow-x: auto; min-height: 220px; }
-        
-        .eink-row { 
-            display: flex; gap: 8px; margin-bottom: 8px; padding: 15px 10px; 
-            border: 2px dashed #999; background: transparent; border-radius: 4px; 
-            align-items: center; position: relative; min-height: 80px; cursor: pointer;
-        }
+        .preview-area { background-color: var(--preview-bg); padding: 24px; border-radius: 8px; border: 2px solid var(--border-color); overflow-x: auto; min-height: 220px; }
+        .eink-row { display: flex; gap: 12px; margin-bottom: 12px; padding: 18px 12px; border: 2px dashed #999; background: transparent; border-radius: 6px; align-items: center; position: relative; min-height: 120px; cursor: pointer; }
         .eink-row:hover { border-color: #2196f3; }
-        .eink-row.active { border-color: #2196f3; background: rgba(33, 150, 243, 0.1); }
-        
-        .eink-widget {
-            background-color: #FFFFFF; border: 2px solid #000; color: #000; 
-            display: flex; flex-direction: column; align-items: center; justify-content: space-between;
-            padding: 5px; box-sizing: border-box; position: relative; cursor: pointer; 
-            box-shadow: 2px 2px 5px rgba(0,0,0,0.1); flex-shrink: 0;
-            transition: transform 0.1s;
-            border-radius: 6px;
-        }
+        .eink-row.active { border-color: #2196f3; background: rgba(33, 150, 243, 0.08); }
+        .eink-widget { background-color: #FFFFFF; border: 2px solid #000; color: #000; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 8px 4px; box-sizing: border-box; position: relative; cursor: pointer; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); flex-shrink: 0; transition: transform 0.1s; border-radius: 6px; }
         .eink-widget:hover { transform: translateY(-2px); box-shadow: 4px 4px 8px rgba(0,0,0,0.2); z-index: 5; }
         .eink-widget.being-edited { border: 3px solid #ff9800; transform: scale(1.03); z-index: 10; }
-
-        .ew-title { font-size: 11px; font-weight: 700; text-align: center; width: 100%; white-space: normal; overflow: hidden; text-overflow: ellipsis; line-height: 1.2; min-height: 30px; padding: 0 4px; display: flex; align-items: center; justify-content: center; }
-        .ew-icon { font-size: 28px; }
-        .ew-state { font-size: 10px; font-weight: 700; text-transform: uppercase; min-height: 18px; display: flex; align-items: center; }
-        
-        .ew-edit-overlay { position: absolute; top:0; left:0; right:0; bottom:0; background: rgba(33, 150, 243, 0.2); display:none; pointer-events: none;}
+        .ew-title { font-size: 12px; font-weight: 700; text-align: center; width: 100%; white-space: normal; line-height: 1.2; min-height: 30px; padding: 0 4px; display: flex; align-items: center; justify-content: center; }
+        .ew-icon { font-size: 32px; }
+        .ew-state { font-size: 11px; font-weight: 700; text-transform: uppercase; min-height: 18px; display: flex; align-items: center; }
+        .ew-edit-overlay { position: absolute; top:0; left:0; right:0; bottom:0; background: rgba(33, 150, 243, 0.15); display:none; pointer-events: none;}
         .eink-widget:hover .ew-edit-overlay { display: block; }
-
-        .ew-delete { position: absolute; top: 4px; right: 4px; background: red; color: white; width: 20px; height: 20px; text-align: center; line-height: 18px; font-size: 10px; display: none; z-index: 20; border-radius: 4px; }
+        .ew-delete { position: absolute; top: 4px; right: 4px; background: red; color: white; width: 20px; height: 20px; text-align: center; line-height: 20px; font-size: 12px; display: none; z-index: 20; border-radius: 4px; }
         .eink-widget:hover .ew-delete { display: block; }
-
         textarea.output { width: 100%; height: 500px; font-family: monospace; background: #263238; color: #eceff1; border: none; padding: 15px; border-radius: 4px; }
         .hidden { display: none !important; }
-        
-        /* RESULT INSTRUCTIONS */
-        .file-path-info { 
-            background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; padding: 20px; margin-bottom: 20px; border-radius: 6px; font-family: monospace; font-size: 16px; line-height: 1.6;
-        }
+        .file-path-info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; padding: 20px; margin-bottom: 20px; border-radius: 6px; font-family: monospace; font-size: 16px; line-height: 1.6; }
         body.dark-mode .file-path-info { background-color: #263238; color: #eceff1; border-color: #37474f; }
-        
         .file-path-info strong { font-size: 1.3em; display: block; margin-top: 15px; color: #004085; }
         body.dark-mode .file-path-info strong { color: #90caf9; }
         .file-path-info strong:first-child { margin-top: 0; }
-        
-        .file-path-info code { 
-            background: rgba(255,255,255,0.6); padding: 5px 10px; border-radius: 4px; font-weight: bold; color: #d63384; display: block; margin-top: 5px; word-break: break-all;
-        }
+        .file-path-info code { background: rgba(255,255,255,0.6); padding: 5px 10px; border-radius: 4px; font-weight: bold; color: #d63384; display: block; margin-top: 5px; word-break: break-all; }
         body.dark-mode .file-path-info code { background: rgba(0,0,0,0.3); color: #f48fb1; }
-        
-        /* LINK BUTTON STYLE */
-        .dashboard-link-btn { 
-            background: var(--link-bg); 
-            padding: 10px 15px; 
-            border-radius: 6px; 
-            font-weight: bold; 
-            color: var(--link-color); 
-            text-decoration: none; 
-            display: block; 
-            margin-top: 10px; 
-            word-break: break-all; 
-            border: 2px solid var(--link-border);
-            font-size: 1.2em;
-            transition: background-color 0.2s;
-        }
-        .dashboard-link-btn:hover { background-color: #f0f0f0; text-decoration: underline; }
-        body.dark-mode .dashboard-link-btn:hover { background-color: #444; }
-
+        .file-path-info a { background: var(--link-bg); padding: 5px 10px; border-radius: 4px; font-weight: bold; color: var(--link-color); text-decoration: none; display: block; margin-top: 5px; word-break: break-all; border: 1px solid var(--link-border); font-size: 18px; }
+        .file-path-info a:hover { text-decoration: underline; background-color: #fff; }
+        body.dark-mode .file-path-info a:hover { background-color: #444; }
     </style>
 </head>
 <body>
@@ -171,7 +115,6 @@
             </div>
         {% endif %}
 
-        <!-- IMPORT SECTION -->
         <button type="button" class="btn btn-import" onclick="toggleImport()">
             <span data-i18n="btn_import_toggle">📂 Importuj / Edytuj Kod</span>
         </button>
@@ -185,6 +128,7 @@
 
         <form method="POST" id="main-form">
             <input type="hidden" name="ui_language" id="ui_language" value="pl">
+            <input type="hidden" name="ui_theme" id="ui_theme" value="light">
             
             <div class="section">
                 <div class="section-title" data-i18n="sec_settings">1. Ustawienia</div>
@@ -196,10 +140,8 @@
                 </div>
             </div>
 
-            <!-- ADD / EDIT WIDGET BOX -->
             <div class="add-widget-box" id="widget-form-box">
                 <h4 style="margin-top:0" id="form-header" data-i18n="sec_add">2. Dodaj Widget</h4>
-                
                 <div class="flex-row">
                     <div class="flex-col">
                         <label data-i18n="label_type">Typ Widgetu</label>
@@ -215,28 +157,24 @@
                             <option value="label">Label (Text)</option>
                         </select>
                     </div>
-                    
                     <div class="flex-col" id="group-entity">
                         <label data-i18n="label_entity">Wybierz Encję (Home Assistant)</label>
-                        <input list="entities-list" id="new-entity-id" placeholder="np. light.salon..." oninput="megaAutoConfig()">
+                        <input list="entities-list" id="new-entity-id" placeholder="np. light.salon..." oninput="smartAutoFill()">
                         <datalist id="entities-list">
                             {% for entity in entities %}
                             <option value="{{ entity.id }}">{{ entity.id }}</option>
                             {% endfor %}
                         </datalist>
                     </div>
-
                     <div class="flex-col hidden" id="group-nav">
                         <label data-i18n="label_dashboard">Nazwa pliku dashboardu</label>
-                        <input type="text" id="new-dashboard-name" placeholder="np. joan3 (bez .dash)">
+                        <input type="text" id="new-dashboard-name" placeholder="np. joan3 (bez .dash)" oninput="autoNameForNavigate()">
                     </div>
-
                     <div class="flex-col">
                         <label data-i18n="label_name">Tytuł na ekranie</label>
                         <input type="text" id="new-widget-name" placeholder="np. Kuchnia">
                     </div>
                 </div>
-                
                 <div class="flex-row" style="margin-top: 10px; align-items: flex-end;">
                     <div class="flex-col" style="max-width: 150px;">
                         <label data-i18n="label_size">Rozmiar</label>
@@ -250,28 +188,33 @@
                             <option value="(3x2)">3x2 (Bardzo duży)</option>
                         </select>
                     </div>
-
                     <div style="width: 50px;">
                         <label data-i18n="label_preview">Podgląd</label>
                         <div class="icon-preview-box">
                             <i id="icon-preview-i" class="mdi mdi-help-circle-outline"></i>
                         </div>
                     </div>
-                    
                     <div class="flex-col">
                         <label data-i18n="label_icon">Ikona</label>
                         <input list="icons-list" id="new-widget-icon" placeholder="np. mdi-home" oninput="updateIconPreview()">
                         <datalist id="icons-list"></datalist>
                     </div>
-                    
-                    <div class="flex-col" style="display:flex; align-items: flex-end;">
-                        <button type="button" id="btn-action" class="btn btn-add" onclick="saveWidget()">
-                            <span data-i18n="btn_add">+ DODAJ DO WIERSZA</span>
-                        </button>
-                        <button type="button" id="btn-cancel" class="btn btn-cancel hidden" onclick="cancelEdit()">
-                            <span data-i18n="btn_cancel">Anuluj</span>
-                        </button>
+                    <div class="flex-col">
+                        <label>Ikona ON (switch/cover)</label>
+                        <input list="icons-list" id="new-widget-icon-on" placeholder="np. mdi-lightbulb-on" oninput="updateIconPreview()">
                     </div>
+                    <div class="flex-col">
+                        <label>Ikona OFF (switch/cover)</label>
+                        <input list="icons-list" id="new-widget-icon-off" placeholder="np. mdi-lightbulb-outline" oninput="updateIconPreview()">
+                    </div>
+                </div>
+                <div class="flex-row" style="display:flex; align-items: flex-end; gap: 10px;">
+                    <button type="button" id="btn-action" class="btn btn-add" onclick="saveWidget()">
+                        <span data-i18n="btn_add">+ DODAJ DO WIERSZA</span>
+                    </button>
+                    <button type="button" id="btn-cancel" class="btn btn-cancel hidden" onclick="cancelEdit()">
+                        <span data-i18n="btn_cancel">Anuluj</span>
+                    </button>
                 </div>
             </div>
 
@@ -292,31 +235,64 @@
         {% if generated_yaml %}
         <div class="section">
             <h3 data-i18n="sec_code">Twój kod YAML:</h3>
-            
             <div class="file-path-info">
                 <strong data-i18n="info_step1">1. Zapisz kod w pliku:</strong>
                 <code id="path-code">\\IP_HA\addon_configs\appdaemon\dashboards\{{ filename }}</code>
-                
                 <strong data-i18n="info_step2">2. Uruchom ponownie AppDaemon i sprawdź dashboard:</strong>
-                <!-- LINK FIX: Używamy IP_HA, które JS podmieni -->
-                <a href="http://IP_HA:5050/{{ dash_name }}" id="dashboard-link" class="dashboard-link-btn" target="_blank">http://IP_HA:5050/{{ dash_name }}</a>
+                <a href="#" id="dashboard-link" target="_blank">http://IP_HA:5050/{{ dash_name }}</a>
             </div>
-
             <textarea class="output" readonly>{{ generated_yaml }}</textarea>
         </div>
         {% endif %}
     </div>
 
     <script>
+        // Tłumaczenia globalne (NAPRAWIA błąd "translations is not defined")
+        const translations = {
+            pl: {
+                status_ok: "✓ Połączono z Home Assistant", status_error: "⚠ Brak połączenia z API. Sprawdź token.",
+                sec_settings: "1. Ustawienia", sec_add: "2. Dodaj Widget", sec_edit: "2. Edytuj Widget",
+                sec_preview: "3. Podgląd Dashboardu (Kliknij, aby edytować)", sec_code: "Twój kod YAML:",
+                dash_title: "Tytuł Dashboardu (Nazwa pliku)",
+                label_entity: "Wybierz Encję (Home Assistant)",
+                label_dashboard: "Nazwa pliku dashboardu (np. joan3)",
+                label_type: "Typ Widgetu", label_name: "Tytuł na ekranie",
+                label_icon: "Ikona (Automatyczna)", label_preview: "Ikona", label_size: "Rozmiar",
+                btn_add: "+ DODAJ DO WIERSZA", btn_update: "ZAPISZ ZMIANY",
+                btn_new_row: "+ Dodaj Nowy Wiersz", btn_generate: "GENERUJ KOD .DASH", btn_cancel: "Anuluj",
+                state_on: "WŁĄCZONE", state_off: "WYŁĄCZONE", state_open: "OTWARTE", state_closed: "ZAMKNIĘTE",
+                info_step1: "1. Zapisz kod w pliku:", info_step2: "2. Uruchom ponownie AppDaemon i sprawdź dashboard:",
+                btn_import_toggle: "📂 Importuj / Edytuj Kod", header_paste_code: "Wklej kod pliku .dash tutaj:", btn_load_dash: "Wczytaj Dashboard"
+            },
+            en: {
+                status_ok: "✓ Connected to Home Assistant", status_error: "⚠ No API Connection. Check Token.",
+                sec_settings: "1. Settings", sec_add: "2. Add Widget", sec_edit: "2. Edit Widget",
+                sec_preview: "3. Dashboard Preview (Click to Edit)", sec_code: "Your YAML Code:",
+                dash_title: "Dashboard Title (Filename)",
+                label_entity: "Select Entity (Home Assistant)",
+                label_dashboard: "Dashboard Filename (e.g. joan3)",
+                label_type: "Widget Type", label_name: "Title on Screen",
+                label_icon: "Icon (Automatic)", label_preview: "Icon", label_size: "Size",
+                btn_add: "+ ADD TO ROW", btn_update: "UPDATE WIDGET",
+                btn_new_row: "+ Add New Row", btn_generate: "GENERATE .DASH CODE", btn_cancel: "Cancel",
+                state_on: "ON", state_off: "OFF", state_open: "OPEN", state_closed: "CLOSED",
+                info_step1: "1. Save code to file:", info_step2: "2. Restart AppDaemon and check dashboard:",
+                btn_import_toggle: "📂 Import / Edit Code", header_paste_code: "Paste .dash file code here:", btn_load_dash: "Load Dashboard"
+            }
+        };
+
         const entitiesData = {{ entities | tojson }};
         let currentLang = 'pl';
         let rows = [];
         let activeRowIndex = 0;
-        let editingIndices = null; 
-        let importedDefsMap = {}; 
+        let editingIndices = null;
+        let importedDefsMap = {};
 
         function formatNameFromId(id) {
             if (!id) return "";
+            if (id.startsWith('navigate.')) {
+                return id.replace('navigate.', '').replace(/_/g,' ').replace(/\b\w/g,l=>l.toUpperCase());
+            }
             const last = id.includes('.') ? id.split('.').pop() : id;
             return last.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
         }
@@ -325,8 +301,8 @@
             if (importedDefsMap[id] && importedDefsMap[id].title) return importedDefsMap[id].title;
             const shortId = id.split('.').pop();
             if (importedDefsMap[shortId] && importedDefsMap[shortId].title) return importedDefsMap[shortId].title;
-            for(let key in importedDefsMap) {
-                if(importedDefsMap[key].entity === id && importedDefsMap[key].title) return importedDefsMap[key].title;
+            for (const k in importedDefsMap) {
+                if (importedDefsMap[k].entity === id && importedDefsMap[k].title) return importedDefsMap[k].title;
             }
             return '';
         }
@@ -342,34 +318,7 @@
         }
 
         function refreshUIText() {
-            const dict = {
-                pl: {
-                    sec_settings: "1. Ustawienia", sec_add: "2. Dodaj Widget", sec_edit: "2. Edytuj Widget", 
-                    sec_preview: "3. Podgląd Dashboardu (Kliknij, aby edytować)", sec_code: "Twój kod YAML:",
-                    dash_title: "Tytuł Dashboardu (Nazwa pliku)", 
-                    label_entity: "Wybierz Encję (Home Assistant)",
-                    label_dashboard: "Nazwa pliku dashboardu (np. joan3)",
-                    label_type: "Typ Widgetu", label_name: "Tytuł na ekranie",
-                    label_icon: "Ikona (Automatyczna)", label_preview: "Ikona", label_size: "Rozmiar",
-                    btn_add: "+ DODAJ DO WIERSZA", btn_update: "ZAPISZ ZMIANY", btn_new_row: "+ Dodaj Nowy Wiersz", btn_generate: "GENERUJ KOD .DASH", btn_cancel: "Anuluj",
-                    state_on: "WŁĄCZONE", state_off: "WYŁĄCZONE", state_open: "OTWARTE", state_closed: "ZAMKNIĘTE",
-                    info_step1: "1. Zapisz kod w pliku:", info_step2: "2. Uruchom ponownie AppDaemon i sprawdź dashboard:",
-                    btn_import_toggle: "📂 Importuj / Edytuj Kod", header_paste_code: "Wklej kod pliku .dash tutaj:", btn_load_dash: "Wczytaj Dashboard"
-                },
-                en: {
-                    sec_settings: "1. Settings", sec_add: "2. Add Widget", sec_edit: "2. Edit Widget",
-                    sec_preview: "3. Dashboard Preview (Click to Edit)", sec_code: "Your YAML Code:",
-                    dash_title: "Dashboard Title (Filename)", 
-                    label_entity: "Select Entity (Home Assistant)",
-                    label_dashboard: "Dashboard Filename (e.g. joan3)",
-                    label_type: "Widget Type", label_name: "Title on Screen",
-                    label_icon: "Icon (Automatic)", label_preview: "Icon", label_size: "Size",
-                    btn_add: "+ ADD TO ROW", btn_update: "UPDATE WIDGET", btn_new_row: "+ Add New Row", btn_generate: "GENERATE .DASH CODE", btn_cancel: "Cancel",
-                    state_on: "ON", state_off: "OFF", state_open: "OPEN", state_closed: "CLOSED",
-                    info_step1: "1. Save code to file:", info_step2: "2. Restart AppDaemon and check dashboard:",
-                    btn_import_toggle: "📂 Import / Edit Code", header_paste_code: "Paste .dash file code here:", btn_load_dash: "Load Dashboard"
-                }
-            }[currentLang];
+            const dict = translations[currentLang];
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
                 if (dict[key]) el.innerText = dict[key];
@@ -384,336 +333,512 @@
         function toggleTheme() {
             const isDark = document.body.classList.toggle('dark-mode');
             localStorage.setItem('joan_theme', isDark ? 'dark' : 'light');
-            updateThemeBtn();
-        }
-
-        function updateThemeBtn() {
+            const themeInput = document.getElementById('ui_theme');
+            if (themeInput) themeInput.value = isDark ? 'dark' : 'light';
             const btn = document.getElementById('btn-theme');
-            btn.innerText = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
+            btn.innerText = isDark ? '☀️' : '🌙';
         }
 
-        function getEntityState(id) {
-            const ent = entitiesData.find(e => e.id === id);
-            if (ent) {
-                if (ent.state === 'on') return translations[currentLang].state_on;
-                if (ent.state === 'off') return translations[currentLang].state_off;
-                if (ent.state === 'open') return translations[currentLang].state_open;
-                if (ent.state === 'closed') return translations[currentLang].state_closed;
-                let val = ent.state;
-                if (!isNaN(parseFloat(val)) && val.includes('.')) val = parseFloat(val).toFixed(1);
-                if (ent.unit) val += ' ' + ent.unit;
-                return val;
-            }
+        function normalizeState(state) {
+            if (state == null) return null;
+            const s = String(state).toLowerCase().trim();
+            const T = translations[currentLang];
+            if (['1','true','on'].includes(s)) return T.state_on;
+            if (['0','false','off'].includes(s)) return T.state_off;
+            if (s === 'open') return T.state_open;
+            if (s === 'closed') return T.state_closed;
             return null;
         }
 
-        function getLiveIcon(widget) {
-            const ent = entitiesData.find(e => e.id === widget.id);
-            // Prioritize explicit widget icon
-            let icon = widget.icon;
-            
-            if (!ent) return icon; 
+        function getEntityData(id) {
+            return entitiesData.find(e => e.id === id) || null;
+        }
 
-            const i = (icon || '').toLowerCase();
-            const state = ent.state;
-            const is_on = (state === 'on' || state === 'open' || state === 'unlocked');
-
-            if (is_on) {
-                if (i.includes('garage')) return 'mdi-garage-open';
-                if (i.includes('gate')) return 'mdi-gate-open';
-                if (i.includes('light') || i.includes('bulb')) return 'mdi-lightbulb-on';
-                if (i.includes('lock')) return 'mdi-lock-open';
-                if (i.includes('door')) return 'mdi-door-open';
-                if (i.includes('window') || i.includes('blind')) return 'mdi-window-shutter-open';
-                if (i.includes('-off')) return i.replace('-off', '');
-                if (i.includes('-outline')) return i.replace('-outline', '');
-                return i;
-            } else {
-                if (i.includes('garage')) return 'mdi-garage';
-                if (i.includes('gate')) return 'mdi-gate';
-                if (i.includes('light') || i.includes('bulb')) return 'mdi-lightbulb-outline';
-                if (i.includes('lock')) return 'mdi-lock';
-                if (i.includes('door')) return 'mdi-door-closed';
-                if (i.includes('window') || i.includes('blind')) return 'mdi-window-shutter';
-                return i;
+        function getDisplayState(id, type) {
+            const ent = getEntityData(id);
+            if (!ent) return '';
+            if (type === 'label' || type === 'navigate') return '';
+            const norm = normalizeState(ent.state);
+            if (type === 'sensor') {
+                const s = String(ent.state).trim();
+                if ((s === '1' || s === '0') && !ent.unit) return '';
+                if (!isNaN(parseFloat(s)) && s.includes('.')) {
+                    const v = parseFloat(s).toFixed(1);
+                    return ent.unit ? `${v} ${ent.unit}` : v;
+                }
+                return ent.unit ? `${s} ${ent.unit}` : s;
             }
+            return norm || String(ent.state).toUpperCase();
+        }
+
+        function iconPairFor(id){
+            const v=(id||'').toLowerCase();
+            if(v.startsWith('light.')||v.includes('swiatlo')||v.includes('light')) return ['mdi-lightbulb-on','mdi-lightbulb-outline'];
+            if(v.startsWith('cover.')||v.includes('brama')||v.includes('gate')) return ['mdi-gate-open','mdi-gate'];
+            if(v.includes('garage')||v.includes('garaz')||v.includes('garaż')) return ['mdi-garage-open','mdi-garage'];
+            if(v.includes('radiator')||v.includes('ogrzew')||v.includes('grzejnik')) return ['mdi-radiator','mdi-radiator-off'];
+            if(v.includes('cwu')||v.includes('woda')||v.includes('water')) return ['mdi-water-outline','mdi-water-off'];
+            if(v.includes('window')||v.includes('roleta')||v.includes('blind')) return ['mdi-window-shutter-open','mdi-window-shutter'];
+            if(v.startsWith('input_boolean.')) return ['mdi-toggle-switch','mdi-toggle-switch-off'];
+            return ['mdi-toggle-switch','mdi-toggle-switch-off'];
+        }
+
+        function pickAutoIcon(type, id) {
+            const v = (id || '').toLowerCase();
+            const map = [
+                { k: ['hydrofor','storage','zbiornik','tank'], i: 'mdi-storage-tank' },
+                { k: ['cwu','woda','water'], i: 'mdi-water-outline' },
+                { k: ['ogrzew','grzejnik','radiator','heat'], i: 'mdi-radiator' },
+                { k: ['brama','gate'], i: 'mdi-gate' },
+                { k: ['garaz','garaż','garage'], i: 'mdi-garage' },
+                { k: ['wilgotn','humidity'], i: 'mdi-water-percent' },
+                { k: ['temp','temperatur','temperature'], i: 'mdi-thermometer' },
+                { k: ['bateria','battery','akumulator'], i: 'mdi-battery' },
+                { k: ['swiatlo','light','bulb'], i: 'mdi-lightbulb' },
+                { k: ['media_player','spotify','radio'], i: 'mdi-play-circle' },
+                { k: ['klima','climate','hvac'], i: 'mdi-home-thermometer' },
+                { k: ['sensor','czujnik'], i: 'mdi-gauge' },
+                { k: ['lock','zamek'], i: 'mdi-lock' },
+                { k: ['window','roleta','blind'], i: 'mdi-window-shutter' },
+                { k: ['fan','wentyl'], i: 'mdi-fan' },
+                { k: ['door','drzwi'], i: 'mdi-door' }
+            ];
+            for (const m of map) if (m.k.some(kw => v.includes(kw))) return m.i;
+            const fallback = {
+                switch:'mdi-toggle-switch', sensor:'mdi-gauge', cover:'mdi-gate',
+                media_player:'mdi-play-circle', climate:'mdi-home-thermometer',
+                binary_sensor:'mdi-alert-circle-outline', script:'mdi-script-text-outline',
+                navigate:'mdi-arrow-right-circle', label:'mdi-label'
+            };
+            return fallback[type] || 'mdi-help-circle-outline';
+        }
+
+        function pickPreviewIcon(widget){
+            const ent = getEntityData(widget.id);
+            const actionable = ['switch','cover','binary_sensor','media_player','climate','script'].includes(widget.type) || widget.id.startsWith('input_boolean.');
+            if(actionable){
+                let on = widget.icon_on, off = widget.icon_off;
+                if(!on || !off){
+                    const p = iconPairFor(widget.id);
+                    on = on || p[0];
+                    off= off|| p[1];
+                }
+                const st = ent ? String(ent.state).toLowerCase().trim() : 'off';
+                const isOn = (st==='on'||st==='true'||st==='1'||st==='open'||st==='unlocked');
+                return isOn ? on : off;
+            } else {
+                return (widget.icon && widget.icon.trim()) ? widget.icon : pickAutoIcon(widget.type, widget.id);
+            }
+        }
+
+        function smartAutoFill(){
+            const idField = document.getElementById('new-entity-id');
+            const nameInput = document.getElementById('new-widget-name');
+            const typeSel = document.getElementById('new-widget-type');
+            const iconInput = document.getElementById('new-widget-icon');
+            const iconOnInput = document.getElementById('new-widget-icon-on');
+            const iconOffInput = document.getElementById('new-widget-icon-off');
+            const sizeInput = document.getElementById('new-widget-size');
+            const raw = (idField.value || '').trim();
+            if(!raw) return;
+            const id = raw.toLowerCase();
+
+            if(id.startsWith('sensor.')) typeSel.value='sensor';
+            else if(id.startsWith('binary_sensor.')) typeSel.value='binary_sensor';
+            else if(id.startsWith('cover.')) typeSel.value='cover';
+            else if(id.startsWith('media_player.')) typeSel.value='media_player';
+            else if(id.startsWith('climate.')) typeSel.value='climate';
+            else if(id.startsWith('switch.') || id.startsWith('light.') || id.startsWith('input_boolean.')) typeSel.value='switch';
+            else typeSel.value='switch';
+
+            if(!nameInput.value.trim()) nameInput.value = formatNameFromId(id);
+
+            if((typeSel.value === 'media_player' || typeSel.value === 'climate') && !sizeInput.value) sizeInput.value='(2x2)';
+
+            const actionable = ['switch','cover','binary_sensor','media_player','climate','script'].includes(typeSel.value) || id.startsWith('input_boolean.');
+            if(actionable){
+                if(!iconOnInput.value.trim() || !iconOffInput.value.trim()){
+                    const pair = iconPairFor(id);
+                    if(!iconOnInput.value.trim()) iconOnInput.value = pair[0];
+                    if(!iconOffInput.value.trim()) iconOffInput.value = pair[1];
+                }
+                if(!iconInput.value.trim()) iconInput.value = '';
+            } else {
+                if(!iconInput.value.trim()){
+                    iconInput.value = pickAutoIcon(typeSel.value, id);
+                }
+                if(!iconOnInput.value.trim()) iconOnInput.value='';
+                if(!iconOffInput.value.trim()) iconOffInput.value='';
+            }
+            updateIconPreview();
+        }
+
+        function autoNameForNavigate(){
+            const dashName = document.getElementById('new-dashboard-name').value.trim();
+            const nameInput = document.getElementById('new-widget-name');
+            if(dashName && !nameInput.value.trim()){
+                nameInput.value = formatNameFromId('navigate.'+dashName);
+            }
+        }
+
+        function updateIconPreview() {
+            const iconOn = (document.getElementById('new-widget-icon-on')?.value || '').trim();
+            const iconOff= (document.getElementById('new-widget-icon-off')?.value || '').trim();
+            const base   = document.getElementById('new-widget-icon').value.trim();
+            const val = iconOn || iconOff || base;
+            const preview = document.getElementById('icon-preview-i');
+            preview.className = (val && val.startsWith('mdi-')) ? 'mdi ' + val : 'mdi mdi-help-circle-outline';
         }
 
         function renderRows() {
             const container = document.getElementById('rows-container');
             container.innerHTML = '';
-            const T = translations[currentLang];
-            const defaultStates = { 'switch': T.state_on, 'sensor': '21.5 °C', 'cover': T.state_open, 'media_player': 'PLAYING', 'navigate': 'GO', 'binary_sensor': T.state_open, 'script': 'RUN', 'climate': '21°' };
-
             rows.forEach((rowWidgets, index) => {
                 const rowDiv = document.createElement('div');
                 rowDiv.className = 'eink-row';
                 rowDiv.id = 'row-' + index;
-                
-                rowDiv.onclick = () => { 
-                    if(editingIndices) cancelEdit();
-                    activeRowIndex = index; 
-                    highlightActiveRow(); 
-                };
+                rowDiv.addEventListener('click', () => { if(editingIndices) cancelEdit(); activeRowIndex = index; refreshUIText(); highlightActiveRow(); });
 
                 const rowLabel = document.createElement('div');
-                rowLabel.style.position = 'absolute'; rowLabel.style.top = '-10px'; rowLabel.style.left='5px'; 
-                rowLabel.style.fontWeight = 'bold'; rowLabel.style.fontSize = '10px'; rowLabel.style.color='#666';
-                rowLabel.innerText = (currentLang === 'pl' ? 'WIERSZ ' : 'ROW ') + (index + 1);
+                rowLabel.style.position='absolute'; rowLabel.style.top='-10px'; rowLabel.style.left='5px';
+                rowLabel.style.fontWeight='bold'; rowLabel.style.fontSize='10px'; rowLabel.style.color='#666';
+                rowLabel.innerText = (currentLang==='pl'?'WIERSZ ':'ROW ') + (index+1);
                 rowDiv.appendChild(rowLabel);
 
-                rowWidgets.forEach((widget, wIndex) => {
+                rowWidgets.forEach((widget,wIndex)=>{
                     const wDiv = document.createElement('div');
-                    wDiv.className = 'eink-widget';
-                    if (editingIndices && editingIndices.r === index && editingIndices.w === wIndex) wDiv.classList.add('being-edited');
+                    wDiv.className='eink-widget';
+                    if(editingIndices && editingIndices.r===index && editingIndices.w===wIndex) wDiv.classList.add('being-edited');
 
-                    let w = 160, h = 120;
-                    if (widget.size) {
+                    let w=160,h=120;
+                    if(widget.size){
                         const dims = widget.size.replace(/[()]/g,'').split('x');
-                        const cols = parseInt(dims[0]) || 2;
-                        const rowsVal = parseInt(dims[1]) || 1;
-                        w = (cols * 80) + ((cols - 1) * 8);
-                        h = (rowsVal * 80) + ((rowsVal - 1) * 8);
+                        const cols = parseInt(dims[0])||2;
+                        const rowsVal = parseInt(dims[1])||1;
+                        w = (cols*80)+((cols-1)*8);
+                        h = (rowsVal*80)+((rowsVal-1)*8);
                     }
-                    wDiv.style.width = w + 'px'; wDiv.style.height = h + 'px';
+                    wDiv.style.width=w+'px'; wDiv.style.height=h+'px';
 
-                    wDiv.onclick = (e) => { e.stopPropagation(); editWidget(index, wIndex); };
+                    wDiv.addEventListener('click', (e)=>{ e.stopPropagation(); editWidget(index,wIndex); });
 
-                    const liveIcon = getLiveIcon(widget);
-                    const iconClass = liveIcon ? liveIcon : ''; 
-                    let iconHtml = iconClass ? `<i class="mdi ${iconClass} ew-icon"></i>` : `<div style="height:38px"></div>`;
-
-                    let displayState = getEntityState(widget.id) || defaultStates[widget.type] || '---';
-
+                    const safeName = widget.name && widget.name.trim() ? widget.name : formatNameFromId(widget.id);
+                    const iconClass = pickPreviewIcon(widget);
+                    const iconHtml = iconClass ? `<i class="mdi ${iconClass} ew-icon"></i>` : `<div style="height:38px"></div>`;
+                    const displayState = getDisplayState(widget.id, widget.type);
+                    const delBtn = `<div class="ew-delete" onclick="removeWidget(${index},${wIndex});event.stopPropagation();">X</div>`;
                     wDiv.innerHTML = `
-                        <div class="ew-title">${widget.name}</div>
+                        <div class="ew-title">${safeName}</div>
                         ${iconHtml}
-                        <div class="ew-state">${displayState}</div>
-                        <div class="ew-delete" onclick="removeWidget(${index}, ${wIndex}); event.stopPropagation();">X</div>
+                        ${displayState?`<div class="ew-state">${displayState}</div>`:`<div style="height:14px"></div>`}
+                        ${delBtn}
                         <div class="ew-edit-overlay"></div>
                     `;
                     rowDiv.appendChild(wDiv);
                 });
 
-                if(rows.length > 1) {
+                if(rows.length>1){
                     const del = document.createElement('button');
-                    del.innerText = 'USUŃ'; del.className='btn-remove-row btn';
-                    del.style.position='absolute'; del.style.right='5px'; del.style.top='5px';
-                    del.onclick = (e) => { e.stopPropagation(); deleteRow(index); };
+                    del.innerText='USUŃ';
+                    del.className='btn-remove-row btn';
+                    del.style.position='absolute';
+                    del.style.right='5px';
+                    del.style.top='5px';
+                    del.addEventListener('click',(e)=>{e.stopPropagation();deleteRow(index);});
                     rowDiv.appendChild(del);
                 }
                 container.appendChild(rowDiv);
             });
-            
             highlightActiveRow();
         }
 
-        function toggleImport() { document.getElementById('import-area').classList.toggle('visible'); }
+        function toggleImport(){ document.getElementById('import-area').classList.toggle('visible'); }
 
         function importYaml() {
             const code = document.getElementById('import-code').value;
-            if (!code) return;
+            if(!code) return;
             try {
                 const lines = code.split('\n');
                 const rawDefs = {};
-                let currentKey = null;
-                const layoutLines = [];
-                let parsingLayout = false;
+                let currentKey=null;
+                const layoutLines=[];
+                let parsingLayout=false;
+                const ignoreKeys=['global_parameters','widget_dimensions','widget_size','widget_margins','columns','rows','skin','title'];
 
-                const ignoreKeys = ['global_parameters','widget_dimensions','widget_size','widget_margins','columns','rows','skin','title'];
+                for(let i=0;i<lines.length;i++){
+                    const lineRaw=lines[i];
+                    const line=lineRaw.split('#')[0].trim();
+                    if(!line) continue;
 
-                for (let i = 0; i < lines.length; i++) {
-                    let lineRaw = lines[i];
-                    let line = lineRaw.split('#')[0].trim();
-                    if (!line) continue;
+                    if(line.startsWith('layout:')){ parsingLayout=true; continue; }
 
-                    if (line.startsWith('layout:')) { parsingLayout = true; continue; }
-                    
-                    if (!parsingLayout && lineRaw.match(/^title:/)) {
-                        const parts = lineRaw.split(':');
-                        document.getElementById('dash-title').value = parts.slice(1).join(':').trim().replace(/['"]/g, '');
+                    if(!parsingLayout && /^title:/.test(lineRaw)){
+                        const parts=lineRaw.split(':');
+                        document.getElementById('dash-title').value = parts.slice(1).join(':').trim().replace(/['"]/g,'');
                         continue;
                     }
 
-                    if (parsingLayout) {
-                        if (line.startsWith('-')) layoutLines.push(line);
-                        else if (lineRaw.match(/^\S+:/)) parsingLayout = false;
+                    if(parsingLayout){
+                        if(line.startsWith('-')) layoutLines.push(line);
+                        else if(/^\S+:/.test(lineRaw)) parsingLayout=false;
                     }
 
-                    if (!parsingLayout) {
-                        const matchRoot = lineRaw.match(/^([a-zA-Z0-9_\.\-]+)\s*:/);
-                        if (matchRoot) {
-                            const key = matchRoot[1];
-                            if (!ignoreKeys.includes(key)) { currentKey = key; rawDefs[currentKey] = {}; } else { currentKey = null; }
-                        } else if (currentKey && line.includes(':')) {
-                            let val = line.substring(line.indexOf(':') + 1).trim();
-                            if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) val = val.slice(1, -1);
-                            const k = line.split(':')[0].trim();
-                            rawDefs[currentKey][k] = val;
+                    if(!parsingLayout){
+                        const matchRoot=lineRaw.match(/^([a-zA-Z0-9_\.\-]+)\s*:/);
+                        if(matchRoot){
+                            const key=matchRoot[1];
+                            if(!ignoreKeys.includes(key)){ currentKey=key; rawDefs[currentKey]={}; } else { currentKey=null; }
+                        } else if(currentKey && line.includes(':')){
+                            let val=line.substring(line.indexOf(':')+1).trim();
+                            if((val.startsWith('"')&&val.endsWith('"'))||(val.startsWith("'")&&val.endsWith("'"))) val=val.slice(1,-1);
+                            const k=line.split(':')[0].trim();
+                            rawDefs[currentKey][k]=val;
                         }
                     }
                 }
 
-                importedDefsMap = {};
-                Object.entries(rawDefs).forEach(([k, def]) => {
-                    importedDefsMap[k] = def;
-                    if (def.entity) importedDefsMap[def.entity] = def;
+                importedDefsMap={};
+                Object.entries(rawDefs).forEach(([k,def])=>{
+                    importedDefsMap[k]=def;
+                    if(def.entity) importedDefsMap[def.entity]=def;
                 });
 
-                rows = [];
-                layoutLines.forEach(l => {
-                    const items = l.substring(1).trim().split(',');
-                    const newRow = [];
-                    items.forEach(itemRaw => {
-                        let id = itemRaw.trim();
-                        let size = "";
-                        const sm = id.match(/\(\d+x\d+\)/);
-                        if (sm) { size = sm[0]; id = id.replace(sm[0],'').trim(); }
-
-                        const def = importedDefsMap[id] || importedDefsMap[id.split('.').pop()] || null;
-
-                        let type = def && def.widget_type;
-                        if (!type) {
-                            if (id.startsWith('navigate.')) type='navigate';
-                            else if (id.startsWith('sensor.')) type='sensor';
-                            else if (id.startsWith('binary_sensor.')) type='binary_sensor';
-                            else if (id.startsWith('cover.')) type='cover';
-                            else if (id.startsWith('media_player.')) type='media_player';
-                            else if (id.startsWith('climate.')) type='climate';
-                            else if (id.startsWith('light.') || id.startsWith('switch.') || id.startsWith('input_boolean.')) type='switch';
+                rows=[];
+                layoutLines.forEach(l=>{
+                    const items=l.substring(1).trim().split(',');
+                    const newRow=[];
+                    items.forEach(itemRaw=>{
+                        let id=itemRaw.trim();
+                        let size="";
+                        const sm=id.match(/\(\d+x\d+\)/);
+                        if(sm){ size=sm[0]; id=id.replace(sm[0],'').trim(); }
+                        const def=importedDefsMap[id]||importedDefsMap[id.split('.').pop()]||null;
+                        let type=def && def.widget_type;
+                        if(!type){
+                            if(id.startsWith('navigate.')) type='navigate';
+                            else if(id.startsWith('sensor.')) type='sensor';
+                            else if(id.startsWith('binary_sensor.')) type='binary_sensor';
+                            else if(id.startsWith('cover.')) type='cover';
+                            else if(id.startsWith('media_player.')) type='media_player';
+                            else if(id.startsWith('climate.')) type='climate';
+                            else if(id.startsWith('light.')||id.startsWith('switch.')||id.startsWith('input_boolean.')) type='switch';
                             else type='switch';
                         }
-
                         let name = resolveImportedTitle(id);
-                        if (!name && def && def.title) name = def.title;
-                        if (!name) name = formatNameFromId(id);
+                        if(!name && def && def.title) name=def.title;
+                        if(!name) name=formatNameFromId(id);
 
-                        let icon = (def && def.icon) || '';
-                        // Support for icon_on as a fallback
-                        if(!icon && def && def.icon_on) icon = def.icon_on;
-                        
-                        [icon] = [icon].map(x => (x && !x.startsWith('mdi-')) ? ('mdi-'+x) : x);
-
-                        newRow.push({ id, type, name, icon, size });
+                        let icon = (def && (def.icon || def.icon_on || def.icon_off || def.icon_inactive)) || '';
+                        let icon_on = def && (def.icon_on || def.icon_active) || '';
+                        let icon_off= def && (def.icon_off || def.icon_inactive) || '';
+                        const actionable = ['switch','cover','binary_sensor','media_player','climate','script'].includes(type) || id.startsWith('input_boolean.');
+                        if(actionable && (!icon_on || !icon_off)){
+                            const pair = iconPairFor(id);
+                            icon_on = icon_on || pair[0];
+                            icon_off= icon_off|| pair[1];
+                        }
+                        [icon,icon_on,icon_off]=[icon,icon_on,icon_off].map(x => (x && !x.startsWith('mdi-'))?('mdi-'+x):x);
+                        newRow.push({ id,type,name,icon,icon_on,icon_off,size });
                     });
-                    if (newRow.length) rows.push(newRow);
+                    if(newRow.length) rows.push(newRow);
                 });
 
-                if (!rows.length) { alert("Layout not found."); return; }
+                if(!rows.length){ alert("Layout not found."); return; }
                 renderRows();
-                activeRowIndex = rows.length - 1;
+                activeRowIndex=rows.length-1;
                 refreshUIText();
                 highlightActiveRow();
                 toggleImport();
                 alert("Import successful!");
-            } catch (e) { alert("Import failed: " + e.message); }
+            } catch(e){
+                alert("Import failed: "+e.message);
+            }
         }
 
-        function editWidget(r, w) {
-            editingIndices = { r, w };
-            const widget = rows[r][w];
-            activeRowIndex = r; highlightActiveRow();
-            document.getElementById('new-widget-type').value = widget.type; toggleInputs();
-            if (widget.type === 'navigate') {
-                document.getElementById('new-dashboard-name').value = widget.id.replace('navigate.', '');
+        function editWidget(r,w){
+            editingIndices={r,w};
+            const widget=rows[r][w];
+            activeRowIndex=r; highlightActiveRow();
+            document.getElementById('new-widget-type').value=widget.type;
+            toggleInputs();
+            if(widget.type==='navigate'){
+                document.getElementById('new-dashboard-name').value = widget.id.replace('navigate.','');
+                document.getElementById('group-nav').classList.remove('hidden');
+                document.getElementById('group-entity').classList.add('hidden');
             } else {
                 document.getElementById('new-entity-id').value = widget.id;
+                document.getElementById('group-entity').classList.remove('hidden');
+                document.getElementById('group-nav').classList.add('hidden');
             }
             document.getElementById('new-widget-name').value = widget.name || '';
             document.getElementById('new-widget-icon').value = widget.icon || '';
+            document.getElementById('new-widget-icon-on').value = widget.icon_on || '';
+            document.getElementById('new-widget-icon-off').value = widget.icon_off || '';
             document.getElementById('new-widget-size').value = widget.size || '';
             updateIconPreview();
             document.getElementById('widget-form-box').classList.add('editing');
             document.getElementById('btn-cancel').classList.remove('hidden');
-            refreshUIText(); renderRows();
+            refreshUIText();
+            renderRows();
         }
-        function cancelEdit() { editingIndices = null; clearForm(); document.getElementById('widget-form-box').classList.remove('editing'); document.getElementById('btn-cancel').classList.add('hidden'); refreshUIText(); renderRows(); }
-        function saveWidget() {
+
+        function cancelEdit(){
+            editingIndices=null;
+            clearForm();
+            document.getElementById('widget-form-box').classList.remove('editing');
+            document.getElementById('btn-cancel').classList.add('hidden');
+            refreshUIText();
+            renderRows();
+        }
+
+        function saveWidget(){
             const type = document.getElementById('new-widget-type').value;
             let name = document.getElementById('new-widget-name').value.trim();
             let icon = document.getElementById('new-widget-icon').value.trim();
+            let icon_on = (document.getElementById('new-widget-icon-on')?.value || '').trim();
+            let icon_off= (document.getElementById('new-widget-icon-off')?.value || '').trim();
             const size = document.getElementById('new-widget-size').value;
-            let id = '';
-            if (type === 'navigate') { const dashName = document.getElementById('new-dashboard-name').value.trim(); if (!dashName) { alert(currentLang === 'pl' ? "Wymagana nazwa dashboardu" : "Dashboard name required"); return; } id = 'navigate.' + dashName; } else { id = document.getElementById('new-entity-id').value.trim(); if(!id) { alert(currentLang === 'pl' ? "Wymagana encja" : "Entity required"); return; } }
-            if (!name) name = formatNameFromId(id);
-            if(icon && !icon.startsWith('mdi-') && icon !== '') icon = 'mdi-' + icon;
-            const newWidget = { id, type, name, icon, size };
-            if (editingIndices) { rows[editingIndices.r][editingIndices.w] = newWidget; cancelEdit(); } else { if (!rows.length) addNewRow(); rows[activeRowIndex].push(newWidget); clearForm(); }
+            let id='';
+
+            if(type==='navigate'){
+                const dashName=document.getElementById('new-dashboard-name').value.trim();
+                if(!dashName){ alert(currentLang==='pl'?"Wymagana nazwa dashboardu":"Dashboard name required"); return; }
+                id='navigate.'+dashName;
+            } else {
+                id=document.getElementById('new-entity-id').value.trim();
+                if(!id){ alert(currentLang==='pl'?"Wymagana encja":"Entity required"); return; }
+            }
+
+            if(!name) name=formatNameFromId(id);
+
+            const actionable=['switch','cover','binary_sensor','media_player','climate','script'].includes(type) || id.startsWith('input_boolean.');
+            if(actionable && (!icon_on || !icon_off)){
+                const pair=iconPairFor(id);
+                icon_on=icon_on||pair[0];
+                icon_off=icon_off||pair[1];
+            }
+            if(!actionable && !icon){
+                icon = pickAutoIcon(type,id);
+            }
+            [icon,icon_on,icon_off]=[icon,icon_on,icon_off].map(x => (x && !x.startsWith('mdi-'))?('mdi-'+x):x);
+
+            const newWidget={ id,type,name,icon,icon_on,icon_off,size };
+
+            if(editingIndices){
+                rows[editingIndices.r][editingIndices.w]=newWidget;
+                cancelEdit();
+            } else {
+                if(!rows.length) addNewRow();
+                rows[activeRowIndex].push(newWidget);
+                clearForm();
+            }
             renderRows();
         }
-        function clearForm() { document.getElementById('new-entity-id').value = ''; document.getElementById('new-dashboard-name').value = ''; document.getElementById('new-widget-name').value = ''; document.getElementById('new-widget-icon').value = ''; document.getElementById('new-widget-size').value = ''; updateIconPreview(); }
-        function removeWidget(r, w) { if (editingIndices && editingIndices.r === r && editingIndices.w === w) cancelEdit(); rows[r].splice(w, 1); renderRows(); }
-        function toggleInputs() { const type = document.getElementById('new-widget-type').value; const groupEntity = document.getElementById('group-entity'); const groupNav = document.getElementById('group-nav'); const iconInput = document.getElementById('new-widget-icon'); const sizeInput = document.getElementById('new-widget-size'); if (type === 'navigate') { groupEntity.classList.add('hidden'); groupNav.classList.remove('hidden'); if(!iconInput.value) { iconInput.value = 'mdi-arrow-right-circle'; updateIconPreview(); } } else { groupEntity.classList.remove('hidden'); groupNav.classList.add('hidden'); } if((type === 'media_player' || type === 'climate') && !sizeInput.value) { sizeInput.value = '(2x2)'; } }
-        
-        // Mega Auto Config - Updated Dictionary
-        function megaAutoConfig() {
-            const id = document.getElementById('new-entity-id').value.toLowerCase();
-            const typeSelect = document.getElementById('new-widget-type');
-            const iconInput = document.getElementById('new-widget-icon');
-            const nameInput = document.getElementById('new-widget-name');
-            
-            if(typeSelect.value === 'navigate') return; 
-            
-            let detectedType = '';
-            if(id.startsWith('sensor.')) detectedType = 'sensor';
-            else if(id.startsWith('binary_sensor.')) detectedType = 'binary_sensor';
-            else if(id.startsWith('cover.')) detectedType = 'cover';
-            else if(id.startsWith('media_player.')) detectedType = 'media_player';
-            else if(id.startsWith('climate.')) detectedType = 'climate';
-            else if(id.startsWith('light.') || id.startsWith('switch.')) detectedType = 'switch';
-            
-            if(detectedType) {
-                typeSelect.value = detectedType;
-                const sizeInput = document.getElementById('new-widget-size');
-                if((detectedType === 'media_player' || detectedType === 'climate') && !sizeInput.value) sizeInput.value = '(2x2)';
-            }
-            if(!nameInput.value) nameInput.value = formatNameFromId(id);
-            if(iconInput.value) return; 
-            
-            const keywords = {
-                'battery': 'mdi-battery', 'bateria': 'mdi-battery', 
-                'temp': 'mdi-thermometer', 'heat': 'mdi-radiator', 'grzejnik': 'mdi-radiator',
-                'humid': 'mdi-water-percent', 'wilg': 'mdi-water-percent',
-                'light': 'mdi-lightbulb', 'lamp': 'mdi-lightbulb', 'swiatlo': 'mdi-lightbulb',
-                'garage': 'mdi-garage', 'garaz': 'mdi-garage', 'brama': 'mdi-gate', 'gate': 'mdi-gate',
-                'lock': 'mdi-lock', 'zamek': 'mdi-lock', 'drzwi': 'mdi-door', 'door': 'mdi-door',
-                'fan': 'mdi-fan', 'wentylator': 'mdi-fan', 'tv': 'mdi-television', 'speaker': 'mdi-speaker',
-                'woda': 'mdi-water', 'water': 'mdi-water', 'cwu': 'mdi-water-boiler', 'hydrofor': 'mdi-water-pump',
-                'contact': 'mdi-door'
-            };
-            for (const [key, icon] of Object.entries(keywords)) { 
-                if (id.includes(key)) { iconInput.value = icon; updateIconPreview(); break; } 
-            }
+
+        function clearForm(){
+            document.getElementById('new-entity-id').value='';
+            document.getElementById('new-dashboard-name').value='';
+            document.getElementById('new-widget-name').value='';
+            document.getElementById('new-widget-icon').value='';
+            document.getElementById('new-widget-icon-on').value='';
+            document.getElementById('new-widget-icon-off').value='';
+            document.getElementById('new-widget-size').value='';
+            updateIconPreview();
         }
 
-        async function fetchIcons() { const dataList = document.getElementById('icons-list'); try { const response = await fetch('https://raw.githubusercontent.com/Templarian/MaterialDesign/master/meta.json'); const icons = await response.json(); dataList.innerHTML = ''; icons.forEach(i => { const opt = document.createElement('option'); opt.value = 'mdi-' + i.name; dataList.appendChild(opt); }); } catch (e) {} } fetchIcons();
-        function updateIconPreview() { const val = document.getElementById('new-widget-icon').value.trim(); const preview = document.getElementById('icon-preview-i'); preview.className = (val && val.startsWith('mdi-')) ? 'mdi ' + val : 'mdi mdi-help-circle-outline'; }
-        function highlightActiveRow() { document.querySelectorAll('.eink-row').forEach(el => el.classList.remove('active')); const active = document.getElementById('row-' + activeRowIndex); if(active) active.classList.add('active'); refreshButtonText(); }
-        function refreshButtonText() { if (editingIndices) return; const btn = document.getElementById('btn-action'); const rowNum = activeRowIndex + 1; const T = (currentLang==='pl'?{btn_add:'+ DODAJ DO WIERSZA'}:{btn_add:'+ ADD TO ROW'}); btn.querySelector('span').innerText = `${T.btn_add} (${currentLang==='pl'?'Wiersz':'Row'} ${rowNum})`; }
-        function addNewRow() { rows.push([]); renderRows(); activeRowIndex = rows.length - 1; highlightActiveRow(); }
-        function deleteRow(i) { rows.splice(i, 1); if (activeRowIndex >= rows.length) activeRowIndex = rows.length - 1; renderRows(); }
-        function submitForm() { document.getElementById('layout_data_json').value = JSON.stringify(rows); document.getElementById('main-form').submit(); }
-        function addWidgetToStaging() { saveWidget(); }
+        function removeWidget(r,w){
+            if(editingIndices && editingIndices.r===r && editingIndices.w===w) cancelEdit();
+            rows[r].splice(w,1);
+            renderRows();
+        }
 
-        // --- DYNAMIC HA IP ---
-        window.addEventListener('DOMContentLoaded', (event) => {
-            const haHost = window.location.hostname;
-            const codePath = document.getElementById('path-code');
-            const linkDash = document.getElementById('dashboard-link');
+        function toggleInputs(){
+            const type=document.getElementById('new-widget-type').value;
+            const groupEntity=document.getElementById('group-entity');
+            const groupNav=document.getElementById('group-nav');
+            const iconInput=document.getElementById('new-widget-icon');
+            const sizeInput=document.getElementById('new-widget-size');
+            if(type==='navigate'){
+                groupEntity.classList.add('hidden');
+                groupNav.classList.remove('hidden');
+                if(!iconInput.value){ iconInput.value='mdi-arrow-right-circle'; updateIconPreview(); }
+            } else {
+                groupEntity.classList.remove('hidden');
+                groupNav.classList.add('hidden');
+            }
+            if((type==='media_player'||type==='climate') && !sizeInput.value) sizeInput.value='(2x2)';
+        }
 
-            if(codePath) codePath.innerHTML = codePath.innerHTML.replace('IP_HA', haHost);
-            if(linkDash) {
-                let currentHref = linkDash.getAttribute('href');
-                currentHref = currentHref.replace('IP_HA', haHost);
-                linkDash.setAttribute('href', currentHref);
-                linkDash.innerText = currentHref;
+        async function fetchIcons(){
+            const dataList=document.getElementById('icons-list');
+            try{
+                const response=await fetch('https://raw.githubusercontent.com/Templarian/MaterialDesign/master/meta.json');
+                const icons=await response.json();
+                dataList.innerHTML='';
+                icons.forEach(i=>{
+                    const opt=document.createElement('option');
+                    opt.value='mdi-'+i.name;
+                    dataList.appendChild(opt);
+                });
+            }catch(e){}
+        }
+        fetchIcons();
+
+        function highlightActiveRow(){
+            document.querySelectorAll('.eink-row').forEach(el=>el.classList.remove('active'));
+            const active=document.getElementById('row-'+activeRowIndex);
+            if(active) active.classList.add('active');
+        }
+
+        function addNewRow(){
+            rows.push([]);
+            renderRows();
+            activeRowIndex=rows.length-1;
+            refreshUIText();
+            highlightActiveRow();
+        }
+
+        function deleteRow(i){
+            rows.splice(i,1);
+            if(activeRowIndex>=rows.length) activeRowIndex=rows.length-1;
+            renderRows();
+        }
+
+        function submitForm(){
+            document.getElementById('layout_data_json').value=JSON.stringify(rows);
+            document.getElementById('main-form').submit();
+        }
+
+        window.addEventListener('DOMContentLoaded', ()=>{
+            const haHost=window.location.hostname;
+            const codePath=document.getElementById('path-code');
+            const linkDash=document.getElementById('dashboard-link');
+
+            if(codePath) codePath.innerHTML = codePath.innerHTML.replace('IP_HA',haHost);
+            if(linkDash){
+                const href=`http://${haHost}:5050/{{ dash_name }}`;
+                linkDash.setAttribute('href',href);
+                linkDash.innerText=href;
+                linkDash.style.background='var(--link-bg)';
+                linkDash.style.color='var(--link-color)';
+                linkDash.style.border='1px solid var(--link-border)';
             }
 
-            const savedLang = localStorage.getItem('joan_lang') || 'pl';
-            const savedTheme = localStorage.getItem('joan_theme') || 'light';
+            const savedLang=localStorage.getItem('joan_lang')||'pl';
             setLang(savedLang);
-            if(savedTheme === 'dark') { document.body.classList.add('dark-mode'); updateThemeBtn(); }
-            if(rows.length === 0) addNewRow();
+
+            const themeInput=document.getElementById('ui_theme');
+            const persistedTheme = themeInput && themeInput.value ? themeInput.value : (localStorage.getItem('joan_theme')||'light');
+            if(persistedTheme==='dark'){
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+            const btn=document.getElementById('btn-theme');
+            btn.innerText=document.body.classList.contains('dark-mode')?'☀️':'🌙';
+            if(themeInput) themeInput.value=document.body.classList.contains('dark-mode')?'dark':'light';
+
+            if(!rows.length) addNewRow();
         });
     </script>
 </body>
