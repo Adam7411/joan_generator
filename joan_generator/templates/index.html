@@ -49,7 +49,6 @@
         .add-widget-box { background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #2196f3; color: #000; transition: background 0.3s; }
         body.dark-mode .add-widget-box { background: #0d47a1; border-color: #1565c0; color: #fff; }
         .add-widget-box.editing { background: #fff8e1; border-color: #ffc107; border: 2px solid #ffc107; }
-        body.dark-mode .add-widget-box.editing { background: #3e2723; border-color: #ffb300; }
         .flex-row { display: flex; gap: 15px; align-items: flex-end; margin-bottom: 10px; flex-wrap: wrap; }
         .flex-col { flex: 1; min-width: 150px; }
         label { display: block; margin-top: 10px; font-weight: bold; font-size: 0.9em; margin-bottom: 5px; color: var(--text-color); }
@@ -74,7 +73,7 @@
         .ew-icon { font-size: 28px; }
         .ew-state { font-size: 10px; font-weight: 700; text-transform: uppercase; }
         .ew-edit-overlay { position: absolute; top:0; left:0; right:0; bottom:0; background: rgba(33, 150, 243, 0.2); display:none; pointer-events: none;}
-        .eink-widget:hover .ew-edit-overlay { display: 1block; }
+        .eink-widget:hover .ew-edit-overlay { display: block; }
         .ew-delete { position: absolute; top: 0; right: 0; background: red; color: white; width: 18px; height: 18px; text-align: center; line-height: 18px; font-size: 10px; display: none; z-index: 20; }
         .eink-widget:hover .ew-delete { display: block; }
         textarea.output { width: 100%; height: 500px; font-family: monospace; background: #263238; color: #eceff1; border: none; padding: 15px; border-radius: 4px; }
@@ -82,13 +81,9 @@
         .file-path-info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; padding: 20px; margin-bottom: 20px; border-radius: 6px; font-family: monospace; font-size: 16px; line-height: 1.6; }
         body.dark-mode .file-path-info { background-color: #263238; color: #eceff1; border-color: #37474f; }
         .file-path-info strong { font-size: 1.3em; display: block; margin-top: 15px; color: #004085; }
-        body.dark-mode .file-path-info strong { color: #90caf9; }
-        .file-path-info strong:first-child { margin-top: 0; }
         .file-path-info code { background: rgba(255,255,255,0.6); padding: 5px 10px; border-radius: 4px; font-weight: bold; color: #d63384; display: block; margin-top: 5px; word-break: break-all; }
-        body.dark-mode .file-path-info code { background: rgba(0,0,0,0.3); color: #f48fb1; }
         .file-path-info a { background: var(--link-bg); padding: 6px 10px; border-radius: 4px; font-weight: bold; color: var(--link-color); text-decoration: none; display: inline-block; margin-top: 6px; word-break: break-all; border: 1px solid var(--link-border); }
         .file-path-info a:hover { text-decoration: underline; background-color: #fff; }
-        body.dark-mode .file-path-info a:hover { background-color: #444; }
     </style>
 </head>
 <body>
@@ -237,10 +232,10 @@
             <h3 data-i18n="sec_code">Twój kod YAML:</h3>
             
             <div class="file-path-info">
-                <strong data-i18n="info_step1">1. Zapisz kod w pliku:</strong>
+                <strong>1. Zapisz kod w pliku:</strong>
                 <code id="path-code">\\IP_HA\addon_configs\appdaemon\dashboards\{{ filename }}</code>
                 
-                <strong data-i18n="info_step2">2. Uruchom ponownie AppDaemon i sprawdź dashboard:</strong>
+                <strong>2. Uruchom ponownie AppDaemon i sprawdź dashboard:</strong>
                 <a href="#" id="dashboard-link" target="_blank">http://IP_HA:5050/{{ dash_name }}</a>
             </div>
 
@@ -251,50 +246,38 @@
 
     <script>
         const entitiesData = {{ entities | tojson }};
-        const translations = {
-            pl: {
-                status_ok: "✓ Połączono z Home Assistant", status_error: "⚠ Brak połączenia z API. Sprawdź token.",
-                sec_settings: "1. Ustawienia", sec_add: "2. Dodaj Widget", sec_edit: "2. Edytuj Widget", 
-                sec_preview: "3. Podgląd Dashboardu (Kliknij, aby edytować)", sec_code: "Twój kod YAML:",
-                dash_title: "Tytuł Dashboardu (Nazwa pliku)", 
-                label_entity: "Wybierz Encję (Home Assistant)",
-                label_dashboard: "Nazwa pliku dashboardu (np. joan3)",
-                label_type: "Typ Widgetu", label_name: "Tytuł na ekranie",
-                label_icon: "Ikona (Puste = Brak)", label_preview: "Ikona", label_size: "Rozmiar",
-                btn_add: "+ DODAJ DO WIERSZA", btn_update: "ZAPISZ ZMIANY", btn_new_row: "+ Dodaj Nowy Wiersz", btn_generate: "GENERUJ KOD .DASH", btn_cancel: "Anuluj",
-                state_on: "WŁĄCZONE", state_off: "WYŁĄCZONE", state_open: "OTWARTE", state_closed: "ZAMKNIĘTE"
-            },
-            en: {
-                status_ok: "✓ Connected to Home Assistant", status_error: "⚠ No API Connection. Check Token.",
-                sec_settings: "1. Settings", sec_add: "2. Add Widget", sec_edit: "2. Edit Widget",
-                sec_preview: "3. Dashboard Preview (Click to Edit)", sec_code: "Your YAML Code:",
-                dash_title: "Dashboard Title (Filename)", 
-                label_entity: "Select Entity (Home Assistant)",
-                label_dashboard: "Dashboard Filename (e.g. joan3)",
-                label_type: "Widget Type", label_name: "Title on Screen",
-                label_icon: "Icon (Empty = None)", label_preview: "Icon", label_size: "Size",
-                btn_add: "+ ADD TO ROW", btn_update: "UPDATE WIDGET", btn_new_row: "+ Add New Row", btn_generate: "GENERATE .DASH CODE", btn_cancel: "Cancel",
-                state_on: "ON", state_off: "OFF", state_open: "OPEN", state_closed: "CLOSED"
-            }
-        };
 
         let currentLang = 'pl';
         let rows = [];
         let activeRowIndex = 0;
         let editingIndices = null; 
-        let importedDefsMap = {}; 
+        let importedDefsMap = {}; // id -> def ORAZ entity -> def
 
+        // --- helpers ---
         function formatNameFromId(id) {
             if (!id) return "";
-            const lastPart = id.includes('.') ? id.split('.').pop() : id;
-            const name = lastPart.replace(/_/g, ' ');
-            return name.replace(/\b\w/g, l => l.toUpperCase());
+            const last = id.includes('.') ? id.split('.').pop() : id;
+            return last.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
         }
-        function formatNameFromEntity(entity) {
-            if (!entity) return "";
-            const lastPart = entity.includes('.') ? entity.split('.').pop() : entity;
-            const name = lastPart.replace(/_/g, ' ');
-            return name.replace(/\b\w/g, l => l.toUpperCase());
+
+        function resolveImportedTitle(id) {
+            // szukaj po id (z domeną), po entity, po nazwie bez domeny
+            const candidates = [];
+            candidates.push(id);
+            if (id.includes('.')) {
+                const noDomain = id.split('.').pop();
+                candidates.push(noDomain);
+            }
+            for (const key of candidates) {
+                const def = importedDefsMap[key];
+                if (def) {
+                    if (def.title) return def.title;
+                    if (def.entity && importedDefsMap[def.entity] && importedDefsMap[def.entity].title) {
+                        return importedDefsMap[def.entity].title;
+                    }
+                }
+            }
+            return '';
         }
 
         function setLang(lang) {
@@ -308,128 +291,118 @@
         }
 
         function refreshUIText() {
+            const dict = {
+                pl: {
+                    sec_settings: "1. Ustawienia", sec_add: "2. Dodaj Widget", sec_edit: "2. Edytuj Widget",
+                    sec_preview: "3. Podgląd Dashboardu (Kliknij, aby edytować)", sec_code: "Twój kod YAML:",
+                    dash_title: "Tytuł Dashboardu (Nazwa pliku)", label_entity: "Wybierz Encję (Home Assistant)",
+                    label_dashboard: "Nazwa pliku dashboardu (np. joan3)", label_type: "Typ Widgetu",
+                    label_name: "Tytuł na ekranie", label_icon: "Ikona (Puste = Brak)", label_preview: "Ikona",
+                    label_size: "Rozmiar", btn_add: "+ DODAJ DO WIERSZA", btn_update: "ZAPISZ ZMIANY",
+                    btn_new_row: "+ Dodaj Nowy Wiersz", btn_generate: "GENERUJ KOD .DASH", btn_cancel: "Anuluj",
+                    state_on: "WŁĄCZONE", state_off: "WYŁĄCZONE", state_open: "OTWARTE", state_closed: "ZAMKNIĘTE"
+                },
+                en: {
+                    sec_settings: "1. Settings", sec_add: "2. Add Widget", sec_edit: "2. Edit Widget",
+                    sec_preview: "3. Dashboard Preview (Click to Edit)", sec_code: "Your YAML Code:",
+                    dash_title: "Dashboard Title (Filename)", label_entity: "Select Entity (Home Assistant)",
+                    label_dashboard: "Dashboard Filename (e.g. joan3)", label_type: "Widget Type",
+                    label_name: "Title on Screen", label_icon: "Icon (Empty = None)", label_preview: "Icon",
+                    label_size: "Size", btn_add: "+ ADD TO ROW", btn_update: "UPDATE WIDGET",
+                    btn_new_row: "+ Add New Row", btn_generate: "GENERATE .DASH CODE", btn_cancel: "Cancel",
+                    state_on: "ON", state_off: "OFF", state_open: "OPEN", state_closed: "CLOSED"
+                }
+            }[currentLang];
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
-                const t = translations[currentLang][key];
-                if(t) el.innerText = t;
+                if (dict[key]) el.innerText = dict[key];
             });
             const btn = document.getElementById('btn-action');
-            const btnSpan = btn.querySelector('span');
+            const rowNum = activeRowIndex + 1;
+            if (btn) btn.querySelector('span').innerText = (editingIndices ? dict.btn_update : `${dict.btn_add} (${currentLang==='pl'?'Wiersz':'Row'} ${rowNum})`);
             const header = document.getElementById('form-header');
-            if (editingIndices) {
-                btnSpan.innerText = translations[currentLang].btn_update;
-                header.innerText = translations[currentLang].sec_edit;
-            } else {
-                const baseText = translations[currentLang].btn_add;
-                const rowNum = activeRowIndex + 1;
-                btnSpan.innerText = `${baseText} (${currentLang==='pl'?'Wiersz':'Row'} ${rowNum})`;
-                header.innerText = translations[currentLang].sec_add;
-            }
+            if (header) header.innerText = editingIndices ? dict.sec_edit : dict.sec_add;
         }
 
-        function toggleTheme() {
-            document.body.classList.toggle('dark-mode');
-            const isDark = document.body.classList.contains('dark-mode');
-            localStorage.setItem('joan_theme', isDark ? 'dark' : 'light');
-            updateThemeBtn();
-        }
-        function updateThemeBtn() {
-            const btn = document.getElementById('btn-theme');
-            btn.innerText = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
-        }
-
+        // --- states ---
         function normalizeState(state) {
             if (state == null) return null;
             const s = String(state).toLowerCase().trim();
-            const T = translations[currentLang];
-            if (s === '1' || s === 'true' || s === 'on') return T.state_on;
-            if (s === '0' || s === 'false' || s === 'off') return T.state_off;
-            if (s === 'open') return T.state_open;
-            if (s === 'closed') return T.state_closed;
+            const T = currentLang === 'pl'
+                ? { on:"WŁĄCZONE", off:"WYŁĄCZONE", open:"OTWARTE", closed:"ZAMKNIĘTE" }
+                : { on:"ON", off:"OFF", open:"OPEN", closed:"CLOSED" };
+            if (['1','true','on'].includes(s)) return T.on;
+            if (['0','false','off'].includes(s)) return T.off;
+            if (s === 'open') return T.open;
+            if (s === 'closed') return T.closed;
             return null;
         }
-        function getEntityStateRaw(id) {
-            const ent = entitiesData.find(e => e.id === id);
-            return ent ? { state: ent.state, unit: ent.unit } : null;
+        function getEntityData(id) {
+            return entitiesData.find(e => e.id === id) || null;
         }
-        function getEntityStateDisplay(id, type) {
-            const data = getEntityStateRaw(id);
-            if (!data) return null;
-            const normalized = normalizeState(data.state);
-
-            // Nie pokazujemy stanu dla label/navigate
+        function getDisplayState(id, type) {
+            const ent = getEntityData(id);
+            if (!ent) return '';
             if (type === 'label' || type === 'navigate') return '';
-
-            // Dla przełączników/cover/binary/climate/media_player pokaż znormalizowany stan
-            if (type === 'switch' || type === 'cover' || type === 'binary_sensor' || type === 'climate' || type === 'media_player' || type === 'script') {
-                if (normalized) return normalized;
-                // media_player może mieć teksty typu PLAYING/PAUSED
-                return String(data.state).toUpperCase();
-            }
-
-            // Dla sensorów: pokaż wartość z jednostką, ale jeśli to 1/0 bez jednostki, nie pokazuj nic
+            const norm = normalizeState(ent.state);
             if (type === 'sensor') {
-                const s = String(data.state).trim();
-                const isNumeric = !isNaN(parseFloat(s)) && isFinite(s);
-                if ((s === '1' || s === '0') && !data.unit) return ''; // usuń niechciane "1"
-                if (isNumeric && s.includes('.')) {
+                const s = String(ent.state).trim();
+                if ((s === '1' || s === '0') && !ent.unit) return ''; // nie pokazuj "1/0" bez jednostki
+                if (!isNaN(parseFloat(s)) && s.includes('.')) {
                     const v = parseFloat(s).toFixed(1);
-                    return data.unit ? `${v} ${data.unit}` : v;
+                    return ent.unit ? `${v} ${ent.unit}` : v;
                 }
-                return data.unit ? `${s} ${data.unit}` : s;
+                return ent.unit ? `${s} ${ent.unit}` : s;
             }
-
-            return '';
+            return norm || String(ent.state).toUpperCase();
         }
 
+        // --- icons ---
         function pickAutoIcon(type, id) {
             const v = (id || '').toLowerCase();
-            const mapByKeyword = [
-                { k: ['hydrofor','storage','zbiornik','tank'], icon: 'mdi-storage-tank' },
-                { k: ['cwu','woda','water'], icon: 'mdi-water-outline' },
-                { k: ['ogrzew','grzejnik','radiator','heat'], icon: 'mdi-radiator' },
-                { k: ['brama','gate'], icon: 'mdi-gate' },
-                { k: ['garaz','garaż','garage'], icon: 'mdi-garage' },
-                { k: ['wilgotn','humidity','water_percent'], icon: 'mdi-water-percent' },
-                { k: ['temp','temperatur','temperature'], icon: 'mdi-thermometer' },
-                { k: ['bateria','battery','akumulator'], icon: 'mdi-battery' },
-                { k: ['swiatlo','light','bulb'], icon: 'mdi-lightbulb' },
-                { k: ['media_player','spotify','radio'], icon: 'mdi-play-circle' },
-                { k: ['klima','climate','hvac'], icon: 'mdi-home-thermometer' },
-                { k: ['sensor','czujnik'], icon: 'mdi-gauge' },
-                { k: ['lock','zamek'], icon: 'mdi-lock' },
-                { k: ['window','roleta','blind'], icon: 'mdi-window-shutter' },
+            const map = [
+                { k: ['hydrofor','storage','zbiornik','tank'], i: 'mdi-storage-tank' },
+                { k: ['cwu','woda','water'], i: 'mdi-water-outline' },
+                { k: ['ogrzew','grzejnik','radiator','heat'], i: 'mdi-radiator' },
+                { k: ['brama','gate'], i: 'mdi-gate' },
+                { k: ['garaz','garaż','garage'], i: 'mdi-garage' },
+                { k: ['wilgotn','humidity'], i: 'mdi-water-percent' },
+                { k: ['temp','temperatur','temperature'], i: 'mdi-thermometer' },
+                { k: ['bateria','battery','akumulator'], i: 'mdi-battery' },
+                { k: ['swiatlo','light','bulb'], i: 'mdi-lightbulb' },
+                { k: ['media_player','spotify','radio'], i: 'mdi-play-circle' },
+                { k: ['klima','climate','hvac'], i: 'mdi-home-thermometer' },
+                { k: ['sensor','czujnik'], i: 'mdi-gauge' },
+                { k: ['lock','zamek'], i: 'mdi-lock' },
+                { k: ['window','roleta','blind'], i: 'mdi-window-shutter' },
             ];
-            for (const item of mapByKeyword) {
-                if (item.k.some(kw => v.includes(kw))) return item.icon;
-            }
-            const typeFallback = {
-                switch: 'mdi-toggle-switch',
-                sensor: 'mdi-gauge',
-                cover: 'mdi-gate',
-                media_player: 'mdi-play-circle',
-                climate: 'mdi-home-thermometer',
-                binary_sensor: 'mdi-alert-circle-outline',
-                script: 'mdi-script-text-outline',
-                navigate: 'mdi-arrow-right-circle',
-                label: 'mdi-label'
+            for (const m of map) if (m.k.some(kw => v.includes(kw))) return m.i;
+            const fallback = {
+                switch:'mdi-toggle-switch', sensor:'mdi-gauge', cover:'mdi-gate',
+                media_player:'mdi-play-circle', climate:'mdi-home-thermometer',
+                binary_sensor:'mdi-alert-circle-outline', script:'mdi-script-text-outline',
+                navigate:'mdi-arrow-right-circle', label:'mdi-label'
             };
-            return typeFallback[type] || 'mdi-help-circle-outline';
+            return fallback[type] || 'mdi-help-circle-outline';
         }
 
+        // --- render ---
         function renderRows() {
             const container = document.getElementById('rows-container');
             container.innerHTML = '';
-
             rows.forEach((rowWidgets, index) => {
                 const rowDiv = document.createElement('div');
                 rowDiv.className = 'eink-row';
                 rowDiv.id = 'row-' + index;
-                rowDiv.addEventListener('click', () => { if(editingIndices) cancelEdit(); activeRowIndex = index; highlightActiveRow(); });
+                rowDiv.addEventListener('click', () => { if(editingIndices) cancelEdit(); activeRowIndex = index; refreshUIText(); highlightActiveRow(); });
 
                 const rowLabel = document.createElement('div');
-                rowLabel.style.position = 'absolute'; rowLabel.style.top = '-10px'; rowLabel.style.left='5px'; 
-                rowLabel.style.fontWeight = 'bold'; rowLabel.style.fontSize = '10px'; rowLabel.style.color='#666';
+                rowLabel.style.position = 'absolute';
+                rowLabel.style.top = '-10px';
+                rowLabel.style.left = '5px';
+                rowLabel.style.fontWeight = 'bold';
+                rowLabel.style.fontSize = '10px';
+                rowLabel.style.color = '#666';
                 rowLabel.innerText = (currentLang === 'pl' ? 'WIERSZ ' : 'ROW ') + (index + 1);
                 rowDiv.appendChild(rowLabel);
 
@@ -438,78 +411,80 @@
                     wDiv.className = 'eink-widget';
                     if (editingIndices && editingIndices.r === index && editingIndices.w === wIndex) wDiv.classList.add('being-edited');
 
-                    let w = 125; let h = 60;
+                    let w = 125, h = 60;
                     if (widget.size) {
-                        const dims = widget.size.replace(/[()]/g, '').split('x');
+                        const dims = widget.size.replace(/[()]/g,'').split('x');
                         const cols = parseInt(dims[0]) || 2;
                         const rowsVal = parseInt(dims[1]) || 1;
                         w = (cols * 60) + ((cols - 1) * 5);
                         h = (rowsVal * 60) + ((rowsVal - 1) * 5);
                     }
-                    wDiv.style.width = w + 'px'; wDiv.style.height = h + 'px'; if (h < 70) wDiv.style.fontSize = '0.9em';
+                    wDiv.style.width = w + 'px';
+                    wDiv.style.height = h + 'px';
+                    if (h < 70) wDiv.style.fontSize = '0.9em';
 
                     wDiv.addEventListener('click', (e) => { e.stopPropagation(); editWidget(index, wIndex); });
 
-                    const previewIcon = (widget.icon && widget.icon.trim()) ? widget.icon : pickAutoIcon(widget.type, widget.id);
-                    const iconHtml = previewIcon ? `<i class="mdi ${previewIcon} ew-icon"></i>` : `<div style="height:28px"></div>`;
+                    // NAZWA: widget.name -> tytuł z importu -> nazwa z id
+                    const importedTitle = resolveImportedTitle(widget.id);
+                    const safeName = (widget.name && widget.name.trim()) ? widget.name : (importedTitle || formatNameFromId(widget.id));
 
-                    // Pobierz definicję po id, po entity i bez domeny – żeby trafić zarówno "light.kurnik" jak i "kurnik"
-                    let defById = importedDefsMap[widget.id] || null;
-                    if (!defById && widget.id.includes('.')) {
-                        const noDomainKey = widget.id.split('.').pop();
-                        defById = importedDefsMap[noDomainKey] || null;
-                    }
-                    let importedTitle = '';
-                    if (defById && defById.title) importedTitle = defById.title;
-                    else if (defById && defById.entity && importedDefsMap[defById.entity] && importedDefsMap[defById.entity].title) {
-                        importedTitle = importedDefsMap[defById.entity].title;
-                    }
+                    // IKONA
+                    const iconClass = (widget.icon && widget.icon.trim()) ? widget.icon : pickAutoIcon(widget.type, widget.id);
+                    const iconHtml = iconClass ? `<i class="mdi ${iconClass} ew-icon"></i>` : `<div style="height:28px"></div>`;
 
-                    const safeName = (widget.name && widget.name.trim())
-                        ? widget.name
-                        : (importedTitle && importedTitle.trim())
-                            ? importedTitle
-                            : (defById && defById.entity ? formatNameFromEntity(defById.entity) : formatNameFromId(widget.id));
-
-                    // Stan do wyświetlenia – z regułami typów
-                    const displayState = getEntityStateDisplay(widget.id, widget.type) || '';
+                    // STAN
+                    const displayState = getDisplayState(widget.id, widget.type);
 
                     const delBtn = `<div class="ew-delete" onclick="removeWidget(${index}, ${wIndex}); event.stopPropagation();">X</div>`;
-                    wDiv.innerHTML = `<div class="ew-title">${safeName}</div>${iconHtml}${displayState ? `<div class="ew-state">${displayState}</div>` : `<div style="height:10px"></div>`}${delBtn}<div class="ew-edit-overlay"></div>`;
+                    wDiv.innerHTML = `
+                        <div class="ew-title">${safeName}</div>
+                        ${iconHtml}
+                        ${displayState ? `<div class="ew-state">${displayState}</div>` : `<div style="height:10px"></div>`}
+                        ${delBtn}
+                        <div class="ew-edit-overlay"></div>
+                    `;
                     rowDiv.appendChild(wDiv);
                 });
 
-                if(rows.length > 1) {
+                if (rows.length > 1) {
                     const del = document.createElement('button');
-                    del.innerText = 'USUŃ'; del.className='btn-remove-row btn';
-                    del.style.position='absolute'; del.style.right='5px'; del.style.top='5px';
+                    del.innerText = 'USUŃ';
+                    del.className = 'btn-remove-row btn';
+                    del.style.position = 'absolute';
+                    del.style.right = '5px';
+                    del.style.top = '5px';
                     del.addEventListener('click', (e) => { e.stopPropagation(); deleteRow(index); });
                     rowDiv.appendChild(del);
                 }
+
                 container.appendChild(rowDiv);
             });
             highlightActiveRow();
         }
 
-        function toggleImport() { document.getElementById('import-area').classList.toggle('visible'); }
-        
+        // --- import ---
+        function toggleImport() {
+            document.getElementById('import-area').classList.toggle('visible');
+        }
+
         function importYaml() {
             const code = document.getElementById('import-code').value;
             if (!code) return;
             try {
                 const lines = code.split('\n');
-                const widgetDefs = {};
-                let currentWidgetId = null;
+                const rawDefs = {};
+                let currentKey = null;
                 const layoutLines = [];
                 let parsingLayout = false;
 
                 for (let i = 0; i < lines.length; i++) {
-                    let lineRaw = lines[i];
-                    let line = lineRaw.split('#')[0].trim();
+                    const lineRaw = lines[i];
+                    const line = lineRaw.split('#')[0].trim();
                     if (!line) continue;
 
                     if (line.startsWith('layout:')) { parsingLayout = true; continue; }
-                    
+
                     if (!parsingLayout && lineRaw.match(/^title:/)) {
                         const parts = lineRaw.split(':');
                         document.getElementById('dash-title').value = parts.slice(1).join(':').trim().replace(/['"]/g, '');
@@ -525,24 +500,22 @@
                         const matchRoot = lineRaw.match(/^([a-zA-Z0-9_\.]+):/);
                         if (matchRoot) {
                             const key = matchRoot[1];
-                            const ignoreKeys = ['global_parameters','widget_dimensions','widget_size','widget_margins','columns','rows','skin','title'];
-                            if (!ignoreKeys.includes(key)) { currentWidgetId = key; widgetDefs[currentWidgetId] = {}; } else { currentWidgetId = null; }
-                        } else if (currentWidgetId && line.includes(':')) {
+                            const ignore = ['global_parameters','widget_dimensions','widget_size','widget_margins','columns','rows','skin','title'];
+                            if (!ignore.includes(key)) { currentKey = key; rawDefs[currentKey] = {}; } else { currentKey = null; }
+                        } else if (currentKey && line.includes(':')) {
                             let val = line.substring(line.indexOf(':') + 1).trim();
                             if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) val = val.slice(1, -1);
                             const key = line.split(':')[0].trim();
-                            widgetDefs[currentWidgetId][key] = val;
+                            rawDefs[currentKey][key] = val;
                         }
                     }
                 }
 
-                // Zbuduj mapę definicji pod dwoma kluczami: nazwą i entity
+                // mapa: definicja pod nazwą i pod entity
                 importedDefsMap = {};
-                Object.entries(widgetDefs).forEach(([key, def]) => {
-                    importedDefsMap[key] = def;
-                    if (def.entity) {
-                        importedDefsMap[def.entity] = def;
-                    }
+                Object.entries(rawDefs).forEach(([k, def]) => {
+                    importedDefsMap[k] = def;
+                    if (def.entity) importedDefsMap[def.entity] = def;
                 });
 
                 rows = [];
@@ -551,20 +524,14 @@
                     const items = rowStr.split(',');
                     const newRow = [];
                     items.forEach(itemRaw => {
-                        let item = itemRaw.trim();
+                        let id = itemRaw.trim();
                         let size = "";
-                        const sizeMatch = item.match(/\(\d+x\d+\)/);
-                        if (sizeMatch) { size = sizeMatch[0]; item = item.replace(size, ''); }
-                        const id = item;
+                        const sizeMatch = id.match(/\(\d+x\d+\)/);
+                        if (sizeMatch) { size = sizeMatch[0]; id = id.replace(size, '').trim(); }
 
-                        // Spróbuj znaleźć definicję po id, po entity i bez domeny
-                        let def = importedDefsMap[id] || null;
-                        if (!def && id.includes('.')) {
-                            const noDomainKey = id.split('.').pop();
-                            def = importedDefsMap[noDomainKey] || null;
-                        }
-
-                        let type = (def && def.widget_type) || '';
+                        // typ
+                        const def = importedDefsMap[id] || null;
+                        let type = def && def.widget_type;
                         if (!type) {
                             if (id.startsWith('navigate.')) type = 'navigate';
                             else if (id.startsWith('sensor.')) type = 'sensor';
@@ -576,24 +543,32 @@
                             else type = 'switch';
                         }
 
-                        let name = (def && def.title) ? def.title : '';
-                        if (!name && def && def.entity) name = formatNameFromEntity(def.entity);
+                        // nazwa z importu
+                        let name = resolveImportedTitle(id);
+                        if (!name && def && def.entity) name = formatNameFromId(def.entity);
                         if (!name) name = formatNameFromId(id);
 
+                        // ikona
                         let icon = (def && (def.icon || def.icon_on || def.icon_off || def.icon_inactive)) || '';
                         if (!icon) icon = pickAutoIcon(type, def && def.entity ? def.entity : id);
                         if (icon && !icon.startsWith('mdi-')) icon = 'mdi-' + icon;
 
                         newRow.push({ id, type, name, icon, size });
                     });
-                    if(newRow.length > 0) rows.push(newRow);
+                    if (newRow.length) rows.push(newRow);
                 });
 
-                if (rows.length === 0) { alert("Layout not found."); return; }
-                renderRows(); activeRowIndex = rows.length - 1; highlightActiveRow(); toggleImport(); alert("Import successful!");
+                if (!rows.length) { alert("Layout not found."); return; }
+                renderRows();
+                activeRowIndex = rows.length - 1;
+                refreshUIText();
+                highlightActiveRow();
+                toggleImport();
+                alert("Import successful!");
             } catch (e) { alert("Import failed: " + e.message); }
         }
 
+        // --- edit / save ---
         function editWidget(r, w) {
             editingIndices = { r, w };
             const widget = rows[r][w];
@@ -646,7 +621,7 @@
                 id = 'navigate.' + dashName;
             } else {
                 id = document.getElementById('new-entity-id').value.trim();
-                if(!id) { alert(currentLang === 'pl' ? "Wymagana encja" : "Entity required"); return; }
+                if (!id) { alert(currentLang === 'pl' ? "Wymagana encja" : "Entity required"); return; }
             }
 
             if (!name) name = formatNameFromId(id);
@@ -659,7 +634,7 @@
                 rows[editingIndices.r][editingIndices.w] = newWidget;
                 cancelEdit();
             } else {
-                if (rows.length === 0) addNewRow();
+                if (!rows.length) addNewRow();
                 rows[activeRowIndex].push(newWidget);
                 clearForm();
                 document.getElementById('widget-form-box').classList.remove('editing');
@@ -721,20 +696,11 @@
         function highlightActiveRow() {
             document.querySelectorAll('.eink-row').forEach(el => el.classList.remove('active'));
             const active = document.getElementById('row-' + activeRowIndex);
-            if(active) active.classList.add('active');
-            refreshButtonText();
+            if (active) active.classList.add('active');
         }
 
-        function refreshButtonText() {
-            if (editingIndices) return; 
-            const btn = document.getElementById('btn-action');
-            const rowNum = activeRowIndex + 1;
-            const baseText = translations[currentLang].btn_add;
-            btn.querySelector('span').innerText = `${baseText} (${currentLang==='pl'?'Wiersz':'Row'} ${rowNum})`;
-        }
-
-        function addNewRow() { rows.push([]); renderRows(); activeRowIndex = rows.length - 1; highlightActiveRow(); }
-        function deleteRow(i) { rows.splice(i, 1); if(activeRowIndex >= rows.length) activeRowIndex = rows.length - 1; renderRows(); }
+        function addNewRow() { rows.push([]); renderRows(); activeRowIndex = rows.length - 1; refreshUIText(); highlightActiveRow(); }
+        function deleteRow(i) { rows.splice(i, 1); if (activeRowIndex >= rows.length) activeRowIndex = rows.length - 1; renderRows(); }
         function submitForm() { document.getElementById('layout_data_json').value = JSON.stringify(rows); document.getElementById('main-form').submit(); }
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -742,23 +708,21 @@
             const codePath = document.getElementById('path-code');
             const linkDash = document.getElementById('dashboard-link');
 
-            const dashNameStr = "{{ dash_name }}" && "{{ dash_name }}" !== 'None' ? "{{ dash_name }}" : '';
-            const finalHref = `http://${haHost}:5050/${dashNameStr}`;
-
+            if (codePath) codePath.innerHTML = codePath.innerHTML.replace('IP_HA', haHost);
             if (linkDash) {
-                linkDash.setAttribute('href', finalHref);
-                linkDash.innerText = finalHref;
+                const href = `http://${haHost}:5050/{{ dash_name }}`;
+                linkDash.setAttribute('href', href);
+                linkDash.innerText = href;
                 linkDash.style.background = 'var(--link-bg)';
                 linkDash.style.color = 'var(--link-color)';
                 linkDash.style.border = '1px solid var(--link-border)';
             }
-            if(codePath) codePath.innerHTML = codePath.innerHTML.replace('IP_HA', haHost);
 
             const savedLang = localStorage.getItem('joan_lang') || 'pl';
             const savedTheme = localStorage.getItem('joan_theme') || 'light';
             setLang(savedLang);
-            if(savedTheme === 'dark') { document.body.classList.add('dark-mode'); updateThemeBtn(); }
-            if(rows.length === 0) addNewRow();
+            if (savedTheme === 'dark') document.body.classList.add('dark-mode');
+            if (!rows.length) addNewRow();
         });
     </script>
 </body>
