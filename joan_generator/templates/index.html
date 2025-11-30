@@ -170,7 +170,7 @@
                     
                     <div class="flex-col" id="group-entity">
                         <label data-i18n="label_entity">Wybierz Encję (Home Assistant)</label>
-                        <input list="entities-list" id="new-entity-id" placeholder="np. light.salon..." oninput="megaAutoConfig()">
+                        <input list="entities-list" id="new-entity-id" placeholder="np. light.salon..." oninput="smartAutoFill()">
                         <datalist id="entities-list">
                             {% for entity in entities %}
                             <option value="{{ entity.id }}">{{ entity.id }}</option>
@@ -439,6 +439,50 @@
             } else {
                 return (widget.icon && widget.icon.trim()) ? widget.icon : pickAutoIcon(widget.type, widget.id);
             }
+        }
+
+        // SMART: auto dobór typu, tytułu i ikon podczas wyboru encji
+        function smartAutoFill(){
+            const idInput = document.getElementById('new-entity-id');
+            const nameInput = document.getElementById('new-widget-name');
+            const typeSel = document.getElementById('new-widget-type');
+            const iconInput = document.getElementById('new-widget-icon');
+            const iconOnInput = document.getElementById('new-widget-icon-on');
+            const iconOffInput = document.getElementById('new-widget-icon-off');
+            const val = (idInput.value || '').trim().toLowerCase();
+            if(!val) return;
+
+            // typ z domeny
+            if(val.startsWith('sensor.')) typeSel.value='sensor';
+            else if(val.startsWith('binary_sensor.')) typeSel.value='binary_sensor';
+            else if(val.startsWith('cover.')) typeSel.value='cover';
+            else if(val.startsWith('media_player.')) typeSel.value='media_player';
+            else if(val.startsWith('climate.')) typeSel.value='climate';
+            else if(val.startsWith('switch.') || val.startsWith('light.') || val.startsWith('input_boolean.')) typeSel.value='switch';
+            else typeSel.value='switch';
+
+            // tytuł z entity, jeśli pusty
+            if(!nameInput.value.trim()){
+                nameInput.value = formatNameFromId(val);
+            }
+
+            // dobór automatyczny ikon
+            const actionable = ['switch','cover','binary_sensor','media_player','climate','script'].includes(typeSel.value) || val.startsWith('input_boolean.');
+            if(actionable){
+                const pair = iconPairFor(val);
+                if(!iconOnInput.value) iconOnInput.value = pair[0];
+                if(!iconOffInput.value) iconOffInput.value = pair[1];
+                // czyścić bazową ikonę, żeby podgląd użył pary on/off
+                if(iconInput.value.trim()==='') iconInput.value = '';
+            }else{
+                if(!iconInput.value){
+                    iconInput.value = pickAutoIcon(typeSel.value, val);
+                }
+                // wyczyść parę on/off dla nieakcyjnych
+                iconOnInput.value = iconOnInput.value; // zostaw jeśli user wpisał ręcznie
+                iconOffInput.value= iconOffInput.value;
+            }
+            updateIconPreview();
         }
 
         // Render
