@@ -6,7 +6,7 @@
 
 Ten dodatek to wizualny kreator (GUI), który pozwala "wyklikać" układ ekranu dla Twojego urządzenia Joan, a następnie generuje gotowy, zoptymalizowany kod YAML dla AppDaemon.
 
-![Logo](logo.png)
+<img width="800" height="200" alt="logo" src="https://github.com/user-attachments/assets/8d6bf413-d84b-4d29-b131-bc60264ca2e8" />
 
 ## ✨ Główne Funkcje
 
