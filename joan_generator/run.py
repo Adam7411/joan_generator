@@ -32,9 +32,7 @@ else:
 def get_ha_entities():
     if not TOKEN:
         return []
-    
     headers = {"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json"}
-    
     try:
         print(f"--> Pobieram encje z: {API_URL}/states")
         response = requests.get(f"{API_URL}/states", headers=headers, timeout=10)
@@ -42,15 +40,12 @@ def get_ha_entities():
             data = response.json()
             entities = [state['entity_id'] for state in data]
             entities.sort()
-            print(f"--> SUKCES! Pobrano {len(entities)} encji.")
             return entities
-        else:
-            print(f"!!! Blad API Home Assistant: {response.status_code} - {response.text}")
     except Exception as e:
-        print(f"!!! Wyjatek podczas pobierania encji: {e}")
+        print(f"!!! Blad API: {e}")
     return []
 
-# Style E-Ink
+# Style z Twoich plików Joan (czarny tekst, białe tło)
 STYLES = {
     "title": "color: #000000; font-size: 20px; font-weight: 700; text-align: center; padding-top: 5px; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif;",
     "widget": "color: #000000 !important; background-color: #FFFFFF !important;",
@@ -60,6 +55,40 @@ STYLES = {
     "icon": "color: #000000 !important;"
 }
 
+# --- INTELIGENTNE IKONY ---
+def get_icon_pair(base_icon, w_type):
+    """Zwraca (icon_on, icon_off) na podstawie wybranej ikony bazowej."""
+    if not base_icon:
+        # Domyślne jeśli brak ikony
+        if w_type == 'cover': return 'mdi-window-shutter-open', 'mdi-window-shutter'
+        if w_type == 'lock': return 'mdi-lock-open', 'mdi-lock'
+        if w_type == 'binary_sensor': return 'mdi-checkbox-marked-circle', 'mdi-radiobox-blank'
+        return 'mdi-toggle-switch', 'mdi-toggle-switch-off'
+
+    i = base_icon.lower()
+
+    # Logika dla bram i garaży
+    if 'garage' in i: return 'mdi-garage-open', 'mdi-garage'
+    if 'gate' in i: return 'mdi-gate-open', 'mdi-gate'
+    
+    # Logika dla świateł
+    if 'light' in i or 'bulb' in i: return 'mdi-lightbulb-on', 'mdi-lightbulb-outline'
+    
+    # Logika dla zamków
+    if 'lock' in i: return 'mdi-lock-open', 'mdi-lock'
+    
+    # Logika dla drzwi/okien
+    if 'door' in i: return 'mdi-door-open', 'mdi-door-closed'
+    if 'window' in i or 'blind' in i or 'shutter' in i: return 'mdi-window-shutter-open', 'mdi-window-shutter'
+
+    # Domyślne dla reszty (po prostu ta sama ikona lub próba dodania -off)
+    # W AppDaemon często używa się tej samej ikony + icon_style do zmiany koloru, 
+    # ale tu mamy E-Ink (czarno-biały), więc lepiej zmieniać kształt.
+    if 'off' in i or 'outline' in i:
+        return i.replace('-off', '').replace('-outline', ''), i
+    
+    return i, i + '-outline' # Prosta proba zgadywania
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
     generated_yaml = ""
@@ -67,14 +96,15 @@ def index():
     
     if request.method == 'POST':
         title = request.form.get('title', 'JoanDashboard')
-        lang = request.form.get('ui_language', 'pl') # Język wybrany w UI
+        lang = request.form.get('ui_language', 'pl')
         
-        # Tłumaczenia dla YAML (co ma się wyświetlać na ekranie E-Ink)
+        # Tłumaczenia stanów
         T = {
-            'pl': {'on': 'WŁĄCZONE', 'off': 'WYŁĄCZONE', 'open': 'OTWARTE', 'closed': 'ZAMKNIĘTE', 'opening': 'OTWIERANIE', 'closing': 'ZAMYKANIE'},
-            'en': {'on': 'ON', 'off': 'OFF', 'open': 'OPEN', 'closed': 'CLOSED', 'opening': 'OPENING', 'closing': 'CLOSING'}
+            'pl': {'on': 'WŁĄCZONE', 'off': 'WYŁĄCZONE', 'open': 'OTWARTA', 'closed': 'ZAMKNIĘTA', 
+                   'opening': 'OTWIERANIE', 'closing': 'ZAMYKANIE', 'locked': 'ZAMKNIĘTE', 'unlocked': 'OTWARTE'},
+            'en': {'on': 'ON', 'off': 'OFF', 'open': 'OPEN', 'closed': 'CLOSED', 
+                   'opening': 'OPENING', 'closing': 'CLOSING', 'locked': 'LOCKED', 'unlocked': 'UNLOCKED'}
         }
-        # Zabezpieczenie, gdyby przyszedł nieznany język
         dic = T.get(lang, T['pl'])
 
         generated_yaml += f"title: {title}\n"
@@ -110,10 +140,11 @@ def index():
                     
                     w_type = w['type']
                     w_name = w['name']
-                    w_icon = w['icon']
+                    w_icon = w['icon'] # To jest np. 'mdi-garage'
                     
                     generated_yaml += f"{w_id}:\n"
                     
+                    # 1. NAWIGACJA
                     if w_type == 'navigate':
                         dashboard_name = w_id.replace('navigate.', '')
                         generated_yaml += f"  widget_type: navigate\n"
@@ -123,6 +154,7 @@ def index():
                         generated_yaml += f"  widget_style: \"background-color: #FFFFFF !important; border-radius: 8px !important; padding: 10px !important; color: #000000 !important;\"\n"
                         generated_yaml += f"  title_style: \"{STYLES['title']}\"\n"
                     
+                    # 2. SENSOR
                     elif w_type == 'sensor':
                         generated_yaml += f"  widget_type: sensor\n"
                         generated_yaml += f"  entity: {w_id}\n"
@@ -135,7 +167,9 @@ def index():
                         if w_icon:
                             generated_yaml += f"  icon: {w_icon}\n"
                             generated_yaml += f"  icon_style: \"{STYLES['icon']}\"\n"
+                        generated_yaml += f"  precision: 1\n"
 
+                    # 3. MEDIA PLAYER
                     elif w_type == 'media_player':
                         generated_yaml += f"  widget_type: media_player\n"
                         generated_yaml += f"  entity: {w_id}\n"
@@ -147,31 +181,33 @@ def index():
                         generated_yaml += f"  widget_style: \"{STYLES['widget']}\"\n"
                         generated_yaml += f"  icon_style: \"{STYLES['icon']}\"\n"
 
+                    # 4. SWITCH / COVER / INPUT_BOOLEAN / SCRIPT / BINARY_SENSOR
                     else:
                         ad_type = w_type
                         if w_type == 'binary_sensor': ad_type = 'binary_sensor'
                         if w_type == 'input_boolean': ad_type = 'switch'
+                        # Scripts often act as switches or just icons
                         
                         generated_yaml += f"  widget_type: {ad_type}\n"
                         generated_yaml += f"  entity: {w_id}\n"
                         generated_yaml += f"  title: {w_name}\n"
                         
-                        if w_icon:
-                            generated_yaml += f"  icon_on: {w_icon}\n"
-                            generated_yaml += f"  icon_off: {w_icon}\n"
-                            if w_type == 'script' or w_type == 'scene':
-                                generated_yaml += f"  icon: {w_icon}\n"
-                        else:
-                             generated_yaml += f"  icon_on: mdi-toggle-switch\n"
-                             generated_yaml += f"  icon_off: mdi-toggle-switch-off\n"
+                        # --- GENEROWANIE IKON ON/OFF ---
+                        icon_on, icon_off = get_icon_pair(w_icon, ad_type)
+                        generated_yaml += f"  icon_on: {icon_on}\n"
+                        generated_yaml += f"  icon_off: {icon_off}\n"
 
+                        # --- KLUCZOWE DLA WYŚWIETLANIA STANU ---
                         generated_yaml += f"  state_text: 1\n"
+                        
+                        # Style
                         generated_yaml += f"  title_style: \"{STYLES['title']}\"\n"
                         generated_yaml += f"  text_style: \"{STYLES['text']}\"\n" 
                         generated_yaml += f"  widget_style: \"{STYLES['widget']}\"\n"
                         generated_yaml += f"  icon_style_active: \"{STYLES['icon']}\"\n"
                         generated_yaml += f"  icon_style_inactive: \"{STYLES['icon']}\"\n"
                         
+                        # --- MAPOWANIE STANÓW (Tłumaczenia) ---
                         generated_yaml += "  state_map:\n"
                         generated_yaml += f"    \"on\": \"{dic['on']}\"\n"
                         generated_yaml += f"    \"off\": \"{dic['off']}\"\n"
@@ -181,6 +217,10 @@ def index():
                             generated_yaml += f"    \"closed\": \"{dic['closed']}\"\n"
                             generated_yaml += f"    \"opening\": \"{dic['opening']}\"\n"
                             generated_yaml += f"    \"closing\": \"{dic['closing']}\"\n"
+                        
+                        if w_type == 'lock':
+                             generated_yaml += f"    \"locked\": \"{dic['locked']}\"\n"
+                             generated_yaml += f"    \"unlocked\": \"{dic['unlocked']}\"\n"
 
                     generated_yaml += "\n"
             except Exception as e:
