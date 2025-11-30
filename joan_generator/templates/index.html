@@ -103,10 +103,20 @@
 
         textarea.output { width: 100%; height: 500px; font-family: monospace; background: #263238; color: #eceff1; border: none; padding: 15px; border-radius: 4px; }
         .hidden { display: none !important; }
-        .file-path-info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; padding: 15px; margin-bottom: 15px; border-radius: 4px; font-family: monospace; font-size: 14px; }
+        
+        /* RESULT INSTRUCTIONS */
+        .file-path-info { 
+            background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; padding: 15px; margin-bottom: 15px; border-radius: 4px; font-family: monospace; font-size: 14px; line-height: 1.5;
+        }
         body.dark-mode .file-path-info { background-color: #263238; color: #eceff1; border-color: #37474f; }
-        .file-path-info code { background: rgba(255,255,255,0.5); padding: 2px 5px; border-radius: 3px; font-weight: bold; }
-        body.dark-mode .file-path-info code { background: rgba(0,0,0,0.3); }
+        .file-path-info strong { font-size: 1.1em; display: block; margin-top: 10px; }
+        .file-path-info strong:first-child { margin-top: 0; }
+        .file-path-info code, .file-path-info a { 
+            background: rgba(255,255,255,0.5); padding: 2px 6px; border-radius: 3px; font-weight: bold; color: #0056b3; text-decoration: none;
+        }
+        body.dark-mode .file-path-info code, body.dark-mode .file-path-info a { background: rgba(0,0,0,0.3); color: #82b1ff; }
+        .file-path-info a:hover { text-decoration: underline; }
+
     </style>
 </head>
 <body>
@@ -255,10 +265,15 @@
         {% if generated_yaml %}
         <div class="section">
             <h3 data-i18n="sec_code">Twój kod YAML:</h3>
+            
             <div class="file-path-info">
-                <strong data-i18n="info_save">Zapisz ten kod w pliku:</strong><br>
-                <code style="font-size: 16px;">\\IP_HA\addon_configs\appdaemon\dashboards\{{ filename }}</code>
+                <strong data-i18n="info_step1">1. Zapisz kod w pliku:</strong>
+                <code id="path-code">\\IP_HA\addon_configs\appdaemon\dashboards\{{ filename }}</code>
+                
+                <strong data-i18n="info_step2">2. Uruchom ponownie AppDaemon i sprawdź dashboard:</strong>
+                <a href="#" id="dashboard-link" target="_blank">http://IP_HA:5050/{{ dash_name }}</a>
             </div>
+
             <textarea class="output" readonly>{{ generated_yaml }}</textarea>
         </div>
         {% endif %}
@@ -278,7 +293,9 @@
                 label_type: "Typ Widgetu", label_name: "Tytuł na ekranie",
                 label_icon: "Ikona (Puste = Brak)", label_preview: "Ikona", label_size: "Rozmiar",
                 btn_add: "+ DODAJ DO WIERSZA", btn_update: "ZAPISZ ZMIANY", btn_new_row: "+ Dodaj Nowy Wiersz", btn_generate: "GENERUJ KOD .DASH", btn_cancel: "Anuluj",
-                state_on: "WŁĄCZONE", state_open: "OTWARTE", info_save: "Zapisz ten kod w pliku:",
+                state_on: "WŁĄCZONE", state_open: "OTWARTE", 
+                info_step1: "1. Zapisz kod w pliku:",
+                info_step2: "2. Uruchom ponownie AppDaemon i sprawdź dashboard:",
                 btn_import_toggle: "📂 Importuj / Edytuj Kod", header_paste_code: "Wklej kod pliku .dash tutaj:", btn_load_dash: "Wczytaj Dashboard"
             },
             en: {
@@ -291,7 +308,9 @@
                 label_type: "Widget Type", label_name: "Title on Screen",
                 label_icon: "Icon (Empty = None)", label_preview: "Icon", label_size: "Size",
                 btn_add: "+ ADD TO ROW", btn_update: "UPDATE WIDGET", btn_new_row: "+ Add New Row", btn_generate: "GENERATE .DASH CODE", btn_cancel: "Cancel",
-                state_on: "ON", state_open: "OPEN", info_save: "Save this code to file:",
+                state_on: "ON", state_open: "OPEN", 
+                info_step1: "1. Save code to file:",
+                info_step2: "2. Restart AppDaemon and check dashboard:",
                 btn_import_toggle: "📂 Import / Edit Code", header_paste_code: "Paste .dash file code here:", btn_load_dash: "Load Dashboard"
             }
         };
@@ -301,17 +320,15 @@
         let activeRowIndex = 0;
         let editingIndices = null; 
 
-        // --- THEME & LANGUAGE PERSISTENCE ---
-        function toggleTheme() {
-            document.body.classList.toggle('dark-mode');
-            const isDark = document.body.classList.contains('dark-mode');
-            localStorage.setItem('joan_theme', isDark ? 'dark' : 'light');
-            updateThemeBtn();
-        }
-
-        function updateThemeBtn() {
-            const btn = document.getElementById('btn-theme');
-            btn.innerText = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
+        // --- HELPERS ---
+        function formatNameFromId(id) {
+            if (!id) return "";
+            if (id.includes("navigate.")) {
+                return id.replace("navigate.", "");
+            }
+            let name = id.split('.').pop();
+            name = name.replace(/_/g, ' ');
+            return name.replace(/\b\w/g, l => l.toUpperCase());
         }
 
         function setLang(lang) {
@@ -329,6 +346,8 @@
                 const key = el.getAttribute('data-i18n');
                 if(translations[currentLang][key]) {
                     if(el.tagName === 'SPAN' && el.parentElement.tagName === 'BUTTON') {
+                        el.innerText = translations[currentLang][key];
+                    } else if (el.tagName === 'STRONG') {
                         el.innerText = translations[currentLang][key];
                     } else {
                         el.innerText = translations[currentLang][key];
@@ -348,6 +367,18 @@
                 btnSpan.innerText = `${baseText} (${currentLang==='pl'?'Wiersz':'Row'} ${rowNum})`;
                 header.innerText = translations[currentLang].sec_add;
             }
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            localStorage.setItem('joan_theme', isDark ? 'dark' : 'light');
+            updateThemeBtn();
+        }
+
+        function updateThemeBtn() {
+            const btn = document.getElementById('btn-theme');
+            btn.innerText = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
         }
 
         function getEntityState(id) {
@@ -409,9 +440,6 @@
                 rowDiv.className = 'eink-row';
                 rowDiv.id = 'row-' + index;
                 
-                // CLICK ROW BEHAVIOR:
-                // 1. If editing, clicking another row (or empty space) cancels edit.
-                // 2. Sets this row as active for new widgets.
                 rowDiv.onclick = () => { 
                     if(editingIndices) cancelEdit();
                     activeRowIndex = index; 
@@ -472,7 +500,6 @@
             highlightActiveRow();
         }
 
-        // --- IMPORT LOGIC ---
         function toggleImport() { document.getElementById('import-area').classList.toggle('visible'); }
 
         function importYaml() {
@@ -486,28 +513,36 @@
                 let parsingLayout = false;
 
                 for (let i = 0; i < lines.length; i++) {
-                    let line = lines[i].split('#')[0].trim();
+                    let lineRaw = lines[i];
+                    let line = lineRaw.split('#')[0].trim();
                     if (!line) continue;
+
                     if (line.startsWith('layout:')) { parsingLayout = true; continue; }
-                    if (!parsingLayout && lines[i].match(/^title:/)) {
-                        document.getElementById('dash-title').value = lines[i].split(':')[1].trim().replace(/['"]/g, '');
+                    
+                    if (!parsingLayout && lineRaw.match(/^title:/)) {
+                        const parts = lineRaw.split(':');
+                        document.getElementById('dash-title').value = parts.slice(1).join(':').trim().replace(/['"]/g, '');
                         continue;
                     }
+
                     if (parsingLayout) {
                         if (line.startsWith('-')) layoutLines.push(line);
-                        else if (lines[i].match(/^\S+:/)) parsingLayout = false;
+                        else if (lineRaw.match(/^\S+:/)) parsingLayout = false;
                     }
+
                     if (!parsingLayout) {
-                        const matchRoot = lines[i].match(/^([a-zA-Z0-9_\.]+):/);
+                        const matchRoot = lineRaw.match(/^([a-zA-Z0-9_\.]+):/);
                         if (matchRoot) {
                             const key = matchRoot[1];
                             const ignoreKeys = ['global_parameters','widget_dimensions','widget_size','widget_margins','columns','rows','skin','title'];
                             if (!ignoreKeys.includes(key)) { currentWidgetId = key; widgetDefs[currentWidgetId] = {}; } 
                             else { currentWidgetId = null; }
                         } else if (currentWidgetId && line.includes(':')) {
-                            const parts = line.split(':');
-                            const key = parts[0].trim();
-                            let val = parts.slice(1).join(':').trim().replace(/['"]/g, '');
+                            let val = line.substring(line.indexOf(':') + 1).trim();
+                            if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+                                val = val.slice(1, -1);
+                            }
+                            const key = line.split(':')[0].trim();
                             widgetDefs[currentWidgetId][key] = val;
                         }
                     }
@@ -525,9 +560,13 @@
                         if (sizeMatch) { size = sizeMatch[0]; item = item.replace(size, ''); }
                         const id = item;
                         const def = widgetDefs[id] || {};
+                        
                         let type = def.widget_type || 'switch';
                         if (id.startsWith('navigate.')) type = 'navigate';
-                        let name = def.title || id;
+                        
+                        let name = def.title;
+                        if(!name) name = formatNameFromId(id);
+
                         let icon = def.icon || def.icon_on || def.icon_off || def.icon_inactive || '';
                         newRow.push({ id, type, name, icon, size });
                     });
@@ -587,8 +626,9 @@
                 id = document.getElementById('new-entity-id').value;
                 if(!id) { alert("Entity required"); return; }
             }
+            if (!name) name = formatNameFromId(id);
             if(icon && !icon.startsWith('mdi-') && icon !== '') icon = 'mdi-' + icon;
-            const newWidget = { id, type, name: name || id, icon, size };
+            const newWidget = { id, type, name, icon, size };
 
             if (editingIndices) {
                 rows[editingIndices.r][editingIndices.w] = newWidget;
@@ -658,7 +698,16 @@
             document.querySelectorAll('.eink-row').forEach(el => el.classList.remove('active'));
             const active = document.getElementById('row-' + activeRowIndex);
             if(active) active.classList.add('active');
-            refreshUIText();
+            refreshButtonText();
+        }
+
+        function refreshButtonText() {
+            if (editingIndices) return; 
+            const btn = document.getElementById('btn-action');
+            const rowNum = activeRowIndex + 1;
+            const T = translations[currentLang];
+            const baseText = T.btn_add;
+            btn.querySelector('span').innerText = `${baseText} (${currentLang==='pl'?'Wiersz':'Row'} ${rowNum})`;
         }
 
         function addNewRow() { rows.push([]); renderRows(); activeRowIndex = rows.length - 1; highlightActiveRow(); }
@@ -696,18 +745,33 @@
             }
         }
         
-        // --- INITIALIZATION ---
+        // --- DYNAMIC HA IP ---
         window.addEventListener('DOMContentLoaded', (event) => {
-            // Load saved settings
+            // IP Replacement logic
+            const haHost = window.location.hostname;
+            const codePath = document.getElementById('path-code');
+            const linkDash = document.getElementById('dashboard-link');
+            
+            if(codePath) {
+                // Replace IP_HA placeholder
+                codePath.innerHTML = codePath.innerHTML.replace('IP_HA', haHost);
+            }
+            if(linkDash) {
+                const currentHref = linkDash.getAttribute('href');
+                if(currentHref.includes('IP_HA')) {
+                    const newHref = currentHref.replace('IP_HA', haHost);
+                    linkDash.setAttribute('href', newHref);
+                    linkDash.innerText = newHref;
+                }
+            }
+
             const savedLang = localStorage.getItem('joan_lang') || 'pl';
             const savedTheme = localStorage.getItem('joan_theme') || 'light';
-            
             setLang(savedLang);
             if(savedTheme === 'dark') {
                 document.body.classList.add('dark-mode');
                 updateThemeBtn();
             }
-
             if(rows.length === 0) addNewRow();
         });
     </script>
