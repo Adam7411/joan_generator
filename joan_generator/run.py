@@ -54,7 +54,6 @@ def get_ha_entities():
         print(f"❌ Exception while fetching entities: {e}")
     return []
 
-# E-Ink Styles
 STYLES = {
     "title": "color: #000000; font-size: 20px; font-weight: 700; text-align: center; padding-top: 5px; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif;",
     "widget": "color: #000000 !important; background-color: #FFFFFF !important; border: 2px solid #000000 !important;",
@@ -83,7 +82,7 @@ def index():
     generated_yaml = ""
     ha_entities = get_ha_entities()
     dashboard_filename = ""
-    dashboard_slug = "" # Czysta nazwa dashboardu (bez .dash)
+    dashboard_slug = ""
     
     if request.method == 'POST':
         title = request.form.get('title', 'JoanDashboard')
@@ -221,6 +220,7 @@ def index():
             except Exception as e:
                 print(f"❌ Error processing JSON: {e}")
 
+    # !!! TU BYŁA ZMIANA: Dodałem dash_name !!!
     return render_template('index.html', generated_yaml=generated_yaml, entities=ha_entities, filename=dashboard_filename, dash_name=dashboard_slug)
 
 if __name__ == "__main__":
