@@ -1,164 +1,146 @@
-<!DOCTYPE html>
-<html lang="pl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Joan Dashboard Generator 2.0</title>
-    <!-- Pobieramy font Roboto dla ładnego wyglądu -->
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Roboto', sans-serif; background-color: #e0e0e0; padding: 20px; color: #333; }
-        .container { max-width: 1100px; margin: 0 auto; background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        h1 { text-align: center; color: #d32f2f; margin-bottom: 30px; }
-        
-        .section { margin-bottom: 30px; border: 1px solid #ddd; padding: 15px; border-radius: 8px; background: #fafafa; }
-        .section h3 { margin-top: 0; color: #555; border-bottom: 2px solid #d32f2f; padding-bottom: 10px; display: inline-block; }
-        
-        label { display: block; margin-top: 10px; font-weight: bold; font-size: 0.9em; }
-        input, select { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        
-        /* Stylizacja kreatora wierszy */
-        .row-builder { margin-top: 15px; }
-        .dashboard-row { 
-            background: #fff; border: 1px dashed #999; padding: 10px; margin-bottom: 10px; 
-            display: flex; gap: 10px; flex-wrap: wrap; align-items: center; min-height: 60px;
-            border-radius: 4px;
-        }
-        .row-label { font-weight: bold; margin-right: 10px; color: #d32f2f; }
-        
-        .widget-card {
-            background: #333; color: #fff; padding: 5px 10px; border-radius: 4px; font-size: 0.85em;
-            display: flex; align-items: center; gap: 5px; cursor: pointer; border: 1px solid transparent;
-        }
-        .widget-card:hover { border-color: #d32f2f; }
-        .widget-card span { font-weight: bold; }
-        .btn-del-widget { color: #ff5252; cursor: pointer; font-weight: bold; margin-left: 5px; }
+print("--> 1. Importuje biblioteki...")
+from flask import Flask, render_template, request
+import os
+import requests
+import json
+print("--> 2. Biblioteki zaladowane.")
 
-        /* Formularz dodawania widgetu */
-        .add-widget-box { background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #2196f3; }
-        .flex-row { display: flex; gap: 15px; align-items: flex-end; }
-        .flex-col { flex: 1; }
+app = Flask(__name__)
 
-        .btn { padding: 10px 20px; border: none; cursor: pointer; border-radius: 4px; font-size: 14px; font-weight: bold; text-transform: uppercase; }
-        .btn-primary { background-color: #d32f2f; color: white; width: 100%; font-size: 18px; margin-top: 20px; }
-        .btn-add { background-color: #4caf50; color: white; }
-        .btn-row { background-color: #2196f3; color: white; margin-top: 10px; }
-        .btn-remove-row { background-color: #757575; color: white; font-size: 10px; padding: 5px; margin-left: auto; }
+SUPERVISOR_TOKEN = os.environ.get('SUPERVISOR_TOKEN')
+HASSIO_URL = "http://supervisor/core/api"
 
-        textarea.output { width: 100%; height: 500px; font-family: monospace; background: #263238; color: #eceff1; border: none; padding: 15px; margin-top: 20px; border-radius: 4px; }
+# DEBUGOWANIE TOKENA
+if not SUPERVISOR_TOKEN:
+    print("!!! UWAGA: Brak zmiennej SUPERVISOR_TOKEN w środowisku !!!")
+    print("Dostępne zmienne:", list(os.environ.keys()))
+else:
+    print(f"--> Token znaleziony (dlugosc: {len(SUPERVISOR_TOKEN)})")
+
+def get_ha_entities():
+    if not SUPERVISOR_TOKEN:
+        return []
+    
+    headers = {
+        "Authorization": f"Bearer {SUPERVISOR_TOKEN}",
+        "Content-Type": "application/json",
+    }
+    
+    try:
+        print(f"--> Pobieram encje z: {HASSIO_URL}/states")
+        response = requests.get(f"{HASSIO_URL}/states", headers=headers, timeout=10)
         
-        .hint { font-size: 0.8em; color: #666; margin-top: 2px; }
-        a { color: #d32f2f; text-decoration: none; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>Generator Joan E-Ink</h1>
-        
-        <!-- Formularz dodawania widgetu -->
-        <div class="add-widget-box">
-            <h4>Kreator Widgetu</h4>
-            <div class="flex-row">
-                <div class="flex-col" style="flex: 2;">
-                    <label>Wybierz Encję (z Home Assistant)</label>
-                    <input list="entities-list" id="new-entity-id" placeholder="Wpisz np. light.kuchnia..." onchange="guessType()">
-                    <datalist id="entities-list">
-                        {% for entity in entities %}
-                        <option value="{{ entity }}">
-                        {% endfor %}
-                    </datalist>
-                </div>
-                <div class="flex-col">
-                    <label>Typ Widgetu</label>
-                    <select id="new-widget-type">
-                        <option value="switch">Przełącznik/Światło (Switch)</option>
-                        <option value="sensor">Sensor (Tekst/Liczba)</option>
-                        <option value="cover">Roleta/Brama</option>
-                        <option value="navigate">Nawigacja</option>
-                        <option value="script">Skrypt/Przycisk</option>
-                    </select>
-                </div>
-                <div class="flex-col">
-                    <label>Nazwa na ekranie</label>
-                    <input type="text" id="new-widget-name" placeholder="np. Kuchnia">
-                </div>
-            </div>
-            <div class="flex-row" style="margin-top: 10px;">
-                <div class="flex-col">
-                    <label>Ikona (MDI) <a href="https://pictogrammers.com/library/mdi/" target="_blank">(Lista ikon)</a></label>
-                    <input type="text" id="new-widget-icon" placeholder="np. mdi-lightbulb">
-                    <div class="hint">Wpisz nazwę z przedrostkiem mdi-</div>
-                </div>
-                <div class="flex-col">
-                    <button type="button" class="btn btn-add" onclick="addWidgetToStaging()">Dodaj do wybranego wiersza</button>
-                </div>
-            </div>
-        </div>
+        if response.status_code == 200:
+            data = response.json()
+            entities = [state['entity_id'] for state in data]
+            entities.sort()
+            print(f"--> Pobrano {len(entities)} encji.")
+            return entities
+        else:
+            print(f"!!! Blad API Home Assistant: {response.status_code} - {response.text}")
+    except Exception as e:
+        print(f"!!! Wyjatek podczas pobierania encji: {e}")
+    
+    return []
 
-        <form method="POST" id="main-form">
-            <div class="section">
-                <h3>Układ Dashboardu (Layout)</h3>
-                <p>Dodawaj wiersze, a następnie wybierz wiersz i kliknij "Dodaj do wybranego wiersza" w panelu powyżej.</p>
+# STYLE BEZ ZMIAN...
+STYLES = {
+    "title": "color: #000000; font-size: 20px; font-weight: 700; text-align: center; padding-top: 5px; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif;",
+    "widget": "color: #000000 !important; background-color: #FFFFFF !important;",
+    "text": "color: #000000 !important; font-weight: 700 !important;",
+    "value": "color: #000000 !important; font-size: 44px !important; font-weight: 700 !important;",
+    "unit": "color: #000000 !important;",
+    "icon": "color: #000000 !important;"
+}
+
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    generated_yaml = ""
+    ha_entities = get_ha_entities()
+    
+    if request.method == 'POST':
+        title = request.form.get('title', 'JoanDashboard')
+        
+        generated_yaml += f"title: {title}\n"
+        generated_yaml += "widget_dimensions: [117, 117]\n"
+        generated_yaml += "widget_size: [2, 1]\n"
+        generated_yaml += "widget_margins: [8, 8]\n"
+        generated_yaml += "columns: 6\n"
+        generated_yaml += "rows: 9\n"
+        generated_yaml += "global_parameters:\n"
+        generated_yaml += "  use_comma: 0\n  precision: 1\n  use_hass_icon: 1\n  namespace: default\n"
+        generated_yaml += "skin: simplyred\n\n"
+        
+        layout_data_str = request.form.get('layout_data_json')
+        if layout_data_str:
+            try:
+                layout_rows = json.loads(layout_data_str)
+                generated_yaml += "layout:\n"
+                processed_widgets = []
                 
-                <div id="rows-container"></div>
+                for row in layout_rows:
+                    if not row: continue
+                    row_str = ", ".join([w['id'] for w in row])
+                    generated_yaml += f"  - {row_str}\n"
+                    processed_widgets.extend(row)
                 
-                <button type="button" class="btn btn-row" onclick="addNewRow()">+ Dodaj Nowy Wiersz</button>
-            </div>
-
-            <div class="section">
-                <label>Tytuł Dashboardu</label>
-                <input type="text" name="title" value="JoanDashboard">
-            </div>
-
-            <!-- Ukryte pole przesyłające JSON -->
-            <input type="hidden" name="layout_data_json" id="layout_data_json">
-            
-            <button type="button" class="btn btn-primary" onclick="submitForm()">GENERUJ KOD .DASH</button>
-        </form>
-
-        {% if generated_yaml %}
-        <div class="section">
-            <h3>Twój kod:</h3>
-            <textarea class="output" readonly>{{ generated_yaml }}</textarea>
-        </div>
-        {% endif %}
-    </div>
-
-    <script>
-        let rows = [];
-        let activeRowIndex = 0;
-
-        function addNewRow() {
-            rows.push([]);
-            renderRows();
-            activeRowIndex = rows.length - 1; // Auto select new row
-            highlightActiveRow();
-        }
-
-        function renderRows() {
-            const container = document.getElementById('rows-container');
-            container.innerHTML = '';
-            
-            rows.forEach((rowWidgets, index) => {
-                const rowDiv = document.createElement('div');
-                rowDiv.className = 'dashboard-row';
-                rowDiv.id = 'row-' + index;
-                rowDiv.onclick = () => { activeRowIndex = index; highlightActiveRow(); };
+                generated_yaml += "\n# --- DEFINICJE WIDZETOW ---\n\n"
                 
-                // Label
-                const label = document.createElement('span');
-                label.className = 'row-label';
-                label.innerText = `Wiersz ${index + 1}:`;
-                rowDiv.appendChild(label);
+                seen_ids = set()
+                for w in processed_widgets:
+                    w_id = w['id']
+                    if w_id in seen_ids: continue
+                    seen_ids.add(w_id)
+                    
+                    w_type = w['type']
+                    w_name = w['name']
+                    w_icon = w['icon']
+                    
+                    generated_yaml += f"{w_id}:\n"
+                    
+                    if w_type == 'navigate':
+                        dashboard_name = w_id.replace('navigate.', '')
+                        generated_yaml += f"  widget_type: navigate\n"
+                        generated_yaml += f"  dashboard: {dashboard_name}\n"
+                        generated_yaml += f"  title: \"{w_name}\"\n"
+                        generated_yaml += f"  icon_inactive: {w_icon if w_icon else 'mdi-arrow-left-circle'}\n"
+                        generated_yaml += f"  widget_style: \"background-color: #FFFFFF !important; border-radius: 8px !important; padding: 10px !important; color: #000000 !important;\"\n"
+                        generated_yaml += f"  title_style: \"{STYLES['title']}\"\n"
+                    
+                    elif w_type == 'sensor':
+                        generated_yaml += f"  widget_type: sensor\n"
+                        generated_yaml += f"  entity: {w_id}\n"
+                        generated_yaml += f"  title: {w_name}\n"
+                        generated_yaml += f"  title_style: \"{STYLES['title']}\"\n"
+                        generated_yaml += f"  text_style: \"{STYLES['text']}\"\n"
+                        generated_yaml += f"  value_style: \"{STYLES['value']}\"\n"
+                        generated_yaml += f"  unit_style: \"{STYLES['unit']}\"\n"
+                        generated_yaml += f"  widget_style: \"{STYLES['widget']}\"\n"
+                        if w_icon:
+                            generated_yaml += f"  icon: {w_icon}\n"
+                            generated_yaml += f"  icon_style: \"{STYLES['icon']}\"\n"
 
-                // Widgets
-                rowWidgets.forEach((widget, wIndex) => {
-                    const wCard = document.createElement('div');
-                    wCard.className = 'widget-card';
-                    wCard.innerHTML = `<span>${widget.name}</span> <small>(${widget.type})</small> <span class="btn-del-widget" onclick="removeWidget(${index}, ${wIndex}); event.stopPropagation();">x</span>`;
-                    rowDiv.appendChild(wCard);
-                });
+                    else:
+                        generated_yaml += f"  widget_type: {w_type}\n"
+                        generated_yaml += f"  entity: {w_id}\n"
+                        generated_yaml += f"  title: {w_name}\n"
+                        generated_yaml += f"  icon_on: {w_icon if w_icon else 'mdi-toggle-switch'}\n"
+                        generated_yaml += f"  icon_off: {w_icon if w_icon else 'mdi-toggle-switch-off'}\n"
+                        generated_yaml += f"  state_text: 1\n"
+                        generated_yaml += f"  title_style: \"{STYLES['title']}\"\n"
+                        generated_yaml += f"  widget_style: \"{STYLES['widget']}\"\n"
+                        generated_yaml += f"  icon_style_active: \"{STYLES['icon']}\"\n"
+                        generated_yaml += f"  icon_style_inactive: \"{STYLES['icon']}\"\n"
+                        generated_yaml += "  state_map:\n"
+                        generated_yaml += "    \"on\": \"WL\"\n    \"off\": \"WYL\"\n"
+                        if w_type == 'cover':
+                            generated_yaml += "    \"open\": \"OTWARTA\"\n    \"closed\": \"ZAMKNIETA\"\n"
+                    
+                    generated_yaml += "\n"
+            except Exception as e:
+                print(f"Blad przetwarzania JSON: {e}")
 
-                // Remove Row Button
-                if(rows.length > 1) {
-                    const btnRem = d
+    return render_template('index.html', generated_yaml=generated_yaml, entities=ha_entities)
+
+print("--> 3. Uruchamiam serwer Flask na porcie 5000...")
+app.run(host='0.0.0.0', port=5000, debug=False)
