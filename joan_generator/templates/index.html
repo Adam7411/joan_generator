@@ -76,7 +76,6 @@
         .btn-import { background-color: #ff9800; color: white; margin-bottom: 10px; }
         .btn-remove-row { font-size: 10px; padding: 5px; margin-left: auto; background-color: #757575; color: white; }
 
-        /* PREVIEW AREA */
         .preview-area { background-color: var(--preview-bg); padding: 20px; border-radius: 8px; border: 2px solid var(--border-color); overflow-x: auto; min-height: 150px; }
         
         .eink-row { 
@@ -110,7 +109,6 @@
         textarea.output { width: 100%; height: 500px; font-family: monospace; background: #263238; color: #eceff1; border: none; padding: 15px; border-radius: 4px; }
         .hidden { display: none !important; }
         
-        /* RESULT INSTRUCTIONS */
         .file-path-info { 
             background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; padding: 20px; margin-bottom: 20px; border-radius: 6px; font-family: monospace; font-size: 16px; line-height: 1.6;
         }
@@ -166,7 +164,6 @@
             </div>
         {% endif %}
 
-        <!-- IMPORT SECTION -->
         <button type="button" class="btn btn-import" onclick="toggleImport()">
             <span data-i18n="btn_import_toggle">📂 Importuj / Edytuj Kod</span>
         </button>
@@ -191,7 +188,6 @@
                 </div>
             </div>
 
-            <!-- ADD / EDIT WIDGET BOX -->
             <div class="add-widget-box" id="widget-form-box">
                 <h4 style="margin-top:0" id="form-header" data-i18n="sec_add">2. Dodaj Widget</h4>
                 
@@ -314,9 +310,7 @@
                 label_type: "Typ Widgetu", label_name: "Tytuł na ekranie",
                 label_icon: "Ikona (Puste = Brak)", label_preview: "Ikona", label_size: "Rozmiar",
                 btn_add: "+ DODAJ DO WIERSZA", btn_update: "ZAPISZ ZMIANY", btn_new_row: "+ Dodaj Nowy Wiersz", btn_generate: "GENERUJ KOD .DASH", btn_cancel: "Anuluj",
-                state_on: "WŁĄCZONE", state_open: "OTWARTE", info_save: "Zapisz ten kod w pliku:",
-                btn_import_toggle: "📂 Importuj / Edytuj Kod", header_paste_code: "Wklej kod pliku .dash tutaj:", btn_load_dash: "Wczytaj Dashboard",
-                info_step1: "1. Zapisz kod w pliku:", info_step2: "2. Uruchom ponownie AppDaemon i sprawdź dashboard:"
+                state_on: "WŁĄCZONE", state_off: "WYŁĄCZONE", state_open: "OTWARTE", state_closed: "ZAMKNIĘTE"
             },
             en: {
                 status_ok: "✓ Connected to Home Assistant", status_error: "⚠ No API Connection. Check Token.",
@@ -328,9 +322,7 @@
                 label_type: "Widget Type", label_name: "Title on Screen",
                 label_icon: "Icon (Empty = None)", label_preview: "Icon", label_size: "Size",
                 btn_add: "+ ADD TO ROW", btn_update: "UPDATE WIDGET", btn_new_row: "+ Add New Row", btn_generate: "GENERATE .DASH CODE", btn_cancel: "Cancel",
-                state_on: "ON", state_open: "OPEN", info_save: "Save this code to file:",
-                btn_import_toggle: "📂 Import / Edit Code", header_paste_code: "Paste .dash file code here:", btn_load_dash: "Load Dashboard",
-                info_step1: "1. Save code to file:", info_step2: "2. Restart AppDaemon and check dashboard:"
+                state_on: "ON", state_off: "OFF", state_open: "OPEN", state_closed: "CLOSED"
             }
         };
 
@@ -338,7 +330,7 @@
         let rows = [];
         let activeRowIndex = 0;
         let editingIndices = null; 
-        let importedDefsMap = {}; // NEW: pamięć mapy definicji dla nazw z pliku
+        let importedDefsMap = {};
 
         function formatNameFromId(id) {
             if (!id) return "";
@@ -367,9 +359,8 @@
         function refreshUIText() {
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
-                if(translations[currentLang][key]) {
-                    el.innerText = translations[currentLang][key];
-                }
+                const t = translations[currentLang][key];
+                if(t) el.innerText = t;
             });
             const btn = document.getElementById('btn-action');
             const btnSpan = btn.querySelector('span');
@@ -396,25 +387,40 @@
             btn.innerText = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
         }
 
+        // NORMALIZACJA STANÓW: 1/0/true/false → ON/OFF; open/closed → OTWARTE/ZAMKNIĘTE
+        function normalizeState(state) {
+            if (state == null) return null;
+            const s = String(state).toLowerCase().trim();
+            const T = translations[currentLang];
+            if (s === '1' || s === 'true') return T.state_on;
+            if (s === '0' || s === 'false') return T.state_off;
+            if (s === 'on') return T.state_on;
+            if (s === 'off') return T.state_off;
+            if (s === 'open') return T.state_open;
+            if (s === 'closed') return T.state_closed;
+            return null;
+        }
+
         function getEntityState(id) {
             const ent = entitiesData.find(e => e.id === id);
             if (ent) {
-                if (ent.state === 'on') return translations[currentLang].state_on;
-                if (ent.state === 'off') return currentLang === 'pl' ? 'WYŁĄCZONE' : 'OFF';
+                const normalized = normalizeState(ent.state);
+                if (normalized) return normalized;
                 let val = ent.state;
-                if (!isNaN(parseFloat(val)) && val.includes('.')) val = parseFloat(val).toFixed(1);
+                if (!isNaN(parseFloat(val)) && String(val).includes('.')) val = parseFloat(val).toFixed(1);
                 if (ent.unit) val += ' ' + ent.unit;
                 return val;
             }
             return null;
         }
+
         function getLiveIcon(widget) {
             const ent = entitiesData.find(e => e.id === widget.id);
             let baseIcon = widget.icon;
             if (!baseIcon || !ent) return baseIcon; 
             const i = baseIcon.toLowerCase();
-            const state = ent.state;
-            const is_on = (state === 'on' || state === 'open' || state === 'unlocked');
+            const state = String(ent.state).toLowerCase();
+            const is_on = (state === 'on' || state === 'open' || state === 'unlocked' || state === '1' || state === 'true');
             if (is_on) {
                 if (i.includes('garage')) return 'mdi-garage-open';
                 if (i.includes('gate')) return 'mdi-gate-open';
@@ -436,12 +442,11 @@
             }
         }
 
-        // Render podglądu – korzysta z nazw z importu jeśli są dostępne
         function renderRows() {
             const container = document.getElementById('rows-container');
             container.innerHTML = '';
             const T = translations[currentLang];
-            const defaultStates = { 'switch': T.state_on, 'sensor': '21.5 °C', 'cover': T.state_open, 'media_player': 'PLAYING', 'navigate': 'GO', 'binary_sensor': T.state_open, 'script': 'RUN', 'climate': '21°' };
+            const defaultStates = { 'switch': T.state_off, 'sensor': '21.5 °C', 'cover': T.state_closed, 'media_player': 'PLAYING', 'navigate': 'GO', 'binary_sensor': T.state_closed, 'script': 'RUN', 'climate': '21°' };
 
             rows.forEach((rowWidgets, index) => {
                 const rowDiv = document.createElement('div');
@@ -477,7 +482,6 @@
                     let iconHtml = iconClass ? `<i class="mdi ${iconClass} ew-icon"></i>` : `<div style="height:28px"></div>`;
                     let displayState = getEntityState(widget.id) || defaultStates[widget.type] || '---';
 
-                    // NAZWA Z WCZYTANEGO KODU: jeśli import zawiera definicję z title, użyj jej
                     let importedTitle = '';
                     const def = importedDefsMap[widget.id];
                     if (def && def.title) importedTitle = def.title;
@@ -507,7 +511,6 @@
 
         function toggleImport() { document.getElementById('import-area').classList.toggle('visible'); }
         
-        // Import YAML – buduje rows oraz mapę importedDefsMap do odczytu tytułów
         function importYaml() {
             const code = document.getElementById('import-code').value;
             if (!code) return;
@@ -552,7 +555,7 @@
                 }
 
                 rows = [];
-                importedDefsMap = widgetDefs; // ZAPISZ mapę dla renderRows
+                importedDefsMap = widgetDefs;
 
                 layoutLines.forEach(l => {
                     const rowStr = l.substring(1).trim(); 
@@ -578,7 +581,6 @@
                             else type = 'switch';
                         }
 
-                        // Preferuj title z definicji – to naprawia brak nazw w podglądzie
                         let name = def.title && def.title.trim() ? def.title : '';
                         if (!name && def.entity) name = formatNameFromEntity(def.entity);
                         if (!name) name = formatNameFromId(id);
@@ -615,7 +617,6 @@
                 document.getElementById('group-nav').classList.add('hidden');
             }
 
-            // W edycji pokaż tytuł z rows (który pochodzi z importu lub nazwy dodatkowej)
             document.getElementById('new-widget-name').value = widget.name || '';
             document.getElementById('new-widget-icon').value = widget.icon || '';
             document.getElementById('new-widget-size').value = widget.size || '';
@@ -736,8 +737,7 @@
             if (editingIndices) return; 
             const btn = document.getElementById('btn-action');
             const rowNum = activeRowIndex + 1;
-            const T = translations[currentLang];
-            const baseText = T.btn_add;
+            const baseText = translations[currentLang].btn_add;
             btn.querySelector('span').innerText = `${baseText} (${currentLang==='pl'?'Wiersz':'Row'} ${rowNum})`;
         }
 
