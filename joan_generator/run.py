@@ -7,7 +7,7 @@ print("✅ 2. Libraries loaded.")
 
 app = Flask(__name__)
 
-# --- TOKEN CONFIGURATION ---
+# --- TOKEN & API CONFIGURATION ---
 TOKEN = os.environ.get('SUPERVISOR_TOKEN')
 API_URL = "http://supervisor/core/api" 
 TOKEN_SOURCE = "System (Supervisor)"
@@ -38,7 +38,6 @@ def get_ha_entities():
         response = requests.get(f"{API_URL}/states", headers=headers, timeout=10)
         if response.status_code == 200:
             data = response.json()
-            # Zwracamy obiekt: {id, state, unit}
             entities = []
             for state in data:
                 entities.append({
@@ -46,7 +45,6 @@ def get_ha_entities():
                     'state': state['state'],
                     'unit': state['attributes'].get('unit_of_measurement', '')
                 })
-            # Sortowanie po ID
             entities.sort(key=lambda x: x['id'])
             print(f"✅ SUCCESS! Fetched {len(entities)} entities with states.")
             return entities
@@ -85,10 +83,13 @@ def index():
     generated_yaml = ""
     ha_entities = get_ha_entities()
     dashboard_filename = ""
+    dashboard_slug = "" # Czysta nazwa dashboardu (bez .dash)
     
     if request.method == 'POST':
         title = request.form.get('title', 'JoanDashboard')
-        dashboard_filename = title.lower().replace(" ", "_") + ".dash"
+        dashboard_slug = title.lower().replace(" ", "_")
+        dashboard_filename = dashboard_slug + ".dash"
+        
         lang = request.form.get('ui_language', 'pl')
         
         T = {
@@ -220,7 +221,7 @@ def index():
             except Exception as e:
                 print(f"❌ Error processing JSON: {e}")
 
-    return render_template('index.html', generated_yaml=generated_yaml, entities=ha_entities, filename=dashboard_filename)
+    return render_template('index.html', generated_yaml=generated_yaml, entities=ha_entities, filename=dashboard_filename, dash_name=dashboard_slug)
 
 if __name__ == "__main__":
     print("🚀 3. Starting Dev Server...")
