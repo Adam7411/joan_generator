@@ -4,40 +4,63 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Joan Dashboard Generator</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <!-- MDI Icons Font for Preview -->
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Roboto', sans-serif; background-color: #e0e0e0; padding: 20px; color: #333; }
-        .container { max-width: 1100px; margin: 0 auto; background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        h1 { text-align: center; color: #d32f2f; margin-bottom: 30px; }
-        .section { margin-bottom: 30px; border: 1px solid #ddd; padding: 15px; border-radius: 8px; background: #fafafa; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #d32f2f; margin-bottom: 20px; }
+        
+        /* Sekcje */
+        .section { margin-bottom: 30px; border: 1px solid #ddd; padding: 20px; border-radius: 8px; background: #fafafa; }
         label { display: block; margin-top: 10px; font-weight: bold; font-size: 0.9em; }
         input, select { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
         
-        .dashboard-row { 
-            background: #fff; border: 1px dashed #999; padding: 10px; margin-bottom: 10px; 
-            display: flex; gap: 10px; flex-wrap: wrap; align-items: center; min-height: 60px;
-            border-radius: 4px; cursor: pointer;
-        }
-        .row-label { font-weight: bold; margin-right: 10px; color: #d32f2f; }
+        /* STATUS BAR */
+        .status-bar { padding: 10px; margin-bottom: 20px; border-radius: 4px; text-align: center; font-weight: bold; }
         
-        .widget-card {
-            background: #333; color: #fff; padding: 5px 10px; border-radius: 4px; font-size: 0.85em;
-            display: flex; align-items: center; gap: 5px; border: 1px solid transparent;
+        /* E-INK PREVIEW STYLES */
+        .preview-area {
+            background-color: #f0f0f0; padding: 20px; border-radius: 8px; border: 2px solid #ccc;
+            overflow-x: auto;
         }
-        .btn-del-widget { color: #ff5252; cursor: pointer; font-weight: bold; margin-left: 5px; }
+        .eink-row {
+            display: flex; gap: 8px; margin-bottom: 8px; padding: 10px; 
+            border: 2px dashed #bbb; background: #fff; border-radius: 4px;
+            align-items: center; min-height: 120px; position: relative;
+        }
+        .eink-row.active { border-color: #2196f3; background: #e3f2fd; }
+        
+        /* Widget Simulation */
+        .eink-widget {
+            width: 140px; height: 100px; /* Przybliżenie 2x1 na Joan */
+            background-color: #FFFFFF; border: 2px solid #000;
+            color: #000; font-family: 'Roboto', sans-serif;
+            display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+            padding: 5px; box-sizing: border-box; position: relative;
+            cursor: pointer; box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+        }
+        .eink-widget:hover { transform: translateY(-2px); box-shadow: 4px 4px 8px rgba(0,0,0,0.2); }
+        .ew-title { font-size: 14px; font-weight: 700; text-align: center; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .ew-icon { font-size: 36px; }
+        .ew-state { font-size: 12px; font-weight: 700; text-transform: uppercase; }
+        .ew-delete { position: absolute; top: 0; right: 0; background: red; color: white; width: 20px; height: 20px; text-align: center; line-height: 20px; font-size: 12px; cursor: pointer; display: none; }
+        .eink-widget:hover .ew-delete { display: block; }
 
+        /* Formularz */
         .add-widget-box { background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #2196f3; }
         .flex-row { display: flex; gap: 15px; align-items: flex-end; }
         .flex-col { flex: 1; }
 
+        /* Przyciski */
         .btn { padding: 10px 20px; border: none; cursor: pointer; border-radius: 4px; font-weight: bold; text-transform: uppercase; }
         .btn-primary { background-color: #d32f2f; color: white; width: 100%; font-size: 18px; margin-top: 20px; }
-        .btn-add { background-color: #4caf50; color: white; }
+        .btn-add { background-color: #4caf50; color: white; width: 100%; }
         .btn-row { background-color: #2196f3; color: white; margin-top: 10px; }
-        .btn-remove-row { background-color: #757575; color: white; font-size: 10px; padding: 5px; margin-left: auto; }
-        
+        .row-label { position: absolute; left: 0; top: -25px; font-weight: bold; color: #666; font-size: 12px; }
+
         textarea.output { width: 100%; height: 500px; font-family: monospace; background: #263238; color: #eceff1; border: none; padding: 15px; margin-top: 20px; border-radius: 4px; }
-        .status-bar { padding: 10px; margin-bottom: 10px; border-radius: 4px; text-align: center; font-weight: bold; display: none; }
     </style>
 </head>
 <body>
@@ -45,77 +68,94 @@
         <h1>Joan Dashboard Generator</h1>
 
         {% if entities %}
-            <div class="status-bar" style="background: #d4edda; color: #155724; display: block;">
-                ✓ Połączono z Home Assistant (Znaleziono {{ entities|length }} encji)
+            <div class="status-bar" style="background: #d4edda; color: #155724;">
+                ✓ Połączono z Home Assistant ({{ entities|length }} encji)
             </div>
         {% else %}
-            <div class="status-bar" style="background: #f8d7da; color: #721c24; display: block;">
-                ⚠ Brak połączenia z HA API. Sprawdź token w konfiguracji.
+            <div class="status-bar" style="background: #f8d7da; color: #721c24;">
+                ⚠ Brak tokena API. Lista encji niedostępna.
             </div>
         {% endif %}
-        
-        <div class="add-widget-box">
-            <h4>Kreator Widgetu</h4>
-            <div class="flex-row">
-                <div class="flex-col" style="flex: 2;">
-                    <label>Wybierz Encję</label>
-                    <!-- Dodano zdarzenie oninput, aby reagowalo od razu -->
-                    <input list="entities-list" id="new-entity-id" placeholder="Zacznij pisać..." oninput="autoConfig()">
-                    <datalist id="entities-list">
-                        {% for entity in entities %}
-                        <option value="{{ entity }}">
-                        {% endfor %}
-                    </datalist>
-                </div>
-                <div class="flex-col">
-                    <label>Typ Widgetu</label>
-                    <select id="new-widget-type">
-                        <option value="switch">Przełącznik (Switch/Light)</option>
-                        <option value="sensor">Sensor (Wartość)</option>
-                        <option value="binary_sensor">Sensor Binarny (Otwarte/Zamk)</option>
-                        <option value="cover">Roleta/Brama/Garaż</option>
-                        <option value="media_player">Odtwarzacz (Media)</option>
-                        <option value="input_boolean">Przełącznik Pomocniczy</option>
-                        <option value="script">Skrypt/Scena</option>
-                        <option value="navigate">Nawigacja</option>
-                    </select>
-                </div>
-                <div class="flex-col">
-                    <label>Nazwa (Tytuł)</label>
-                    <input type="text" id="new-widget-name" placeholder="np. Salon">
-                </div>
-            </div>
-            <div class="flex-row" style="margin-top: 10px;">
-                <div class="flex-col">
-                    <label>Ikona (Automatyczna lub MDI)</label>
-                    <input list="icons-list" id="new-widget-icon" placeholder="np. mdi-lightbulb">
-                    <datalist id="icons-list"></datalist>
-                </div>
-                <div class="flex-col">
-                    <button type="button" class="btn btn-add" onclick="addWidgetToStaging()">Dodaj do wiersza</button>
-                </div>
-            </div>
-        </div>
 
         <form method="POST" id="main-form">
+            <!-- 1. Ustawienia globalne -->
             <div class="section">
-                <h3>Układ (Kliknij na wiersz, aby go wybrać)</h3>
-                <div id="rows-container"></div>
-                <button type="button" class="btn btn-row" onclick="addNewRow()">+ Dodaj Wiersz</button>
+                <h3>1. Ustawienia Główne</h3>
+                <div class="flex-row">
+                    <div class="flex-col">
+                        <label>Tytuł pliku .dash</label>
+                        <input type="text" name="title" value="JoanDashboard">
+                    </div>
+                    <div class="flex-col">
+                        <label>Język Dashboardu</label>
+                        <select name="language" id="lang-select" onchange="updatePreviewText()">
+                            <option value="pl">Polski (WŁĄCZONE/WYŁĄCZONE)</option>
+                            <option value="en">English (ON/OFF)</option>
+                        </select>
+                    </div>
+                </div>
             </div>
 
+            <!-- 2. Kreator -->
+            <div class="add-widget-box">
+                <h4>2. Dodaj Widget</h4>
+                <div class="flex-row">
+                    <div class="flex-col" style="flex: 2;">
+                        <label>Wybierz Encję</label>
+                        <input list="entities-list" id="new-entity-id" placeholder="np. switch.kuchnia" oninput="autoConfig()">
+                        <datalist id="entities-list">
+                            {% for entity in entities %}
+                            <option value="{{ entity }}">
+                            {% endfor %}
+                        </datalist>
+                    </div>
+                    <div class="flex-col">
+                        <label>Typ</label>
+                        <select id="new-widget-type">
+                            <option value="switch">Przełącznik</option>
+                            <option value="sensor">Sensor (Liczba)</option>
+                            <option value="binary_sensor">Sensor Binarny</option>
+                            <option value="cover">Roleta/Brama</option>
+                            <option value="media_player">Media Player</option>
+                            <option value="navigate">Nawigacja</option>
+                            <option value="script">Skrypt</option>
+                        </select>
+                    </div>
+                    <div class="flex-col">
+                        <label>Nazwa</label>
+                        <input type="text" id="new-widget-name" placeholder="np. Lampa">
+                    </div>
+                </div>
+                <div class="flex-row" style="margin-top: 10px;">
+                    <div class="flex-col">
+                        <label>Ikona (MDI)</label>
+                        <input list="icons-list" id="new-widget-icon" placeholder="np. mdi-lightbulb">
+                        <datalist id="icons-list"></datalist>
+                    </div>
+                    <div class="flex-col">
+                        <label>&nbsp;</label>
+                        <button type="button" class="btn btn-add" onclick="addWidgetToStaging()">+ DODAJ DO WIERSZA</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Podgląd -->
             <div class="section">
-                <label>Tytuł pliku .dash</label>
-                <input type="text" name="title" value="JoanDashboard">
+                <h3>3. Podgląd Dashboardu (Kliknij wiersz aby wybrać)</h3>
+                <p style="font-size: 12px; color: #666;">To tylko wizualizacja. Finalny wygląd zależy od AppDaemon.</p>
+                
+                <div id="rows-container" class="preview-area"></div>
+                
+                <button type="button" class="btn btn-row" onclick="addNewRow()">+ Dodaj Nowy Wiersz</button>
             </div>
 
             <input type="hidden" name="layout_data_json" id="layout_data_json">
-            <button type="button" class="btn btn-primary" onclick="submitForm()">GENERUJ KOD</button>
+            <button type="button" class="btn btn-primary" onclick="submitForm()">GENERUJ KOD .DASH</button>
         </form>
 
         {% if generated_yaml %}
         <div class="section">
-            <h3>Wynikowy kod YAML:</h3>
+            <h3>Twój kod YAML:</h3>
             <textarea class="output" readonly>{{ generated_yaml }}</textarea>
         </div>
         {% endif %}
@@ -125,6 +165,7 @@
         let rows = [];
         let activeRowIndex = 0;
 
+        // Ikony MDI
         async function fetchIcons() {
             const dataList = document.getElementById('icons-list');
             try {
@@ -136,49 +177,87 @@
                     opt.value = 'mdi-' + i.name;
                     dataList.appendChild(opt);
                 });
-            } catch (e) { console.log("Błąd ikon"); }
+            } catch (e) { console.log("Błąd pobierania ikon"); }
         }
         fetchIcons();
 
-        function addNewRow() { rows.push([]); renderRows(); activeRowIndex = rows.length - 1; highlightActiveRow(); }
+        function addNewRow() {
+            rows.push([]);
+            renderRows();
+            activeRowIndex = rows.length - 1;
+            highlightActiveRow();
+        }
 
         function renderRows() {
             const container = document.getElementById('rows-container');
             container.innerHTML = '';
+            const lang = document.getElementById('lang-select').value;
+            
+            // Teksty przykładowe dla podglądu
+            const states = {
+                'switch': (lang=='pl' ? 'WŁĄCZONE' : 'ON'),
+                'sensor': '21.5 °C',
+                'cover': (lang=='pl' ? 'OTWARTE' : 'OPEN'),
+                'media_player': 'PLAYING',
+                'navigate': 'GO',
+                'binary_sensor': (lang=='pl' ? 'OTWARTE' : 'OPEN'),
+                'script': 'RUN'
+            };
+
             rows.forEach((rowWidgets, index) => {
                 const rowDiv = document.createElement('div');
-                rowDiv.className = 'dashboard-row';
+                rowDiv.className = 'eink-row';
                 rowDiv.id = 'row-' + index;
                 rowDiv.onclick = () => { activeRowIndex = index; highlightActiveRow(); };
-                
-                const label = document.createElement('span');
-                label.className = 'row-label';
-                label.innerText = `Wiersz ${index + 1}:`;
-                rowDiv.appendChild(label);
+
+                // Etykieta wiersza
+                const rowLabel = document.createElement('div');
+                rowLabel.className = 'row-label';
+                rowLabel.innerText = 'WIERSZ ' + (index + 1);
+                rowDiv.appendChild(rowLabel);
 
                 rowWidgets.forEach((widget, wIndex) => {
-                    const wCard = document.createElement('div');
-                    wCard.className = 'widget-card';
-                    wCard.innerHTML = `<span style="font-size:16px;">${widget.icon ? '<i class="mdi '+widget.icon+'"></i> ' : ''}</span> <span>${widget.name}</span> <small>(${widget.type})</small> <span class="btn-del-widget" onclick="removeWidget(${index}, ${wIndex}); event.stopPropagation();">x</span>`;
-                    rowDiv.appendChild(wCard);
+                    const wDiv = document.createElement('div');
+                    wDiv.className = 'eink-widget';
+                    
+                    // Ikona
+                    let iconHtml = '';
+                    if(widget.icon) iconHtml = `<i class="mdi ${widget.icon} ew-icon"></i>`;
+                    else iconHtml = `<i class="mdi mdi-help-circle-outline ew-icon"></i>`;
+
+                    // Stan (symulacja)
+                    let stateText = states[widget.type] || '---';
+
+                    wDiv.innerHTML = `
+                        <div class="ew-title">${widget.name}</div>
+                        ${iconHtml}
+                        <div class="ew-state">${stateText}</div>
+                        <div class="ew-delete" onclick="removeWidget(${index}, ${wIndex}); event.stopPropagation();">X</div>
+                    `;
+                    rowDiv.appendChild(wDiv);
                 });
 
                 if(rows.length > 1) {
-                    const btnRem = document.createElement('button');
-                    btnRem.className = 'btn btn-remove-row';
-                    btnRem.innerText = 'USUŃ';
-                    btnRem.onclick = (e) => { e.stopPropagation(); deleteRow(index); };
-                    rowDiv.appendChild(btnRem);
+                    // Przycisk usuwania wiersza (maly X po prawej)
+                    const delRow = document.createElement('button');
+                    delRow.innerHTML = 'Usuń Wiersz';
+                    delRow.className = 'btn btn-remove-row';
+                    delRow.style.position = 'absolute';
+                    delRow.style.right = '5px';
+                    delRow.style.top = '5px';
+                    delRow.onclick = (e) => { e.stopPropagation(); deleteRow(index); };
+                    rowDiv.appendChild(delRow);
                 }
+
                 container.appendChild(rowDiv);
             });
             highlightActiveRow();
         }
 
         function highlightActiveRow() {
-            document.querySelectorAll('.dashboard-row').forEach(el => el.style.borderColor = '#999');
+            document.querySelectorAll('.eink-row').forEach(el => el.classList.remove('active'));
             const active = document.getElementById('row-' + activeRowIndex);
-            if(active) active.style.borderColor = '#2196f3';
+            if(active) active.classList.add('active');
         }
 
         function addWidgetToStaging() {
@@ -187,13 +266,15 @@
             const name = document.getElementById('new-widget-name').value;
             let icon = document.getElementById('new-widget-icon').value;
 
-            if(!id) { alert("Musisz wybrać encję!"); return; }
+            if(!id) { alert("Wybierz encję!"); return; }
             if(icon && !icon.startsWith('mdi-')) icon = 'mdi-' + icon;
 
             if (rows.length === 0) addNewRow();
+
             rows[activeRowIndex].push({ id, type, name: name || id, icon });
             renderRows();
             
+            // Czyszczenie
             document.getElementById('new-entity-id').value = '';
             document.getElementById('new-widget-name').value = '';
             document.getElementById('new-widget-icon').value = '';
@@ -201,12 +282,15 @@
 
         function removeWidget(r, w) { rows[r].splice(w, 1); renderRows(); }
         function deleteRow(i) { rows.splice(i, 1); if(activeRowIndex >= rows.length) activeRowIndex = rows.length - 1; renderRows(); }
+        
         function submitForm() {
             document.getElementById('layout_data_json').value = JSON.stringify(rows);
             document.getElementById('main-form').submit();
         }
-        
-        // --- INTELIGENTNE WYKRYWANIE TYPU I IKONY ---
+
+        function updatePreviewText() { renderRows(); }
+
+        // --- AUTOMATYKA ---
         function autoConfig() {
             guessType();
             guessIcon();
@@ -215,65 +299,30 @@
         function guessType() {
             const id = document.getElementById('new-entity-id').value;
             const typeSelect = document.getElementById('new-widget-type');
-            
             if(id.startsWith('sensor.')) typeSelect.value = 'sensor';
             else if(id.startsWith('binary_sensor.')) typeSelect.value = 'binary_sensor';
             else if(id.startsWith('cover.')) typeSelect.value = 'cover';
             else if(id.startsWith('media_player.')) typeSelect.value = 'media_player';
-            else if(id.startsWith('input_boolean.')) typeSelect.value = 'input_boolean';
             else if(id.startsWith('light.') || id.startsWith('switch.')) typeSelect.value = 'switch';
             else if(id.startsWith('navigate.')) typeSelect.value = 'navigate';
-            else if(id.startsWith('script.') || id.startsWith('scene.')) typeSelect.value = 'script';
+            else if(id.startsWith('script.')) typeSelect.value = 'script';
         }
 
         function guessIcon() {
             const id = document.getElementById('new-entity-id').value.toLowerCase();
             const iconInput = document.getElementById('new-widget-icon');
-            
-            // Jeśli użytkownik już coś wpisał, nie nadpisujemy
             if(iconInput.value) return;
 
-            // Słownik mapowania (ciąg znaków -> ikona mdi)
             const map = {
-                'battery': 'mdi-battery',
-                'bateria': 'mdi-battery',
-                'temp': 'mdi-thermometer',
-                'humid': 'mdi-water-percent',
-                'wilgot': 'mdi-water-percent',
-                'light': 'mdi-lightbulb',
-                'swiatlo': 'mdi-lightbulb',
-                'garage': 'mdi-garage',
-                'garaz': 'mdi-garage',
-                'gate': 'mdi-gate',
-                'brama': 'mdi-gate',
-                'lock': 'mdi-lock',
-                'zamek': 'mdi-lock',
-                'plug': 'mdi-power-socket',
-                'gniazdo': 'mdi-power-socket',
-                'contact': 'mdi-door',
-                'drzwi': 'mdi-door',
-                'okno': 'mdi-window-closed',
-                'window': 'mdi-window-closed',
-                'motion': 'mdi-motion-sensor',
-                'ruch': 'mdi-motion-sensor',
-                'fan': 'mdi-fan',
-                'wentylator': 'mdi-fan',
-                'tv': 'mdi-television',
-                'speaker': 'mdi-speaker',
-                'glosnik': 'mdi-speaker',
-                'weather': 'mdi-weather-partly-cloudy',
-                'pogoda': 'mdi-weather-partly-cloudy',
-                'solar': 'mdi-solar-power',
-                'pv': 'mdi-solar-power',
-                'energy': 'mdi-lightning-bolt',
-                'energia': 'mdi-lightning-bolt'
+                'battery': 'mdi-battery', 'bateria': 'mdi-battery',
+                'temp': 'mdi-thermometer', 'humid': 'mdi-water-percent',
+                'light': 'mdi-lightbulb', 'swiatlo': 'mdi-lightbulb',
+                'garage': 'mdi-garage', 'garaz': 'mdi-garage', 'brama': 'mdi-gate',
+                'lock': 'mdi-lock', 'contact': 'mdi-door', 'door': 'mdi-door',
+                'fan': 'mdi-fan', 'tv': 'mdi-television', 'speaker': 'mdi-speaker'
             };
-
             for (const [key, icon] of Object.entries(map)) {
-                if (id.includes(key)) {
-                    iconInput.value = icon;
-                    break;
-                }
+                if (id.includes(key)) { iconInput.value = icon; break; }
             }
         }
 
