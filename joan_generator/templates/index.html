@@ -9,36 +9,78 @@
     <style>
         body { font-family: 'Roboto', sans-serif; background-color: #e0e0e0; padding: 20px; color: #333; }
         .container { max-width: 1200px; margin: 0 auto; background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        
+        /* HEADER */
         .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 15px; }
-        h1 { color: #d32f2f; margin: 0; }
+        h1 { color: #d32f2f; margin: 0; font-size: 24px; }
         .lang-switch button { padding: 8px 15px; border: 1px solid #ccc; background: #f0f0f0; cursor: pointer; border-radius: 4px; font-weight: bold; }
         .lang-switch button.active { background: #d32f2f; color: white; border-color: #b71c1c; }
+
+        .status-bar { padding: 10px; margin-bottom: 20px; border-radius: 4px; text-align: center; font-weight: bold; }
+
+        /* SEKCJE */
         .section { margin-bottom: 30px; border: 1px solid #ddd; padding: 20px; border-radius: 8px; background: #fafafa; }
         .section-title { font-size: 1.2em; font-weight: bold; color: #555; margin-bottom: 15px; border-bottom: 2px solid #d32f2f; display: inline-block; }
-        label { display: block; margin-top: 10px; font-weight: bold; font-size: 0.9em; }
-        input, select { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        
+        /* IMPORT BOX */
+        .import-box { background: #fff3e0; border: 1px solid #ffe0b2; display: none; }
+        .import-box.visible { display: block; }
+        
         .add-widget-box { background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #2196f3; }
-        .flex-row { display: flex; gap: 15px; align-items: flex-end; }
-        .flex-col { flex: 1; }
-        .icon-preview-box { width: 42px; height: 42px; background: #fff; border: 1px solid #ccc; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #333; margin-bottom: 1px; }
+        
+        .flex-row { display: flex; gap: 15px; align-items: flex-end; margin-bottom: 10px; flex-wrap: wrap; }
+        .flex-col { flex: 1; min-width: 150px; }
+        
+        label { display: block; margin-top: 10px; font-weight: bold; font-size: 0.9em; margin-bottom: 5px; }
+        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+
+        /* IKONY */
+        .icon-preview-wrapper { width: 60px; text-align: center; }
+        .icon-preview-box { width: 50px; height: 42px; background: #fff; border: 1px solid #ccc; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 28px; color: #333; }
+
+        /* BUTTONS */
         .btn { padding: 10px 20px; border: none; cursor: pointer; border-radius: 4px; font-weight: bold; text-transform: uppercase; }
         .btn-primary { background-color: #d32f2f; color: white; width: 100%; font-size: 18px; margin-top: 20px; }
         .btn-add { background-color: #4caf50; color: white; width: 100%; }
         .btn-row { background-color: #2196f3; color: white; margin-top: 10px; }
+        .btn-import { background-color: #ff9800; color: white; margin-bottom: 10px; }
+        .btn-remove-row { font-size: 10px; padding: 5px; margin-left: auto; background-color: #757575; color: white; }
+
+        /* PREVIEW AREA (GRID) */
         .preview-area { background-color: #f0f0f0; padding: 20px; border-radius: 8px; border: 2px solid #ccc; overflow-x: auto; min-height: 150px; }
-        .eink-row { display: flex; gap: 8px; margin-bottom: 8px; padding: 10px; border: 2px dashed #bbb; background: #fff; border-radius: 4px; align-items: center; position: relative; }
+        
+        .eink-row { 
+            display: flex; flex-wrap: wrap; gap: 10px; 
+            margin-bottom: 15px; padding: 15px 10px; 
+            border: 2px dashed #bbb; background: #fff; border-radius: 4px; 
+            align-items: flex-start; position: relative; min-height: 100px; 
+        }
         .eink-row.active { border-color: #2196f3; background: #e3f2fd; }
-        .eink-widget { width: 140px; height: 100px; background-color: #FFFFFF; border: 2px solid #000; color: #000; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 5px; box-sizing: border-box; position: relative; cursor: pointer; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); }
-        .ew-title { font-size: 14px; font-weight: 700; text-align: center; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .ew-icon { font-size: 36px; }
-        .ew-state { font-size: 12px; font-weight: 700; text-transform: uppercase; }
-        .ew-delete { position: absolute; top: 0; right: 0; background: red; color: white; width: 20px; height: 20px; text-align: center; line-height: 20px; font-size: 12px; display: none; }
+        
+        /* DYNAMICZNY WIDGET E-INK */
+        .eink-widget {
+            /* Bazowe wymiary dla 1x1 */
+            --base-w: 60px;
+            --base-h: 60px;
+            --gap: 5px;
+            
+            background-color: #FFFFFF; border: 2px solid #000; color: #000; 
+            display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+            padding: 4px; box-sizing: border-box; position: relative; 
+            cursor: pointer; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); flex-shrink: 0;
+            overflow: hidden;
+        }
+        .eink-widget:hover { transform: translateY(-2px); box-shadow: 4px 4px 8px rgba(0,0,0,0.2); z-index: 10; }
+        
+        .ew-title { font-size: 11px; font-weight: 700; text-align: center; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.2; }
+        .ew-icon { font-size: 24px; }
+        .ew-state { font-size: 10px; font-weight: 700; text-transform: uppercase; }
+        .ew-delete { position: absolute; top: 0; right: 0; background: red; color: white; width: 18px; height: 18px; text-align: center; line-height: 18px; font-size: 10px; display: none; }
         .eink-widget:hover .ew-delete { display: block; }
-        textarea.output { width: 100%; height: 500px; font-family: monospace; background: #263238; color: #eceff1; border: none; padding: 15px; border-radius: 4px; }
-        .status-bar { padding: 10px; margin-bottom: 20px; border-radius: 4px; text-align: center; font-weight: bold; }
+
+        textarea.output { width: 100%; height: 400px; font-family: monospace; background: #263238; color: #eceff1; border: none; padding: 15px; margin-top: 20px; border-radius: 4px; }
         .hidden { display: none !important; }
         .file-path-info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; padding: 15px; margin-bottom: 15px; border-radius: 4px; font-family: monospace; font-size: 14px; }
-        .file-path-info code { background: rgba(255,255,255,0.5); padding: 2px 5px; border-radius: 3px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -61,6 +103,14 @@
             </div>
         {% endif %}
 
+        <!-- IMPORT SECTION -->
+        <button type="button" class="btn btn-import" onclick="toggleImport()">📂 Importuj / Edytuj Kod</button>
+        <div id="import-area" class="section import-box">
+            <h4 style="margin-top:0">Wklej stary kod .dash tutaj:</h4>
+            <textarea id="import-code" style="height: 150px; background: #fff; color: #000;" placeholder="Wklej zawartość pliku YAML..."></textarea>
+            <button type="button" class="btn btn-add" style="margin-top: 10px;" onclick="importYaml()">Wczytaj Dashboard</button>
+        </div>
+
         <form method="POST" id="main-form">
             <input type="hidden" name="ui_language" id="ui_language" value="pl">
             
@@ -68,8 +118,8 @@
                 <div class="section-title" data-i18n="sec_settings">1. Ustawienia</div>
                 <div class="flex-row">
                     <div class="flex-col">
-                        <label data-i18n="dash_title">Tytuł Dashboardu (Nazwa pliku)</label>
-                        <input type="text" name="title" value="JoanDashboard">
+                        <label data-i18n="dash_title">Tytuł Dashboardu</label>
+                        <input type="text" name="title" id="dash-title" value="JoanDashboard">
                     </div>
                 </div>
             </div>
@@ -86,7 +136,7 @@
                             <option value="binary_sensor">Binary Sensor</option>
                             <option value="cover">Cover / Gate</option>
                             <option value="media_player">Media Player</option>
-                            <option value="climate">Climate / AC</option>
+                            <option value="climate">Climate</option>
                             <option value="script">Script</option>
                         </select>
                     </div>
@@ -112,17 +162,17 @@
                     </div>
                 </div>
                 
-                <!-- DRUGI RZĄD: Rozmiar, Ikona -->
                 <div class="flex-row" style="margin-top: 10px; align-items: flex-end;">
                     <div class="flex-col" style="max-width: 150px;">
-                        <label data-i18n="label_size">Rozmiar (Grid)</label>
+                        <label data-i18n="label_size">Rozmiar</label>
                         <select id="new-widget-size">
                             <option value="">Domyślny (2x1)</option>
-                            <option value="(1x1)">1x1 (Mały kwadrat)</option>
-                            <option value="(2x1)">2x1 (Płaski - Std)</option>
-                            <option value="(2x2)">2x2 (Duży kwadrat)</option>
+                            <option value="(1x1)">1x1 (Mały)</option>
+                            <option value="(2x1)">2x1 (Standard)</option>
+                            <option value="(2x2)">2x2 (Duży)</option>
                             <option value="(3x1)">3x1 (Szeroki)</option>
                             <option value="(1x2)">1x2 (Wysoki)</option>
+                            <option value="(3x2)">3x2 (Bardzo duży)</option>
                         </select>
                     </div>
 
@@ -178,38 +228,32 @@
             pl: {
                 status_ok: "✓ Połączono z Home Assistant", status_error: "⚠ Brak połączenia z API. Sprawdź token.",
                 sec_settings: "1. Ustawienia", sec_add: "2. Dodaj Widget", sec_preview: "3. Podgląd Dashboardu (E-Ink)", sec_code: "Twój kod YAML:",
-                dash_title: "Tytuł Dashboardu (Nazwa pliku)", 
-                label_entity: "Wybierz Encję (Home Assistant)",
-                label_dashboard: "Nazwa pliku dashboardu (np. joan3)",
-                label_type: "Typ Widgetu", label_name: "Tytuł na ekranie",
-                label_icon: "Ikona (Automatyczna)", label_preview: "Ikona", 
-                label_size: "Rozmiar (Grid)",
+                dash_title: "Tytuł Dashboardu (Nazwa pliku)", label_entity: "Wybierz Encję (Home Assistant)",
+                label_dashboard: "Nazwa pliku dashboardu (np. joan3)", label_type: "Typ Widgetu", label_name: "Tytuł na ekranie",
+                label_icon: "Ikona (Automatyczna)", label_preview: "Ikona", label_size: "Rozmiar",
                 btn_add: "+ DODAJ DO WIERSZA", btn_new_row: "+ Dodaj Nowy Wiersz", btn_generate: "GENERUJ KOD .DASH",
-                state_on: "WŁĄCZONE", state_open: "OTWARTE",
-                info_save: "Zapisz ten kod w pliku:"
+                state_on: "WŁĄCZONE", state_open: "OTWARTE", info_save: "Zapisz ten kod w pliku:"
             },
             en: {
                 status_ok: "✓ Connected to Home Assistant", status_error: "⚠ No API Connection. Check Token.",
                 sec_settings: "1. Settings", sec_add: "2. Add Widget", sec_preview: "3. Dashboard Preview (E-Ink)", sec_code: "Your YAML Code:",
-                dash_title: "Dashboard Title (Filename)", 
-                label_entity: "Select Entity (Home Assistant)",
-                label_dashboard: "Dashboard Filename (e.g. joan3)",
-                label_type: "Widget Type", label_name: "Title on Screen",
-                label_icon: "Icon (Automatic)", label_preview: "Icon", 
-                label_size: "Size (Grid)",
+                dash_title: "Dashboard Title (Filename)", label_entity: "Select Entity (Home Assistant)",
+                label_dashboard: "Dashboard Filename (e.g. joan3)", label_type: "Widget Type", label_name: "Title on Screen",
+                label_icon: "Icon (Automatic)", label_preview: "Icon", label_size: "Size",
                 btn_add: "+ ADD TO ROW", btn_new_row: "+ Add New Row", btn_generate: "GENERATE .DASH CODE",
-                state_on: "ON", state_open: "OPEN",
-                info_save: "Save this code to file:"
+                state_on: "ON", state_open: "OPEN", info_save: "Save this code to file:"
             }
         };
 
         let currentLang = 'pl';
+        let rows = [];
+        let activeRowIndex = 0;
+
         function setLang(lang) {
             currentLang = lang;
             document.getElementById('ui_language').value = lang;
             document.getElementById('btn-pl').className = lang === 'pl' ? 'active' : '';
             document.getElementById('btn-en').className = lang === 'en' ? 'active' : '';
-            
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
                 if(translations[lang][key]) el.innerText = translations[lang][key];
@@ -217,6 +261,179 @@
             renderRows();
         }
 
+        // --- IMPORT LOGIC ---
+        function toggleImport() {
+            const box = document.getElementById('import-area');
+            box.classList.toggle('visible');
+        }
+
+        function importYaml() {
+            const code = document.getElementById('import-code').value;
+            if (!code) return;
+
+            try {
+                // 1. Parse lines to find widget definitions
+                const lines = code.split('\n');
+                const widgetDefs = {};
+                let currentWidgetId = null;
+                let title = "Imported";
+
+                lines.forEach(line => {
+                    const l = line.trim();
+                    if (l.startsWith('title:')) {
+                        title = l.split(':')[1].trim().replace(/['"]/g, '');
+                        document.getElementById('dash-title').value = title;
+                    }
+                    else if (l.includes(':') && !l.startsWith('widget_') && !l.startsWith('global_') && !l.startsWith('-')) {
+                        // Potential widget definition start or property
+                        if (line.match(/^\S+:/)) { // Top level key (widget ID)
+                            currentWidgetId = l.split(':')[0].trim();
+                            widgetDefs[currentWidgetId] = {};
+                        } else if (currentWidgetId && l.includes(':')) {
+                            // Property
+                            const parts = l.split(':');
+                            const key = parts[0].trim();
+                            let val = parts.slice(1).join(':').trim().replace(/['"]/g, '');
+                            widgetDefs[currentWidgetId][key] = val;
+                        }
+                    }
+                });
+
+                // 2. Parse Layout
+                rows = [];
+                let layoutStarted = false;
+                lines.forEach(line => {
+                    const l = line.trim();
+                    if (l.startsWith('layout:')) { layoutStarted = true; return; }
+                    if (layoutStarted && l.startsWith('-')) {
+                        const rowItems = l.substring(1).split(',');
+                        const newRow = [];
+                        rowItems.forEach(item => {
+                            let raw = item.trim();
+                            // Detect size (2x2)
+                            let size = "";
+                            const sizeMatch = raw.match(/\(\d+x\d+\)/);
+                            if (sizeMatch) {
+                                size = sizeMatch[0];
+                                raw = raw.replace(size, '');
+                            }
+                            
+                            const id = raw;
+                            const def = widgetDefs[id] || {};
+                            
+                            // Map back to our structure
+                            let type = def.widget_type || 'switch';
+                            // Special case for navigate
+                            if(type === 'navigate') {
+                                // id usually navigate.something
+                            }
+
+                            // Icons: check icon, icon_on, or icon_inactive
+                            let icon = def.icon || def.icon_on || def.icon_inactive || 'mdi-help-circle';
+
+                            newRow.push({
+                                id: id,
+                                type: type,
+                                name: def.title || id,
+                                icon: icon,
+                                size: size
+                            });
+                        });
+                        rows.push(newRow);
+                    }
+                    if (layoutStarted && l === '' && rows.length > 0) layoutStarted = false; // End of layout block guess
+                });
+
+                if (rows.length === 0) {
+                    alert("Nie znaleziono sekcji 'layout' lub jest pusta.");
+                    return;
+                }
+
+                renderRows();
+                toggleImport();
+                alert("Zaimportowano pomyślnie!");
+
+            } catch (e) {
+                alert("Błąd importu: " + e.message);
+                console.error(e);
+            }
+        }
+
+        // --- RENDER LOGIC WITH SIZING ---
+        function renderRows() {
+            const container = document.getElementById('rows-container');
+            container.innerHTML = '';
+            
+            rows.forEach((rowWidgets, index) => {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'eink-row';
+                rowDiv.id = 'row-' + index;
+                rowDiv.onclick = () => { activeRowIndex = index; highlightActiveRow(); };
+
+                const rowLabel = document.createElement('div');
+                rowLabel.style.position = 'absolute'; rowLabel.style.top = '-10px'; rowLabel.style.left='5px'; 
+                rowLabel.style.fontWeight = 'bold'; rowLabel.style.fontSize = '10px'; rowLabel.style.color='#666';
+                rowLabel.innerText = (currentLang === 'pl' ? 'WIERSZ ' : 'ROW ') + (index + 1);
+                rowDiv.appendChild(rowLabel);
+
+                rowWidgets.forEach((widget, wIndex) => {
+                    const wDiv = document.createElement('div');
+                    wDiv.className = 'eink-widget';
+                    
+                    // --- SIZE CALCULATION ---
+                    // Base unit: 60px. Gap: 5px.
+                    // 1x1 = 60x60
+                    // 2x1 = 125x60 (2*60 + 5)
+                    // 2x2 = 125x125
+                    let w = 125; // Default 2x1 width
+                    let h = 60;  // Default 2x1 height
+                    
+                    if (widget.size) {
+                        const dims = widget.size.replace(/[()]/g, '').split('x');
+                        const cols = parseInt(dims[0]);
+                        const rows = parseInt(dims[1]);
+                        
+                        // Width = (cols * 60) + ((cols - 1) * 5)
+                        w = (cols * 60) + ((cols - 1) * 5);
+                        // Height = (rows * 60) + ((rows - 1) * 5)
+                        h = (rows * 60) + ((rows - 1) * 5);
+                    } else {
+                        // Default logic logic (mostly 2x1)
+                        // If user didn't specify size, assume 2x1 (Standard AppDaemon default)
+                    }
+
+                    wDiv.style.width = w + 'px';
+                    wDiv.style.height = h + 'px';
+                    
+                    // Adjust font sizes for tiny widgets
+                    if (h < 70) {
+                        wDiv.style.fontSize = '0.9em';
+                    }
+
+                    const iconClass = widget.icon ? widget.icon : 'mdi-help-circle-outline';
+                    
+                    wDiv.innerHTML = `
+                        <div class="ew-title">${widget.name}</div>
+                        <i class="mdi ${iconClass} ew-icon"></i>
+                        <div class="ew-state"> ${widget.size || ''}</div>
+                        <div class="ew-delete" onclick="removeWidget(${index}, ${wIndex}); event.stopPropagation();">X</div>
+                    `;
+                    rowDiv.appendChild(wDiv);
+                });
+
+                if(rows.length > 1) {
+                    const del = document.createElement('button');
+                    del.innerText = 'USUŃ'; del.className='btn-remove-row btn';
+                    del.style.position='absolute'; del.style.right='5px'; del.style.top='5px';
+                    del.onclick = (e) => { e.stopPropagation(); deleteRow(index); };
+                    rowDiv.appendChild(del);
+                }
+                container.appendChild(rowDiv);
+            });
+            highlightActiveRow();
+        }
+
+        // --- REST OF LOGIC (Same as before) ---
         function toggleInputs() {
             const type = document.getElementById('new-widget-type').value;
             const groupEntity = document.getElementById('group-entity');
@@ -227,22 +444,14 @@
             if (type === 'navigate') {
                 groupEntity.classList.add('hidden');
                 groupNav.classList.remove('hidden');
-                if(!iconInput.value) {
-                    iconInput.value = 'mdi-arrow-right-circle';
-                    updateIconPreview();
-                }
+                if(!iconInput.value) { iconInput.value = 'mdi-arrow-right-circle'; updateIconPreview(); }
             } else {
                 groupEntity.classList.remove('hidden');
                 groupNav.classList.add('hidden');
             }
 
-            // Auto-size for media/climate
-            if(type === 'media_player' || type === 'climate') {
-                sizeInput.value = '(2x2)';
-            } else {
-                // Reset to default only if it was 2x2
-                if(sizeInput.value === '(2x2)') sizeInput.value = '';
-            }
+            if(type === 'media_player' || type === 'climate') { sizeInput.value = '(2x2)'; }
+            else if (sizeInput.value === '(2x2)') { sizeInput.value = ''; }
         }
 
         async function fetchIcons() {
@@ -266,64 +475,18 @@
             preview.className = (val && val.startsWith('mdi-')) ? 'mdi ' + val : 'mdi mdi-help-circle-outline';
         }
 
-        let rows = [];
-        let activeRowIndex = 0;
-        function addNewRow() { rows.push([]); renderRows(); activeRowIndex = rows.length - 1; highlightActiveRow(); }
-
-        function renderRows() {
-            const container = document.getElementById('rows-container');
-            container.innerHTML = '';
-            const T = translations[currentLang];
-            const states = {
-                'switch': T.state_on, 'sensor': '21.5 °C', 'cover': T.state_open,
-                'media_player': 'PLAYING', 'navigate': 'GO', 'binary_sensor': T.state_open, 'script': 'RUN', 'climate': '21°'
-            };
-
-            rows.forEach((rowWidgets, index) => {
-                const rowDiv = document.createElement('div');
-                rowDiv.className = 'eink-row';
-                rowDiv.id = 'row-' + index;
-                rowDiv.onclick = () => { activeRowIndex = index; highlightActiveRow(); };
-
-                const rowLabel = document.createElement('div');
-                rowLabel.style.position = 'absolute'; rowLabel.style.top = '-10px'; rowLabel.style.left='5px'; 
-                rowLabel.style.fontWeight = 'bold'; rowLabel.style.fontSize = '10px'; rowLabel.style.color='#666';
-                rowLabel.innerText = (currentLang === 'pl' ? 'WIERSZ ' : 'ROW ') + (index + 1);
-                rowDiv.appendChild(rowLabel);
-
-                rowWidgets.forEach((widget, wIndex) => {
-                    const wDiv = document.createElement('div');
-                    wDiv.className = 'eink-widget';
-                    const iconClass = widget.icon ? widget.icon : 'mdi-help-circle-outline';
-                    
-                    // Show size indicator if not default
-                    const sizeLabel = widget.size ? `<span style="font-size:9px;color:blue;">${widget.size}</span>` : '';
-
-                    wDiv.innerHTML = `
-                        <div class="ew-title">${widget.name}</div>
-                        <i class="mdi ${iconClass} ew-icon"></i>
-                        <div class="ew-state">${states[widget.type] || '---'} ${sizeLabel}</div>
-                        <div class="ew-delete" onclick="removeWidget(${index}, ${wIndex}); event.stopPropagation();">X</div>
-                    `;
-                    rowDiv.appendChild(wDiv);
-                });
-
-                if(rows.length > 1) {
-                    const del = document.createElement('button');
-                    del.innerText = 'USUŃ'; del.className='btn-remove-row btn';
-                    del.style.position='absolute'; del.style.right='5px'; del.style.top='5px';
-                    del.onclick = (e) => { e.stopPropagation(); deleteRow(index); };
-                    rowDiv.appendChild(del);
-                }
-                container.appendChild(rowDiv);
-            });
-            highlightActiveRow();
-        }
-
         function highlightActiveRow() {
             document.querySelectorAll('.eink-row').forEach(el => el.classList.remove('active'));
             const active = document.getElementById('row-' + activeRowIndex);
             if(active) active.classList.add('active');
+        }
+
+        function addNewRow() { rows.push([]); renderRows(); activeRowIndex = rows.length - 1; highlightActiveRow(); }
+        function removeWidget(r, w) { rows[r].splice(w, 1); renderRows(); }
+        function deleteRow(i) { rows.splice(i, 1); if(activeRowIndex >= rows.length) activeRowIndex = rows.length - 1; renderRows(); }
+        function submitForm() {
+            document.getElementById('layout_data_json').value = JSON.stringify(rows);
+            document.getElementById('main-form').submit();
         }
 
         function addWidgetToStaging() {
@@ -358,17 +521,8 @@
             document.getElementById('new-dashboard-name').value = '';
             nameInput.value = '';
             iconInput.value = '';
-            // Reset size unless media player selected (logic in toggleInputs would handle this, but explicit reset is safe)
             if(type !== 'media_player') sizeInput.value = '';
-            
             updateIconPreview();
-        }
-
-        function removeWidget(r, w) { rows[r].splice(w, 1); renderRows(); }
-        function deleteRow(i) { rows.splice(i, 1); if(activeRowIndex >= rows.length) activeRowIndex = rows.length - 1; renderRows(); }
-        function submitForm() {
-            document.getElementById('layout_data_json').value = JSON.stringify(rows);
-            document.getElementById('main-form').submit();
         }
 
         function megaAutoConfig() {
@@ -389,32 +543,18 @@
             
             if(detectedType) {
                 typeSelect.value = detectedType;
-                // Auto-size for heavy widgets
-                if(detectedType === 'media_player' || detectedType === 'climate') {
-                    sizeInput.value = '(2x2)';
-                } else {
-                    sizeInput.value = ''; // Default for others
-                }
+                if(detectedType === 'media_player' || detectedType === 'climate') sizeInput.value = '(2x2)';
+                else sizeInput.value = '';
             }
             
             if(iconInput.value) return; 
 
             const keywords = {
-                'battery': 'mdi-battery', 'bateria': 'mdi-battery',
-                'temp': 'mdi-thermometer', 'heat': 'mdi-radiator',
-                'humid': 'mdi-water-percent', 'wilgot': 'mdi-water-percent',
-                'light': 'mdi-lightbulb', 'lamp': 'mdi-lightbulb', 'swiatlo': 'mdi-lightbulb',
-                'garage': 'mdi-garage', 'garaz': 'mdi-garage', 'brama': 'mdi-gate', 'gate': 'mdi-gate',
-                'lock': 'mdi-lock', 'zamek': 'mdi-lock', 'drzwi': 'mdi-door', 'door': 'mdi-door',
-                'fan': 'mdi-fan', 'wentylator': 'mdi-fan', 'tv': 'mdi-television', 'speaker': 'mdi-speaker'
+                'battery': 'mdi-battery', 'temp': 'mdi-thermometer', 'light': 'mdi-lightbulb',
+                'garage': 'mdi-garage', 'lock': 'mdi-lock', 'fan': 'mdi-fan'
             };
-
             for (const [key, icon] of Object.entries(keywords)) {
-                if (id.includes(key)) {
-                    iconInput.value = icon;
-                    updateIconPreview();
-                    break;
-                }
+                if (id.includes(key)) { iconInput.value = icon; updateIconPreview(); break; }
             }
         }
         
