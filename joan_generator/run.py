@@ -205,5 +205,8 @@ def index():
 
     return render_template('index.html', generated_yaml=generated_yaml, entities=ha_entities)
 
-print("🚀 3. Starting Flask Server on port 5000...")
-app.run(host='0.0.0.0', port=5000, debug=False)
+# To uruchomi się TYLKO jeśli odpalisz plik ręcznie, 
+# Gunicorn to pominie i uruchomi serwer po swojemu.
+if __name__ == "__main__":
+    print("🚀 3. Starting Dev Server...")
+    app.run(host='0.0.0.0', port=5000, debug=False)
