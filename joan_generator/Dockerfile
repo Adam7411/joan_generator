@@ -1,8 +1,7 @@
 ARG BUILD_FROM
 FROM $BUILD_FROM
 
-# Instalujemy gotowe pakiety systemowe (Flask, Requests, YAML, dos2unix)
-# To jest znacznie stabilniejsze niz pip w Home Assistant
+# Instalacja pakietów systemowych
 RUN apk add --no-cache \
     python3 \
     py3-pip \
@@ -11,13 +10,14 @@ RUN apk add --no-cache \
     py3-yaml \
     dos2unix
 
+# Ustawiamy katalog roboczy
 WORKDIR /app
 
-# Kopiujemy pliki
+# Kopiujemy WSZYSTKIE pliki do katalogu /app
 COPY . .
 
-# Naprawiamy format pliku run.sh i nadajemy uprawnienia
-RUN dos2unix /run.sh && chmod a+x /run.sh
+# Naprawiamy plik run.sh (który teraz jest w /app/run.sh)
+RUN dos2unix /app/run.sh && chmod a+x /app/run.sh
 
-# Uruchamiamy
-CMD [ "/run.sh" ]
+# Uruchamiamy skrypt z poprawnej ścieżki
+CMD [ "/app/run.sh" ]
