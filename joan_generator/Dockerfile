@@ -1,4 +1,3 @@
-
 ARG BUILD_FROM
 FROM $BUILD_FROM
 
@@ -8,10 +7,13 @@ RUN apk add --no-cache python3 py3-pip
 # Katalog roboczy
 WORKDIR /app
 
-# Kopiowanie plików
+# Kopiowanie plików requirements
 COPY requirements.txt .
-RUN pip3 install -r requirements.txt
 
+# TU JEST ZMIANA: Dodano flagę --break-system-packages
+RUN pip3 install --no-cache-dir -r requirements.txt --break-system-packages
+
+# Kopiowanie reszty plików
 COPY . .
 
 # Uruchomienie aplikacji
