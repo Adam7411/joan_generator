@@ -350,6 +350,7 @@
       {k:['power','moc','energia','energy'],base:'mdi-flash'}
     ];
 
+    // Porcjujemy ID na domenę i nazwę (aby 'navigate' nie łapał słowa 'gate')
     function getDomainAndName(id){
       const lower = (id||'').toLowerCase();
       if(lower.includes('.')){
@@ -428,6 +429,7 @@
         const isOn = ['on','open','playing','unlocked','heat','cool','true','1','opening'].includes(state);
         return ensureMdi(isOn ? (widget.icon_on || pair[0]) : (widget.icon_off || pair[1]));
       }
+      // Nie nadpisuj importowanych ikon dla nie-actionable (np. navigate, sensor jeśli ma własną ikonę)
       return ensureMdi(widget.icon || findBaseIconByIdAndType(widget.id, widget.type));
     }
 
@@ -493,26 +495,30 @@
             const sizeMatch = item.match(/\(\d+x\d+\)/);
             const size = sizeMatch ? sizeMatch[0] : '';
             const rawId = item.replace(size,'').trim();
+
             const def = importedDefsMap[rawId] || importedDefsMap[rawId.split('.').pop()] || {};
             const sourceEntity = def.entity || rawId;
 
             let type = def.widget_type || inferTypeFromIdOrEntity(sourceEntity);
 
-            // NAZWA: zawsze preferuj title z pliku (nie nadpisuj smartem)
-            const name = (typeof def.title !== 'undefined' && def.title !== null) ? def.title : formatNameFromId(sourceEntity);
+            // NAZWA: zawsze preferuj title z pliku (nie uruchamiamy smarta gdy tytuł jest w pliku)
+            const titleFromFile = (def.title ?? '').trim();
+            const name = titleFromFile !== '' ? titleFromFile : formatNameFromId(sourceEntity);
 
-            // IKONY: dla navigate zachowaj icon_inactive z pliku
+            // IKONY
             let icon = '';
             let icon_on = '';
             let icon_off = '';
 
             if(type==='navigate'){
-              icon = ensureMdi(def.icon_inactive || def.icon || '');
-              if(!icon) icon = 'mdi-arrow-right-circle';
+              // użyj ikonę z pliku jeśli jest (icon_inactive), bez smarta
+              const iconInactive = (def.icon_inactive ?? def.icon ?? '').trim();
+              icon = ensureMdi(iconInactive || 'mdi-arrow-right-circle');
             }else{
-              icon = ensureMdi(def.icon || '');
-              icon_on = ensureMdi(def.icon_on || def.icon_active || '');
-              icon_off = ensureMdi(def.icon_off || def.icon_inactive || '');
+              icon = ensureMdi((def.icon ?? '').trim());
+              icon_on = ensureMdi((def.icon_on ?? def.icon_active ?? '').trim());
+              icon_off = ensureMdi((def.icon_off ?? def.icon_inactive ?? '').trim());
+
               const actionable = ['switch','binary_sensor','cover','media_player','climate','script','fan','light'].includes(type) || sourceEntity.startsWith('input_boolean.');
               if(actionable){
                 if(!icon_on || !icon_off){
@@ -520,7 +526,7 @@
                   if(!icon_on) icon_on = ensureMdi(pair[0]);
                   if(!icon_off) icon_off = ensureMdi(pair[1]);
                 }
-                icon = '';
+                icon = ''; // w actionable używamy pary
               }else{
                 if(!icon) icon = ensureMdi(findBaseIconByIdAndType(sourceEntity, type));
               }
@@ -548,7 +554,6 @@
       const entityInput = document.getElementById('new-entity-id');
       const nameInput = document.getElementById('new-widget-name');
       const iconInput = document.getElementById('new-widget-icon');
-      const navName = document.getElementById('new-dashboard-name');
       const groupEntity = document.getElementById('group-entity');
       const groupNav = document.getElementById('group-nav');
       const sizeInput = document.getElementById('new-widget-size');
