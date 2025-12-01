@@ -1,3 +1,7 @@
+<div align="right">
+<strong>English</strong> | <a href="README.md">Polski</a>
+</div>
+
 # Joan 6: AppDaemon Dashboard Generator
 
 ![Version](https://img.shields.io/badge/version-1.1.5-blue) ![E-Ink](https://img.shields.io/badge/Optimized%20for-E--Ink-black) ![Home Assistant](https://img.shields.io/badge/Home%20Assistant-Add--on-41bdf5)
