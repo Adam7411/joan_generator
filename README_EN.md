@@ -4,12 +4,6 @@
 
 # Joan 6: AppDaemon Dashboard Generator 
 
-<p align="center">
-  <a href="https://github.com/Adam7411/joan_generator/releases"><img alt="Release" src="https://img.shields.io/github/v/release/Adam7411/joan_generator?style=for-the-badge"></a>
-  <a href="https://github.com/Adam7411/joan_generator"><img alt="License" src="https://img.shields.io/github/license/Adam7411/joan_generator?style=for-the-badge"></a>
-  <a href="https://hacs.xyz/"><img alt="HACS" src="https://img.shields.io/badge/HACS-Custom-orange?style=for-the-badge"></a>
-  <a href="https://github.com/Adam7411/joan_generator/stargazers"><img alt="Stars" src="https://img.shields.io/github/stars/Adam7411/joan_generator?style=for-the-badge"></a>
-</p>
 
 ![Version](https://img.shields.io/badge/version-1.1.5-blue) ![E-Ink](https://img.shields.io/badge/Optimized%20for-E--Ink-black) ![Home Assistant](https://img.shields.io/badge/Home%20Assistant-Add--on-41bdf5)
 
