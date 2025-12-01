@@ -2,7 +2,9 @@
 <strong>English</strong> | <a href="README.md">Polski</a>
 </div>
 
-# Joan 6: AppDaemon Dashboard Generator 
+# Joan 6: AppDaemon Dashboard Generator  <a href="https://my.home-assistant.io/redirect/hacs_repository/?owner=Adam7411&repository=joan_generator&category=integration" target="_blank" rel="noreferrer noopener">
+  <img src="https://my.home-assistant.io/badges/hacs_repository.svg" alt="Open your Home Assistant instance and go to the repository in HACS." />
+</a>
 
 
 ![Version](https://img.shields.io/badge/version-1.1.5-blue) ![E-Ink](https://img.shields.io/badge/Optimized%20for-E--Ink-black) ![Home Assistant](https://img.shields.io/badge/Home%20Assistant-Add--on-41bdf5)
