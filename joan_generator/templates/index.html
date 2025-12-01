@@ -142,7 +142,7 @@
         <div class="flex-row">
           <div class="flex-col">
             <label data-i18n="label_type">Typ Widgetu</label>
-            <select id="new-widget-type">
+            <select id="new-widget-type" onchange="applySmartForForm()" onblur="applySmartForForm()">
               <option value="switch">Switch / Light</option>
               <option value="sensor">Sensor</option>
               <option value="binary_sensor">Binary Sensor</option>
@@ -163,6 +163,10 @@
               id="new-entity-id"
               placeholder="np. light.salon"
               autocomplete="off"
+              oninput="applySmartForForm()"
+              onchange="applySmartForForm()"
+              onblur="applySmartForForm()"
+              onpaste="setTimeout(applySmartForForm,0)"
             />
             <datalist id="entities-list">
               {% for entity in entities %}
@@ -173,7 +177,7 @@
 
           <div class="flex-col hidden" id="group-nav">
             <label data-i18n="label_dashboard">Nazwa pliku dashboardu</label>
-            <input id="new-dashboard-name" placeholder="np. joan3" />
+            <input id="new-dashboard-name" placeholder="np. joan3" oninput="applySmartForForm()" />
           </div>
 
           <div class="flex-col">
@@ -205,7 +209,7 @@
 
           <div class="flex-col">
             <label data-i18n="label_icon">Ikona</label>
-            <input id="new-widget-icon" list="icons-list" placeholder="np. mdi-lightbulb" />
+            <input id="new-widget-icon" list="icons-list" placeholder="np. mdi-lightbulb" oninput="updateIconPreview()" />
             <datalist id="icons-list"></datalist>
           </div>
 
@@ -248,7 +252,7 @@
     let editingIndices=null;
     let importedDefsMap={};
 
-    // Translations (PL/EN)
+    // Translations
     const i18n = {
       pl: {
         status_ok:"✓ Połączono z Home Assistant", status_error:"⚠ Brak połączenia z API. Sprawdź token.",
@@ -301,11 +305,9 @@
     }
 
     // ---------- UTILS ----------
-    // Poprawione formatowanie nazwy (obsługa polskich znaków, więcej separatorów)
     function formatNameFromId(id){
       if(!id) return "";
       const last = id.includes('.') ? id.split('.').pop() : id;
-      // zastąp znaki nie będące literami/spacjami na spację (zostaw polskie litery)
       let cleaned = last.replace(/[_\-]+/g,' ').replace(/[^A-Za-z0-9ąćęłńóśżźĄĆĘŁŃÓŚŻŹ\s]/g,' ').trim();
       if(!cleaned) cleaned = last;
       const parts = cleaned.split(/\s+/).filter(Boolean);
@@ -348,33 +350,52 @@
       {k:['power','moc','energia','energy'],base:'mdi-flash'}
     ];
 
-    // Znajdź parę ikon (on/off) na podstawie ID encji - ulepszone, ale nie ustawia domyślnie jeśli brak pełnego dopasowania
-    function findIconPairById(id){
+    // Uwaga: dopasowujemy TYLKO do części po kropce (np. "salon"), aby "navigate" nie łapał słowa "gate"
+    function getDomainAndName(id){
       const lower = (id||'').toLowerCase();
+      if(lower.includes('.')){
+        const [dom, ...rest] = lower.split('.');
+        return {domain: dom, name: rest.join('.')};
+      }
+      return {domain:'', name: lower};
+    }
+
+    function findIconPairById(id){
+      const {domain, name} = getDomainAndName(id);
+      // dla navigate nie stosujemy pary ikon (i tak nie jest "actionable")
+      if(domain==='navigate') return ['mdi-arrow-right-circle','mdi-arrow-right-circle'];
+
       for(const e of smartIconMap){
-        if(e.k && e.k.some(k => lower.includes(k))){
+        if(e.k && e.k.some(k => name.includes(k))){
           if(e.on && e.off) return [e.on,e.off];
           if(e.base) return [e.base,e.base];
         }
       }
-      if(lower.startsWith('light.')) return ['mdi-lightbulb-on','mdi-lightbulb-outline'];
-      if(lower.startsWith('cover.')) return ['mdi-window-shutter-open','mdi-window-shutter'];
-      if(lower.startsWith('switch.') || lower.startsWith('input_boolean.')) return ['mdi-toggle-switch','mdi-toggle-switch-off'];
-      if(lower.startsWith('media_player.')) return ['mdi-speaker','mdi-speaker-off'];
-      if(lower.startsWith('climate.')) return ['mdi-thermometer','mdi-thermometer-off'];
-      if(lower.startsWith('fan.')) return ['mdi-fan','mdi-fan-off'];
-      if(lower.startsWith('script.')) return ['mdi-script-text-outline','mdi-script-text-outline'];
-      // Fallback - używamy bardziej neutralnej ikony (nie narzucamy przełącznika, gdy nie ma rozpoznania)
+      if(domain==='light') return ['mdi-lightbulb-on','mdi-lightbulb-outline'];
+      if(domain==='cover') return ['mdi-window-shutter-open','mdi-window-shutter'];
+      if(domain==='switch' || domain==='input_boolean') return ['mdi-toggle-switch','mdi-toggle-switch-off'];
+      if(domain==='media_player') return ['mdi-speaker','mdi-speaker-off'];
+      if(domain==='climate') return ['mdi-thermometer','mdi-thermometer-off'];
+      if(domain==='fan') return ['mdi-fan','mdi-fan-off'];
+      if(domain==='script') return ['mdi-script-text-outline','mdi-script-text-outline'];
       return ['mdi-help-circle-outline','mdi-help-circle-outline'];
     }
+
     function findBaseIconByIdAndType(id,type){
-      const lower = (id||'').toLowerCase();
+      const {domain, name} = getDomainAndName(id);
+      if(domain==='navigate') return 'mdi-arrow-right-circle';
+
       for(const e of smartIconMap){
-        if(e.k && e.k.some(k => lower.includes(k))){
+        if(e.k && e.k.some(k => name.includes(k))){
           return ensureMdi(e.base || e.on || 'mdi-help-circle-outline');
         }
       }
-      const fallback = {switch:'mdi-toggle-switch',binary_sensor:'mdi-alert-circle-outline',sensor:'mdi-gauge',cover:'mdi-window-shutter',media_player:'mdi-speaker',climate:'mdi-thermometer',script:'mdi-script-text-outline',navigate:'mdi-arrow-right-circle',fan:'mdi-fan',label:'mdi-label-outline',light:'mdi-lightbulb'};
+      const fallback = {
+        switch:'mdi-toggle-switch', binary_sensor:'mdi-alert-circle-outline', sensor:'mdi-gauge',
+        cover:'mdi-window-shutter', media_player:'mdi-speaker', climate:'mdi-thermometer',
+        script:'mdi-script-text-outline', navigate:'mdi-arrow-right-circle', fan:'mdi-fan',
+        label:'mdi-label-outline', light:'mdi-lightbulb'
+      };
       return ensureMdi(fallback[type] || 'mdi-help-circle-outline');
     }
 
@@ -409,11 +430,13 @@
         const isOn = ['on','open','playing','unlocked','heat','cool','true','1','opening'].includes(state);
         return ensureMdi(isOn ? (widget.icon_on || pair[0]) : (widget.icon_off || pair[1]));
       }
+      // DLA NAVIGATE i innych nie-actionable: jeśli mamy ikonę z importu, użyj jej BEZ smart
       return ensureMdi(widget.icon || findBaseIconByIdAndType(widget.id, widget.type));
     }
 
     // ---------- IMPORT ----------
     function toggleImport(){ document.getElementById('import-area').classList.toggle('visible'); }
+
     function importYaml(){
       const code = document.getElementById('import-code').value;
       if(!code) return;
@@ -477,20 +500,35 @@
             const sourceEntity = def.entity || rawId;
 
             let type = def.widget_type || inferTypeFromIdOrEntity(sourceEntity);
-            const name = def.title ? def.title : formatNameFromId(sourceEntity);
 
-            let icon = ensureMdi(def.icon || def.icon_inactive || '');
-            let icon_on = ensureMdi(def.icon_on || def.icon_active || '');
-            let icon_off = ensureMdi(def.icon_off || def.icon_inactive || '');
+            // NAZWA: zawsze preferuj title z pliku (nie nadpisuj smartem)
+            const name = (typeof def.title !== 'undefined' && def.title !== null) ? def.title : formatNameFromId(sourceEntity);
 
-            const actionable = ['switch','binary_sensor','cover','media_player','climate','script','fan','light'].includes(type) || sourceEntity.startsWith('input_boolean.');
-            if(actionable){
-              const pair = findIconPairById(sourceEntity);
-              if(!icon_on) icon_on = ensureMdi(pair[0]);
-              if(!icon_off) icon_off = ensureMdi(pair[1]);
+            // IKONY: dla navigate zachowaj icon_inactive z pliku
+            let icon = '';
+            let icon_on = '';
+            let icon_off = '';
+
+            if(type==='navigate'){
+              icon = ensureMdi(def.icon_inactive || def.icon || '');
+              if(!icon) icon = 'mdi-arrow-right-circle';
             }else{
-              if(!icon) icon = ensureMdi(findBaseIconByIdAndType(sourceEntity, type));
-              icon_on=''; icon_off='';
+              icon = ensureMdi(def.icon || '');
+              icon_on = ensureMdi(def.icon_on || def.icon_active || '');
+              icon_off = ensureMdi(def.icon_off || def.icon_inactive || '');
+              const actionable = ['switch','binary_sensor','cover','media_player','climate','script','fan','light'].includes(type) || sourceEntity.startsWith('input_boolean.');
+              if(actionable){
+                // jeśli w pliku nie było pary – dobierz smart
+                if(!icon_on || !icon_off){
+                  const pair = findIconPairById(sourceEntity);
+                  if(!icon_on) icon_on = ensureMdi(pair[0]);
+                  if(!icon_off) icon_off = ensureMdi(pair[1]);
+                }
+                // dla actionable nie używamy pojedynczej ikony
+                icon = '';
+              }else{
+                if(!icon) icon = ensureMdi(findBaseIconByIdAndType(sourceEntity, type));
+              }
             }
 
             rowWidgets.push({ id: sourceEntity, type, name, icon, icon_on, icon_off, size });
@@ -509,7 +547,7 @@
       }
     }
 
-    // ---------- SMART AUTOFILL (POPRAWIONE) ----------
+    // ---------- SMART AUTOFILL ----------
     function applySmartForForm(){
       const typeSel = document.getElementById('new-widget-type');
       const entityInput = document.getElementById('new-entity-id');
@@ -520,7 +558,6 @@
       const groupNav = document.getElementById('group-nav');
       const sizeInput = document.getElementById('new-widget-size');
 
-      // jeśli navigate -> ukryj encję i pokaż pole dashboardu
       if(typeSel.value==='navigate'){
         groupEntity.classList.add('hidden');
         groupNav.classList.remove('hidden');
@@ -533,44 +570,28 @@
       }
 
       const idRaw = (entityInput.value||'').trim();
-      if(!idRaw){
-        // nic do dopasowania, tylko aktualizuj preview ikon (np. gdy użytkownik wpisał ręcznie ikonę)
-        updateIconPreview();
-        return;
-      }
+      if(!idRaw){ updateIconPreview(); return; }
 
-      // Jeżeli wpisana pełna encja (dokładne dopasowanie z danymi z serwera) -> możemy bezpiecznie auto-ustawić nazwę i ikonę
       const exactEntity = (entitiesData||[]).find(e=>e.id === idRaw);
       const hasDomain = idRaw.includes('.');
-
-      // tylko kiedy mamy sensowny identyfikator (np. zawiera '.' lub jest dopasowany do istniejącej encji)
       if(!exactEntity && !hasDomain){
-        // nie auto-uzupełniaj gdy użytkownik dopiero szuka (unika błędnych fallbacków)
         if(!nameInput.value.trim()) nameInput.value = '';
-        // nie ustawiaj ikony domyślnej
         updateIconPreview();
         return;
       }
 
-      // ustal typ (jeśli możliwe)
       typeSel.value = inferTypeFromIdOrEntity(idRaw);
 
-      // automatyczne rozmiary dla niektórych typów
       if((typeSel.value==='media_player' || typeSel.value==='climate') && !sizeInput.value) sizeInput.value='(2x2)';
 
-      // nazwa: tylko jeśli pole puste - nie nadpisujemy nazw które użytkownik wpisał
       if(!nameInput.value.trim()){
-        // jeśli mamy encję z serwera i w niej dostępna nazwa (można rozszerzyć), w pierwszej kolejności użyjemy formatNameFromId
         nameInput.value = formatNameFromId(idRaw);
       }
 
-      // ikona: ustaw tylko jeśli pole ikony puste
       if(!iconInput.value.trim()){
-        // jeśli mamy dokładną encję -> użyj pary ikon lub bazowej
         const actionable = ['switch','binary_sensor','cover','media_player','climate','script','fan','light'].includes(typeSel.value) || idRaw.toLowerCase().startsWith('input_boolean.');
         if(actionable){
           const pair = findIconPairById(idRaw);
-          // pair może zwrócić help-circle jeśli brak rozpoznania - wówczas lepiej użyć findBaseIconByIdAndType
           if(pair && pair[0] && pair[0] !== 'mdi-help-circle-outline'){
             iconInput.value = pair[0];
           }else{
@@ -585,21 +606,12 @@
     }
 
     function updateIconPreview(){
-      const iconEl = document.getElementById('new-widget-icon');
-      const icon = (iconEl && iconEl.value) ? iconEl.value.trim() : '';
-      const preview = document.getElementById('icon-preview-i');
-      if(icon && icon.startsWith('mdi-')){
-        preview.className = 'mdi ' + icon + ' ew-icon';
-      } else if(icon && icon.startsWith('mdi')){
-        preview.className = 'mdi mdi-' + icon.replace(/^mdi/, '') + ' ew-icon';
-      } else {
-        preview.className = 'mdi mdi-help-circle-outline ew-icon';
-      }
+      const icon = document.getElementById('new-widget-icon').value.trim();
+      document.getElementById('icon-preview-i').className = (icon && icon.startsWith('mdi-')) ? ('mdi '+icon) : 'mdi mdi-help-circle-outline';
     }
 
-    // ---------- CRUD WIDGETÓW ----------
+    // ---------- CRUD ----------
     function saveWidget(){
-      // populuj smart pola przed zapisem
       applySmartForForm();
 
       const type = document.getElementById('new-widget-type').value || 'switch';
@@ -623,7 +635,6 @@
       let icon_on='', icon_off='';
       if(actionable){
         const pair = findIconPairById(id);
-        // jeśli pair zwraca help-circle (brak rozpoznania) to użyj neutralnej pary przełącznika
         if(pair && pair[0] && pair[0] !== 'mdi-help-circle-outline'){
           icon_on = ensureMdi(pair[0]);
           icon_off = ensureMdi(pair[1] || pair[0]);
@@ -631,7 +642,7 @@
           icon_on = 'mdi-toggle-switch';
           icon_off = 'mdi-toggle-switch-off';
         }
-        icon = ''; // AppDaemon dla przełączalnych używa pary ikon
+        icon = '';
       }else{
         if(!icon) icon = ensureMdi(findBaseIconByIdAndType(id, type));
       }
@@ -665,14 +676,12 @@
         document.getElementById('new-dashboard-name').value = '';
         document.getElementById('new-entity-id').value = widget.id;
       }
-      document.getElementById('new-widget-name').value = widget.name || ''; // keep imported name
-      // prefer visible icon field to show to user: icon or icon_on
+      document.getElementById('new-widget-name').value = widget.name || '';
       document.getElementById('new-widget-icon').value = widget.icon || widget.icon_on || widget.icon_off || '';
       document.getElementById('new-widget-size').value = widget.size || '';
       document.getElementById('btn-cancel').classList.remove('hidden');
       document.getElementById('widget-form-box').classList.add('editing');
 
-      // uzupełnij brakujące miejsca (nie nadpisuj istniejących wartości)
       applySmartForForm();
       applyTranslations();
       renderRows();
@@ -877,7 +886,6 @@
     }
 
     // ---------- EVENTS & INIT ----------
-    // Upewnij się, że elementy istnieją (skrypt w stopce, więc ok)
     document.getElementById('btn-theme').addEventListener('click', toggleTheme);
     document.getElementById('btn-pl').addEventListener('click', ()=>setLang('pl'));
     document.getElementById('btn-en').addEventListener('click', ()=>setLang('en'));
@@ -887,15 +895,12 @@
     document.getElementById('btn-cancel').addEventListener('click', cancelEdit);
     document.getElementById('btn-new-row').addEventListener('click', addNewRow);
 
-    // Redundant listeners to guarantee smart runs (datalist quirks)
     ['input','change','blur'].forEach(evt=>{
       document.getElementById('new-entity-id').addEventListener(evt, applySmartForForm);
       document.getElementById('new-widget-type').addEventListener(evt, applySmartForForm);
     });
-    // gdy ręcznie wpisujesz ikonę -> preview
     document.getElementById('new-widget-icon').addEventListener('input', updateIconPreview);
 
-    // Icons datalist
     async function fetchIcons(){
       const dl=document.getElementById('icons-list');
       try{
@@ -908,7 +913,6 @@
           dl.appendChild(opt);
         });
       }catch(e){
-        // nie blokujemy UI gdy błąd
         console.warn('fetchIcons error', e);
       }
     }
@@ -917,7 +921,6 @@
       const host=window.location.hostname;
       const codePath=document.getElementById('client-path-code');
       const linkDash=document.getElementById('client-dashboard-link');
-      // Initially set path/link placeholders
       if(codePath) codePath.innerText = codePath.innerText.replace('IP_HA', host);
       if(linkDash){
          linkDash.href = linkDash.href.replace('IP_HA', host);
@@ -932,7 +935,6 @@
 
       if(!rows.length) addNewRow();
 
-      // Run smart once in case browser prefilled fields
       applySmartForForm();
       renderRows();
     });
