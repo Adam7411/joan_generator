@@ -449,21 +449,25 @@
           const cut = raw.split('#')[0];
           const line = (cut || '').trim();
           if(!line) continue;
+          
+          // Check if line has leading whitespace (indicates sub-property)
+          const isIndented = /^\s/.test(cut);
 
-          if(!parsingLayout && /^title\s*:/i.test(line) && !globalTitleSet){
+          if(!parsingLayout && /^title\s*:/i.test(line) && !globalTitleSet && !isIndented){
             const val = line.split(':').slice(1).join(':').trim().replace(/^["']|["']$/g,'');
             if(val) document.getElementById('dash-title').value = val;
             globalTitleSet=true; continue;
           }
 
-          if(/^layout\s*:/i.test(line)){ parsingLayout=true; continue; }
+          if(/^layout\s*:/i.test(line) && !isIndented){ parsingLayout=true; continue; }
 
           if(parsingLayout){
             if(line.startsWith('-')){ layoutLines.push(line); continue; }
-            if(/^[A-Za-z0-9_.-]+\s*:/i.test(line)){ parsingLayout=false; }
+            if(/^[A-Za-z0-9_.-]+\s*:/i.test(line) && !isIndented){ parsingLayout=false; }
           }
 
-          const root = line.match(/^([A-Za-z0-9_.-]+)\s*:/);
+          // Only treat as root key if line is not indented
+          const root = !isIndented && line.match(/^([A-Za-z0-9_.-]+)\s*:/);
           if(root){
             const key = root[1];
             if(!ignore.includes(key)){ currentKey=key; defs[key]=defs[key]||{}; } else currentKey=null;
