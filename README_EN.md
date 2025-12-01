@@ -2,7 +2,9 @@
 <strong>English</strong> | <a href="README.md">Polski</a>
 </div>
 
-# Joan 6: AppDaemon Dashboard Generator <p align="center">
+# Joan 6: AppDaemon Dashboard Generator 
+
+<p align="center">
   <a href="https://github.com/Adam7411/joan_generator/releases"><img alt="Release" src="https://img.shields.io/github/v/release/Adam7411/joan_generator?style=for-the-badge"></a>
   <a href="https://github.com/Adam7411/joan_generator"><img alt="License" src="https://img.shields.io/github/license/Adam7411/joan_generator?style=for-the-badge"></a>
   <a href="https://hacs.xyz/"><img alt="HACS" src="https://img.shields.io/badge/HACS-Custom-orange?style=for-the-badge"></a>
