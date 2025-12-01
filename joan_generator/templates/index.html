@@ -131,7 +131,7 @@
         <div class="flex-row">
           <div class="flex-col">
             <label data-i18n="dash_title">Tytuł Dashboardu (Nazwa pliku)</label>
-            <input type="text" id="dash-title" value="Joan2" />
+            <input type="text" id="dash-title" placeholder="np. Joan3" />
           </div>
         </div>
       </div>
@@ -350,7 +350,6 @@
       {k:['power','moc','energia','energy'],base:'mdi-flash'}
     ];
 
-    // Uwaga: dopasowujemy TYLKO do części po kropce (np. "salon"), aby "navigate" nie łapał słowa "gate"
     function getDomainAndName(id){
       const lower = (id||'').toLowerCase();
       if(lower.includes('.')){
@@ -362,7 +361,6 @@
 
     function findIconPairById(id){
       const {domain, name} = getDomainAndName(id);
-      // dla navigate nie stosujemy pary ikon (i tak nie jest "actionable")
       if(domain==='navigate') return ['mdi-arrow-right-circle','mdi-arrow-right-circle'];
 
       for(const e of smartIconMap){
@@ -430,7 +428,6 @@
         const isOn = ['on','open','playing','unlocked','heat','cool','true','1','opening'].includes(state);
         return ensureMdi(isOn ? (widget.icon_on || pair[0]) : (widget.icon_off || pair[1]));
       }
-      // DLA NAVIGATE i innych nie-actionable: jeśli mamy ikonę z importu, użyj jej BEZ smart
       return ensureMdi(widget.icon || findBaseIconByIdAndType(widget.id, widget.type));
     }
 
@@ -518,13 +515,11 @@
               icon_off = ensureMdi(def.icon_off || def.icon_inactive || '');
               const actionable = ['switch','binary_sensor','cover','media_player','climate','script','fan','light'].includes(type) || sourceEntity.startsWith('input_boolean.');
               if(actionable){
-                // jeśli w pliku nie było pary – dobierz smart
                 if(!icon_on || !icon_off){
                   const pair = findIconPairById(sourceEntity);
                   if(!icon_on) icon_on = ensureMdi(pair[0]);
                   if(!icon_off) icon_off = ensureMdi(pair[1]);
                 }
-                // dla actionable nie używamy pojedynczej ikony
                 icon = '';
               }else{
                 if(!icon) icon = ensureMdi(findBaseIconByIdAndType(sourceEntity, type));
@@ -871,7 +866,12 @@
     }
     function prepareAndSubmit(e){
       e.preventDefault();
-      const title = (document.getElementById('dash-title').value || 'Joan2').replace(/"/g,'');
+      const rawTitle = (document.getElementById('dash-title').value || '').trim();
+      if(!rawTitle){
+        alert(currentLang==='pl' ? 'Wpisz tytuł dashboardu (nazwę pliku)' : 'Enter dashboard title (filename)');
+        return;
+      }
+      const title = rawTitle.replace(/"/g,'');
       const yaml = [buildHeader(title), buildLayout(), buildWidgetsSection()].join("\n");
       document.getElementById('generated_yaml_client').value = yaml;
       document.getElementById('widgets_full_json').value = JSON.stringify(rows);
