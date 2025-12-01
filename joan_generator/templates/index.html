@@ -860,12 +860,13 @@
 
     window.addEventListener('DOMContentLoaded', ()=>{
       const host=window.location.hostname;
-      const codePath=document.getElementById('path-code');
-      const linkDash=document.getElementById('dashboard-link');
-      if(codePath) codePath.innerHTML = codePath.innerHTML.replace('IP_HA', host);
+      const codePath=document.getElementById('client-path-code');
+      const linkDash=document.getElementById('client-dashboard-link');
+      // Initially set path/link placeholders
+      if(codePath) codePath.innerText = codePath.innerText.replace('IP_HA', host);
       if(linkDash){
-        linkDash.href = linkDash.href.replace('IP_HA', host);
-        linkDash.innerText = linkDash.innerText.replace('IP_HA', host);
+         linkDash.href = linkDash.href.replace('IP_HA', host);
+         linkDash.innerText = linkDash.innerText.replace('IP_HA', host);
       }
 
       const savedLang = localStorage.getItem('joan_lang') || 'pl';
