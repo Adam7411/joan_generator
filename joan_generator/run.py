@@ -1,111 +1,83 @@
-"""
-Joan Generator / run.py
-Kompletny backend Flask dla dodatku generującego pliki .dash AppDaemon/HADashboard.
-
-FUNKCJE:
-- Wykrywanie tokenu (Supervisor lub manualny w /data/options.json)
-- Pobieranie stanów /api/states
-- Wstrzykiwanie encji do index.html
-- Generowanie YAML z layout_data_json
-- Endpoint diagnostyczny /api/entities
-"""
-
+print("📦 1. Importing libraries...")
+from flask import Flask, render_template, request
 import os
-import json
-from typing import List, Dict, Any, Optional
-from flask import Flask, render_template, request, jsonify
 import requests
-from datetime import datetime
+import json
+print("✅ 2. Libraries loaded.")
 
 app = Flask(__name__)
 
-# =========================================================
-# KONFIGURACJA TOKENU I API
-# =========================================================
-SUPERVISOR_TOKEN = os.environ.get("SUPERVISOR_TOKEN")
-TOKEN_SOURCE = None
-API_URL = None
+# -------------------------------------------------------------------------
+# KONFIGURACJA API I TOKENU
+# -------------------------------------------------------------------------
+TOKEN = os.environ.get('SUPERVISOR_TOKEN')
+API_URL = "http://supervisor/core/api" 
+TOKEN_SOURCE = "System (Supervisor)"
 
-def detect_token() -> Optional[str]:
-    """
-    Zwraca token oraz ustawia globalne API_URL i TOKEN_SOURCE.
-    Priorytety:
-    1. SUPERVISOR_TOKEN -> http://supervisor/core/api
-    2. manual_token w /data/options.json -> http://homeassistant:8123/api
-    """
-    global TOKEN_SOURCE, API_URL
-
-    # 1. Supervisor
-    if SUPERVISOR_TOKEN and len(SUPERVISOR_TOKEN) > 10:
-        TOKEN_SOURCE = "Supervisor (env SUPERVISOR_TOKEN)"
-        API_URL = "http://supervisor/core/api"
-        return SUPERVISOR_TOKEN
-
-    # 2. Manualny token
-    try:
-        if os.path.exists("/data/options.json"):
-            with open("/data/options.json", "r", encoding="utf-8") as f:
-                options = json.load(f)
-            manual_token = options.get("manual_token")
+# Próba odczytu tokenu z konfiguracji dodatku (dla trybu manualnego)
+try:
+    if os.path.exists('/data/options.json'):
+        with open('/data/options.json', 'r') as f:
+            options = json.load(f)
+            manual_token = options.get('manual_token')
             if manual_token and len(manual_token) > 10:
-                TOKEN_SOURCE = "Manual (options.json)"
+                TOKEN = manual_token
                 API_URL = "http://homeassistant:8123/api"
-                return manual_token
-    except Exception as e:
-        print(f"ℹ️ Info: Nie udało się odczytać /data/options.json: {e}")
+                TOKEN_SOURCE = "Manual (Configuration)"
+                print("🔧 Manual token found. Switching API URL to http://homeassistant:8123/api")
+except Exception as e:
+    print(f"ℹ️ Info: Could not read options (first run?): {e}")
 
-    TOKEN_SOURCE = "Brak (no token)"
-    API_URL = None
-    return None
-
-TOKEN = detect_token()
-if TOKEN:
-    print(f"🔑 Token wykryty: {TOKEN_SOURCE}")
-    print(f"🌐 API_URL ustawione na: {API_URL}")
+if not TOKEN:
+    print("❌ WARNING: No token found. Entity list will be empty!")
 else:
-    print("❌ UWAGA: Brak tokenu – lista encji będzie pusta!")
+    print(f"🔑 Token Source: {TOKEN_SOURCE}")
 
-# =========================================================
-# POBIERANIE STANÓW Z HOME ASSISTANT
-# =========================================================
-def fetch_entities() -> List[Dict[str, Any]]:
-    """
-    Pobiera wszystkie stany z Home Assistant (API /states).
-    Format zwracany: {id, state, attributes, unit}
-    """
-    if not TOKEN or not API_URL:
+# -------------------------------------------------------------------------
+# POBIERANIE ENCJI Z HA (Z PEŁNYMI DANYMI O STANIE)
+# -------------------------------------------------------------------------
+def get_ha_entities():
+    if not TOKEN:
         return []
+    
+    headers = {
+        "Authorization": f"Bearer {TOKEN}", 
+        "Content-Type": "application/json"
+    }
+    
     try:
-        headers = {
-            "Authorization": f"Bearer {TOKEN}",
-            "Content-Type": "application/json"
-        }
-        url = f"{API_URL}/states"
-        resp = requests.get(url, headers=headers, timeout=10)
-        if resp.status_code != 200:
-            print(f"⚠️ Błąd API ({resp.status_code}): {resp.text}")
-            return []
-        raw = resp.json()
-        entities: List[Dict[str, Any]] = []
-        for st in raw:
-            attrs = st.get("attributes", {}) or {}
-            unit = attrs.get("unit_of_measurement", "")
-            entities.append({
-                "id": st.get("entity_id"),
-                "state": str(st.get("state", "")),
-                "attributes": attrs,
-                "unit": unit
-            })
-        # Sortuj dla przewidywalności
-        entities.sort(key=lambda x: x["id"])
-        return entities
+        # Pobieramy wszystkie stany z Home Assistant
+        # To zapytanie zwraca listę wszystkich encji wraz z ich aktualnym stanem
+        response = requests.get(f"{API_URL}/states", headers=headers, timeout=10)
+        
+        if response.status_code == 200:
+            data = response.json()
+            entities = []
+            for state in data:
+                # Przekazujemy ID, STAN, ATRYBUTY (nazwa, klasa) i JEDNOSTKĘ
+                # To jest kluczowe, żeby podgląd w HTML pokazywał prawdziwe dane
+                attributes = state.get('attributes', {})
+                unit = attributes.get('unit_of_measurement', '')
+                
+                entities.append({
+                    'id': state['entity_id'],
+                    'state': state['state'],
+                    'attributes': attributes,
+                    'unit': unit
+                })
+            
+            # Sortowanie alfabetyczne po ID dla porządku
+            entities.sort(key=lambda x: x['id'])
+            return entities
+        else:
+            print(f"⚠️ API Error: {response.status_code} - {response.text}")
     except Exception as e:
-        print(f"❌ Wyjątek przy pobieraniu encji: {e}")
-        return []
+        print(f"❌ Exception while fetching entities: {e}")
+    return []
 
-# =========================================================
-# STYLE / MAPY
-# =========================================================
+# -------------------------------------------------------------------------
+# STYLE E-INK (High Contrast - Joan 6)
+# -------------------------------------------------------------------------
 STYLES = {
     "title": "color: #000000; font-size: 20px; font-weight: 700; text-align: center; padding-top: 3px; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif;",
     "widget": "color: #000000 !important; background-color: #FFFFFF !important;",
@@ -116,289 +88,217 @@ STYLES = {
     "state_text": "color: #000000 !important; font-weight: 700 !important; font-size: 16px !important;"
 }
 
-STATE_MAP = {
-    "pl": {
-        "on": "WŁĄCZONE", "off": "WYŁĄCZONE", "open": "OTWARTE", "closed": "ZAMKNIĘTE",
-        "opening": "OTWIERANIE", "closing": "ZAMYKANIE",
-        "locked": "ZAMKNIĘTE", "unlocked": "OTWARTE",
-        "home": "W DOMU", "not_home": "POZA"
-    },
-    "en": {
-        "on": "ON", "off": "OFF", "open": "OPEN", "closed": "CLOSED",
-        "opening": "OPENING", "closing": "CLOSING",
-        "locked": "LOCKED", "unlocked": "UNLOCKED",
-        "home": "HOME", "not_home": "AWAY"
-    }
-}
+# Pomocnicza funkcja do ikon (fallback dla Pythona)
+def get_icon_pair(base_icon, w_type):
+    if not base_icon:
+        if w_type == 'lock': return 'mdi-lock-open', 'mdi-lock'
+        if w_type == 'cover': return 'mdi-window-shutter-open', 'mdi-window-shutter'
+        if w_type == 'person' or w_type == 'device_tracker': return 'mdi-home', 'mdi-home-outline'
+        return None, None
+        
+    i = base_icon.lower()
+    if 'garage' in i: return 'mdi-garage-open', 'mdi-garage'
+    if 'gate' in i: return 'mdi-gate-open', 'mdi-gate'
+    if 'light' in i or 'bulb' in i: return 'mdi-lightbulb-on', 'mdi-lightbulb-outline'
+    if 'lock' in i: return 'mdi-lock-open', 'mdi-lock'
+    if 'door' in i: return 'mdi-door-open', 'mdi-door-closed'
+    if 'window' in i or 'blind' in i or 'shutter' in i: return 'mdi-window-shutter-open', 'mdi-window-shutter'
+    return i, i + '-outline'
 
-# =========================================================
-# POMOCNICZE
-# =========================================================
-def normalize_filename(title: str) -> str:
-    """
-    Generuje nazwę pliku .dash z tytułu.
-    """
-    base = title.strip() or "JoanDashboard"
-    slug = "".join(c if c.isalnum() or c in ("-", "_") else "_" for c in base).lower()
-    if not slug.endswith(".dash"):
-        slug += ".dash"
-    return slug
-
-def icon_pair_guess(w_type: str, base_icon: Optional[str]) -> (Optional[str], Optional[str]):
-    """
-    Zwraca parę ikon (on/off) gdy użytkownik ich nie podał.
-    """
-    if base_icon:
-        i = base_icon.lower()
-        # heurystyka
-        if "garage" in i: return "mdi-garage-open", "mdi-garage"
-        if "gate" in i: return "mdi-gate-open", "mdi-gate"
-        if "lock" in i: return "mdi-lock-open", "mdi-lock"
-        if "door" in i: return "mdi-door-open", "mdi-door-closed"
-        if "window" in i or "blind" in i or "shutter" in i: return "mdi-window-shutter-open", "mdi-window-shutter"
-        if "light" in i or "bulb" in i: return "mdi-lightbulb-on", "mdi-lightbulb-outline"
-        return base_icon, base_icon + "-outline"
-
-    # Fallback bez bazowej ikony
-    if w_type == "lock": return "mdi-lock-open", "mdi-lock"
-    if w_type == "cover": return "mdi-window-shutter-open", "mdi-window-shutter"
-    if w_type in ("person", "device_tracker"): return "mdi-home", "mdi-home-outline"
-    return None, None
-
-def build_yaml(title: str, lang: str, layout_rows: List[List[Dict[str, Any]]]) -> str:
-    """
-    Generuje treść pliku .dash na podstawie layout_rows (lista wierszy z widgetami).
-    """
-    dic = STATE_MAP.get(lang, STATE_MAP["pl"])
-    out = []
-    out.append(f"title: {title}")
-    out.append("widget_dimensions: [117, 117]")
-    out.append("widget_size: [2, 1]")
-    out.append("widget_margins: [8, 8]")
-    out.append("columns: 6")
-    out.append("rows: 9")
-    out.append("global_parameters:")
-    out.append("  use_comma: 0")
-    out.append("  precision: 1")
-    out.append("  use_hass_icon: 1")
-    out.append("  namespace: default")
-    out.append("  devices:")
-    out.append("    media_player:")
-    out.append("      step: 5")
-    out.append(f"  white_text_style: \"{STYLES['text']}\"")
-    out.append(f"  state_text_style: \"{STYLES['state_text']}\"")
-    out.append("skin: simplyred")
-    out.append("")  # blank
-
-    # Layout sekcja
-    out.append("layout:")
-    processed_widgets: List[Dict[str, Any]] = []
-    for row in layout_rows:
-        if not row:
-            continue
-        parts = []
-        for w in row:
-            if w.get("type") == "spacer":
-                parts.append("spacer")
-                continue
-            w_id = w.get("id")
-            size = (w.get("size") or "").strip()
-            item = w_id
-            if size and size != "(2x1)":
-                if not size.startswith("("):
-                    size = f"({size})"
-                item += size
-            parts.append(item)
-        out.append(f"  - {', '.join(parts)}")
-        processed_widgets.extend(row)
-
-    out.append("")
-    out.append("# --- WIDGET DEFINITIONS ---")
-    out.append("")
-
-    seen = set()
-    for w in processed_widgets:
-        w_type = w.get("type")
-        if w_type == "spacer":
-            continue
-        w_id = w.get("id")
-        if not w_id or w_id in seen:
-            continue
-        seen.add(w_id)
-
-        name = w.get("name") or w_id
-        icon = w.get("icon")
-        icon_on = w.get("icon_on")
-        icon_off = w.get("icon_off")
-
-        out.append(f"{w_id}:")
-        out.append(f"  widget_type: {w_type}")
-
-        # NAWIGACJA
-        if w_type == "navigate":
-            dashboard_name = w_id.replace("navigate.", "")
-            out.append(f"  dashboard: {dashboard_name}")
-            out.append(f"  title: \"{name}\"")
-            out.append(f"  icon_inactive: {icon or 'mdi-arrow-right-circle'}")
-            out.append(f"  title_style: \"{STYLES['title']}\"")
-            out.append("  widget_style: \"background-color: #FFFFFF !important; border-radius: 8px !important; padding: 10px !important; color: #000000 !important;\"")
-            out.append("")
-            continue
-
-        # CLOCK / LABEL nie mają entity
-        if w_type not in ("clock", "label"):
-            out.append(f"  entity: {w_id}")
-
-        out.append(f"  title: \"{name}\"")
-
-        if w_type == "sensor":
-            out.append(f"  title_style: \"{STYLES['title']}\"")
-            out.append(f"  text_style: \"{STYLES['text']}\"")
-            out.append(f"  value_style: \"{STYLES['value']}\"")
-            out.append(f"  unit_style: \"{STYLES['unit']}\"")
-            out.append(f"  widget_style: \"{STYLES['widget']}\"")
-            if icon:
-                out.append(f"  icon: {icon}")
-
-        elif w_type == "media_player":
-            out.append("  truncate_name: 20")
-            out.append("  step: 5")
-            out.append(f"  title_style: \"{STYLES['title']}\"")
-            out.append(f"  widget_style: \"{STYLES['widget']}\"")
-            out.append(f"  icon_style: \"{STYLES['icon']}\"")
-
-        elif w_type == "climate":
-            out.append("  step: 1")
-            out.append(f"  title_style: \"{STYLES['title']}\"")
-            out.append(f"  widget_style: \"{STYLES['widget']}\"")
-            out.append("  state_text: 1")
-            out.append(f"  text_style: \"{STYLES['text']}\"")
-            out.append(f"  icon_style_active: \"{STYLES['icon']}\"")
-            out.append(f"  icon_style_inactive: \"{STYLES['icon']}\"")
-
-        elif w_type == "clock":
-            out[-1] = out[-1].replace(f"  title: \"{name}\"", f"  time_format: 24hr")  # usuń title
-            out.append("  show_seconds: 0")
-            out.append(f"  date_style: \"{STYLES['text']}\"")
-            out.append(f"  time_style: \"{STYLES['value']} font-size: 50px !important;\"")
-
-        elif w_type == "label":
-            out[-1] = out[-1].replace(f"  title: \"{name}\"", f"  text: \"{name}\"")
-            if icon:
-                out.append(f"  icon: {icon}")
-
-        else:
-            # Actionable / przełączalne
-            ad_type = w_type
-            if w_type == "binary_sensor":
-                ad_type = "binary_sensor"
-            if w_type == "input_boolean":
-                ad_type = "switch"
-            if w_type == "person":
-                ad_type = "device_tracker"
-            if w_type == "light":
-                ad_type = "switch"
-
-            # Ikony
-            if w_type == "lock":
-                if icon_on or icon_off:
-                    if icon_off:
-                        out.append(f"  icon_locked: {icon_off}")
-                    if icon_on:
-                        out.append(f"  icon_unlocked: {icon_on}")
-                else:
-                    auto_on, auto_off = icon_pair_guess("lock", icon)
-                    if auto_off:
-                        out.append(f"  icon_locked: {auto_off}")
-                    if auto_on:
-                        out.append(f"  icon_unlocked: {auto_on}")
-            else:
-                if icon_on or icon_off:
-                    if icon_on:
-                        out.append(f"  icon_on: {icon_on}")
-                    if icon_off:
-                        out.append(f"  icon_off: {icon_off}")
-                else:
-                    auto_on, auto_off = icon_pair_guess(ad_type, icon)
-                    if auto_on:
-                        out.append(f"  icon_on: {auto_on}")
-                    if auto_off:
-                        out.append(f"  icon_off: {auto_off}")
-
-            out.append(f"  title_style: \"{STYLES['title']}\"")
-            out.append(f"  widget_style: \"{STYLES['widget']}\"")
-            out.append(f"  icon_style_active: \"{STYLES['icon']}\"")
-            out.append(f"  icon_style_inactive: \"{STYLES['icon']}\"")
-            out.append("  state_text: 1")
-            out.append(f"  text_style: \"{STYLES['text']}\"")
-            out.append("  state_map:")
-            for key, val in dic.items():
-                out.append(f"    \"{key}\": \"{val}\"")
-
-        out.append("")  # blank after widget
-    return "\n".join(out)
-
-# =========================================================
-# ROUTES
-# =========================================================
-@app.route("/", methods=["GET", "POST"])
+@app.route('/', methods=['GET', 'POST'])
 def index():
-    entities = fetch_entities()
     generated_yaml = ""
-    filename = ""
-    dash_slug = ""
-
-    if request.method == "POST":
+    ha_entities = get_ha_entities()
+    dashboard_filename = ""
+    dashboard_slug = ""
+    
+    if request.method == 'POST':
         try:
-            title = request.form.get("title", "JoanDashboard")
-            dash_slug = title.lower().replace(" ", "_")
-            filename = normalize_filename(title)
-            lang = request.form.get("ui_language", "pl")
-            layout_raw = request.form.get("layout_data_json", "[]")
+            title = request.form.get('title', 'JoanDashboard')
+            dashboard_slug = title.lower().replace(" ", "_")
+            dashboard_filename = dashboard_slug + ".dash"
+            lang = request.form.get('ui_language', 'pl')
+            
+            # Tłumaczenia stanów dla AppDaemon (state_map)
+            T = {
+                'pl': {'on': 'WŁĄCZONE', 'off': 'WYŁĄCZONE', 'open': 'OTWARTE', 'closed': 'ZAMKNIĘTE', 
+                       'opening': 'OTWIERANIE', 'closing': 'ZAMYKANIE',
+                       'locked': 'ZAMKNIĘTE', 'unlocked': 'OTWARTE', 'home': 'W DOMU', 'not_home': 'POZA'},
+                'en': {'on': 'ON', 'off': 'OFF', 'open': 'OPEN', 'closed': 'CLOSED', 
+                       'opening': 'OPENING', 'closing': 'CLOSING',
+                       'locked': 'LOCKED', 'unlocked': 'UNLOCKED', 'home': 'HOME', 'not_home': 'AWAY'}
+            }
+            dic = T.get(lang, T['pl'])
 
-            try:
-                layout_rows = json.loads(layout_raw)
-            except Exception:
-                layout_rows = []
-                print("⚠️ Nie udało się zdekodować layout_data_json – użyto pustej listy.")
+            # --- NAGŁÓWEK PLIKU DASH ---
+            generated_yaml += f"title: {title}\n"
+            generated_yaml += "widget_dimensions: [117, 117]\n"
+            generated_yaml += "widget_size: [2, 1]\n"
+            generated_yaml += "widget_margins: [8, 8]\n"
+            generated_yaml += "columns: 6\n"
+            generated_yaml += "rows: 9\n"
+            
+            generated_yaml += "global_parameters:\n"
+            generated_yaml += "  use_comma: 0\n"
+            generated_yaml += "  precision: 1\n"
+            generated_yaml += "  use_hass_icon: 1\n"
+            generated_yaml += "  namespace: default\n"
+            generated_yaml += "  devices:\n"
+            generated_yaml += "    media_player:\n"
+            generated_yaml += "      step: 5\n"
+            generated_yaml += f"  white_text_style: \"{STYLES['text']}\"\n"
+            generated_yaml += f"  state_text_style: \"{STYLES['state_text']}\"\n"
+            generated_yaml += "skin: simplyred\n\n"
+            
+            layout_data_str = request.form.get('layout_data_json')
+            if layout_data_str:
+                layout_rows = json.loads(layout_data_str)
+                generated_yaml += "layout:\n"
+                processed_widgets = []
+                
+                # --- GENEROWANIE SEKCJI LAYOUT ---
+                for row in layout_rows:
+                    if not row: continue
+                    row_parts = []
+                    for w in row:
+                        if w['type'] == 'spacer':
+                            row_parts.append("spacer")
+                            continue
+                            
+                        widget_str = w['id']
+                        size = w.get('size', '').strip()
+                        # Jeśli rozmiar jest inny niż domyślny [2,1] z nagłówka, dodajemy go
+                        if size and size != "(2x1)":
+                            if not size.startswith('('): size = f"({size})"
+                            widget_str += size
+                        row_parts.append(widget_str)
+                    
+                    row_str = ", ".join(row_parts)
+                    generated_yaml += f"  - {row_str}\n"
+                    processed_widgets.extend(row)
+                
+                generated_yaml += "\n# --- WIDGET DEFINITIONS ---\n\n"
+                
+                # --- GENEROWANIE DEFINICJI WIDGETÓW ---
+                seen_ids = set()
+                for w in processed_widgets:
+                    if w['type'] == 'spacer': continue
+                    w_id = w['id']
+                    if w_id in seen_ids: continue
+                    seen_ids.add(w_id)
+                    
+                    w_type = w['type']
+                    w_name = w['name']
+                    w_icon = w['icon']
+                    
+                    generated_yaml += f"{w_id}:\n"
+                    generated_yaml += f"  widget_type: {w_type}\n"
+                    generated_yaml += f"  entity: {w_id}\n"
+                    generated_yaml += f"  title: \"{w_name}\"\n"
+                    
+                    # 1. NAWIGACJA
+                    if w_type == 'navigate':
+                        dashboard_name = w_id.replace('navigate.', '')
+                        # Nadpisz entity linię wyżej bo navigate nie ma entity
+                        generated_yaml = generated_yaml.replace(f"  entity: {w_id}\n", "") 
+                        generated_yaml += f"  dashboard: {dashboard_name}\n"
+                        generated_yaml += f"  icon_inactive: {w_icon or 'mdi-arrow-right-circle'}\n"
+                        generated_yaml += f"  title_style: \"{STYLES['title']}\"\n"
+                        generated_yaml += f"  widget_style: \"background-color: #FFFFFF !important; border-radius: 8px !important; padding: 10px !important; color: #000000 !important;\"\n"
+                    
+                    # 2. SENSOR
+                    elif w_type == 'sensor':
+                        generated_yaml += f"  title_style: \"{STYLES['title']}\"\n"
+                        generated_yaml += f"  text_style: \"{STYLES['text']}\"\n"
+                        generated_yaml += f"  value_style: \"{STYLES['value']}\"\n"
+                        generated_yaml += f"  unit_style: \"{STYLES['unit']}\"\n"
+                        generated_yaml += f"  widget_style: \"{STYLES['widget']}\"\n"
+                        if w_icon: generated_yaml += f"  icon: {w_icon}\n"
 
-            generated_yaml = build_yaml(title, lang, layout_rows)
+                    # 3. MEDIA PLAYER
+                    elif w_type == 'media_player':
+                        generated_yaml += f"  truncate_name: 20\n"
+                        generated_yaml += f"  step: 5\n"
+                        generated_yaml += f"  title_style: \"{STYLES['title']}\"\n"
+                        generated_yaml += f"  widget_style: \"{STYLES['widget']}\"\n"
+                        generated_yaml += f"  icon_style: \"{STYLES['icon']}\"\n"
 
+                    # 4. CLIMATE
+                    elif w_type == 'climate':
+                        generated_yaml += f"  step: 1\n"
+                        generated_yaml += f"  title_style: \"{STYLES['title']}\"\n"
+                        generated_yaml += f"  widget_style: \"{STYLES['widget']}\"\n"
+                        generated_yaml += f"  state_text: 1\n"
+                        generated_yaml += f"  text_style: \"{STYLES['text']}\"\n"
+                        generated_yaml += f"  icon_style_active: \"{STYLES['icon']}\"\n"
+                        generated_yaml += f"  icon_style_inactive: \"{STYLES['icon']}\"\n"
+
+                    # 5. ZEGAR
+                    elif w_type == 'clock':
+                        generated_yaml = generated_yaml.replace(f"  entity: {w_id}\n", "")
+                        generated_yaml += f"  time_format: 24hr\n"
+                        generated_yaml += f"  show_seconds: 0\n"
+                        generated_yaml += f"  date_style: \"{STYLES['text']}\"\n"
+                        generated_yaml += f"  time_style: \"{STYLES['value']} font-size: 50px !important;\"\n"
+
+                    # 6. ETYKIETA
+                    elif w_type == 'label':
+                         generated_yaml = generated_yaml.replace(f"  entity: {w_id}\n", "")
+                         generated_yaml += f"  text: \"{w_name}\"\n"
+                         if w_icon: generated_yaml += f"  icon: {w_icon}\n"
+                    
+                    # 7. INNE (Actionable - Switch, Light, Binary Sensor, Lock)
+                    else:
+                        ad_type = w_type
+                        if w_type == 'binary_sensor': ad_type = 'binary_sensor'
+                        if w_type == 'input_boolean': ad_type = 'switch'
+                        if w_type == 'person': ad_type = 'device_tracker'
+                        if w_type == 'light': ad_type = 'switch' 
+                        if w_type == 'lock': ad_type = 'lock'
+                        if w_type == 'input_select': ad_type = 'input_select'
+                        if w_type == 'input_number': ad_type = 'input_number'
+                        if w_type == 'script': ad_type = 'script'
+                        
+                        # Pobieramy dokładne ikony z obiektu widgetu (JSON z JS)
+                        current_w_json = next((item for item in processed_widgets if item["id"] == w_id), None)
+                        
+                        if current_w_json:
+                            i_on = current_w_json.get('icon_on')
+                            i_off = current_w_json.get('icon_off')
+                            
+                            if ad_type == 'lock':
+                                if i_off: generated_yaml += f"  icon_locked: {i_off}\n"
+                                if i_on: generated_yaml += f"  icon_unlocked: {i_on}\n"
+                            else:
+                                if i_on: generated_yaml += f"  icon_on: {i_on}\n"
+                                if i_off: generated_yaml += f"  icon_off: {i_off}\n"
+                        
+                        generated_yaml += f"  title_style: \"{STYLES['title']}\"\n"
+                        generated_yaml += f"  widget_style: \"{STYLES['widget']}\"\n"
+                        generated_yaml += f"  icon_style_active: \"{STYLES['icon']}\"\n"
+                        generated_yaml += f"  icon_style_inactive: \"{STYLES['icon']}\"\n"
+                        generated_yaml += f"  state_text: 1\n"
+                        generated_yaml += f"  text_style: \"{STYLES['text']}\"\n"
+                        
+                        if ad_type in ['switch', 'binary_sensor', 'cover', 'lock', 'device_tracker']:
+                            generated_yaml += "  state_map:\n"
+                            generated_yaml += f"    \"on\": \"{dic['on']}\"\n"
+                            generated_yaml += f"    \"off\": \"{dic['off']}\"\n"
+                            generated_yaml += f"    \"open\": \"{dic['open']}\"\n"
+                            generated_yaml += f"    \"closed\": \"{dic['closed']}\"\n"
+                            generated_yaml += f"    \"opening\": \"{dic['opening']}\"\n"
+                            generated_yaml += f"    \"closing\": \"{dic['closing']}\"\n"
+                            generated_yaml += f"    \"locked\": \"{dic['locked']}\"\n"
+                            generated_yaml += f"    \"unlocked\": \"{dic['unlocked']}\"\n"
+                            generated_yaml += f"    \"home\": \"{dic['home']}\"\n"
+                            generated_yaml += f"    \"not_home\": \"{dic['not_home']}\"\n"
+
+                    generated_yaml += "\n"
         except Exception as e:
+            print(f"❌ Error generating YAML: {e}")
             generated_yaml = f"# ERROR GENERATING YAML: {e}"
-            print(f"❌ Błąd generowania YAML: {e}")
 
-    return render_template(
-        "index.html",
-        generated_yaml=generated_yaml,
-        entities=entities,
-        filename=filename,
-        dash_name=dash_slug
-    )
+    return render_template('index.html', generated_yaml=generated_yaml, entities=ha_entities, filename=dashboard_filename, dash_name=dashboard_slug)
 
-@app.route("/api/entities")
-def api_entities():
-    """
-    Endpoint diagnostyczny – pozwala podejrzeć co backend pobiera z HA.
-    """
-    entities = fetch_entities()
-    return jsonify({
-        "count": len(entities),
-        "source": TOKEN_SOURCE,
-        "api_url": API_URL,
-        "timestamp": datetime.utcnow().isoformat() + "Z",
-        "entities": entities[:200]  # limit dla przejrzystości
-    })
-
-@app.route("/health")
-def health():
-    return jsonify({"status": "ok", "token_source": TOKEN_SOURCE, "api_url": API_URL})
-
-# =========================================================
-# MAIN
-# =========================================================
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", "5000"))
-    debug = os.environ.get("FLASK_DEBUG", "false").lower() == "true"
-    print(f"🚀 Start Flask na porcie {port} (debug={debug})")
-    app.run(host="0.0.0.0", port=port, debug=debug)
+    app.run(host='0.0.0.0', port=5000, debug=True)
