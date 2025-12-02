@@ -3,155 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Joan 6 E-Ink Generator (Fixed Preview)</title>
-    
-    <!-- IKONY I CZCIONKI -->
+    <title>Joan 6 E-Ink Generator (MASTER)</title>
+    <!-- IKONY -->
     <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css" rel="stylesheet">
+    <!-- CZCIONKI -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap" rel="stylesheet">
     
-    <!-- SKRYPT MOTYWU -->
     <script>
         (function() {
             try {
                 const savedTheme = localStorage.getItem('joan_theme') || 'light';
-                if (savedTheme === 'dark') {
-                    document.documentElement.classList.add('dark-mode');
-                }
+                if (savedTheme === 'dark') document.documentElement.classList.add('dark-mode');
             } catch(e) {}
         })();
     </script>
 
     <style>
-        /* ---------------------------------------------------------- */
-        /* ZMIENNE KOLORYSTYCZNE */
-        /* ---------------------------------------------------------- */
+        /* --- ZMIENNE --- */
         :root {
-            --bg-body: #e0e0e0;
-            --bg-container: #ffffff;
-            --bg-section: #fafafa;
-            --bg-input: #ffffff;
-            --text-main: #333333;
-            --border: #cccccc;
-            --accent: #d32f2f;
-            --highlight: #e3f2fd;
-            --preview-bg: #f0f0f0;
-            --link-bg: #e1f5fe;
-            --link-color: #0277bd;
-            --shadow: rgba(0,0,0,0.15);
+            --bg-body: #e0e0e0; --bg-container: #ffffff; --bg-section: #fafafa; --bg-input: #ffffff;
+            --text-main: #333333; --border: #cccccc; --accent: #d32f2f; --highlight: #e3f2fd;
+            --preview-bg: #f0f0f0; --link-bg: #e1f5fe; --link-color: #0277bd;
         }
-        
         html.dark-mode {
-            --bg-body: #121212;
-            --bg-container: #1e1e1e;
-            --bg-section: #252525;
-            --bg-input: #2c2c2c;
-            --text-main: #e0e0e0;
-            --border: #444444;
-            --accent: #ff5252;
-            --highlight: #0d47a1;
-            --preview-bg: #000000;
-            --link-bg: #013655;
-            --link-color: #81d4fa;
-            --shadow: rgba(0,0,0,0.5);
+            --bg-body: #121212; --bg-container: #1e1e1e; --bg-section: #252525; --bg-input: #2c2c2c;
+            --text-main: #e0e0e0; --border: #444444; --accent: #ff5252; --highlight: #0d47a1;
+            --preview-bg: #000000; --link-bg: #013655; --link-color: #81d4fa;
         }
 
-        /* ---------------------------------------------------------- */
-        /* GŁÓWNE STYLE */
-        /* ---------------------------------------------------------- */
-        body { 
-            font-family: 'Roboto', sans-serif; 
-            background-color: var(--bg-body); 
-            color: var(--text-main); 
-            padding: 20px; 
-            transition: background 0.3s, color 0.3s; 
-        }
-
-        .container { 
-            max-width: 1400px; 
-            margin: 0 auto; 
-            background: var(--bg-container); 
-            padding: 30px; 
-            border-radius: 10px; 
-            box-shadow: 0 4px 20px var(--shadow); 
-        }
+        body { font-family: 'Roboto', sans-serif; background-color: var(--bg-body); color: var(--text-main); padding: 20px; transition: background 0.3s; }
+        .container { max-width: 1400px; margin: 0 auto; background: var(--bg-container); padding: 30px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
         
-        /* HEADER */
-        .header-row { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            border-bottom: 2px solid var(--border); 
-            padding-bottom: 20px; 
-            margin-bottom: 25px; 
-        }
-
+        .header-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--border); padding-bottom: 20px; margin-bottom: 25px; }
         h1 { margin: 0; color: var(--accent); font-size: 28px; font-weight: 900; }
         
-        .controls button { 
-            padding: 8px 16px; 
-            border: 1px solid var(--border); 
-            background: var(--bg-section); 
-            color: var(--text-main); 
-            border-radius: 4px; 
-            cursor: pointer; 
-            font-weight: bold; 
-            margin-left: 5px;
-            transition: background 0.2s;
-        }
-
+        .controls button { padding: 8px 16px; border: 1px solid var(--border); background: var(--bg-section); color: var(--text-main); border-radius: 4px; cursor: pointer; font-weight: bold; margin-left:5px; }
         .controls button.active { background: var(--accent); color: white; border-color: var(--accent); }
 
-        /* SEKCJE */
-        .section { 
-            background: var(--bg-section); 
-            padding: 25px; 
-            border-radius: 8px; 
-            border: 1px solid var(--border); 
-            margin-bottom: 30px; 
-        }
+        .section { background: var(--bg-section); padding: 25px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 30px; }
+        .section-title { font-size: 1.4em; font-weight: 900; border-bottom: 3px solid var(--accent); display: inline-block; margin-bottom: 20px; color: var(--text-main); }
 
-        .section-title { 
-            font-size: 1.4em; 
-            font-weight: 900; 
-            border-bottom: 3px solid var(--accent); 
-            display: inline-block; 
-            margin-bottom: 20px; 
-            color: var(--text-main); 
-        }
-
-        /* INFO BOX */
-        .file-path-info { 
-            background-color: var(--link-bg); 
-            color: var(--link-color); 
-            border: 1px solid var(--border); 
-            padding: 20px; 
-            margin-bottom: 20px; 
-            border-radius: 6px; 
-            font-family: monospace; 
-            font-size: 15px; 
-            line-height: 1.6; 
-            word-break: break-all; 
-        }
-        .file-path-info strong { display: block; margin-top: 10px; color: var(--text-main); font-size: 1.1em; }
-        .file-path-info a { color: var(--accent); font-weight: bold; font-size: 16px; text-decoration: underline; }
-
-        /* FORMULARZ */
-        .add-widget-box { 
-            background: var(--highlight); 
-            padding: 25px; 
-            border-radius: 8px; 
-            border: 1px solid var(--accent); 
-            transition: all 0.3s; 
-            margin-bottom: 30px; 
-        }
+        .add-widget-box { background: var(--highlight); padding: 25px; border-radius: 8px; border: 1px solid var(--accent); transition: all 0.3s; margin-bottom: 30px; }
         .add-widget-box.editing { border: 3px solid #ff9800; background: rgba(255, 152, 0, 0.1); }
 
         .flex-row { display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 15px; }
         .flex-col { flex: 1; min-width: 160px; }
-        
         label { display: block; font-weight: bold; font-size: 0.9em; margin-bottom: 8px; color: var(--text-main); }
         input, select, textarea { width: 100%; padding: 12px; border: 1px solid var(--border); background: var(--bg-input); color: var(--text-main); border-radius: 4px; box-sizing: border-box; font-size: 14px; }
-        
         #w-id { border: 2px solid var(--accent); background-color: var(--bg-input); font-weight: bold; }
 
         .btn { padding: 12px 24px; border: none; cursor: pointer; border-radius: 4px; font-weight: bold; text-transform: uppercase; color: white; font-size: 14px; transition: opacity 0.2s; }
@@ -162,116 +60,71 @@
         .btn-row { background: #2196f3; margin-top: 15px; }
         .btn-import { background: #ff9800; color: white; width: auto; margin-top: 10px; }
 
-        /* ---------------------------------------------------------- */
-        /* PODGLĄD E-INK (ZOPTYMALIZOWANY ROZMIAR) */
-        /* ---------------------------------------------------------- */
-        .preview-area { 
-            background: var(--preview-bg); 
-            padding: 30px; 
-            border: 2px solid var(--border); 
-            border-radius: 8px; 
-            overflow-x: auto; 
-            min-height: 400px; 
-        }
+        /* --- PODGLĄD E-INK --- */
+        .preview-area { background: var(--preview-bg); padding: 30px; border: 2px solid var(--border); border-radius: 8px; overflow-x: auto; min-height: 400px; }
         
-        /* Wiersz ma dużo miejsca w pionie (200px) */
         .eink-row { 
-            display: flex; 
-            gap: 8px; 
-            margin-bottom: 15px; 
-            padding: 15px; 
-            border: 2px dashed #999; 
-            border-radius: 6px; 
-            min-height: 200px; 
-            align-items: center; 
-            position: relative; 
+            display: flex; gap: 8px; margin-bottom: 15px; padding: 15px; 
+            border: 2px dashed #999; border-radius: 6px; 
+            min-height: 200px; /* Dużo miejsca */
+            align-items: center; position: relative; 
         }
         .row-label { position: absolute; top: -10px; left: 10px; font-size: 11px; background: var(--bg-body); padding: 2px 8px; color: var(--text-main); border: 1px solid var(--border); border-radius: 4px; font-weight: bold; }
 
-        /* KAFELEK WIDGETU */
         .eink-widget {
-            background: #FFFFFF; 
-            border: 3px solid #000000; 
-            color: #000000;
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: space-between; /* Rozciągnij zawartość */
-            padding: 8px; 
-            box-sizing: border-box; 
-            cursor: pointer; 
-            position: relative;
-            box-shadow: 4px 4px 0px rgba(0,0,0,0.25); 
-            transition: transform 0.1s; 
-            flex-shrink: 0; 
-            overflow: hidden;
+            background: #FFFFFF; border: 3px solid #000000; color: #000000;
+            display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+            padding: 8px; box-sizing: border-box; cursor: pointer; position: relative;
+            box-shadow: 4px 4px 0px rgba(0,0,0,0.25); transition: transform 0.1s; flex-shrink: 0; overflow: hidden;
         }
         .eink-widget:hover { transform: translateY(-3px); z-index: 10; border-color: var(--accent); }
         .eink-widget.editing { border: 3px dashed #ff9800; transform: scale(1.03); z-index: 20; }
 
-        /* NAGŁÓWEK (TYP) - MAŁY NA GÓRZE */
-        .ew-header {
-            font-size: 9px;
-            text-transform: uppercase;
-            color: #666;
-            width: 100%;
-            text-align: right;
-            position: absolute;
-            top: 2px;
-            right: 4px;
-        }
-
-        /* TYTUŁ (NAZWA) - MNIEJSZA ABY SIĘ MIEŚCIŁA */
-        .ew-title { 
-            font-weight: 900; 
-            font-size: 12px; /* Zmniejszone z 14px */
-            text-align: center; 
-            width: 100%; 
-            line-height: 1.1; 
-            margin-top: 12px; 
-            margin-bottom: 2px; 
-            white-space: normal; 
-            font-family: 'Roboto', 'Arial Black', sans-serif; 
-            text-transform: uppercase;
-        }
-        
-        /* IKONA - MNIEJSZA ABY ZROBIĆ MIEJSCE NA WARTOŚĆ */
-        .ew-icon { 
-            font-size: 38px; /* Zmniejszone z 48px */
-            display: block; 
-            margin: 2px 0; 
-        }
-        
-        /* STAN (WARTOŚĆ) - MNIEJSZA I WYRAŹNA */
-        .ew-value { 
-            font-weight: 900; 
-            font-size: 15px; /* Zmniejszone z 18px */
-            text-transform: uppercase; 
-            margin-bottom: 5px; 
-            text-align: center; 
-            border-top: 2px solid #000; 
-            width: 95%; 
-            padding-top: 2px;
-            margin-top: auto; /* Pchnij na sam dół */
-        }
-        
-        /* USUWANIE */
+        .ew-header { font-size: 9px; text-transform: uppercase; color: #666; width: 100%; text-align: right; position: absolute; top: 2px; right: 4px; }
+        .ew-title { font-weight: 900; font-size: 13px; text-align: center; width: 100%; line-height: 1.2; margin-top: 12px; white-space: normal; font-family: 'Roboto', 'Arial Black', sans-serif; text-transform: uppercase; }
+        .ew-icon { font-size: 42px; display: block; margin: 5px 0; }
+        .ew-value { font-weight: 900; font-size: 16px; text-transform: uppercase; margin-bottom: 5px; text-align: center; border-top: 2px solid #000; width: 90%; padding-top: 4px; }
         .ew-del { position: absolute; top: -10px; right: -10px; background: red; color: white; width: 24px; height: 24px; border-radius: 50%; text-align: center; line-height: 24px; font-weight: bold; display: none; box-shadow: 1px 1px 3px rgba(0,0,0,0.5); z-index: 30; }
         .eink-widget:hover .ew-del { display: block; }
-
-        .icon-preview { font-size: 32px; display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-input); }
-        .hidden { display: none !important; }
+        
+        .file-path-info { background-color: var(--link-bg); color: var(--link-color); border: 1px solid var(--border); padding: 20px; margin-bottom: 20px; border-radius: 6px; font-family: monospace; font-size: 15px; line-height: 1.6; word-break: break-all; }
+        .file-path-info a { color: var(--accent); font-weight: bold; }
         textarea.output { width: 100%; height: 500px; font-family: 'Consolas', 'Monaco', monospace; background: #263238; color: #eceff1; border: none; padding: 20px; border-radius: 8px; font-size: 14px; line-height: 1.5; }
+        .hidden { display: none !important; }
+        .icon-preview { font-size: 32px; display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-input); }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header-row">
-            <h1>Joan 6 E-Ink Generator (Fix Layout)</h1>
+            <h1>Joan 6 E-Ink Generator (Master)</h1>
             <div class="controls">
                 <button type="button" onclick="toggleTheme()" id="btn-theme">🌙</button>
                 <button type="button" onclick="setLang('pl')" id="btn-pl" class="active">PL</button>
                 <button type="button" onclick="setLang('en')" id="btn-en">EN</button>
+            </div>
+        </div>
+
+        <!-- USTAWIENIA SIATKI -->
+        <div class="section">
+            <div class="section-title">1. Ustawienia Dashboardu</div>
+            <div class="flex-row">
+                <div class="flex-col">
+                    <label>Tytuł Dashboardu</label>
+                    <input type="text" id="dash-title" oninput="syncTitle()" value="JoanDashboard">
+                </div>
+                <div class="flex-col">
+                    <label>Układ Siatki</label>
+                    <select id="grid-preset" onchange="applyGrid()">
+                        <option value="6x8">Standard (6 kolumn x 8 wierszy)</option>
+                        <option value="6x9">Standard+ (6 kolumn x 9 wierszy)</option>
+                        <option value="4x6">Luźny (4 kolumny x 6 wierszy)</option>
+                        <option value="8x10">Gęsty (8 kolumn x 10 wierszy)</option>
+                    </select>
+                </div>
+                <!-- Ukryte pola dla formularza -->
+                <input type="hidden" id="h-cols" value="6">
+                <input type="hidden" id="h-rows" value="8">
             </div>
         </div>
 
@@ -286,12 +139,14 @@
         </div>
 
         <form method="POST" id="main-form">
-            <input type="hidden" name="title" value="JoanDashboard">
+            <input type="hidden" name="title" id="form-title" value="JoanDashboard">
             <input type="hidden" name="ui_language" id="input-lang" value="pl">
+            <input type="hidden" name="grid_columns" id="form-cols" value="6">
+            <input type="hidden" name="grid_rows" id="form-rows" value="8">
             
             <!-- EDYTOR WIDGETU -->
             <div class="add-widget-box" id="editor-box">
-                <div class="section-title" id="editor-title" data-i18n="sec_add">Dodaj Widget</div>
+                <div class="section-title" id="editor-title" data-i18n="sec_add">2. Dodaj Widget</div>
                 
                 <div class="flex-row">
                     <div class="flex-col">
@@ -315,8 +170,7 @@
                         </select>
                     </div>
                     <div class="flex-col" id="grp-entity">
-                        <label data-i18n="lbl_entity">Encja (Wyszukaj po nazwie lub ID)</label>
-                        <!-- STANDARDOWY DATALIST - NAJLEPSZY I NAJSZYBSZY -->
+                        <label data-i18n="lbl_entity">Encja (Wpisz nazwę lub ID)</label>
                         <input list="entity-list" id="w-id" placeholder="np. głośnik kuchnia, swiatlo..." oninput="searchEntities(this.value)" autocomplete="off">
                         <datalist id="entity-list"></datalist>
                     </div>
@@ -370,7 +224,7 @@
 
             <!-- PODGLĄD E-INK -->
             <div class="section">
-                <div class="section-title" data-i18n="sec_preview">Podgląd Dashboardu (Kliknij by edytować)</div>
+                <div class="section-title" data-i18n="sec_preview">3. Podgląd Dashboardu (Kliknij by edytować)</div>
                 <div class="preview-area" id="preview-container"></div>
                 <button type="button" class="btn btn-row" onclick="addRow()" data-i18n="btn_row">+ Dodaj Wiersz</button>
             </div>
@@ -393,9 +247,8 @@
         {% endif %}
     </div>
 
-    <!-- LOGIKA JAVASCRIPT -->
+    <!-- SKRYPTY JS -->
     <script>
-        // --- 1. DANE I ZMIENNE ---
         const entitiesData = {{ entities | tojson | safe }};
         let rows = [[]]; 
         let editIdx = null; 
@@ -403,43 +256,37 @@
         let currentLang = 'pl';
         let importedDefsMap = {}; 
 
-        // --- TŁUMACZENIA ---
         const TRANSLATIONS = {
             pl: {
-                sec_add: "Dodaj Widget", sec_edit: "Edytuj Widget", sec_preview: "Podgląd Dashboardu (Kliknij, aby edytować)",
+                sec_add: "2. Dodaj Widget", sec_edit: "2. Edytuj Widget", sec_preview: "3. Podgląd Dashboardu (Kliknij, aby edytować)",
                 lbl_type: "Typ Widgetu", lbl_entity: "Encja (Wpisz nazwę lub ID)", lbl_name: "Tytuł na ekranie", lbl_size: "Rozmiar", 
                 lbl_icon: "Ikona", lbl_dash: "Nazwa Dashboardu", lbl_preview: "Podgląd",
                 btn_add: "+ DODAJ WIDGET", btn_update: "ZAPISZ ZMIANY", btn_cancel: "ANULUJ", 
                 btn_row: "+ Dodaj Wiersz", btn_gen: "GENERUJ KOD .DASH",
-                
                 opt_switch: "Przełącznik / Światło", opt_cover: "Roleta / Brama", opt_sensor: "Sensor (Info)",
                 opt_binary: "Sensor Binarny (On/Off)", opt_lock: "Zamek", opt_person: "Osoba / Tracker",
                 opt_media: "Odtwarzacz Media", opt_climate: "Termostat", opt_input_select: "Lista Wyboru",
                 opt_input_number: "Suwak Liczbowy", opt_script: "Skrypt", opt_navigate: "Przycisk Nawigacji",
                 opt_label: "Etykieta (Tekst)", opt_clock: "Zegar", opt_spacer: "Odstęp (Pusty)",
-                
                 size_1x1: "1x1 (Mały/Ikona)", size_2x1: "2x1 (Szeroki Przycisk)", size_2x2: "2x2 (Duży/Media)",
                 size_3x1: "3x1 (Bardzo Szeroki)", size_1x2: "1x2 (Wysoki)", size_3x2: "3x2 (Ogromny)"
             },
             en: {
-                sec_add: "Add Widget", sec_edit: "Edit Widget", sec_preview: "Dashboard Preview (Click to Edit)",
+                sec_add: "2. Add Widget", sec_edit: "2. Edit Widget", sec_preview: "3. Dashboard Preview (Click to Edit)",
                 lbl_type: "Widget Type", lbl_entity: "Entity (Type Name or ID)", lbl_name: "Title on Screen", lbl_size: "Size", 
                 lbl_icon: "Icon", lbl_dash: "Dashboard Name", lbl_preview: "Icon",
                 btn_add: "+ ADD WIDGET", btn_update: "SAVE CHANGES", btn_cancel: "CANCEL", 
                 btn_row: "+ Add Row", btn_gen: "GENERATE .DASH CODE",
-                
                 opt_switch: "Switch / Light", opt_cover: "Cover / Gate", opt_sensor: "Sensor (Info)", 
                 opt_binary: "Binary Sensor", opt_lock: "Lock", opt_person: "Person / Tracker",
                 opt_media: "Media Player", opt_climate: "Climate", opt_input_select: "Input Select",
                 opt_input_number: "Input Number", opt_script: "Script", opt_navigate: "Navigation Button",
                 opt_label: "Label (Text)", opt_clock: "Clock", opt_spacer: "Spacer (Empty)",
-
                 size_1x1: "1x1 (Small/Icon)", size_2x1: "2x1 (Wide Button)", size_2x2: "2x2 (Large/Media)",
                 size_3x1: "3x1 (Extra Wide)", size_1x2: "1x2 (Tall)", size_3x2: "3x2 (Huge)"
             }
         };
 
-        // --- MAPY SMART LOGIC ---
         const SMART_MAP = {
             'light': { type: 'switch', size: '(2x1)', iconOn: 'mdi-lightbulb-on', iconOff: 'mdi-lightbulb-outline' },
             'switch': { type: 'switch', size: '(2x1)', iconOn: 'mdi-toggle-switch', iconOff: 'mdi-toggle-switch-off' },
@@ -453,20 +300,16 @@
             'script': { type: 'script', size: '(2x1)', icon: 'mdi-script-text-outline' }
         };
 
-        // --- FUNKCJE POMOCNICZE ---
         function normalizeString(str) {
             return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
         }
 
-        // WYSZUKIWANIE
         function searchEntities(val) {
             runSmartLogic(val);
             const dl = document.getElementById('entity-list');
             dl.innerHTML = ''; 
             if(!val || val.length < 2) return; 
-
             const terms = normalizeString(val).split(" ").filter(t => t);
-            
             let count = 0;
             for(const e of entitiesData) {
                 if(count > 50) break;
@@ -501,7 +344,8 @@
             if(!id) return "";
             if(id.startsWith('navigate.')) return id.replace('navigate.','').toUpperCase();
             let name = id.split('.').pop(); 
-            name = name.replace(/_[lvr]\d+$/i, '').replace(/_state$/i, '').replace(/_/g, ' ');
+            name = name.replace(/_[lvr]\d+$/i, '').replace(/_state$/i, '');
+            name = name.replace(/_/g, ' ');
             return name.replace(/\b\w/g, l => l.toUpperCase());
         }
 
@@ -522,10 +366,8 @@
             document.getElementById('grp-nav').classList.toggle('hidden', !isNav);
         }
 
-        // --- SMART LOGIC ---
         function runSmartLogic(val) {
             if (blockSmart) return; 
-            
             const id = val.toLowerCase();
             const idNorm = normalizeString(id); 
             if (id.length < 3) return;
@@ -540,23 +382,36 @@
 
             const check = (keywords) => keywords.some(k => idNorm.includes(k) || fNameNorm.includes(k));
 
-            if (check(['glosnik', 'speaker', 'audio', 'tv', 'odtwarzacz'])) conf = SMART_MAP['media_player'];
-            else if (check(['swiatlo', 'lamp', 'kinkiet', 'led', 'zarowka'])) conf = SMART_MAP['light'];
-            else if (check(['gniazdko', 'wtyczka', 'outlet', 'plug'])) conf = SMART_MAP['switch'];
-            else if (check(['brama', 'garaz', 'gate'])) conf = { type: 'cover', size: '(2x1)', iconOn: 'mdi-garage-open', iconOff: 'mdi-garage' };
-            else if (check(['rolet', 'blind', 'shutter', 'zaslon'])) conf = SMART_MAP['cover'];
-            else if (check(['zamek', 'lock', 'rygiel'])) conf = SMART_MAP['lock'];
-            else if (check(['drzwi', 'door', 'furtka', 'okno', 'window'])) {
+            if (check(['glosnik', 'speaker', 'audio', 'tv', 'odtwarzacz'])) {
+                conf = SMART_MAP['media_player'];
+            } else if (check(['swiatlo', 'lamp', 'kinkiet', 'led', 'zarowka'])) {
+                conf = SMART_MAP['light'];
+            } else if (check(['gniazdko', 'wtyczka', 'outlet', 'plug'])) {
+                conf = SMART_MAP['switch'];
+            } else if (check(['brama', 'garaz', 'gate'])) {
+                conf = { type: 'cover', size: '(2x1)', iconOn: 'mdi-garage-open', iconOff: 'mdi-garage' };
+            } else if (check(['rolet', 'blind', 'shutter', 'zaslon'])) {
+                conf = SMART_MAP['cover'];
+            } else if (check(['zamek', 'lock', 'rygiel'])) {
+                conf = SMART_MAP['lock'];
+            } else if (check(['drzwi', 'door', 'furtka', 'okno', 'window'])) {
                 conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-door-open', iconOff: 'mdi-door-closed' };
-                if (check(['okno', 'window'])) { conf.iconOn = 'mdi-window-open-variant'; conf.iconOff = 'mdi-window-closed-variant'; }
-            } else if (check(['temp', 'therm'])) conf = { type: 'sensor', size: '(1x1)', icon: 'mdi-thermometer' };
-            else if (check(['wilg', 'humid'])) conf = { type: 'sensor', size: '(1x1)', icon: 'mdi-water-percent' };
-            else if (check(['script', 'skrypt', 'radio'])) conf = SMART_MAP['script'];
+                if (check(['okno', 'window'])) {
+                    conf.iconOn = 'mdi-window-open-variant'; conf.iconOff = 'mdi-window-closed-variant';
+                }
+            } else if (check(['temp', 'therm'])) {
+                conf = { type: 'sensor', size: '(1x1)', icon: 'mdi-thermometer' };
+            } else if (check(['wilg', 'humid'])) {
+                conf = { type: 'sensor', size: '(1x1)', icon: 'mdi-water-percent' };
+            } else if (check(['script', 'skrypt', 'radio'])) {
+                conf = SMART_MAP['script'];
+            }
 
             if (dClass === 'garage') conf = { type: 'cover', size: '(2x1)', iconOn: 'mdi-garage-open', iconOff: 'mdi-garage' };
             if (dClass === 'door') conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-door-open', iconOff: 'mdi-door-closed' };
             if (dClass === 'battery') conf = { type: 'sensor', size: '(1x1)', icon: 'mdi-battery' };
             if (dClass === 'temperature') conf = { type: 'sensor', size: '(1x1)', icon: 'mdi-thermometer' };
+            if (dClass === 'humidity') conf = { type: 'sensor', size: '(1x1)', icon: 'mdi-water-percent' };
             if (domain === 'input_boolean') conf = SMART_MAP['switch'];
             if (domain === 'script') conf = SMART_MAP['script'];
 
@@ -567,7 +422,6 @@
             document.getElementById('w-icon').value = conf.icon || '';
             document.getElementById('w-icon-on').value = conf.iconOn || '';
             document.getElementById('w-icon-off').value = conf.iconOff || '';
-
             toggleInputs();
             updateIconPreview();
         }
@@ -606,6 +460,19 @@
             document.getElementById('btn-theme').innerText = isDark ? '☀️' : '🌙';
         }
 
+        function applyGrid() {
+            const val = document.getElementById('grid-preset').value;
+            const parts = val.split('x');
+            document.getElementById('h-cols').value = parts[0];
+            document.getElementById('h-rows').value = parts[1];
+            document.getElementById('form-cols').value = parts[0];
+            document.getElementById('form-rows').value = parts[1];
+        }
+
+        function syncTitle() {
+            document.getElementById('form-title').value = document.getElementById('dash-title').value;
+        }
+
         function saveWidget() {
             const w = {
                 type: document.getElementById('w-type').value,
@@ -636,25 +503,20 @@
             blockSmart = true; 
             editIdx = {r, w};
             const data = rows[r][w];
-
             document.getElementById('editor-box').classList.add('editing');
             document.getElementById('btn-cancel').classList.remove('hidden');
             const t = TRANSLATIONS[currentLang];
             document.getElementById('editor-title').innerText = t.sec_edit;
             document.getElementById('btn-submit').innerText = t.btn_update;
-
             document.getElementById('w-type').value = data.type;
             toggleInputs();
-
             if(data.type === 'navigate') document.getElementById('w-dash').value = data.id.replace('navigate.', '');
             else document.getElementById('w-id').value = data.id;
-
             document.getElementById('w-name').value = data.name;
-            document.getElementById('w-size').value = data.size || '(1x1)';
+            document.getElementById('w-size').value = data.size || '(2x1)';
             document.getElementById('w-icon').value = data.icon || '';
             document.getElementById('w-icon-on').value = data.icon_on || '';
             document.getElementById('w-icon-off').value = data.icon_off || '';
-            
             updateIconPreview();
             setTimeout(() => blockSmart = false, 500);
         }
@@ -691,16 +553,13 @@
             renderPreview();
         }
 
-        // --- POBIERANIE STANU (REAL-TIME) ---
+        // --- POBIERANIE RZECZYWISTEGO STANU ---
         function getRealState(w) {
             const isPL = currentLang === 'pl';
-            const type = w.type;
             const id = (w.id || '');
-            
             const ent = entitiesData.find(e => e.id === id);
             
-            if (!ent) return "---";
-
+            if (!ent) return "---"; 
             const val = String(ent.state);
             const unit = ent.unit || "";
 
@@ -714,18 +573,15 @@
             if (!isNaN(parseFloat(val)) && val.includes('.')) {
                 return parseFloat(val).toFixed(1) + " " + unit;
             }
-            
             return val + " " + unit;
         }
 
         function renderPreview() {
             const container = document.getElementById('preview-container');
             container.innerHTML = '';
-
             rows.forEach((row, rI) => {
                 const rowDiv = document.createElement('div');
                 rowDiv.className = 'eink-row';
-                
                 const label = document.createElement('div');
                 label.className = 'row-label';
                 label.innerText = (currentLang === 'pl' ? 'WIERSZ ' : 'ROW ') + (rI + 1);
@@ -742,11 +598,8 @@
                         cols = parseInt(parts[0]) || 1;
                         rw = parseInt(parts[1]) || 1;
                     }
-                    
-                    // SKALOWANIE (Base 115px + 8px margin)
                     const width = (cols * 115) + ((cols - 1) * 8);
                     const height = (rw * 115) + ((rw - 1) * 8);
-                    
                     div.style.width = width + 'px';
                     div.style.height = height + 'px';
 
@@ -757,8 +610,7 @@
                         div.innerHTML = '<span style="font-size:10px; color:#999;">SPACER</span>';
                     } else {
                         const icon = w.icon || w.icon_on || 'mdi-cube-outline';
-                        const realState = getRealState(w); // Pokaż prawdziwy stan
-                        
+                        const realState = getRealState(w); 
                         div.innerHTML = `
                             <div class="ew-header">${w.type}</div>
                             <div class="ew-title">${w.name || w.id}</div>
@@ -783,7 +635,6 @@
             const text = document.getElementById('import-code').value;
             if(!text) return;
             blockSmart = true;
-            
             const lines = text.split('\n');
             const newRows = [];
             let inLayout = false;
@@ -793,7 +644,6 @@
             lines.forEach(line => {
                 const tr = line.trim();
                 if(!tr || tr.startsWith('#')) return;
-
                 if (line.match(/^\S+:/) && !line.startsWith('layout:') && !line.startsWith('global_parameters:')) {
                     currentDefKey = line.split(':')[0].trim();
                     rawDefs[currentDefKey] = {};
@@ -810,30 +660,26 @@
             });
             
             importedDefsMap = rawDefs;
-
             lines.forEach(line => {
                 const tr = line.trim();
                 if(tr.startsWith('layout:')) { inLayout = true; return; }
-                
                 if(inLayout && tr.startsWith('-')) {
                     const content = tr.substring(1).trim();
                     const widgets = content.split(',').map(s => s.trim());
                     const rowData = [];
                     widgets.forEach(wStr => {
                         let id = wStr;
-                        let size = '(2x1)'; // Domyślny
+                        let size = '(2x1)'; 
                         const sizeMatch = wStr.match(/\(\d+x\d+\)/);
                         if(sizeMatch) {
                             size = sizeMatch[0];
                             id = wStr.replace(size, '').trim();
                         }
-                        
                         let type = 'switch';
                         let name = id;
                         let icon = '';
                         let icon_on = '';
                         let icon_off = '';
-
                         const def = rawDefs[id];
                         if(def) {
                             if(def.widget_type) type = def.widget_type;
@@ -841,29 +687,20 @@
                             if(def.icon) icon = def.icon;
                             if(def.icon_on) icon_on = def.icon_on;
                             if(def.icon_off) icon_off = def.icon_off;
-                            if(def.icon_locked) icon_off = def.icon_locked;
-                            if(def.icon_unlocked) icon_on = def.icon_unlocked;
                         } else {
                             if(id === 'spacer') type = 'spacer';
                             else if(id.startsWith('navigate.')) type = 'navigate';
                             else if(id.startsWith('sensor.')) type = 'sensor';
                         }
-                        
                         if(name === id && type !== 'spacer') name = formatSmartName(id, '');
-
-                        rowData.push({
-                            id: id, type: type, size: size, name: name, 
-                            icon: icon, icon_on: icon_on, icon_off: icon_off
-                        });
+                        rowData.push({ id, type, size, name, icon, icon_on, icon_off });
                     });
                     newRows.push(rowData);
                 }
-                
                 if(inLayout && tr.length > 0 && !tr.startsWith('-') && !tr.startsWith(' ') && !tr.startsWith('layout:')) {
                     inLayout = false;
                 }
             });
-            
             if(newRows.length > 0) {
                 rows = newRows;
                 renderPreview();
@@ -878,7 +715,6 @@
             const host = window.location.hostname;
             const pathEl = document.getElementById('path-code');
             const linkEl = document.getElementById('dashboard-link');
-            
             if(pathEl) pathEl.innerText = pathEl.innerText.replace('IP_HA', host);
             if(linkEl) {
                 const rawHref = linkEl.getAttribute('href');
@@ -888,16 +724,10 @@
                     linkEl.innerText = newHref;
                 }
             }
-
             setLang('pl');
             const savedTheme = localStorage.getItem('joan_theme') || 'light';
             document.getElementById('btn-theme').innerText = savedTheme === 'dark' ? '☀️' : '🌙';
-            
-            if(!rows.length || (rows.length===1 && !rows[0].length)) {
-                // Empty start
-            } else {
-                renderPreview();
-            }
+            if(!rows.length || (rows.length===1 && !rows[0].length)) { } else { renderPreview(); }
         });
     </script>
 </body>
