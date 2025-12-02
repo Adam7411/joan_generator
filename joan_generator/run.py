@@ -43,6 +43,7 @@ def get_ha_entities():
                 entities.append({
                     'id': state['entity_id'],
                     'state': state['state'],
+                    # Pobieramy atrybuty, aby JS mógł odczytać device_class
                     'attributes': state.get('attributes', {}),
                     'unit': state['attributes'].get('unit_of_measurement', '')
                 })
