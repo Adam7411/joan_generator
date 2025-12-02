@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Joan 6 E-Ink Generator (ULTRA MASTER)</title>
+    <title>Joan 6 E-Ink Generator (Final Monster Edition)</title>
     
-    <!-- 1. BIBLIOTEKI IKON I CZCIONEK -->
+    <!-- 1. BIBLIOTEKI ZEWNĘTRZNE -->
     <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap" rel="stylesheet">
     
-    <!-- 2. SKRYPT INICJUJĄCY MOTYW (W HEAD DLA BRAKU MRUGANIA) -->
+    <!-- 2. INICJALIZACJA MOTYWU (ANTI-FLICKER) -->
     <script>
         (function() {
             try {
@@ -18,15 +18,15 @@
                     document.documentElement.classList.add('dark-mode');
                 }
             } catch(e) {
-                console.error("Błąd ładowania motywu:", e);
+                console.error("Błąd odczytu motywu:", e);
             }
         })();
     </script>
 
     <style>
-        /* ------------------------------------------------------------------ */
+        /* ---------------------------------------------------------- */
         /* 3. ZMIENNE KOLORYSTYCZNE (CSS VARIABLES) */
-        /* ------------------------------------------------------------------ */
+        /* ---------------------------------------------------------- */
         :root {
             --bg-body: #e0e0e0;
             --bg-container: #ffffff;
@@ -39,7 +39,7 @@
             --preview-bg: #f0f0f0;
             --link-bg: #e1f5fe;
             --link-color: #0277bd;
-            --shadow: 0 4px 10px rgba(0,0,0,0.1);
+            --shadow: 0 4px 15px rgba(0,0,0,0.1);
             --btn-text: #ffffff;
         }
         
@@ -55,12 +55,12 @@
             --preview-bg: #000000;
             --link-bg: #013655;
             --link-color: #81d4fa;
-            --shadow: 0 4px 10px rgba(0,0,0,0.5);
+            --shadow: 0 4px 15px rgba(0,0,0,0.5);
         }
 
-        /* ------------------------------------------------------------------ */
+        /* ---------------------------------------------------------- */
         /* 4. STYLE GŁÓWNE */
-        /* ------------------------------------------------------------------ */
+        /* ---------------------------------------------------------- */
         body { 
             font-family: 'Roboto', sans-serif; 
             background-color: var(--bg-body); 
@@ -78,7 +78,7 @@
             box-shadow: var(--shadow); 
         }
         
-        /* HEADER */
+        /* NAGŁÓWEK */
         .header-row { 
             display: flex; 
             justify-content: space-between; 
@@ -97,7 +97,7 @@
             letter-spacing: 1px;
         }
         
-        /* KONTROLKI MOTYWU I JĘZYKA */
+        /* KONTROLKI */
         .controls button { 
             padding: 8px 16px; 
             border: 1px solid var(--border); 
@@ -138,7 +138,7 @@
             color: var(--text-main); 
         }
 
-        /* INFO O PLIKU (NA DOLE) */
+        /* INFO O PLIKU */
         .file-path-info { 
             background-color: var(--link-bg); 
             color: var(--link-color); 
@@ -292,7 +292,7 @@
             min-height: 400px; 
         }
         
-        /* Wiersz - Bardzo wysoki, żeby przyciski miały oddech */
+        /* WIERSZ - WYSOKI ABY MIEŚCIĆ DUŻE WIDGETY */
         .eink-row { 
             display: flex; 
             gap: 8px; /* Margines z Joan.txt */
@@ -300,8 +300,8 @@
             padding: 15px; 
             border: 2px dashed #999; 
             border-radius: 6px; 
-            min-height: 180px; /* Zwiększona wysokość */
-            align-items: flex-end; /* Wyrównaj do dołu */
+            min-height: 220px; /* Gwarancja widoczności */
+            align-items: flex-end; 
             position: relative; 
         }
         
@@ -349,7 +349,7 @@
             display: flex; 
             flex-direction: column; 
             align-items: center; 
-            justify-content: space-between; /* Rozciągnij treść góra-dół */
+            justify-content: space-between; /* Rozciągnij treść */
             padding: 8px; 
             box-sizing: border-box; 
             cursor: pointer; 
@@ -372,14 +372,14 @@
             z-index: 20; 
         }
 
-        /* Tytuł - Mniejszy aby nie zasłaniał */
+        /* Tytuł - Zmniejszony i odsunięty */
         .ew-title { 
             font-weight: 900; 
-            font-size: 12px; /* Mała czcionka */
+            font-size: 13px; 
             text-align: center; 
             width: 100%; 
             line-height: 1.2; 
-            margin-top: 8px; 
+            margin-top: 12px; 
             margin-bottom: 2px; 
             white-space: normal; 
             font-family: 'Roboto', 'Arial Black', sans-serif; 
@@ -387,15 +387,15 @@
             pointer-events: none;
         }
         
-        /* Ikona - Dopasowana */
+        /* Ikona - Zmniejszona, aby zrobić miejsce */
         .ew-icon { 
-            font-size: 38px; /* Zmniejszona z 50px */
+            font-size: 38px; 
             display: block; 
             margin: 2px 0; 
             pointer-events: none;
         }
         
-        /* STAN (WARTOŚĆ) - Wyraźny na dole */
+        /* STAN (WARTOŚĆ) - Na dole, wyraźny */
         .ew-value { 
             font-weight: 900; 
             font-size: 15px; 
@@ -460,7 +460,7 @@
 <body>
     <div class="container">
         <div class="header-row">
-            <h1>Joan 6 E-Ink Generator (Final)</h1>
+            <h1>Joan 6 E-Ink Generator (MONUMENTAL)</h1>
             <div class="controls">
                 <button type="button" onclick="toggleTheme()" id="btn-theme">🌙</button>
                 <button type="button" onclick="setLang('pl')" id="btn-pl" class="active">PL</button>
@@ -468,7 +468,7 @@
             </div>
         </div>
 
-        <!-- SEKCJA 1: USTAWIENIA -->
+        <!-- 1. USTAWIENIA SIATKI (SMART GRID) -->
         <div class="section">
             <div class="section-title">1. Ustawienia Dashboardu</div>
             <div class="flex-row">
@@ -479,23 +479,24 @@
                 <div class="flex-col">
                     <label>Układ Siatki (Smart Grid)</label>
                     <select id="grid-preset" onchange="applyGrid()">
-                        <option value="6x8" selected>Standard+ (6 kolumn x 8 wierszy)</option>
-                        <option value="6x6">Standard (6 kolumn x 6 wierszy)</option>
+                        <option value="3x8" selected>Standard+ (3 kolumny x 8 wierszy) - DOMYŚLNY</option>
+                        <option value="3x6">Standard (3 kolumny x 6 wierszy)</option>
                         <option value="4x4">Duży (4 kolumny x 4 wiersze)</option>
+                        <option value="4x6">Średni (4 kolumny x 6 wierszy)</option>
                         <option value="6x9">Mały (6 kolumn x 9 wierszy)</option>
                     </select>
                 </div>
-                <input type="hidden" id="h-cols" value="6">
+                <input type="hidden" id="h-cols" value="3">
                 <input type="hidden" id="h-rows" value="8">
             </div>
         </div>
 
-        <!-- SEKCJA IMPORTU -->
+        <!-- 2. IMPORT -->
         <div class="section" id="import-section">
             <details>
                 <summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">📂 Import / Eksport Kodu .DASH</summary>
                 <div style="margin-top: 15px;">
-                    <textarea id="import-code" style="height: 150px;" placeholder="Wklej tutaj zawartość pliku .dash aby go edytować..."></textarea>
+                    <textarea id="import-code" style="height: 150px;" placeholder="Wklej tutaj zawartość pliku .dash..."></textarea>
                     <button type="button" class="btn btn-import" onclick="importYaml()">Wczytaj Kod</button>
                 </div>
             </details>
@@ -504,10 +505,10 @@
         <form method="POST" id="main-form">
             <input type="hidden" name="title" id="form-title" value="JoanDashboard">
             <input type="hidden" name="ui_language" id="input-lang" value="pl">
-            <input type="hidden" name="grid_columns" id="form-cols" value="6">
+            <input type="hidden" name="grid_columns" id="form-cols" value="3">
             <input type="hidden" name="grid_rows" id="form-rows" value="8">
             
-            <!-- SEKCJA 2: EDYTOR WIDGETU -->
+            <!-- 3. EDYTOR WIDGETU -->
             <div class="add-widget-box" id="editor-box">
                 <div class="section-title" id="editor-title" data-i18n="sec_add">2. Dodaj Widget</div>
                 
@@ -534,7 +535,6 @@
                     </div>
                     <div class="flex-col" id="grp-entity">
                         <label data-i18n="lbl_entity">Encja (Wyszukaj po nazwie lub ID)</label>
-                        <!-- DATALIST -->
                         <input list="entity-list" id="w-id" placeholder="np. głośnik kuchnia..." oninput="searchEntities(this.value)" autocomplete="off">
                         <datalist id="entity-list"></datalist>
                     </div>
@@ -587,7 +587,7 @@
                 </div>
             </div>
 
-            <!-- SEKCJA 3: PODGLĄD -->
+            <!-- 4. PODGLĄD E-INK -->
             <div class="section">
                 <div class="section-title" data-i18n="sec_preview">3. Podgląd Dashboardu (Kliknij by edytować)</div>
                 <div class="preview-area" id="preview-container"></div>
@@ -598,11 +598,10 @@
             <button type="button" class="btn btn-gen" onclick="submitData()" data-i18n="btn_gen">GENERUJ KOD .DASH</button>
         </form>
 
-        <!-- SEKCJA 4: WYNIK (NA DOLE) -->
+        <!-- 5. WYNIK YAML -->
         {% if generated_yaml %}
         <div class="section" style="margin-top:30px;">
             <div class="section-title">Wynikowy Kod YAML</div>
-            
             <div class="file-path-info">
                 <div class="file-info-block">
                     <strong>1. Zapisz kod w pliku:</strong>
@@ -610,11 +609,9 @@
                 </div>
                 <div class="file-info-block">
                     <strong>2. Uruchom ponownie AppDaemon i sprawdź dashboard:</strong>
-                    <!-- HOST zostanie podmieniony przez JS -->
                     <a href="http://[HOST]:5050/{{ dash_name }}" id="dashboard-link" target="_blank">http://[HOST]:5050/{{ dash_name }}</a>
                 </div>
             </div>
-
             <textarea class="output" readonly>{{ generated_yaml }}</textarea>
         </div>
         {% endif %}
@@ -624,7 +621,7 @@
     <!-- LOGIKA JAVASCRIPT -->
     <!-- ------------------------------------------------------------------ -->
     <script>
-        // --- ZMIENNE GLOBALNE ---
+        // --- DANE I ZMIENNE ---
         const entitiesData = {{ entities | tojson | safe }};
         let rows = [[]]; 
         let editIdx = null; 
@@ -651,7 +648,7 @@
             },
             en: {
                 sec_add: "2. Add Widget", sec_edit: "2. Edit Widget", sec_preview: "3. Dashboard Preview",
-                lbl_type: "Widget Type", lbl_entity: "Entity (Type Name or ID)", lbl_name: "Title on Screen", lbl_size: "Size", 
+                lbl_type: "Widget Type", lbl_entity: "Entity", lbl_name: "Title", lbl_size: "Size", 
                 lbl_icon: "Icon", lbl_dash: "Dashboard Name", lbl_preview: "Icon",
                 btn_add: "+ ADD WIDGET", btn_update: "SAVE CHANGES", btn_cancel: "CANCEL", 
                 btn_row: "+ Add Row", btn_gen: "GENERATE .DASH CODE",
@@ -681,7 +678,6 @@
         };
 
         // --- HELPERY ---
-
         function normalizeString(str) {
             return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
         }
@@ -745,30 +741,21 @@
             document.getElementById('grp-nav').classList.toggle('hidden', !isNav);
         }
 
-        // --- LIMIT ZNAKÓW TYTUŁU ---
         function updateTitleLimit() {
             const size = document.getElementById('w-size').value;
             const input = document.getElementById('w-name');
             const counter = document.getElementById('char-count');
             let max = 20;
-            // Małe widgety mają mniej miejsca na tekst
             if(size === '(1x1)' || size === '(1x2)') max = 15;
-            
             input.maxLength = max;
             const current = input.value.length;
-            const limitText = currentLang === 'pl' ? TRANSLATIONS.pl.limit_20 : TRANSLATIONS.en.limit_20;
             const txt = max === 15 ? (currentLang==='pl'?"Maks 15":"Max 15") : (currentLang==='pl'?"Maks 20":"Max 20");
             counter.innerText = `${current}/${max} (${txt})`;
-            
-            if(current >= max) counter.classList.add('limit');
-            else counter.classList.remove('limit');
+            if(current >= max) counter.classList.add('limit'); else counter.classList.remove('limit');
         }
         
-        function checkTitleLimit() {
-            updateTitleLimit();
-        }
+        function checkTitleLimit() { updateTitleLimit(); }
 
-        // --- SMART LOGIC ---
         function runSmartLogic(val) {
             if (blockSmart) return;
             const id = val.toLowerCase();
@@ -805,9 +792,10 @@
             if (domain === 'input_boolean') conf = SMART_MAP['switch'];
             if (domain === 'script') conf = SMART_MAP['script'];
 
-            // SMART GRID: Wymuś 2x1 na dużych siatkach
+            // SMART GRID LOGIC: Wymuś 2x1 dla układów Standard/Standard+
             const currentGrid = document.getElementById('grid-preset').value;
-            if (currentGrid !== '6x9' && conf.size === '(1x1)' && conf.type !== 'binary_sensor') {
+            // Zaktualizowano warunek na 3x8 i 3x6 zamiast 6x8 i 6x6
+            if ((currentGrid === '3x8' || currentGrid === '3x6') && conf.size === '(1x1)' && conf.type !== 'binary_sensor') {
                 conf.size = '(2x1)';
             }
 
@@ -927,13 +915,11 @@
             renderPreview();
         }
 
-        // --- POBIERANIE RZECZYWISTEGO STANU Z HA ---
+        // --- POBIERANIE STANU ---
         function getRealState(w) {
             const isPL = currentLang === 'pl';
             const id = (w.id || '');
-            // Szukamy encji w danych z backendu
             const ent = entitiesData.find(e => e.id === id);
-            
             if (!ent) return "---";
             const val = String(ent.state);
             const unit = ent.unit || "";
@@ -963,7 +949,7 @@
                 rowDiv.appendChild(label);
 
                 row.forEach((w, wI) => {
-                    // WRAPPER (TYP NA GÓRZE)
+                    // Wrapper dla etykiety na zewnątrz
                     const wrapper = document.createElement('div');
                     wrapper.className = 'widget-wrapper';
 
@@ -994,7 +980,6 @@
                         div.innerHTML = '<span style="font-size:10px; color:#999;">SPACER</span>';
                     } else {
                         const icon = w.icon || w.icon_on || 'mdi-cube-outline';
-                        // STAN
                         const realState = getRealState(w);
                         div.innerHTML = `
                             <div class="ew-title">${w.name || w.id}</div>
@@ -1004,7 +989,6 @@
                         `;
                     }
                     div.onclick = () => editWidget(rI, wI);
-                    
                     wrapper.appendChild(div);
                     rowDiv.appendChild(wrapper);
                 });
