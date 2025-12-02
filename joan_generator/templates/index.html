@@ -479,16 +479,16 @@
                 <div class="flex-col">
                     <label>Układ Siatki (Smart Grid)</label>
                     <select id="grid-preset" onchange="applyGrid()">
-                        <!-- ZMIANA: Układy 3-kolumnowe jako Standard -->
-                        <option value="3x8" selected>Standard+ (3 kolumny x 8 wierszy) - DOMYŚLNY</option>
-                        <option value="3x6">Standard (3 kolumny x 6 wierszy)</option>
+                        <!-- ZMIANA: Układy 4-kolumnowe jako Standard -->
+                        <option value="4x8" selected>Standard+ (3 kolumny x 8 wierszy) - DOMYŚLNY</option>
+                        <option value="4x6">Standard (3 kolumny x 6 wierszy)</option>
                         <option value="4x4">Duży (4 kolumny x 4 wiersze)</option>
                         <option value="4x6">Średni (4 kolumny x 6 wierszy)</option>
                         <option value="6x9">Mały (6 kolumn x 9 wierszy)</option>
                     </select>
                 </div>
-                <!-- ZMIANA: Domyślne wartości cols=3 -->
-                <input type="hidden" id="h-cols" value="3">
+                <!-- ZMIANA: Domyślne wartości cols=4 -->
+                <input type="hidden" id="h-cols" value="4">
                 <input type="hidden" id="h-rows" value="8">
             </div>
         </div>
@@ -507,8 +507,8 @@
         <form method="POST" id="main-form">
             <input type="hidden" name="title" id="form-title" value="JoanDashboard">
             <input type="hidden" name="ui_language" id="input-lang" value="pl">
-            <!-- ZMIANA: Domyślne wartości cols=3 -->
-            <input type="hidden" name="grid_columns" id="form-cols" value="3">
+            <!-- ZMIANA: Domyślne wartości cols=4 -->
+            <input type="hidden" name="grid_columns" id="form-cols" value="4">
             <input type="hidden" name="grid_rows" id="form-rows" value="8">
             
             <!-- 3. EDYTOR WIDGETU -->
@@ -797,8 +797,8 @@
 
             // SMART GRID LOGIC: Wymuś 2x1 dla układów Standard/Standard+
             const currentGrid = document.getElementById('grid-preset').value;
-            // ZMIANA: Detekcja nowych układów 3x8 i 3x6
-            if ((currentGrid === '3x8' || currentGrid === '3x6') && conf.size === '(1x1)' && conf.type !== 'binary_sensor') {
+            // ZMIANA: Detekcja nowych układów 4x8 i 4x6
+            if ((currentGrid === '4x8' || currentGrid === '4x6') && conf.size === '(1x1)' && conf.type !== 'binary_sensor') {
                 conf.size = '(2x1)';
             }
 
