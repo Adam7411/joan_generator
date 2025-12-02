@@ -37,20 +37,19 @@ def get_ha_entities():
         return []
     headers = {"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json"}
     try:
-        # print(f"🌍 Fetching entities from: {API_URL}/states")
         response = requests.get(f"{API_URL}/states", headers=headers, timeout=10)
         if response.status_code == 200:
             data = response.json()
             entities = []
             for state in data:
-                # Przekazujemy pełne dane (attributes) dla JS, aby Smart Logic działał na device_class i friendly_name
+                # Przekazujemy pełne atrybuty dla logiki Smart JS
                 entities.append({
                     'id': state['entity_id'],
                     'state': state['state'],
                     'attributes': state.get('attributes', {}),
                     'unit': state.get('attributes', {}).get('unit_of_measurement', '')
                 })
-            # Sortowanie alfabetyczne po ID dla porządku
+            # Sortowanie alfabetyczne
             entities.sort(key=lambda x: x['id'])
             return entities
         else:
@@ -60,7 +59,6 @@ def get_ha_entities():
     return []
 
 # --- STYLE E-INK (High Contrast - Joan 6) ---
-# Style zgodne z dokumentacją AppDaemon dla E-Ink
 STYLES = {
     "title": "color: #000000; font-size: 30px; font-weight: 900; text-align: center; font-family: sans-serif; text-transform: uppercase;",
     "widget": "background-color: #FFFFFF; border: 3px solid #000000; color: #000000;",
@@ -102,7 +100,6 @@ def index():
             dashboard_filename = dashboard_slug + ".dash"
             lang = request.form.get('ui_language', 'pl')
             
-            # Tłumaczenia stanów dla AppDaemon (state_map)
             T = {
                 'pl': {'on': 'WŁ.', 'off': 'WYŁ.', 'open': 'OTWARTE', 'closed': 'ZAMKNIĘTE', 
                        'locked': 'ZABEZP.', 'unlocked': 'OTWARTE', 'home': 'DOM', 'not_home': 'POZA'},
@@ -111,7 +108,6 @@ def index():
             }
             dic = T.get(lang, T['pl'])
 
-            # --- NAGŁÓWEK PLIKU DASH ---
             generated_yaml += f"# --- JOAN 6 E-INK DASHBOARD ---\n"
             generated_yaml += f"title: {title}\n"
             generated_yaml += "widget_dimensions: [115, 115]\n"
@@ -139,7 +135,7 @@ def index():
                 generated_yaml += "layout:\n"
                 processed_widgets = []
                 
-                # --- GENEROWANIE SEKCJI LAYOUT ---
+                # Layout
                 for row in layout_rows:
                     if not row: continue
                     row_parts = []
@@ -150,7 +146,6 @@ def index():
                             
                         widget_str = w['id']
                         size = w.get('size', '').strip()
-                        # Domyślny rozmiar to 1x1, jeśli jest inny, dodajemy go
                         if size and size != "(1x1)":
                             if not size.startswith('('): size = f"({size})"
                             widget_str += size
@@ -162,7 +157,6 @@ def index():
                 
                 generated_yaml += "\n# --- WIDGET DEFINITIONS ---\n\n"
                 
-                # --- GENEROWANIE DEFINICJI WIDGETÓW ---
                 seen_ids = set()
                 for w in processed_widgets:
                     if w['type'] == 'spacer': continue
@@ -177,7 +171,6 @@ def index():
                     generated_yaml += f"{w_id}:\n"
                     generated_yaml += f"  title: \"{w_name}\"\n"
                     
-                    # 1. NAWIGACJA
                     if w_type == 'navigate':
                         dashboard_name = w_id.replace('navigate.', '')
                         generated_yaml += f"  widget_type: navigate\n"
@@ -186,7 +179,6 @@ def index():
                         generated_yaml += f"  widget_style: \"background-color: #000000; color: #FFFFFF; border: 2px solid #000000;\"\n"
                         generated_yaml += f"  icon_style_inactive: \"color: #FFFFFF;\"\n"
                     
-                    # 2. SENSOR
                     elif w_type == 'sensor':
                         generated_yaml += f"  widget_type: sensor\n"
                         generated_yaml += f"  entity: {w_id}\n"
@@ -194,20 +186,17 @@ def index():
                         generated_yaml += f"  unit_style: \"{STYLES['unit']}\"\n"
                         if w_icon: generated_yaml += f"  icon: {w_icon}\n"
 
-                    # 3. MEDIA PLAYER
                     elif w_type == 'media_player':
                         generated_yaml += f"  widget_type: media_player\n"
                         generated_yaml += f"  entity: {w_id}\n"
                         generated_yaml += f"  truncate_name: 20\n"
                         generated_yaml += f"  step: 5\n"
 
-                    # 4. CLIMATE
                     elif w_type == 'climate':
                         generated_yaml += f"  widget_type: climate\n"
                         generated_yaml += f"  entity: {w_id}\n"
                         generated_yaml += f"  step: 1\n"
 
-                    # 5. ZEGAR
                     elif w_type == 'clock':
                         generated_yaml += f"  widget_type: clock\n"
                         generated_yaml += f"  time_format: 24hr\n"
@@ -215,13 +204,11 @@ def index():
                         generated_yaml += f"  date_style: \"{STYLES['text']}\"\n"
                         generated_yaml += f"  time_style: \"{STYLES['value']} font-size: 50px !important;\"\n"
 
-                    # 6. ETYKIETA
                     elif w_type == 'label':
                          generated_yaml += f"  widget_type: label\n"
                          generated_yaml += f"  text: \"{w_name}\"\n"
                          if w_icon: generated_yaml += f"  icon: {w_icon}\n"
                     
-                    # 7. INNE (Actionable - Switch, Light, etc.)
                     else:
                         ad_type = w_type
                         if w_type == 'binary_sensor': ad_type = 'binary_sensor'
@@ -236,8 +223,7 @@ def index():
                         generated_yaml += f"  widget_type: {ad_type}\n"
                         generated_yaml += f"  entity: {w_id}\n"
                         
-                        # Pobieramy dokładne ikony z obiektu widgetu (JSON)
-                        # Musimy znaleźć ten widget w liście processed_widgets
+                        # Pobieranie ikon z JSON (z JS)
                         current_w_json = next((item for item in processed_widgets if item["id"] == w_id), None)
                         
                         if current_w_json:
