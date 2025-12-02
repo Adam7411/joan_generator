@@ -42,11 +42,11 @@ def get_ha_entities():
             data = response.json()
             entities = []
             for state in data:
-                # WAŻNE: Przekazujemy cały obiekt 'attributes', aby HTML mógł czytać device_class
+                # WAŻNE: Przekazujemy attributes, aby HTML mógł czytać device_class
                 entities.append({
                     'id': state['entity_id'],
                     'state': state['state'],
-                    'attributes': state.get('attributes', {}), # To naprawia błąd 500
+                    'attributes': state.get('attributes', {}),
                     'unit': state.get('attributes', {}).get('unit_of_measurement', '')
                 })
             entities.sort(key=lambda x: x['id'])
@@ -87,9 +87,7 @@ def get_icon_pair(base_icon, w_type):
 @app.route('/', methods=['GET', 'POST'])
 def index():
     generated_yaml = ""
-    # Pobieramy encje przy każdym ładowaniu strony
     ha_entities = get_ha_entities()
-    
     dashboard_filename = ""
     dashboard_slug = ""
     
@@ -111,7 +109,7 @@ def index():
             generated_yaml += f"# --- JOAN 6 E-INK DASHBOARD ---\n"
             generated_yaml += f"title: {title}\n"
             generated_yaml += "widget_dimensions: [115, 115]\n"
-            generated_yaml += "widget_size: [2, 1]\n"
+            generated_yaml += "widget_size: [1, 1]\n" # Domyślny rozmiar
             generated_yaml += "widget_margins: [8, 8]\n"
             generated_yaml += "columns: 6\n"
             generated_yaml += "rows: 6\n"
@@ -145,7 +143,7 @@ def index():
                             
                         widget_str = w['id']
                         size = w.get('size', '').strip()
-                        if size:
+                        if size and size != "(1x1)": # 1x1 jest domyślne, więc opcjonalne
                             if not size.startswith('('): size = f"({size})"
                             widget_str += size
                         row_parts.append(widget_str)
@@ -250,5 +248,4 @@ def index():
     return render_template('index.html', generated_yaml=generated_yaml, entities=ha_entities, filename=dashboard_filename, dash_name=dashboard_slug)
 
 if __name__ == "__main__":
-    # Ustawiam debug=True, aby błędy były widoczne w logach w razie kolejnych problemów
     app.run(host='0.0.0.0', port=5000, debug=True)
