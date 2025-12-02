@@ -3,335 +3,501 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Joan 6 E-Ink Generator</title>
+    <title>Joan 6 E-Ink Generator (Full Version)</title>
     <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <!-- SKRYPT MOTYWU - MUSI BYĆ W HEAD -->
     <script>
-        // NATYCHMIASTOWE USTAWIENIE MOTYWU (Zapobiega mruganiu i resetowaniu)
         (function() {
-            const savedTheme = localStorage.getItem('joan_theme') || 'light';
-            if (savedTheme === 'dark') {
-                document.documentElement.classList.add('dark-mode');
-            }
+            try {
+                const savedTheme = localStorage.getItem('joan_theme') || 'light';
+                if (savedTheme === 'dark') {
+                    document.documentElement.classList.add('dark-mode');
+                }
+            } catch(e) {}
         })();
     </script>
+
     <style>
+        /* --- ZMIENNE KOLORYSTYCZNE --- */
         :root {
-            --bg-color: #e0e0e0;
-            --container-bg: #ffffff;
-            --text-color: #333;
-            --border-color: #ddd;
-            --accent-color: #d32f2f;
-            --input-bg: #fff;
-            --section-bg: #fafafa;
+            --bg-body: #e0e0e0;
+            --bg-container: #ffffff;
+            --bg-section: #fafafa;
+            --bg-input: #ffffff;
+            --text-main: #333333;
+            --border: #cccccc;
+            --accent: #d32f2f;
+            --highlight: #e3f2fd;
             --preview-bg: #f0f0f0;
-            --link-bg: #ffffff;
-            --link-color: #0056b3;
-            --link-border: #bee5eb;
+            --link-color: #1976d2;
         }
-        .dark-mode {
-            --bg-color: #121212;
-            --container-bg: #1e1e1e;
-            --text-color: #e0e0e0;
-            --border-color: #333;
-            --accent-color: #ff5252;
-            --input-bg: #2c2c2c;
-            --section-bg: #252525;
-            --preview-bg: #121212;
-            --link-bg: rgba(0,0,0,0.3);
-            --link-color: #80d8ff;
-            --link-border: #37474f;
+        
+        html.dark-mode {
+            --bg-body: #121212;
+            --bg-container: #1e1e1e;
+            --bg-section: #252525;
+            --bg-input: #2c2c2c;
+            --text-main: #e0e0e0;
+            --border: #444444;
+            --accent: #ff5252;
+            --highlight: #0d47a1;
+            --preview-bg: #000000;
+            --link-color: #90caf9;
         }
-        body { font-family: 'Roboto', sans-serif; background-color: var(--bg-color); color: var(--text-color); padding: 20px; transition: background-color 0.3s; }
-        .container { max-width: 1300px; margin: 0 auto; background: var(--container-bg); padding: 25px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid var(--border-color); padding-bottom: 15px; }
-        h1 { color: var(--accent-color); margin: 0; font-size: 24px; }
-        .controls { display: flex; gap: 10px; align-items: center; }
-        .lang-switch button, .theme-switch button { padding: 8px 12px; border: 1px solid var(--border-color); background: var(--section-bg); color: var(--text-color); cursor: pointer; border-radius: 4px; font-weight: bold; }
-        .lang-switch button.active { background: var(--accent-color); color: white; border-color: var(--accent-color); }
-        .status-bar { padding: 10px; margin-bottom: 20px; border-radius: 4px; text-align: center; font-weight: bold; }
-        .section { margin-bottom: 30px; border: 1px solid var(--border-color); padding: 20px; border-radius: 8px; background: var(--section-bg); }
-        .import-box { background: #fff3e0; border: 1px solid #ffe0b2; color: #000; display: none; }
-        .dark-mode .import-box { background: #3e2723; border-color: #5d4037; color: #fff; }
-        .import-box.visible { display: block; }
-        .add-widget-box { background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #2196f3; color: #000; transition: background 0.3s; }
-        .dark-mode .add-widget-box { background: #0d47a1; border-color: #1565c0; color: #fff; }
-        .add-widget-box.editing { background: #fff8e1; border-color: #ffc107; border: 2px solid #ffc107; }
-        .flex-row { display: flex; gap: 15px; align-items: flex-end; margin-bottom: 10px; flex-wrap: wrap; }
-        .flex-col { flex: 1; min-width: 150px; }
-        label { display: block; margin-top: 10px; font-weight: bold; font-size: 0.9em; margin-bottom: 5px; color: var(--text-color); }
-        input, select, textarea { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; box-sizing: border-box; background: var(--input-bg); color: var(--text-color); }
-        .icon-preview-box { width: 42px; height: 42px; background: #fff; border: 1px solid #ccc; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #333; margin-bottom: 1px; }
-        .btn { padding: 10px 20px; border: none; cursor: pointer; border-radius: 4px; font-weight: bold; text-transform: uppercase; }
-        .btn-primary { background-color: var(--accent-color); color: white; width: 100%; font-size: 18px; margin-top: 20px; }
-        .btn-add { background-color: #4caf50; color: white; width: 100%; }
-        .btn-update { background-color: #ff9800; color: white; width: 100%; }
-        .btn-cancel { background-color: #9e9e9e; color: white; margin-left: 10px; }
-        .btn-row { background-color: #2196f3; color: white; margin-top: 10px; }
-        .btn-import { background-color: #ff9800; color: white; margin-bottom: 10px; }
-        .btn-remove-row { font-size: 10px; padding: 5px; margin-left: auto; background-color: #757575; color: white; }
+
+        /* --- STYLE OGÓLNE --- */
+        body { 
+            font-family: 'Roboto', sans-serif; 
+            background-color: var(--bg-body); 
+            color: var(--text-main); 
+            padding: 20px; 
+            transition: background 0.3s, color 0.3s; 
+        }
+        .container { 
+            max-width: 1400px; 
+            margin: 0 auto; 
+            background: var(--bg-container); 
+            padding: 30px; 
+            border-radius: 10px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15); 
+        }
         
-        /* --- PREVIEW AREA & E-INK STYLING --- */
-        .preview-area { background-color: var(--preview-bg); padding: 24px; border-radius: 8px; border: 2px solid var(--border-color); overflow-x: auto; min-height: 220px; }
-        .eink-row { display: flex; gap: 10px; margin-bottom: 12px; padding: 10px; border: 2px dashed #999; background: transparent; border-radius: 6px; align-items: center; position: relative; min-height: 140px; cursor: pointer; }
-        .eink-row:hover { border-color: #2196f3; }
-        .eink-row.active { border-color: #2196f3; background: rgba(33, 150, 243, 0.08); }
+        /* HEADER */
+        .header-row { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            border-bottom: 2px solid var(--border); 
+            padding-bottom: 20px; 
+            margin-bottom: 25px; 
+        }
+        h1 { margin: 0; color: var(--accent); font-size: 28px; }
         
-        /* High Contrast E-Ink Preview Widget */
-        .eink-widget { 
-            background-color: #FFFFFF; 
-            border: 3px solid #000; 
-            color: #000; 
+        .controls { display: flex; gap: 10px; }
+        .controls button { 
+            padding: 8px 16px; 
+            border: 1px solid var(--border); 
+            background: var(--bg-section); 
+            color: var(--text-main); 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-weight: bold; 
+        }
+        .controls button.active { 
+            background: var(--accent); 
+            color: white; 
+            border-color: var(--accent); 
+        }
+
+        /* SEKCJE */
+        .section { 
+            background: var(--bg-section); 
+            padding: 25px; 
+            border-radius: 8px; 
+            border: 1px solid var(--border); 
+            margin-bottom: 30px; 
+        }
+        .section-title { 
+            font-size: 1.4em; 
+            font-weight: 900; 
+            border-bottom: 3px solid var(--accent); 
+            display: inline-block; 
+            margin-bottom: 20px; 
+            color: var(--text-main);
+        }
+
+        /* FORMULARZ EDYCJI */
+        .add-widget-box { 
+            background: var(--highlight); 
+            padding: 25px; 
+            border-radius: 8px; 
+            border: 1px solid var(--accent); 
+            transition: all 0.3s; 
+            margin-bottom: 30px;
+        }
+        .add-widget-box.editing { 
+            border: 3px solid #ff9800; 
+            background: rgba(255, 152, 0, 0.1);
+        }
+
+        .flex-row { 
+            display: flex; 
+            gap: 20px; 
+            flex-wrap: wrap; 
+            align-items: flex-end; 
+            margin-bottom: 15px; 
+        }
+        .flex-col { flex: 1; min-width: 160px; }
+        
+        label { 
+            display: block; 
+            font-weight: bold; 
+            font-size: 0.9em; 
+            margin-bottom: 8px; 
+            color: var(--text-main); 
+        }
+        input, select, textarea { 
+            width: 100%; 
+            padding: 12px; 
+            border: 1px solid var(--border); 
+            background: var(--bg-input); 
+            color: var(--text-main); 
+            border-radius: 4px; 
+            box-sizing: border-box; 
+            font-size: 14px;
+        }
+
+        /* PRZYCISKI */
+        .btn { 
+            padding: 12px 24px; 
+            border: none; 
+            cursor: pointer; 
+            border-radius: 4px; 
+            font-weight: bold; 
+            text-transform: uppercase; 
+            color: white; 
+            font-size: 14px;
+            transition: opacity 0.2s;
+        }
+        .btn:hover { opacity: 0.9; }
+        .btn-add { background: #4caf50; width: 100%; }
+        .btn-gen { background: var(--accent); width: 100%; font-size: 20px; padding: 15px; margin-top: 20px;}
+        .btn-cancel { background: #757575; }
+        .btn-row { background: #2196f3; margin-top: 15px; }
+        .btn-import { background: #ff9800; color: white; width: auto; margin-top: 10px; }
+
+        /* PODGLĄD E-INK (JOAN 6 SIMULATION) */
+        .preview-area { 
+            background: var(--preview-bg); 
+            padding: 30px; 
+            border: 2px solid var(--border); 
+            border-radius: 8px; 
+            overflow-x: auto; 
+            min-height: 300px; 
+        }
+        
+        .eink-row { 
+            display: flex; 
+            gap: 8px; /* MARGINES POMIĘDZY WIDGETAMI */
+            margin-bottom: 12px; 
+            padding: 15px; 
+            border: 2px dashed #999; 
+            border-radius: 6px;
+            min-height: 140px; 
+            align-items: center; 
+            position: relative; 
+        }
+        .eink-row:hover { border-color: #2196f3; background: rgba(33, 150, 243, 0.05); }
+        
+        .row-label { 
+            position: absolute; 
+            top: -10px; 
+            left: 10px; 
+            font-size: 11px; 
+            background: var(--bg-body); 
+            padding: 2px 8px; 
+            color: var(--text-main); 
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        /* WIDGET STYLING (HIGH CONTRAST) */
+        .eink-widget {
+            background: #FFFFFF; 
+            border: 3px solid #000000; 
+            color: #000000;
             display: flex; 
             flex-direction: column; 
             align-items: center; 
-            justify-content: center; 
-            padding: 5px; 
+            justify-content: center;
+            padding: 6px; 
             box-sizing: border-box; 
-            position: relative; 
             cursor: pointer; 
-            box-shadow: 3px 3px 0px rgba(0,0,0,0.2); /* Flat shadow for E-ink feel */
-            flex-shrink: 0; 
-            transition: transform 0.1s; 
-            border-radius: 2px;
-            font-family: sans-serif;
+            position: relative;
+            box-shadow: 4px 4px 0px rgba(0,0,0,0.25); 
+            transition: transform 0.1s;
+            flex-shrink: 0;
+            overflow: hidden;
         }
-        .eink-widget:hover { transform: translateY(-2px); box-shadow: 5px 5px 0px rgba(0,0,0,0.3); z-index: 5; }
-        .eink-widget.being-edited { border: 3px dashed #ff9800; transform: scale(1.02); z-index: 10; }
+        .eink-widget:hover { 
+            transform: translateY(-3px); 
+            z-index: 10; 
+            box-shadow: 6px 6px 0px rgba(0,0,0,0.35);
+            border-color: var(--accent); 
+        }
+        .eink-widget.editing { 
+            border: 3px dashed #ff9800; 
+            transform: scale(1.03); 
+            z-index: 20;
+        }
+
+        .ew-title { 
+            font-weight: 900; 
+            font-size: 14px; 
+            text-align: center; 
+            width: 100%; 
+            line-height: 1.1; 
+            margin-bottom: 5px; 
+            white-space: normal;
+            font-family: sans-serif;
+            text-transform: uppercase;
+        }
+        .ew-icon { font-size: 42px; display: block; margin-bottom: 2px; }
+        .ew-state { 
+            font-weight: 900; 
+            font-size: 12px; 
+            text-transform: uppercase; 
+            border: 2px solid #000; 
+            padding: 2px 6px; 
+            margin-top: 4px; 
+            border-radius: 4px;
+        }
         
-        .ew-title { font-size: 14px; font-weight: 900; text-align: center; width: 100%; white-space: normal; line-height: 1.1; margin-bottom: 5px; }
-        .ew-icon { font-size: 40px; margin-bottom: 2px; }
-        .ew-state { font-size: 13px; font-weight: 900; text-transform: uppercase; margin-top: 5px; border: 1px solid #000; padding: 2px 6px; border-radius: 4px; }
+        .ew-del { 
+            position: absolute; 
+            top: -10px; 
+            right: -10px; 
+            background: red; 
+            color: white; 
+            width: 24px; 
+            height: 24px; 
+            border-radius: 50%; 
+            text-align: center; 
+            line-height: 24px; 
+            font-weight: bold; 
+            display: none; 
+            box-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+        }
+        .eink-widget:hover .ew-del { display: block; }
+
+        .icon-preview { 
+            font-size: 32px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            width: 48px; 
+            height: 48px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            background: var(--bg-input);
+        }
         
-        .ew-edit-overlay { position: absolute; top:0; left:0; right:0; bottom:0; background: rgba(33,150,243,0.1); display:none; pointer-events: none;}
-        .eink-widget:hover .ew-edit-overlay { display: block; }
-        .ew-delete { position: absolute; top: -5px; right: -5px; background: red; color: white; width: 22px; height: 22px; text-align: center; line-height: 22px; font-weight: bold; border-radius: 50%; display: none; z-index: 20; cursor: pointer; box-shadow: 1px 1px 3px rgba(0,0,0,0.5); }
-        .eink-widget:hover .ew-delete { display: block; }
-        
-        textarea.output { width: 100%; height: 500px; font-family: monospace; background: #263238; color: #eceff1; border: none; padding: 15px; border-radius: 4px; }
         .hidden { display: none !important; }
-        .file-path-info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; padding: 20px; margin-bottom: 20px; border-radius: 6px; font-family: monospace; font-size: 16px; line-height: 1.6; }
-        .dark-mode .file-path-info { background-color: #263238; color: #eceff1; border-color: #37474f; }
-        .file-path-info strong { font-size: 1.3em; display: block; margin-top: 15px; color: #004085; }
-        .dark-mode .file-path-info strong { color: #90caf9; }
-        .file-path-info strong:first-child { margin-top: 0; }
-        .file-path-info code { background: rgba(255,255,255,0.6); padding: 5px 10px; border-radius: 4px; font-weight: bold; color: #d63384; display: block; margin-top: 5px; word-break: break-all; }
-        .dark-mode .file-path-info code { background: rgba(0,0,0,0.3); color: #f48fb1; }
-        .file-path-info a { background: var(--link-bg); padding: 5px 10px; border-radius: 4px; font-weight: bold; color: var(--link-color); text-decoration: none; display: block; margin-top: 5px; word-break: break-all; border: 1px solid var(--link-border); font-size: 18px; }
+        
+        textarea.output { 
+            width: 100%; 
+            height: 500px; 
+            font-family: 'Consolas', 'Monaco', monospace; 
+            background: #263238; 
+            color: #eceff1; 
+            border: none; 
+            padding: 20px; 
+            border-radius: 8px; 
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .info-box {
+            background: #e1f5fe;
+            border: 1px solid #b3e5fc;
+            color: #01579b;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .dark-mode .info-box {
+            background: #02283a;
+            border-color: #034261;
+            color: #81d4fa;
+        }
     </style>
 </head>
-<body class="">
+<body>
     <div class="container">
         <div class="header-row">
             <h1>Joan 6 E-Ink Generator</h1>
             <div class="controls">
-                <div class="theme-switch">
-                    <button type="button" onclick="toggleTheme()" id="btn-theme">🌙</button>
-                </div>
-                <div class="lang-switch">
-                    <button type="button" onclick="setLang('pl')" id="btn-pl" class="active">PL</button>
-                    <button type="button" onclick="setLang('en')" id="btn-en">EN</button>
-                </div>
+                <button type="button" onclick="toggleTheme()" id="btn-theme">🌙</button>
+                <button type="button" onclick="setLang('pl')" id="btn-pl" class="active">PL</button>
+                <button type="button" onclick="setLang('en')" id="btn-en">EN</button>
             </div>
         </div>
 
-        {% if entities %}
-            <div class="status-bar" style="background: #d4edda; color: #155724;">
-                <span data-i18n="status_ok">✓ Połączono z Home Assistant</span> ({{ entities|length }})
-            </div>
-        {% else %}
-            <div class="status-bar" style="background: #f8d7da; color: #721c24;">
-                <span data-i18n="status_error">⚠ Brak połączenia z API. Sprawdź token.</span>
-            </div>
-        {% endif %}
-
-        <button type="button" class="btn btn-import" onclick="toggleImport()">
-            <span data-i18n="btn_import_toggle">📂 Importuj / Edytuj Kod</span>
-        </button>
-        <div id="import-area" class="section import-box">
-            <h4 style="margin-top:0" data-i18n="header_paste_code">Wklej kod pliku .dash tutaj:</h4>
-            <textarea id="import-code" style="height: 150px; background: #fff; color: #000;" placeholder="title: Moj Dashboard..."></textarea>
-            <button type="button" class="btn btn-add" style="margin-top: 10px;" onclick="importYaml()">
-                <span data-i18n="btn_load_dash">Wczytaj Dashboard</span>
-            </button>
+        <!-- SEKCJA IMPORTU -->
+        <div class="section" id="import-section">
+            <details>
+                <summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">📂 Import / Eksport Kodu .DASH</summary>
+                <div style="margin-top: 15px;">
+                    <textarea id="import-code" style="height: 150px;" placeholder="Wklej tutaj zawartość pliku .dash aby go edytować..."></textarea>
+                    <button type="button" class="btn btn-import" onclick="importYaml()">Wczytaj Kod</button>
+                </div>
+            </details>
         </div>
 
         <form method="POST" id="main-form">
-            <input type="hidden" name="ui_language" id="ui_language" value="pl">
+            <input type="hidden" name="title" value="JoanDashboard">
+            <input type="hidden" name="ui_language" id="input-lang" value="pl">
             
-            <div class="section">
-                <div class="section-title" data-i18n="sec_settings">1. Ustawienia</div>
+            <!-- EDYTOR WIDGETU -->
+            <div class="add-widget-box" id="editor-box">
+                <div class="section-title" id="editor-title" data-i18n="sec_add">Dodaj Widget</div>
+                
                 <div class="flex-row">
                     <div class="flex-col">
-                        <label data-i18n="dash_title">Tytuł Dashboardu (Nazwa pliku)</label>
-                        <input type="text" name="title" id="dash-title" value="JoanDashboard">
-                    </div>
-                </div>
-            </div>
-
-            <div class="add-widget-box" id="widget-form-box">
-                <h4 style="margin-top:0" id="form-header" data-i18n="sec_add">2. Dodaj Widget</h4>
-                <div class="flex-row">
-                    <div class="flex-col">
-                        <label data-i18n="label_type">Typ Widgetu</label>
-                        <select id="new-widget-type" onchange="toggleInputs()">
-                            <option value="switch">Switch / Light</option>
-                            <option value="cover">Cover / Gate</option>
-                            <option value="sensor">Sensor</option>
-                            <option value="binary_sensor">Binary Sensor</option>
-                            <option value="lock">Lock (Zamek)</option>
-                            <option value="person">Person / Tracker</option>
-                            <option value="media_player">Media Player</option>
-                            <option value="climate">Climate</option>
-                            <option value="input_select">Input Select</option>
-                            <option value="input_number">Input Number</option>
-                            <option value="script">Script</option>
-                            <option value="navigate">Navigate / Dashboard Button</option>
-                            <option value="label">Label (Text)</option>
-                            <option value="clock">Clock (Zegar)</option>
-                            <option value="spacer">Spacer (Pusty)</option>
+                        <label data-i18n="lbl_type">Typ Widgetu</label>
+                        <select id="w-type" onchange="toggleInputs()">
+                            <option value="switch" data-i18n="opt_switch">Switch / Light</option>
+                            <option value="cover" data-i18n="opt_cover">Cover / Gate</option>
+                            <option value="sensor" data-i18n="opt_sensor">Sensor</option>
+                            <option value="binary_sensor" data-i18n="opt_binary">Binary Sensor</option>
+                            <option value="lock" data-i18n="opt_lock">Lock</option>
+                            <option value="person" data-i18n="opt_person">Person / Tracker</option>
+                            <option value="media_player" data-i18n="opt_media">Media Player</option>
+                            <option value="climate" data-i18n="opt_climate">Climate</option>
+                            <option value="input_select" data-i18n="opt_input_select">Input Select</option>
+                            <option value="input_number" data-i18n="opt_input_number">Input Number</option>
+                            <option value="script" data-i18n="opt_script">Script</option>
+                            <option value="navigate" data-i18n="opt_navigate">Navigate / Button</option>
+                            <option value="label" data-i18n="opt_label">Label (Text)</option>
+                            <option value="clock" data-i18n="opt_clock">Clock</option>
+                            <option value="spacer" data-i18n="opt_spacer">Spacer (Empty)</option>
                         </select>
                     </div>
-                    <div class="flex-col" id="group-entity">
-                        <label data-i18n="label_entity">Wybierz Encję (Home Assistant)</label>
-                        <!-- SMART AUTOFILL IS TRIGGERED ON INPUT -->
-                        <input list="entities-list" id="new-entity-id" placeholder="np. light.salon..." oninput="smartAutoFill(this.value)" autocomplete="off">
-                        <datalist id="entities-list">
-                            {% for entity in entities %}
-                            <option value="{{ entity.id }}" data-dclass="{{ entity.attributes.device_class or '' }}" data-name="{{ entity.attributes.friendly_name or '' }}">{{ entity.id }}</option>
+                    <div class="flex-col" id="grp-entity">
+                        <label data-i18n="lbl_entity">Encja (Home Assistant)</label>
+                        <!-- SMART LOGIC TRIGGER -->
+                        <input list="entity-list" id="w-id" placeholder="np. light.salon" oninput="runSmartLogic(this.value)" autocomplete="off">
+                        <datalist id="entity-list">
+                            {% for e in entities %}
+                            <option value="{{ e.id }}" 
+                                    data-dclass="{{ e.attributes.device_class or '' }}" 
+                                    data-friendly="{{ e.attributes.friendly_name or '' }}">
+                            </option>
                             {% endfor %}
                         </datalist>
                     </div>
-                    <div class="flex-col hidden" id="group-nav">
-                        <label data-i18n="label_dashboard">Nazwa pliku dashboardu</label>
-                        <input type="text" id="new-dashboard-name" placeholder="np. joan3 (bez .dash)" oninput="autoNameForNavigate()">
+                    <div class="flex-col hidden" id="grp-nav">
+                        <label data-i18n="lbl_dash">Nazwa Dashboardu</label>
+                        <input type="text" id="w-dash" placeholder="np. main" oninput="autoNameNav()">
                     </div>
                     <div class="flex-col">
-                        <label data-i18n="label_name">Tytuł na ekranie</label>
-                        <input type="text" id="new-widget-name" placeholder="np. Kuchnia">
+                        <label data-i18n="lbl_name">Tytuł na ekranie</label>
+                        <input type="text" id="w-name" placeholder="np. Salon">
                     </div>
                 </div>
-                <div class="flex-row" style="margin-top: 10px; align-items: flex-end;">
-                    <div class="flex-col" style="max-width: 150px;">
-                        <label data-i18n="label_size">Rozmiar</label>
-                        <select id="new-widget-size">
-                            <option value="">Domyślny (2x1)</option>
-                            <option value="(1x1)">1x1 (Mały)</option>
-                            <option value="(2x1)">2x1 (Standard)</option>
-                            <option value="(2x2)">2x2 (Duży)</option>
-                            <option value="(3x1)">3x1 (Szeroki)</option>
-                            <option value="(1x2)">1x2 (Wysoki)</option>
-                            <option value="(3x2)">3x2 (Bardzo duży)</option>
+
+                <div class="flex-row">
+                    <div class="flex-col">
+                        <label data-i18n="lbl_size">Rozmiar</label>
+                        <select id="w-size">
+                            <option value="(1x1)" data-i18n="size_1x1">1x1 (Mały)</option>
+                            <option value="(2x1)" data-i18n="size_2x1">2x1 (Standard)</option>
+                            <option value="(2x2)" data-i18n="size_2x2">2x2 (Duży)</option>
+                            <option value="(3x1)" data-i18n="size_3x1">3x1 (Szeroki)</option>
+                            <option value="(1x2)" data-i18n="size_1x2">1x2 (Wysoki)</option>
+                            <option value="(3x2)" data-i18n="size_3x2">3x2 (Ogromny)</option>
                         </select>
                     </div>
-                    <div style="width: 50px;">
-                        <label data-i18n="label_preview">Podgląd</label>
-                        <div class="icon-preview-box">
-                            <i id="icon-preview-i" class="mdi mdi-help-circle-outline"></i>
+                    <div class="flex-col" style="flex: 0 0 60px;">
+                        <label data-i18n="lbl_preview">Podgląd</label>
+                        <div style="display:flex; justify-content:center;">
+                            <i id="preview-icon" class="mdi mdi-help-circle-outline icon-preview"></i>
                         </div>
                     </div>
                     <div class="flex-col">
-                        <label data-i18n="label_icon">Ikona</label>
-                        <input list="icons-list" id="new-widget-icon" placeholder="np. mdi-home" oninput="userEditedIcon();updateIconPreview()" autocomplete="off">
-                        <datalist id="icons-list"></datalist>
+                        <label data-i18n="lbl_icon">Ikona</label>
+                        <input type="text" id="w-icon" oninput="updateIconPreview()" placeholder="mdi-home">
                     </div>
                     <div class="flex-col">
                         <label>Ikona ON</label>
-                        <input list="icons-list" id="new-widget-icon-on" placeholder="np. mdi-lightbulb-on" oninput="userEditedIconPair();updateIconPreview()" autocomplete="off">
+                        <input type="text" id="w-icon-on" oninput="updateIconPreview()" placeholder="mdi-lightbulb-on">
                     </div>
                     <div class="flex-col">
                         <label>Ikona OFF</label>
-                        <input list="icons-list" id="new-widget-icon-off" placeholder="np. mdi-lightbulb-outline" oninput="userEditedIconPair();updateIconPreview()" autocomplete="off">
+                        <input type="text" id="w-icon-off" oninput="updateIconPreview()" placeholder="mdi-lightbulb-outline">
                     </div>
                 </div>
-                <div class="flex-row" style="display:flex; align-items: flex-end; gap: 10px;">
-                    <button type="button" id="btn-action" class="btn btn-add" onclick="saveWidget()">
-                        <span data-i18n="btn_add">+ DODAJ DO WIERSZA</span>
-                    </button>
-                    <button type="button" id="btn-cancel" class="btn btn-cancel hidden" onclick="cancelEdit()">
-                        <span data-i18n="btn_cancel">Anuluj</span>
-                    </button>
+
+                <div class="flex-row" style="margin-top: 20px;">
+                    <button type="button" class="btn btn-add" id="btn-submit" onclick="saveWidget()" data-i18n="btn_add">+ DODAJ WIDGET</button>
+                    <button type="button" class="btn btn-cancel hidden" id="btn-cancel" onclick="cancelEdit()" data-i18n="btn_cancel">ANULUJ</button>
                 </div>
             </div>
 
+            <!-- PODGLĄD E-INK -->
             <div class="section">
-                <div class="section-title" data-i18n="sec_preview">3. Podgląd Dashboardu (Kliknij, aby edytować)</div>
-                <div id="rows-container" class="preview-area"></div>
-                <button type="button" class="btn btn-row" onclick="addNewRow()">
-                    <span data-i18n="btn_new_row">+ Dodaj Nowy Wiersz</span>
-                </button>
+                <div class="section-title" data-i18n="sec_preview">Podgląd Dashboardu (Kliknij by edytować)</div>
+                <div class="info-box" style="font-size:12px;">
+                    <strong>Info:</strong> Podgląd odzwierciedla układ Joan 6. Szerokie przyciski (2x1) są zalecane dla łatwej obsługi dotykowej.
+                </div>
+                <div class="preview-area" id="preview-container"></div>
+                <button type="button" class="btn btn-row" onclick="addRow()" data-i18n="btn_row">+ Dodaj Wiersz</button>
             </div>
 
-            <input type="hidden" name="layout_data_json" id="layout_data_json">
-            <button type="button" class="btn btn-primary" onclick="submitForm()">
-                <span data-i18n="btn_generate">GENERUJ KOD .DASH</span>
-            </button>
+            <input type="hidden" name="layout_data_json" id="layout_json">
+            <button type="button" class="btn btn-gen" onclick="submitData()" data-i18n="btn_gen">GENERUJ KOD .DASH</button>
         </form>
 
         {% if generated_yaml %}
-        <div class="section">
-            <h3 data-i18n="sec_code">Twój kod YAML:</h3>
-            <div class="file-path-info">
-                <strong data-i18n="info_step1">1. Zapisz kod w pliku:</strong>
-                <code id="path-code">\\IP_HA\addon_configs\appdaemon\dashboards\{{ filename }}</code>
-                <strong data-i18n="info_step2">2. Uruchom ponownie AppDaemon i sprawdź dashboard:</strong>
-                <a href="#" id="dashboard-link" target="_blank">http://IP_HA:5050/{{ dash_name }}</a>
-            </div>
+        <div class="section" style="margin-top:30px;">
+            <div class="section-title">Wynikowy Kod YAML</div>
             <textarea class="output" readonly>{{ generated_yaml }}</textarea>
         </div>
         {% endif %}
     </div>
 
+    <!-- LOGIKA JAVASCRIPT (KOMPLETNA) -->
     <script>
-        const translations = {
+        // --- 1. DANE I ZMIENNE ---
+        const entitiesData = {{ entities | tojson | safe }};
+        let rows = [[]]; // Start with 1 empty row
+        let editIdx = null; // {r, w}
+        let blockSmart = false; // Blokada automatyki przy imporcie/edycji
+        let currentLang = 'pl';
+        let importedDefsMap = {}; // Magazyn na importowane definicje
+
+        // Tłumaczenia (Pełne)
+        const TRANSLATIONS = {
             pl: {
-                status_ok: "✓ Połączono z Home Assistant", status_error: "⚠ Brak połączenia z API. Sprawdź token.",
-                sec_settings: "1. Ustawienia", sec_add: "2. Dodaj Widget", sec_edit: "2. Edytuj Widget",
-                sec_preview: "3. Podgląd Dashboardu (Kliknij, aby edytować)", sec_code: "Twój kod YAML:",
-                dash_title: "Tytuł Dashboardu (Nazwa pliku)",
-                label_entity: "Wybierz Encję (Home Assistant)",
-                label_dashboard: "Nazwa pliku dashboardu (np. joan3)",
-                label_type: "Typ Widgetu", label_name: "Tytuł na ekranie",
-                label_icon: "Ikona (Automatyczna)", label_preview: "Ikona", label_size: "Rozmiar",
-                btn_add: "+ DODAJ DO WIERSZA", btn_update: "ZAPISZ ZMIANY",
-                btn_new_row: "+ Dodaj Nowy Wiersz", btn_generate: "GENERUJ KOD .DASH", btn_cancel: "Anuluj",
-                state_on: "WŁĄCZONE", state_off: "WYŁĄCZONE", state_open: "OTWARTE", state_closed: "ZAMKNIĘTE",
-                info_step1: "1. Zapisz kod w pliku:", info_step2: "2. Uruchom ponownie AppDaemon i sprawdź dashboard:",
-                btn_import_toggle: "📂 Importuj / Edytuj Kod", header_paste_code: "Wklej kod pliku .dash tutaj:", btn_load_dash: "Wczytaj Dashboard"
+                sec_add: "Dodaj Widget", sec_edit: "Edytuj Widget", sec_preview: "Podgląd Dashboardu (Kliknij, aby edytować)",
+                lbl_type: "Typ Widgetu", lbl_entity: "Encja (Home Assistant)", lbl_name: "Tytuł na ekranie", lbl_size: "Rozmiar", 
+                lbl_icon: "Ikona", lbl_dash: "Nazwa Dashboardu", lbl_preview: "Podgląd",
+                btn_add: "+ DODAJ WIDGET", btn_update: "ZAPISZ ZMIANY", btn_cancel: "ANULUJ", 
+                btn_row: "+ Dodaj Wiersz", btn_gen: "GENERUJ KOD .DASH",
+                
+                // Opcje select
+                opt_switch: "Przełącznik / Światło", opt_cover: "Roleta / Brama", opt_sensor: "Sensor (Info)",
+                opt_binary: "Sensor Binarny (On/Off)", opt_lock: "Zamek", opt_person: "Osoba / Tracker",
+                opt_media: "Odtwarzacz Media", opt_climate: "Termostat", opt_input_select: "Lista Wyboru",
+                opt_input_number: "Suwak Liczbowy", opt_script: "Skrypt", opt_navigate: "Przycisk Nawigacji",
+                opt_label: "Etykieta (Tekst)", opt_clock: "Zegar", opt_spacer: "Odstęp (Pusty)",
+                
+                size_1x1: "1x1 (Mały/Ikona)", size_2x1: "2x1 (Szeroki Przycisk)", size_2x2: "2x2 (Duży/Media)",
+                size_3x1: "3x1 (Bardzo Szeroki)", size_1x2: "1x2 (Wysoki)", size_3x2: "3x2 (Ogromny)"
             },
             en: {
-                status_ok: "✓ Connected to Home Assistant", status_error: "⚠ No API Connection. Check Token.",
-                sec_settings: "1. Settings", sec_add: "2. Add Widget", sec_edit: "2. Edit Widget",
-                sec_preview: "3. Dashboard Preview (Click to Edit)", sec_code: "Your YAML Code:",
-                dash_title: "Dashboard Title (Filename)",
-                label_entity: "Select Entity (Home Assistant)",
-                label_dashboard: "Dashboard Filename (e.g. joan3)",
-                label_type: "Widget Type", label_name: "Title on Screen",
-                label_icon: "Icon (Automatic)", label_preview: "Icon", label_size: "Size",
-                btn_add: "+ ADD TO ROW", btn_update: "UPDATE WIDGET",
-                btn_new_row: "+ Add New Row", btn_generate: "GENERATE .DASH CODE", btn_cancel: "Cancel",
-                state_on: "ON", state_off: "OFF", state_open: "OPEN", state_closed: "CLOSED",
-                info_step1: "1. Save code to file:", info_step2: "2. Restart AppDaemon and check dashboard:",
-                btn_import_toggle: "📂 Import / Edit Code", header_paste_code: "Paste .dash file code here:", btn_load_dash: "Load Dashboard"
+                sec_add: "Add Widget", sec_edit: "Edit Widget", sec_preview: "Dashboard Preview (Click to Edit)",
+                lbl_type: "Widget Type", lbl_entity: "Entity (Home Assistant)", lbl_name: "Title on Screen", lbl_size: "Size", 
+                lbl_icon: "Icon", lbl_dash: "Dashboard Name", lbl_preview: "Icon",
+                btn_add: "+ ADD WIDGET", btn_update: "SAVE CHANGES", btn_cancel: "CANCEL", 
+                btn_row: "+ Add Row", btn_gen: "GENERATE .DASH CODE",
+                
+                // Select options
+                opt_switch: "Switch / Light", opt_cover: "Cover / Gate", opt_sensor: "Sensor (Info)", 
+                opt_binary: "Binary Sensor", opt_lock: "Lock", opt_person: "Person / Tracker",
+                opt_media: "Media Player", opt_climate: "Climate", opt_input_select: "Input Select",
+                opt_input_number: "Input Number", opt_script: "Script", opt_navigate: "Navigation Button",
+                opt_label: "Label (Text)", opt_clock: "Clock", opt_spacer: "Spacer (Empty)",
+
+                size_1x1: "1x1 (Small/Icon)", size_2x1: "2x1 (Wide Button)", size_2x2: "2x2 (Large/Media)",
+                size_3x1: "3x1 (Extra Wide)", size_1x2: "1x2 (Tall)", size_3x2: "3x2 (Huge)"
             }
         };
 
-        const entitiesData = {{ entities | tojson }};
-        let currentLang = 'pl';
-        let rows = [];
-        let activeRowIndex = 0;
-        let editingIndices = null;
-        let importedDefsMap = {};
-        
-        // --- SMART LOGIC CONTROL ---
-        let blockSmartFill = false; 
-        let lastAutoName = '';
-        let userEditedName = false;
-        let lastAutoIcon = '';
-        let userEditedIconFlag = false;
-        let userEditedIconPairFlag = false;
-
-        // --- SMART MAPS (ULEPSZONE Z DRUGIEGO KODU) ---
+        // Mapy Smart Logic
         const SMART_MAP = {
             'light': { type: 'switch', size: '(2x1)', iconOn: 'mdi-lightbulb-on', iconOff: 'mdi-lightbulb-outline' },
             'switch': { type: 'switch', size: '(2x1)', iconOn: 'mdi-toggle-switch', iconOff: 'mdi-toggle-switch-off' },
@@ -339,13 +505,9 @@
             'garage': { type: 'cover', size: '(2x1)', iconOn: 'mdi-garage-open', iconOff: 'mdi-garage' },
             'binary_sensor': { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-checkbox-marked-circle', iconOff: 'mdi-checkbox-blank-circle-outline' },
             'sensor': { type: 'sensor', size: '(1x1)', icon: 'mdi-eye' },
-            'lock': { type: 'lock', size: '(2x1)', iconOn: 'mdi-lock-open', iconOff: 'mdi-lock' },
-            'climate': { type: 'climate', size: '(2x2)', icon: '' },
             'media_player': { type: 'media_player', size: '(2x2)', icon: '' },
-            'person': { type: 'person', size: '(1x1)', icon: 'mdi-account' },
-            'input_select': { type: 'input_select', size: '(2x1)', icon: 'mdi-menu-down' },
-            'input_number': { type: 'input_number', size: '(2x1)', icon: 'mdi-counter' },
-            'script': { type: 'script', size: '(2x1)', icon: 'mdi-script-text-outline' }
+            'climate': { type: 'climate', size: '(2x2)', icon: '' },
+            'lock': { type: 'lock', size: '(2x1)', iconOn: 'mdi-lock-open', iconOff: 'mdi-lock' }
         };
 
         const DEVICE_CLASS_ICONS = {
@@ -357,645 +519,403 @@
             'door': ['mdi-door-open', 'mdi-door-closed'],
             'window': ['mdi-window-open-variant', 'mdi-window-closed-variant'],
             'garage': ['mdi-garage-open', 'mdi-garage'],
-            'moisture': 'mdi-water',
             'safety': 'mdi-shield-alert'
         };
+
+        // --- 2. FUNKCJE POMOCNICZE (NA GÓRZE, BY UNIKNĄĆ BŁĘDÓW) ---
+
+        // Znajduje tytuł zaimportowany z kodu (z mapy definicji)
+        function resolveImportedTitle(id) {
+            if (!importedDefsMap) return '';
+            if (importedDefsMap[id] && importedDefsMap[id].title) return importedDefsMap[id].title;
+            // Próbuj znaleźć po ID bez domeny (np. 'salon' zamiast 'light.salon')
+            const shortId = id.includes('.') ? id.split('.')[1] : id;
+            if (importedDefsMap[shortId] && importedDefsMap[shortId].title) return importedDefsMap[shortId].title;
+            return '';
+        }
 
         function getEntityMeta(id) {
             return entitiesData.find(e => e.id === id) || { attributes: {} };
         }
 
-        function formatNameFromId(id) {
-            if (!id) return "";
-            if (id.startsWith('navigate.')) return id.replace('navigate.','').replace(/_/g,' ').replace(/\b\w/g,l=>l.toUpperCase());
-            const last = id.includes('.') ? id.split('.').pop() : id;
-            return last.replace(/_/g,' ').replace(/\b\w/g,l=>l.toUpperCase());
+        function formatTitle(id) {
+            if(!id) return "";
+            if(id.startsWith('navigate.')) return id.replace('navigate.','').toUpperCase();
+            return id.split('.').pop().replace(/_/g, ' ').toUpperCase();
         }
 
-        // --- SMART AUTOFILL (ULEPSZONE Z MAPAMI) ---
-        function smartAutoFill(val) {
-            if (blockSmartFill) return;
-            
-            if (!val) val = document.getElementById('new-entity-id').value;
-            const raw = (val || '').trim();
-            if (!raw || raw.length < 3) return;
-            
-            const id = raw.toLowerCase();
-            const ent = getEntityMeta(id);
-            const deviceClass = (ent.attributes.device_class || '').toLowerCase();
-            const fName = ent.attributes.friendly_name || '';
-            const domain = id.split('.')[0];
+        function updateIconPreview() {
+            const i1 = document.getElementById('w-icon').value;
+            const i2 = document.getElementById('w-icon-on').value;
+            const i3 = document.getElementById('w-icon-off').value;
+            const final = i1 || i2 || i3 || 'mdi-help-circle-outline';
+            document.getElementById('preview-icon').className = `mdi ${final} icon-preview`;
+        }
 
-            const typeSel = document.getElementById('new-widget-type');
-            const nameInput = document.getElementById('new-widget-name');
-            const iconInput = document.getElementById('new-widget-icon');
-            const iconOnInput = document.getElementById('new-widget-icon-on');
-            const iconOffInput = document.getElementById('new-widget-icon-off');
-            const sizeInput = document.getElementById('new-widget-size');
+        function toggleInputs() {
+            const type = document.getElementById('w-type').value;
+            const isNav = type === 'navigate';
+            const isSpacer = type === 'spacer';
+            
+            document.getElementById('grp-entity').style.display = (isNav || isSpacer) ? 'none' : 'block';
+            document.getElementById('grp-nav').style.display = isNav ? 'block' : 'none';
+            document.getElementById('grp-nav').classList.toggle('hidden', !isNav);
+        }
 
-            // 1. SMART TYPE DETECTOR
-            let config = SMART_MAP[domain] || SMART_MAP['sensor']; // Fallback
-            
-            // Nadpisz jeśli device_class sugeruje coś innego
-            if (deviceClass === 'garage' || id.includes('garage')) config = SMART_MAP['garage'];
-            if (deviceClass === 'door') config = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-door-open', iconOff: 'mdi-door-closed' };
-            
-            typeSel.value = config.type;
+        // --- 3. USTAWIENIA JĘZYKA I MOTYWU ---
 
-            // 2. SMART TITLE
-            if (!userEditedName || nameInput.value === lastAutoName || nameInput.value.trim() === '') {
-                nameInput.value = fName || formatNameFromId(id);
-                lastAutoName = nameInput.value;
-            }
-
-            // 3. SMART ICONS
-            const actionable = ['switch','cover','binary_sensor','lock'].includes(config.type) || id.startsWith('input_boolean.');
+        function setLang(lang) {
+            currentLang = lang;
+            document.getElementById('input-lang').value = lang;
+            document.getElementById('btn-pl').className = lang === 'pl' ? 'active' : '';
+            document.getElementById('btn-en').className = lang === 'en' ? 'active' : '';
             
-            iconInput.value = '';
-            iconOnInput.value = '';
-            iconOffInput.value = '';
+            const t = TRANSLATIONS[lang];
             
-            if (config.type === 'sensor') {
-                const specificIcon = DEVICE_CLASS_ICONS[deviceClass];
-                iconInput.value = (typeof specificIcon === 'string') ? specificIcon : (config.icon || 'mdi-gauge');
-            } else if (actionable) {
-                let specificIcon = DEVICE_CLASS_ICONS[deviceClass];
-                if (Array.isArray(specificIcon)) {
-                    iconOnInput.value = specificIcon[0];
-                    iconOffInput.value = specificIcon[1];
-                } else {
-                    iconOnInput.value = config.iconOn || '';
-                    iconOffInput.value = config.iconOff || '';
+            // Tłumaczenie etykiet tekstowych
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (t[key]) {
+                    // Jeśli to input button, zmieniamy value, jeśli element tekstowy, zmieniamy innerText
+                    if (el.tagName === 'INPUT' && el.type === 'submit') el.value = t[key];
+                    else el.innerText = t[key];
                 }
-            } else {
-                iconInput.value = config.icon || pickAutoIcon(config.type, id);
-            }
-
-            // 4. SMART SIZE
-            if (!sizeInput.value || sizeInput.value === 'Domyślny (2x1)') {
-                sizeInput.value = config.size;
-            }
-
-            toggleInputs();
-            updateIconPreview();
-        }
-
-        function setLang(lang){
-            currentLang=lang;
-            localStorage.setItem('joan_lang',lang);
-            document.getElementById('ui_language').value=lang;
-            document.getElementById('btn-pl').className=lang==='pl'?'active':'';
-            document.getElementById('btn-en').className=lang==='en'?'active':'';
-            refreshUIText();
-            renderRows();
-        }
-
-        function refreshUIText(){
-            const dict=translations[currentLang];
-            document.querySelectorAll('[data-i18n]').forEach(el=>{
-                const key=el.getAttribute('data-i18n');
-                if(dict[key]) el.innerText=dict[key];
             });
-            const btn=document.getElementById('btn-action');
-            const rowNum=activeRowIndex+1;
-            if(btn) btn.querySelector('span').innerText = (editingIndices?dict.btn_update:`${dict.btn_add} (${currentLang==='pl'?'Wiersz':'Row'} ${rowNum})`);
-            const header=document.getElementById('form-header');
-            if(header) header.innerText=editingIndices?dict.sec_edit:dict.sec_add;
+
+            // Tłumaczenie opcji w Select
+            document.querySelectorAll('option[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (t[key]) el.text = t[key];
+            });
+            
+            // Aktualizacja przycisku głównego
+            const btn = document.getElementById('btn-submit');
+            btn.innerText = editIdx ? t.btn_update : t.btn_add;
+            
+            // Odśwież widok nagłówków w podglądzie
+            renderPreview();
         }
 
-        function toggleTheme(){
+        function toggleTheme() {
             const isDark = document.documentElement.classList.toggle('dark-mode');
             localStorage.setItem('joan_theme', isDark ? 'dark' : 'light');
-            const btn = document.getElementById('btn-theme');
-            btn.innerText = isDark ? '☀️' : '🌙';
+            document.getElementById('btn-theme').innerText = isDark ? '☀️' : '🌙';
         }
 
-        function normalizeState(state){
-            if(state==null) return null;
-            const s=String(state).toLowerCase().trim();
-            const T=translations[currentLang];
-            if(['1','true','on'].includes(s)) return T.state_on;
-            if(['0','false','off'].includes(s)) return T.state_off;
-            if(s==='open') return T.state_open;
-            if(s==='closed') return T.state_closed;
-            if(s==='locked') return T.state_closed;
-            if(s==='unlocked') return T.state_open;
-            return null;
-        }
+        // --- 4. SMART LOGIC (AUTOMATYKA) ---
 
-        function getEntityData(id){ return entitiesData.find(e=>e.id===id)||null; }
-
-        function getDisplayState(id,type){
-            if(type==='spacer') return '';
-            const ent=getEntityData(id);
-            if(!ent) return '';
-            if(type==='label'||type==='navigate') return '';
-            const norm=normalizeState(ent.state);
-            if(type==='sensor'){
-                const s=String(ent.state).trim();
-                if((s==='1'||s==='0')&&!ent.unit) return '';
-                if(!isNaN(parseFloat(s)) && s.includes('.')){
-                    const v=parseFloat(s).toFixed(1);
-                    return ent.unit?`${v} ${ent.unit}`:v;
-                }
-                return ent.unit?`${s} ${ent.unit}`:s;
-            }
-            return norm||String(ent.state).toUpperCase();
-        }
-
-        function iconPairFor(id){
-            const v=(id||'').toLowerCase();
-            if(v.startsWith('light.')||v.includes('swiatlo')||v.includes('light')) return ['mdi-lightbulb-on','mdi-lightbulb-outline'];
-            if(v.startsWith('cover.')||v.includes('brama')||v.includes('gate')) return ['mdi-gate-open','mdi-gate'];
-            if(v.includes('garage')||v.includes('garaz')||v.includes('garaż')) return ['mdi-garage-open','mdi-garage'];
-            if(v.includes('radiator')||v.includes('ogrzew')||v.includes('grzejnik')) return ['mdi-radiator','mdi-radiator-off'];
-            if(v.includes('cwu')||v.includes('woda')||v.includes('water')) return ['mdi-water-outline','mdi-water-off'];
-            if(v.includes('window')||v.includes('roleta')||v.includes('blind')) return ['mdi-window-shutter-open','mdi-window-shutter'];
-            if(v.startsWith('input_boolean.')) return ['mdi-toggle-switch','mdi-toggle-switch-off'];
-            if(v.startsWith('lock.') || v.includes('zamek')) return ['mdi-lock-open', 'mdi-lock'];
-            return ['mdi-toggle-switch','mdi-toggle-switch-off'];
-        }
-
-        function pickAutoIcon(type,id){
-            const v=(id||'').toLowerCase();
-            const map=[
-                {k:['hydrofor','storage','zbiornik','tank'],i:'mdi-storage-tank'},
-                {k:['cwu','woda','water'],i:'mdi-water-outline'},
-                {k:['ogrzew','grzejnik','radiator','heat'],i:'mdi-radiator'},
-                {k:['brama','gate'],i:'mdi-gate'},
-                {k:['garaz','garaż','garage'],i:'mdi-garage'},
-                {k:['wilgotn','humidity'],i:'mdi-water-percent'},
-                {k:['temp','temperatur','temperature'],i:'mdi-thermometer'},
-                {k:['bateria','battery','akumulator'],i:'mdi-battery'},
-                {k:['swiatlo','light','bulb','lamp'],i:'mdi-lightbulb'},
-                {k:['media_player','spotify','radio'],i:'mdi-play-circle'},
-                {k:['klima','climate','hvac'],i:'mdi-home-thermometer'},
-                {k:['sensor','czujnik'],i:'mdi-gauge'},
-                {k:['lock','zamek'],i:'mdi-lock'},
-                {k:['window','roleta','blind'],i:'mdi-window-shutter'},
-                {k:['fan','wentyl'],i:'mdi-fan'},
-                {k:['door','drzwi'],i:'mdi-door'}
-            ];
-            for(const m of map) if(m.k.some(kw=>v.includes(kw))) return m.i;
-            const fallback={
-                switch:'mdi-toggle-switch',sensor:'mdi-gauge',cover:'mdi-gate',
-                media_player:'mdi-play-circle',climate:'mdi-home-thermometer',
-                binary_sensor:'mdi-alert-circle-outline',script:'mdi-script-text-outline',
-                navigate:'mdi-arrow-right-circle',label:'mdi-label',
-                lock: 'mdi-lock', clock: 'mdi-clock-outline', spacer: ''
-            };
-            return fallback[type]||'mdi-help-circle-outline';
-        }
-
-        function pickPreviewIcon(widget){
-            if(widget.type === 'spacer') return '';
-            const ent=getEntityData(widget.id);
-            const actionable=['switch','cover','binary_sensor','media_player','climate','script','lock'].includes(widget.type)||widget.id.startsWith('input_boolean.');
-            if(actionable){
-                let on=widget.icon_on,off=widget.icon_off;
-                if(!on||!off){
-                    const p=iconPairFor(widget.id);
-                    on=on||p[0];
-                    off=off||p[1];
-                }
-                const st=ent?String(ent.state).toLowerCase().trim():'off';
-                const isOn=(st==='on'||st==='true'||st==='1'||st==='open'||st==='unlocked');
-                
-                if(widget.type === 'lock') return st==='locked' ? off : on;
-
-                return isOn?on:off;
-            }else{
-                return (widget.icon&&widget.icon.trim())?widget.icon:pickAutoIcon(widget.type,widget.id);
-            }
-        }
-
-        function userEditedIcon(){ userEditedIconFlag=true; }
-        function userEditedIconPair(){ userEditedIconPairFlag=true; }
-        function userEditedNameCheck(){ userEditedName=true; }
-
-        document.getElementById('new-widget-name').addEventListener('input', userEditedNameCheck);
-
-        function autoNameForNavigate(){
-            const dashName=document.getElementById('new-dashboard-name').value.trim();
-            const nameInput=document.getElementById('new-widget-name');
-            if(dashName && (!userEditedName || nameInput.value===lastAutoName || nameInput.value.trim()==='')){
-                const n=formatNameFromId('navigate.'+dashName);
-                nameInput.value=n;
-                lastAutoName=n;
-            }
-        }
-
-        function updateIconPreview(){
-            const iconOn=(document.getElementById('new-widget-icon-on')?.value||'').trim();
-            const iconOff=(document.getElementById('new-widget-icon-off')?.value||'').trim();
-            const base=document.getElementById('new-widget-icon').value.trim();
-            const val=iconOn||iconOff||base;
-            const preview=document.getElementById('icon-preview-i');
-            preview.className=(val && val.startsWith('mdi-'))?'mdi '+val:'mdi mdi-help-circle-outline';
-        }
-
-        function renderRows(){
-            const container=document.getElementById('rows-container');
-            container.innerHTML='';
-            rows.forEach((rowWidgets,index)=>{
-                const rowDiv=document.createElement('div');
-                rowDiv.className='eink-row';
-                rowDiv.id='row-'+index;
-                rowDiv.addEventListener('click',()=>{ if(editingIndices) cancelEdit(); activeRowIndex=index; refreshUIText(); highlightActiveRow(); });
-
-                const rowLabel=document.createElement('div');
-                rowLabel.style.position='absolute';
-                rowLabel.style.top='-10px';
-                rowLabel.style.left='5px';
-                rowLabel.style.fontWeight='bold';
-                rowLabel.style.fontSize='10px';
-                rowLabel.style.color='#666';
-                rowLabel.innerText=(currentLang==='pl'?'WIERSZ ':'ROW ')+(index+1);
-                rowDiv.appendChild(rowLabel);
-
-                rowWidgets.forEach((widget,wIndex)=>{
-                    const wDiv=document.createElement('div');
-                    wDiv.className='eink-widget';
-                    if(editingIndices && editingIndices.r===index && editingIndices.w===wIndex) wDiv.classList.add('being-edited');
-
-                    // SCALING PREVIEW (ULEPSZONE Z DRUGIEGO KODU)
-                    let w=230, h=110; // Default 2x1
-                    let c=2, r=1;
-                    
-                    if(widget.size){
-                        const dims=widget.size.replace(/[()]/g,'').split('x');
-                        c=parseInt(dims[0])||2;
-                        r=parseInt(dims[1])||1;
-                    }
-                    
-                    // Obliczenia jak w drugim kodzie: Base 110px, gap 10px
-                    w = (c * 110) + ((c - 1) * 10);
-                    h = (r * 110) + ((r - 1) * 10);
-                    
-                    if(widget.type === 'spacer') {
-                        wDiv.style.border = '1px dashed #ccc';
-                        wDiv.style.background = 'rgba(0,0,0,0.02)';
-                        wDiv.style.boxShadow = 'none';
-                    }
-                    wDiv.style.width=w+'px';
-                    wDiv.style.height=h+'px';
-
-                    wDiv.addEventListener('click',(e)=>{ e.stopPropagation(); editWidget(index,wIndex); });
-
-                    const safeName = widget.name && widget.name.trim() ? widget.name : (widget.type === 'spacer' ? 'SPACER' : formatNameFromId(widget.id));
-                    const iconClass=pickPreviewIcon(widget);
-                    const iconHtml=iconClass?`<i class="mdi ${iconClass} ew-icon"></i>`:`<div style="height:38px"></div>`;
-                    const displayState=getDisplayState(widget.id,widget.type);
-                    const delBtn=`<div class="ew-delete" onclick="removeWidget(${index},${wIndex});event.stopPropagation();">X</div>`;
-                    wDiv.innerHTML=`
-                        <div class="ew-title">${safeName}</div>
-                        ${iconHtml}
-                        ${displayState?`<div class="ew-state">${displayState}</div>`:`<div style="height:14px"></div>`}
-                        ${delBtn}
-                        <div class="ew-edit-overlay"></div>
-                    `;
-                    rowDiv.appendChild(wDiv);
-                });
-
-                if(rows.length>1){
-                    const del=document.createElement('button');
-                    del.innerText='USUŃ';
-                    del.className='btn-remove-row btn';
-                    del.style.position='absolute';
-                    del.style.right='5px';
-                    del.style.top='5px';
-                    del.addEventListener('click',(e)=>{ e.stopPropagation(); deleteRow(index); });
-                    rowDiv.appendChild(del);
-                }
-
-                container.appendChild(rowDiv);
-            });
-            highlightActiveRow();
-        }
-
-        function toggleImport(){ document.getElementById('import-area').classList.toggle('visible'); }
-
-        function importYaml(){
-            const code=document.getElementById('import-code').value;
-            if(!code) return;
-            try{
-                blockSmartFill = true; // ZABLOKUJ SMART LOGIC
-
-                const lines=code.split('\n');
-                const rawDefs={};
-                let currentKey=null;
-                const layoutLines=[];
-                let parsingLayout=false;
-                const ignoreKeys=['global_parameters','widget_dimensions','widget_size','widget_margins','columns','rows','skin','title'];
-
-                for(let i=0;i<lines.length;i++){
-                    const lineRaw=lines[i];
-                    const line=lineRaw.split('#')[0].trim();
-                    if(!line) continue;
-                    if(line.startsWith('layout:')){ parsingLayout=true; continue; }
-
-                    if(!parsingLayout && /^title:/.test(lineRaw)){
-                        const parts=lineRaw.split(':');
-                        document.getElementById('dash-title').value=parts.slice(1).join(':').trim().replace(/['"]/g,'');
-                        continue;
-                    }
-
-                    if(parsingLayout){
-                        if(line.startsWith('-')) layoutLines.push(line);
-                        else if(/^\S+:/.test(lineRaw)) parsingLayout=false;
-                    }
-
-                    if(!parsingLayout){
-                        const matchRoot=lineRaw.match(/^([a-zA-Z0-9_\.\-]+)\s*:/);
-                        if(matchRoot){
-                            const key=matchRoot[1];
-                            if(!ignoreKeys.includes(key)){ currentKey=key; rawDefs[currentKey]={}; } else currentKey=null;
-                        } else if(currentKey && line.includes(':')){
-                            let val=line.substring(line.indexOf(':')+1).trim();
-                            if((val.startsWith('"')&&val.endsWith('"'))||(val.startsWith("'")&&val.endsWith("'"))) val=val.slice(1,-1);
-                            const k=line.split(':')[0].trim();
-                            rawDefs[currentKey][k]=val;
-                        }
-                    }
-                }
-
-                importedDefsMap={};
-                Object.entries(rawDefs).forEach(([k,def])=>{
-                    importedDefsMap[k]=def;
-                    if(def.entity) importedDefsMap[def.entity]=def;
-                });
-
-                rows=[];
-                layoutLines.forEach(l=>{
-                    const items=l.substring(1).trim().split(',');
-                    const newRow=[];
-                    items.forEach(itemRaw=>{
-                        let id=itemRaw.trim();
-                        if(id === 'spacer') {
-                            newRow.push({id:'spacer', type:'spacer', name:'', icon:'', size:''});
-                            return;
-                        }
-                        let size="";
-                        const sm=id.match(/\(\d+x\d+\)/);
-                        if(sm){ size=sm[0]; id=id.replace(sm[0],'').trim(); }
-                        const def=importedDefsMap[id]||importedDefsMap[id.split('.').pop()]||null;
-                        let type=def && def.widget_type;
-                        if(!type){
-                            if(id.startsWith('navigate.')) type='navigate';
-                            else if(id.startsWith('sensor.')) type='sensor';
-                            else if(id.startsWith('binary_sensor.')) type='binary_sensor';
-                            else if(id.startsWith('cover.')) type='cover';
-                            else if(id.startsWith('media_player.')) type='media_player';
-                            else if(id.startsWith('climate.')) type='climate';
-                            else if(id.startsWith('lock.')) type='lock';
-                            else if(id.startsWith('light.')||id.startsWith('switch.')||id.startsWith('input_boolean.')) type='switch';
-                            else type='switch';
-                        }
-                        let name=resolveImportedTitle(id);
-                        if(!name && def && def.title) name=def.title;
-                        if(!name) name=formatNameFromId(id);
-
-                        let icon=(def && (def.icon||def.icon_on||def.icon_off||def.icon_inactive||def.icon_active))||'';
-                        let icon_on=def && (def.icon_on||def.icon_active||def.icon_unlocked)||'';
-                        let icon_off=def && (def.icon_off||def.icon_inactive||def.icon_locked)||'';
-                        
-                        const actionable=['switch','cover','binary_sensor','media_player','climate','script','lock'].includes(type)||id.startsWith('input_boolean.');
-                        if(actionable && (!icon_on||!icon_off)){
-                            const pair=iconPairFor(id);
-                            icon_on=icon_on||pair[0];
-                            icon_off=icon_off||pair[1];
-                        }
-                        [icon,icon_on,icon_off]=[icon,icon_on,icon_off].map(x=>(x&&!x.startsWith('mdi-'))?('mdi-'+x):x);
-                        newRow.push({id,type,name,icon,icon_on,icon_off,size});
-                    });
-                    if(newRow.length) rows.push(newRow);
-                });
-
-                if(!rows.length){ alert("Layout not found."); return; }
-                renderRows();
-                activeRowIndex=rows.length-1;
-                refreshUIText();
-                highlightActiveRow();
-                toggleImport();
-                
-                setTimeout(() => { blockSmartFill = false; }, 500);
-                
-                alert("Import successful!");
-            }catch(e){
-                blockSmartFill = false;
-                alert("Import failed: "+e.message);
-            }
-        }
-
-        function resolveImportedTitle(id) {
-            if (importedDefsMap[id] && importedDefsMap[id].title) return importedDefsMap[id].title;
-            const shortId = id.split('.').pop();
-            if (importedDefsMap[shortId] && importedDefsMap[shortId].title) return importedDefsMap[shortId].title;
-            for (const k in importedDefsMap) {
-                if (importedDefsMap[k].entity === id && importedDefsMap[k].title) return importedDefsMap[k].title;
-            }
-            return '';
-        }
-
-        function editWidget(r,w){
-            blockSmartFill = true; // ZABLOKUJ SMART LOGIC
-            editingIndices={r,w};
-            const widget=rows[r][w];
-            activeRowIndex=r; highlightActiveRow();
-            document.getElementById('new-widget-type').value=widget.type;
+        function runSmartLogic(val) {
+            if (blockSmart) return; // Nie psuj importu!
             
+            const id = val.toLowerCase();
+            if (id.length < 3) return;
+
+            // Pobierz dane z datalist (device_class)
+            const option = document.querySelector(`#entity-list option[value="${val}"]`);
+            const dClass = option ? option.getAttribute('data-dclass') : '';
+            const domain = id.split('.')[0];
+
+            // Domyślna konfiguracja
+            let conf = SMART_MAP[domain] || { type: 'sensor', size: '(1x1)', icon: 'mdi-eye' };
+
+            // Ulepszenia na podstawie device_class
+            if (dClass === 'garage') conf = SMART_MAP['garage'];
+            if (dClass === 'door') conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-door-open', iconOff: 'mdi-door-closed' };
+            if (dClass === 'battery') conf.icon = 'mdi-battery';
+            if (dClass === 'temperature') conf.icon = 'mdi-thermometer';
+
+            // Ustaw pola formularza
+            document.getElementById('w-type').value = conf.type;
+            
+            // Ustaw rozmiar tylko jeśli jest domyślny lub pusty (nie nadpisuj wyboru usera)
+            const sizeField = document.getElementById('w-size');
+            if (sizeField.value === '(1x1)' || sizeField.value === '') {
+                sizeField.value = conf.size;
+            }
+            
+            // Ustaw tytuł jeśli pusty
+            const nameField = document.getElementById('w-name');
+            if(!nameField.value) nameField.value = formatTitle(id);
+
+            // Ustaw ikony
+            document.getElementById('w-icon').value = conf.icon || '';
+            document.getElementById('w-icon-on').value = conf.iconOn || '';
+            document.getElementById('w-icon-off').value = conf.iconOff || '';
+
+            toggleInputs();
+            updateIconPreview();
+        }
+
+        function autoNameNav() {
+            if(blockSmart) return;
+            const val = document.getElementById('w-dash').value;
+            document.getElementById('w-name').value = val.toUpperCase();
+        }
+
+        // --- 5. CRUD & RENDER (DODAWANIE I PODGLĄD) ---
+
+        function saveWidget() {
+            const w = {
+                type: document.getElementById('w-type').value,
+                id: document.getElementById('w-id').value,
+                dash: document.getElementById('w-dash').value,
+                name: document.getElementById('w-name').value,
+                size: document.getElementById('w-size').value,
+                icon: document.getElementById('w-icon').value,
+                icon_on: document.getElementById('w-icon-on').value,
+                icon_off: document.getElementById('w-icon-off').value
+            };
+
+            if(w.type === 'navigate') w.id = 'navigate.' + w.dash;
+            if(w.type === 'spacer') w.id = 'spacer';
+
+            if(editIdx) {
+                rows[editIdx.r][editIdx.w] = w;
+                cancelEdit();
+            } else {
+                rows[rows.length-1].push(w);
+                clearForm();
+            }
+            renderPreview();
+        }
+
+        function editWidget(r, w) {
+            blockSmart = true; // ZABLOKUJ SMART przy edycji
+            editIdx = {r, w};
+            const data = rows[r][w];
+
+            document.getElementById('editor-box').classList.add('editing');
+            document.getElementById('btn-cancel').classList.remove('hidden');
+            document.getElementById('editor-title').innerText = TRANSLATIONS[currentLang].sec_edit;
+            document.getElementById('btn-submit').innerText = TRANSLATIONS[currentLang].btn_update;
+
+            document.getElementById('w-type').value = data.type;
             toggleInputs();
 
-            if(widget.type==='navigate'){
-                document.getElementById('new-dashboard-name').value=widget.id.replace('navigate.','');
-            } else if (widget.type==='spacer') {
-                // nothing
-            } else{
-                document.getElementById('new-entity-id').value=widget.id;
-            }
-
-            document.getElementById('new-widget-name').value=widget.name||'';
-            document.getElementById('new-widget-icon').value=widget.icon||'';
-            document.getElementById('new-widget-icon-on').value=widget.icon_on||'';
-            document.getElementById('new-widget-icon-off').value=widget.icon_off||'';
-            document.getElementById('new-widget-size').value=widget.size||'';
-            updateIconPreview();
-            document.getElementById('widget-form-box').classList.add('editing');
-            document.getElementById('btn-cancel').classList.remove('hidden');
-            refreshUIText();
-            renderRows();
-            
-            setTimeout(() => blockSmartFill = false, 500);
-        }
-
-        function cancelEdit(){
-            editingIndices=null;
-            clearForm();
-            document.getElementById('widget-form-box').classList.remove('editing');
-            document.getElementById('btn-cancel').classList.add('hidden');
-            refreshUIText();
-            renderRows();
-            blockSmartFill = false; // ensure unblocked
-        }
-
-        function saveWidget(){
-            const type=document.getElementById('new-widget-type').value;
-            let name=document.getElementById('new-widget-name').value.trim();
-            let icon=document.getElementById('new-widget-icon').value.trim();
-            let icon_on=(document.getElementById('new-widget-icon-on')?.value||'').trim();
-            let icon_off=(document.getElementById('new-widget-icon-off')?.value||'').trim();
-            const size=document.getElementById('new-widget-size').value;
-            let id='';
-            
-            if(type==='navigate'){
-                const dashName=document.getElementById('new-dashboard-name').value.trim();
-                if(!dashName){ alert(currentLang==='pl'?"Wymagana nazwa dashboardu":"Dashboard name required"); return; }
-                id='navigate.'+dashName;
-            } else if(type==='spacer'){
-                id='spacer';
-            } else if(type==='clock'){
-                id='clock';
-            } else{
-                id=document.getElementById('new-entity-id').value.trim();
-                if(!id){ alert(currentLang==='pl'?"Wymagana encja":"Entity required"); return; }
-            }
-
-            if(!name && type!=='spacer') name=formatNameFromId(id);
-
-            const actionable=['switch','cover','binary_sensor','media_player','climate','script','lock'].includes(type)||id.startsWith('input_boolean.');
-            if(actionable && (!icon_on||!icon_off)){
-                const pair=iconPairFor(id);
-                icon_on=icon_on||pair[0];
-                icon_off=icon_off||pair[1];
-            }
-            if(!actionable && !icon && type!=='spacer'){
-                icon=pickAutoIcon(type,id);
-            }
-            [icon,icon_on,icon_off]=[icon,icon_on,icon_off].map(x=>(x&&!x.startsWith('mdi-'))?('mdi-'+x):x);
-
-            const newWidget={id,type,name,icon,icon_on,icon_off,size};
-
-            if(editingIndices){
-                rows[editingIndices.r][editingIndices.w]=newWidget;
-                cancelEdit();
-            }else{
-                if(!rows.length) addNewRow();
-                rows[activeRowIndex].push(newWidget);
-                
-                clearForm();
-                blockSmartFill = false; 
-            }
-            renderRows();
-        }
-
-        function clearForm(){
-            document.getElementById('new-entity-id').value='';
-            document.getElementById('new-dashboard-name').value='';
-            document.getElementById('new-widget-name').value='';
-            document.getElementById('new-widget-icon').value='';
-            document.getElementById('new-widget-icon-on').value='';
-            document.getElementById('new-widget-icon-off').value='';
-            document.getElementById('new-widget-size').value='';
-            updateIconPreview();
-            
-            userEditedName=false;
-            userEditedIconFlag=false;
-            userEditedIconPairFlag=false;
-            lastAutoName='';
-            lastAutoIcon='';
-        }
-
-        function removeWidget(r,w){
-            if(editingIndices && editingIndices.r===r && editingIndices.w===w) cancelEdit();
-            rows[r].splice(w,1);
-            renderRows();
-        }
-
-        function toggleInputs(){
-            const type=document.getElementById('new-widget-type').value;
-            const groupEntity=document.getElementById('group-entity');
-            const groupNav=document.getElementById('group-nav');
-            const iconInput=document.getElementById('new-widget-icon');
-            const sizeInput=document.getElementById('new-widget-size');
-            
-            if(type==='navigate'){
-                groupEntity.classList.add('hidden');
-                groupNav.classList.remove('hidden');
-                if(!iconInput.value){ iconInput.value='mdi-arrow-right-circle'; updateIconPreview(); }
-            } else if (type==='spacer' || type==='clock') {
-                groupEntity.classList.add('hidden');
-                groupNav.classList.add('hidden');
+            if(data.type === 'navigate') {
+                document.getElementById('w-dash').value = data.id.replace('navigate.', '');
             } else {
-                groupEntity.classList.remove('hidden');
-                groupNav.classList.add('hidden');
+                document.getElementById('w-id').value = data.id;
             }
+
+            document.getElementById('w-name').value = data.name;
+            document.getElementById('w-size').value = data.size || '(1x1)';
+            document.getElementById('w-icon').value = data.icon || '';
+            document.getElementById('w-icon-on').value = data.icon_on || '';
+            document.getElementById('w-icon-off').value = data.icon_off || '';
             
-            if((type==='media_player'||type==='climate')&&!sizeInput.value) sizeInput.value='(2x2)';
+            updateIconPreview();
+            
+            // Odblokuj Smart dopiero po chwili
+            setTimeout(() => blockSmart = false, 500);
         }
 
-        async function fetchIcons(){
-            const dataList=document.getElementById('icons-list');
-            try{
-                const response=await fetch('https://raw.githubusercontent.com/Templarian/MaterialDesign/master/meta.json');
-                const icons=await response.json();
-                dataList.innerHTML='';
-                icons.forEach(i=>{
-                    const opt=document.createElement('option');
-                    opt.value='mdi-'+i.name;
-                    dataList.appendChild(opt);
-                });
-            }catch(e){}
-        }
-        fetchIcons();
-
-        function highlightActiveRow(){
-            document.querySelectorAll('.eink-row').forEach(el=>el.classList.remove('active'));
-            const active=document.getElementById('row-'+activeRowIndex);
-            if(active) active.classList.add('active');
+        function cancelEdit() {
+            editIdx = null;
+            blockSmart = false;
+            document.getElementById('editor-box').classList.remove('editing');
+            document.getElementById('btn-cancel').classList.add('hidden');
+            document.getElementById('editor-title').innerText = TRANSLATIONS[currentLang].sec_add;
+            document.getElementById('btn-submit').innerText = TRANSLATIONS[currentLang].btn_add;
+            clearForm();
         }
 
-        function addNewRow(){
+        function clearForm() {
+            document.getElementById('w-id').value = '';
+            document.getElementById('w-name').value = '';
+            document.getElementById('w-icon').value = '';
+            document.getElementById('w-icon-on').value = '';
+            document.getElementById('w-icon-off').value = '';
+            updateIconPreview();
+        }
+
+        function deleteWidget(r, w, e) {
+            e.stopPropagation();
+            rows[r].splice(w, 1);
+            if(editIdx && editIdx.r === r && editIdx.w === w) cancelEdit();
+            renderPreview();
+        }
+
+        function addRow() {
             rows.push([]);
-            renderRows();
-            activeRowIndex=rows.length-1;
-            refreshUIText();
-            highlightActiveRow();
+            renderPreview();
         }
 
-        function deleteRow(i){
-            rows.splice(i,1);
-            if(activeRowIndex>=rows.length) activeRowIndex=rows.length-1;
-            renderRows();
+        function renderPreview() {
+            const container = document.getElementById('preview-container');
+            container.innerHTML = '';
+
+            rows.forEach((row, rI) => {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'eink-row';
+                
+                const label = document.createElement('div');
+                label.className = 'row-label';
+                label.innerText = (currentLang === 'pl' ? 'WIERSZ ' : 'ROW ') + (rI + 1);
+                rowDiv.appendChild(label);
+
+                row.forEach((w, wI) => {
+                    const div = document.createElement('div');
+                    div.className = 'eink-widget';
+                    if(editIdx && editIdx.r === rI && editIdx.w === wI) div.classList.add('editing');
+
+                    // SKALOWANIE PODGLĄDU (Base 115px, Margin 8px)
+                    let cols = 1, rw = 1;
+                    if(w.size) {
+                        const parts = w.size.replace(/[()]/g, '').split('x');
+                        cols = parseInt(parts[0]) || 1;
+                        rw = parseInt(parts[1]) || 1;
+                    }
+                    
+                    const width = (cols * 115) + ((cols - 1) * 8);
+                    const height = (rw * 115) + ((rw - 1) * 8);
+                    
+                    div.style.width = width + 'px';
+                    div.style.height = height + 'px';
+
+                    if(w.type === 'spacer') {
+                        div.style.border = '1px dashed #aaa';
+                        div.style.boxShadow = 'none';
+                        div.style.opacity = '0.5';
+                        div.innerHTML = '<span style="font-size:10px; color:#999;">SPACER</span>';
+                    } else {
+                        const icon = w.icon || w.icon_on || 'mdi-cube-outline';
+                        div.innerHTML = `
+                            <div class="ew-title">${w.name || w.id}</div>
+                            <i class="mdi ${icon} ew-icon"></i>
+                            <div class="ew-state">${w.type}</div>
+                            <div class="ew-del" onclick="deleteWidget(${rI}, ${wI}, event)">X</div>
+                        `;
+                    }
+                    
+                    div.onclick = () => editWidget(rI, wI);
+                    rowDiv.appendChild(div);
+                });
+                container.appendChild(rowDiv);
+            });
         }
 
-        function submitForm(){
-            document.getElementById('layout_data_json').value=JSON.stringify(rows);
+        function submitData() {
+            document.getElementById('layout_json').value = JSON.stringify(rows);
             document.getElementById('main-form').submit();
         }
 
-        window.addEventListener('DOMContentLoaded',()=>{
-            const haHost=window.location.hostname;
-            const codePath=document.getElementById('path-code');
-            const linkDash=document.getElementById('dashboard-link');
-            if(codePath) codePath.innerHTML=codePath.innerHTML.replace('IP_HA',haHost);
-            if(linkDash){
-                const href=`http://${haHost}:5050/{{ dash_name }}`;
-                linkDash.setAttribute('href',href);
-                linkDash.innerText=href;
-                linkDash.style.background='var(--link-bg)';
-                linkDash.style.color='var(--link-color)';
-                linkDash.style.border='1px solid var(--link-border)';
+        // --- 6. IMPORT LOGIC (PARSER) ---
+        function importYaml() {
+            const text = document.getElementById('import-code').value;
+            if(!text) return;
+            
+            blockSmart = true; // Zatrzymuje Smart Logic
+            
+            const lines = text.split('\n');
+            const newRows = [];
+            let inLayout = false;
+            let rawDefs = {};
+            let currentDefKey = null;
+
+            // Krok 1: Parsowanie Definicji Widgetów (klucz: właściwości)
+            // Uproszczony parser: szuka linii bez wcięcia z dwukropkiem (np. light.salon:)
+            // a potem czyta wcięte linie pod spodem
+            lines.forEach(line => {
+                const tr = line.trim();
+                if(!tr || tr.startsWith('#')) return;
+
+                if (line.match(/^\S+:/) && !line.startsWith('layout:') && !line.startsWith('global_parameters:')) {
+                    // Znaleziono definicję widgetu
+                    currentDefKey = line.split(':')[0].trim();
+                    rawDefs[currentDefKey] = {};
+                } else if (currentDefKey && (line.startsWith('  ') || line.startsWith('\t'))) {
+                    // Właściwość widgetu
+                    const parts = tr.split(':');
+                    if(parts.length >= 2) {
+                        const key = parts[0].trim();
+                        let val = parts.slice(1).join(':').trim().replace(/['"]/g, '');
+                        rawDefs[currentDefKey][key] = val;
+                    }
+                } else if (!line.startsWith('  ') && !line.startsWith('\t')) {
+                    currentDefKey = null;
+                }
+            });
+            
+            // Zapisz do zmiennej globalnej dla funkcji pomocniczych
+            importedDefsMap = rawDefs;
+
+            // Krok 2: Parsowanie Layoutu
+            lines.forEach(line => {
+                const tr = line.trim();
+                if(tr.startsWith('layout:')) { inLayout = true; return; }
+                
+                if(inLayout && tr.startsWith('-')) {
+                    const content = tr.substring(1).trim();
+                    const widgets = content.split(',').map(s => s.trim());
+                    
+                    const rowData = [];
+                    widgets.forEach(wStr => {
+                        let id = wStr;
+                        let size = '(1x1)'; // Domyślny rozmiar
+                        
+                        // Wyciągnij rozmiar np. (2x1)
+                        const sizeMatch = wStr.match(/\(\d+x\d+\)/);
+                        if(sizeMatch) {
+                            size = sizeMatch[0];
+                            id = wStr.replace(size, '').trim();
+                        }
+                        
+                        let type = 'switch';
+                        let name = id;
+                        let icon = '';
+                        let icon_on = '';
+                        let icon_off = '';
+
+                        // Pobierz dane z definicji jeśli istnieją
+                        const def = rawDefs[id];
+                        if(def) {
+                            if(def.widget_type) type = def.widget_type;
+                            if(def.title) name = def.title;
+                            if(def.icon) icon = def.icon;
+                            if(def.icon_on) icon_on = def.icon_on;
+                            if(def.icon_off) icon_off = def.icon_off;
+                            // Obsługa Lock (zmapuj icon_locked -> icon_off)
+                            if(def.icon_locked) icon_off = def.icon_locked;
+                            if(def.icon_unlocked) icon_on = def.icon_unlocked;
+                        } else {
+                            // Prosta detekcja po ID
+                            if(id === 'spacer') type = 'spacer';
+                            else if(id.startsWith('navigate.')) type = 'navigate';
+                            else if(id.startsWith('sensor.')) type = 'sensor';
+                        }
+                        
+                        // Fallback dla nazwy
+                        if(name === id && type !== 'spacer') name = formatTitle(id);
+
+                        rowData.push({
+                            id: id, type: type, size: size, name: name, 
+                            icon: icon, icon_on: icon_on, icon_off: icon_off
+                        });
+                    });
+                    newRows.push(rowData);
+                }
+                
+                // Koniec sekcji layout (gdy napotkamy inną sekcję główną)
+                if(inLayout && tr.length > 0 && !tr.startsWith('-') && !tr.startsWith(' ') && !tr.startsWith('layout:')) {
+                    inLayout = false;
+                }
+            });
+            
+            if(newRows.length > 0) {
+                rows = newRows;
+                renderPreview();
+                alert("Pomyślnie zaimportowano układ dashboardu.");
+            } else {
+                alert("Nie znaleziono sekcji 'layout:' w kodzie.");
             }
             
-            const savedLang=localStorage.getItem('joan_lang')||'pl';
-            setLang(savedLang);
-            
-            const btn=document.getElementById('btn-theme');
-            const isDark = document.documentElement.classList.contains('dark-mode');
-            btn.innerText=isDark?'☀️':'🌙';
-            
-            if(!rows.length) addNewRow();
-        });
+            setTimeout(() => blockSmart = false, 1000);
+        }
+
+        // INIT
+        setLang('pl');
+        renderPreview();
     </script>
 </body>
 </html>
