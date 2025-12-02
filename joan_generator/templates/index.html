@@ -92,7 +92,7 @@
 
     <div id="import-area" class="section import-box">
       <h4 style="margin-top:0" data-i18n="header_paste_code">Wklej kod pliku .dash tutaj:</h4>
-      <textarea id="import-code" style="height:150px;background:#fff;color:#000;" placeholder="Wklej cały plik .dash (np. Joan2)"></textarea>
+      <textarea id="import-code" style="height:150px;background:#fff;color:#000;" placeholder="Wklej cały plik .dash (np. dashboard1)"></textarea>
       <button type="button" class="btn btn-add" id="btn-import">
         <span data-i18n="btn_load_dash">Wczytaj Dashboard</span>
       </button>
@@ -110,7 +110,7 @@
         <div class="flex-row">
           <div class="flex-col">
             <label data-i18n="dash_title">Tytuł Dashboardu (Nazwa pliku)</label>
-            <input type="text" id="dash-title" value="Joan2" />
+            <input type="text" id="dash-title" value="dashboard" />
           </div>
         </div>
       </div>
@@ -145,7 +145,7 @@
 
           <div class="flex-col hidden" id="group-nav">
             <label data-i18n="label_dashboard">Nazwa pliku dashboardu</label>
-            <input id="new-dashboard-name" placeholder="np. joan3" oninput="applySmartForForm(true)" />
+            <input id="new-dashboard-name" placeholder="np. dashboard2" oninput="applySmartForForm(true)" />
           </div>
 
           <div class="flex-col">
@@ -201,9 +201,9 @@
       <h3 data-i18n="sec_code">Twój kod YAML (Klient):</h3>
       <div class="file-path-info">
         <strong data-i18n="info_step1">1. Zapisz kod w pliku:</strong>
-        <code id="client-path-code">\\IP_HA\addon_configs\appdaemon\dashboards\joan2.dash</code>
+        <code id="client-path-code">\\IP_HA\addon_configs\appdaemon\dashboards\dashboard2.dash</code>
         <strong data-i18n="info_step2">2. Podgląd dashboardu:</strong>
-        <a id="client-dashboard-link" class="dashboard-link-btn" target="_blank" href="http://IP_HA:5050/joan2">http://IP_HA:5050/joan2</a>
+        <a id="client-dashboard-link" class="dashboard-link-btn" target="_blank" href="http://IP_HA:5050/dashboard2">http://IP_HA:5050/dashboard2</a>
       </div>
       <textarea id="client-yaml-output" class="output" readonly></textarea>
     </div>
@@ -245,7 +245,7 @@
       pl: {
         status_ok:"✓ Połączono z Home Assistant", status_error:"⚠ Brak połączenia z API. Sprawdź token.",
         sec_settings:"1. Ustawienia", sec_add:"2. Dodaj / Edytuj Widget", sec_preview:"3. Podgląd Dashboardu (Kliknij, aby edytować)", sec_code:"Twój kod YAML (Klient):",
-        dash_title:"Tytuł Dashboardu (Nazwa pliku)", label_entity:"Wybierz Encję (Home Assistant)", label_dashboard:"Nazwa pliku dashboardu (np. joan3)",
+        dash_title:"Tytuł Dashboardu (Nazwa pliku)", label_entity:"Wybierz Encję (Home Assistant)", label_dashboard:"Nazwa pliku dashboardu (np. dashboard3)",
         label_type:"Typ Widgetu", label_name:"Tytuł na ekranie", label_icon:"Ikona", label_preview:"Podgląd", label_size:"Rozmiar",
         btn_add:"+ DODAJ DO WIERSZA", btn_update:"ZAPISZ ZMIANY", btn_cancel:"Anuluj", btn_new_row:"+ Dodaj Nowy Wiersz", btn_generate:"GENERUJ KOD .DASH",
         btn_import_toggle:"📂 Importuj / Edytuj Kod", header_paste_code:"Wklej kod pliku .dash tutaj:", btn_load_dash:"Wczytaj Dashboard",
@@ -255,7 +255,7 @@
       en: {
         status_ok:"✓ Connected to Home Assistant", status_error:"⚠ No API Connection. Check Token.",
         sec_settings:"1. Settings", sec_add:"2. Add / Edit Widget", sec_preview:"3. Dashboard Preview (Click to Edit)", sec_code:"Your YAML Code (Client):",
-        dash_title:"Dashboard Title (Filename)", label_entity:"Select Entity (Home Assistant)", label_dashboard:"Dashboard filename (e.g. joan3)",
+        dash_title:"Dashboard Title (Filename)", label_entity:"Select Entity (Home Assistant)", label_dashboard:"Dashboard filename (e.g. dashboard3)",
         label_type:"Widget Type", label_name:"Title on Screen", label_icon:"Icon", label_preview:"Preview", label_size:"Size",
         btn_add:"+ ADD TO ROW", btn_update:"SAVE CHANGES", btn_cancel:"Cancel", btn_new_row:"+ Add New Row", btn_generate:"GENERATE .DASH CODE",
         btn_import_toggle:"📂 Import / Edit Code", header_paste_code:"Paste .dash file here:", btn_load_dash:"Load Dashboard",
@@ -782,7 +782,7 @@
     }
     function prepareAndSubmit(e){
       e.preventDefault();
-      const title = (document.getElementById('dash-title').value || 'Joan2').replace(/"/g,'');
+      const title = (document.getElementById('dash-title').value || 'dashboard2').replace(/"/g,'');
       const yaml = [buildHeader(title), buildLayout(), buildWidgetsSection()].join("\n");
       document.getElementById('generated_yaml_client').value = yaml;
       document.getElementById('widgets_full_json').value = JSON.stringify(rows);
