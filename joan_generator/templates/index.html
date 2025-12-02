@@ -51,6 +51,7 @@
         .lang-switch button.active { background: var(--accent-color); color: white; border-color: var(--accent-color); }
         .status-bar { padding: 10px; margin-bottom: 20px; border-radius: 4px; text-align: center; font-weight: bold; }
         .section { margin-bottom: 30px; border: 1px solid var(--border-color); padding: 20px; border-radius: 8px; background: var(--section-bg); }
+        .section-title { font-size: 1.2em; font-weight: bold; color: var(--text-color); margin-bottom: 15px; border-bottom: 2px solid var(--accent-color); display: inline-block; }
         .import-box { background: #fff3e0; border: 1px solid #ffe0b2; color: #000; display: none; }
         .dark-mode .import-box { background: #3e2723; border-color: #5d4037; color: #fff; }
         .import-box.visible { display: block; }
@@ -198,7 +199,11 @@
                         <input list="entities-list" id="new-entity-id" placeholder="np. light.salon..." oninput="smartAutoFill(this.value)" autocomplete="off">
                         <datalist id="entities-list">
                             {% for entity in entities %}
-                            <option value="{{ entity.id }}" data-dclass="{{ entity.attributes.device_class or '' }}" data-name="{{ entity.attributes.friendly_name or '' }}">{{ entity.id }}</option>
+                            <option value="{{ entity.id }}" 
+                                    data-dclass="{{ entity.attributes.device_class or '' }}" 
+                                    data-friendly="{{ entity.attributes.friendly_name or '' }}">
+                                {{ entity.id }}
+                            </option>
                             {% endfor %}
                         </datalist>
                     </div>
@@ -215,13 +220,12 @@
                     <div class="flex-col" style="max-width: 150px;">
                         <label data-i18n="label_size">Rozmiar</label>
                         <select id="new-widget-size">
-                            <option value="">Domyślny (2x1)</option>
-                            <option value="(1x1)">1x1 (Mały)</option>
-                            <option value="(2x1)">2x1 (Standard)</option>
-                            <option value="(2x2)">2x2 (Duży)</option>
-                            <option value="(3x1)">3x1 (Szeroki)</option>
-                            <option value="(1x2)">1x2 (Wysoki)</option>
-                            <option value="(3x2)">3x2 (Bardzo duży)</option>
+                            <option value="(2x1)">Standard (2x1) - Przycisk</option>
+                            <option value="(1x1)">Mały (1x1) - Ikona</option>
+                            <option value="(2x2)">Duży (2x2) - Media/Klimat</option>
+                            <option value="(3x1)">Szeroki (3x1)</option>
+                            <option value="(1x2)">Wysoki (1x2)</option>
+                            <option value="(3x2)">Bardzo Duży (3x2)</option>
                         </select>
                     </div>
                     <div style="width: 50px;">
@@ -331,7 +335,7 @@
         let userEditedIconFlag = false;
         let userEditedIconPairFlag = false;
 
-        // --- SMART MAPS (ULEPSZONE Z DRUGIEGO KODU) ---
+        // --- SMART MAPS (MAPY LOGIKI TYPÓW) ---
         const SMART_MAP = {
             'light': { type: 'switch', size: '(2x1)', iconOn: 'mdi-lightbulb-on', iconOff: 'mdi-lightbulb-outline' },
             'switch': { type: 'switch', size: '(2x1)', iconOn: 'mdi-toggle-switch', iconOff: 'mdi-toggle-switch-off' },
@@ -372,20 +376,32 @@
             return last.replace(/_/g,' ').replace(/\b\w/g,l=>l.toUpperCase());
         }
 
-        // --- SMART AUTOFILL (ULEPSZONE Z MAPAMI) ---
+        // --- SMART AUTOFILL (GŁÓWNA LOGIKA DOBIERANIA) ---
         function smartAutoFill(val) {
-            if (blockSmartFill) return;
+            if (blockSmartFill) return; // Blokada dla edycji/importu
             
             if (!val) val = document.getElementById('new-entity-id').value;
             const raw = (val || '').trim();
             if (!raw || raw.length < 3) return;
             
             const id = raw.toLowerCase();
-            const ent = getEntityMeta(id);
-            const deviceClass = (ent.attributes.device_class || '').toLowerCase();
-            const fName = ent.attributes.friendly_name || '';
-            const domain = id.split('.')[0];
+            
+            // Pobranie danych z datalist zamiast przeszukiwania dużej tablicy (szybciej)
+            const option = document.querySelector(`#entities-list option[value="${raw}"]`);
+            let deviceClass = '';
+            let fName = '';
+            
+            if (option) {
+                deviceClass = (option.getAttribute('data-dclass') || '').toLowerCase();
+                fName = option.getAttribute('data-friendly') || '';
+            } else {
+                // Fallback do tablicy jeśli nie znaleziono w DOM
+                const ent = getEntityMeta(id);
+                deviceClass = (ent.attributes.device_class || '').toLowerCase();
+                fName = ent.attributes.friendly_name || '';
+            }
 
+            const domain = id.split('.')[0];
             const typeSel = document.getElementById('new-widget-type');
             const nameInput = document.getElementById('new-widget-name');
             const iconInput = document.getElementById('new-widget-icon');
@@ -394,11 +410,12 @@
             const sizeInput = document.getElementById('new-widget-size');
 
             // 1. SMART TYPE DETECTOR
-            let config = SMART_MAP[domain] || SMART_MAP['sensor']; // Fallback
+            let config = SMART_MAP[domain] || SMART_MAP['sensor']; // Domyślnie sensor
             
-            // Nadpisz jeśli device_class sugeruje coś innego
+            // Wyjątki na podstawie device_class
             if (deviceClass === 'garage' || id.includes('garage')) config = SMART_MAP['garage'];
             if (deviceClass === 'door') config = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-door-open', iconOff: 'mdi-door-closed' };
+            if (domain === 'input_boolean') config = SMART_MAP['switch'];
             
             typeSel.value = config.type;
 
@@ -409,36 +426,43 @@
             }
 
             // 3. SMART ICONS
-            const actionable = ['switch','cover','binary_sensor','lock'].includes(config.type) || id.startsWith('input_boolean.');
+            const actionable = ['switch','cover','binary_sensor','lock','input_boolean'].includes(config.type);
             
-            iconInput.value = '';
-            iconOnInput.value = '';
-            iconOffInput.value = '';
-            
-            if (config.type === 'sensor') {
-                const specificIcon = DEVICE_CLASS_ICONS[deviceClass];
-                iconInput.value = (typeof specificIcon === 'string') ? specificIcon : (config.icon || 'mdi-gauge');
-            } else if (actionable) {
-                let specificIcon = DEVICE_CLASS_ICONS[deviceClass];
-                if (Array.isArray(specificIcon)) {
-                    iconOnInput.value = specificIcon[0];
-                    iconOffInput.value = specificIcon[1];
+            // Reset ikon tylko jeśli użytkownik ich nie edytował ręcznie
+            if(!userEditedIconFlag && !userEditedIconPairFlag) {
+                iconInput.value = '';
+                iconOnInput.value = '';
+                iconOffInput.value = '';
+
+                if (config.type === 'sensor') {
+                    const specificIcon = DEVICE_CLASS_ICONS[deviceClass];
+                    iconInput.value = (typeof specificIcon === 'string') ? specificIcon : (config.icon || 'mdi-eye');
+                    lastAutoIcon = iconInput.value;
+                } else if (actionable) {
+                    let specificIcon = DEVICE_CLASS_ICONS[deviceClass];
+                    if (Array.isArray(specificIcon)) {
+                        iconOnInput.value = specificIcon[0];
+                        iconOffInput.value = specificIcon[1];
+                    } else {
+                        iconOnInput.value = config.iconOn || '';
+                        iconOffInput.value = config.iconOff || '';
+                    }
                 } else {
-                    iconOnInput.value = config.iconOn || '';
-                    iconOffInput.value = config.iconOff || '';
+                    iconInput.value = config.icon || pickAutoIcon(config.type, id);
                 }
-            } else {
-                iconInput.value = config.icon || pickAutoIcon(config.type, id);
             }
 
             // 4. SMART SIZE
-            if (!sizeInput.value || sizeInput.value === 'Domyślny (2x1)') {
+            // Ustaw rozmiar tylko jeśli jest pusty lub ustawiony na domyślny, aby nie nadpisywać wyboru usera
+            if (!sizeInput.value || sizeInput.value === '(2x1)') { 
                 sizeInput.value = config.size;
             }
 
             toggleInputs();
             updateIconPreview();
         }
+
+        // --- HELPER FUNCTIONS ---
 
         function setLang(lang){
             currentLang=lang;
@@ -483,8 +507,6 @@
             return null;
         }
 
-        function getEntityData(id){ return entitiesData.find(e=>e.id===id)||null; }
-
         function getDisplayState(id,type){
             if(type==='spacer') return '';
             const ent=getEntityData(id);
@@ -505,14 +527,14 @@
 
         function iconPairFor(id){
             const v=(id||'').toLowerCase();
-            if(v.startsWith('light.')||v.includes('swiatlo')||v.includes('light')) return ['mdi-lightbulb-on','mdi-lightbulb-outline'];
-            if(v.startsWith('cover.')||v.includes('brama')||v.includes('gate')) return ['mdi-gate-open','mdi-gate'];
-            if(v.includes('garage')||v.includes('garaz')||v.includes('garaż')) return ['mdi-garage-open','mdi-garage'];
-            if(v.includes('radiator')||v.includes('ogrzew')||v.includes('grzejnik')) return ['mdi-radiator','mdi-radiator-off'];
-            if(v.includes('cwu')||v.includes('woda')||v.includes('water')) return ['mdi-water-outline','mdi-water-off'];
-            if(v.includes('window')||v.includes('roleta')||v.includes('blind')) return ['mdi-window-shutter-open','mdi-window-shutter'];
-            if(v.startsWith('input_boolean.')) return ['mdi-toggle-switch','mdi-toggle-switch-off'];
-            if(v.startsWith('lock.') || v.includes('zamek')) return ['mdi-lock-open', 'mdi-lock'];
+            // Rozszerzona lista par
+            if(v.startsWith('light.')||v.includes('swiatlo')) return ['mdi-lightbulb-on','mdi-lightbulb-outline'];
+            if(v.startsWith('cover.')||v.includes('brama')) return ['mdi-gate-open','mdi-gate'];
+            if(v.includes('garage')) return ['mdi-garage-open','mdi-garage'];
+            if(v.includes('radiator')||v.includes('heat')) return ['mdi-radiator','mdi-radiator-off'];
+            if(v.includes('water')) return ['mdi-water-outline','mdi-water-off'];
+            if(v.includes('window')||v.includes('blind')) return ['mdi-window-open-variant','mdi-window-closed-variant'];
+            if(v.startsWith('lock.')) return ['mdi-lock-open', 'mdi-lock'];
             return ['mdi-toggle-switch','mdi-toggle-switch-off'];
         }
 
@@ -618,8 +640,10 @@
                     wDiv.className='eink-widget';
                     if(editingIndices && editingIndices.r===index && editingIndices.w===wIndex) wDiv.classList.add('being-edited');
 
-                    // SCALING PREVIEW (ULEPSZONE Z DRUGIEGO KODU)
-                    let w=230, h=110; // Default 2x1
+                    // SCALING PREVIEW (Dokładne odwzorowanie AppDaemon dla 115px bazy)
+                    // Baza: 110px (przybliżenie dla CSS) + 10px margines
+                    // Wzór: (Col * 110) + ((Col - 1) * 10)
+                    let w=230, h=110; 
                     let c=2, r=1;
                     
                     if(widget.size){
@@ -628,7 +652,6 @@
                         r=parseInt(dims[1])||1;
                     }
                     
-                    // Obliczenia jak w drugim kodzie: Base 110px, gap 10px
                     w = (c * 110) + ((c - 1) * 10);
                     h = (r * 110) + ((r - 1) * 10);
                     
@@ -679,7 +702,7 @@
             const code=document.getElementById('import-code').value;
             if(!code) return;
             try{
-                blockSmartFill = true; // ZABLOKUJ SMART LOGIC
+                blockSmartFill = true; // WAŻNE: BLOKUJEMY SMART LOGIC PRZY IMPORCIE
 
                 const lines=code.split('\n');
                 const rawDefs={};
@@ -778,6 +801,7 @@
                 highlightActiveRow();
                 toggleImport();
                 
+                // Odblokuj smart logic po chwili
                 setTimeout(() => { blockSmartFill = false; }, 500);
                 
                 alert("Import successful!");
@@ -785,16 +809,6 @@
                 blockSmartFill = false;
                 alert("Import failed: "+e.message);
             }
-        }
-
-        function resolveImportedTitle(id) {
-            if (importedDefsMap[id] && importedDefsMap[id].title) return importedDefsMap[id].title;
-            const shortId = id.split('.').pop();
-            if (importedDefsMap[shortId] && importedDefsMap[shortId].title) return importedDefsMap[shortId].title;
-            for (const k in importedDefsMap) {
-                if (importedDefsMap[k].entity === id && importedDefsMap[k].title) return importedDefsMap[k].title;
-            }
-            return '';
         }
 
         function editWidget(r,w){
