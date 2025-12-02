@@ -6,6 +6,15 @@
     <title>Joan 6 E-Ink Generator</title>
     <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap" rel="stylesheet">
+    <script>
+        // NATYCHMIASTOWE USTAWIENIE MOTYWU (Zapobiega mruganiu i resetowaniu)
+        (function() {
+            const savedTheme = localStorage.getItem('joan_theme') || 'light';
+            if (savedTheme === 'dark') {
+                document.documentElement.classList.add('dark-mode');
+            }
+        })();
+    </script>
     <style>
         :root {
             --bg-color: #e0e0e0;
@@ -20,7 +29,7 @@
             --link-color: #0056b3;
             --link-border: #bee5eb;
         }
-        body.dark-mode {
+        .dark-mode {
             --bg-color: #121212;
             --container-bg: #1e1e1e;
             --text-color: #e0e0e0;
@@ -34,7 +43,7 @@
             --link-border: #37474f;
         }
         body { font-family: 'Roboto', sans-serif; background-color: var(--bg-color); color: var(--text-color); padding: 20px; transition: background-color 0.3s; }
-        .container { max-width: 1200px; margin: 0 auto; background: var(--container-bg); padding: 25px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); transition: background-color 0.3s; }
+        .container { max-width: 1300px; margin: 0 auto; background: var(--container-bg); padding: 25px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid var(--border-color); padding-bottom: 15px; }
         h1 { color: var(--accent-color); margin: 0; font-size: 24px; }
         .controls { display: flex; gap: 10px; align-items: center; }
@@ -42,12 +51,11 @@
         .lang-switch button.active { background: var(--accent-color); color: white; border-color: var(--accent-color); }
         .status-bar { padding: 10px; margin-bottom: 20px; border-radius: 4px; text-align: center; font-weight: bold; }
         .section { margin-bottom: 30px; border: 1px solid var(--border-color); padding: 20px; border-radius: 8px; background: var(--section-bg); }
-        .section-title { font-size: 1.2em; font-weight: bold; color: var(--text-color); margin-bottom: 15px; border-bottom: 2px solid var(--accent-color); display: inline-block; }
         .import-box { background: #fff3e0; border: 1px solid #ffe0b2; color: #000; display: none; }
-        body.dark-mode .import-box { background: #3e2723; border-color: #5d4037; color: #fff; }
+        .dark-mode .import-box { background: #3e2723; border-color: #5d4037; color: #fff; }
         .import-box.visible { display: block; }
         .add-widget-box { background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #2196f3; color: #000; transition: background 0.3s; }
-        body.dark-mode .add-widget-box { background: #0d47a1; border-color: #1565c0; color: #fff; }
+        .dark-mode .add-widget-box { background: #0d47a1; border-color: #1565c0; color: #fff; }
         .add-widget-box.editing { background: #fff8e1; border-color: #ffc107; border: 2px solid #ffc107; }
         .flex-row { display: flex; gap: 15px; align-items: flex-end; margin-bottom: 10px; flex-wrap: wrap; }
         .flex-col { flex: 1; min-width: 150px; }
@@ -62,35 +70,57 @@
         .btn-row { background-color: #2196f3; color: white; margin-top: 10px; }
         .btn-import { background-color: #ff9800; color: white; margin-bottom: 10px; }
         .btn-remove-row { font-size: 10px; padding: 5px; margin-left: auto; background-color: #757575; color: white; }
+        
+        /* --- PREVIEW AREA & E-INK STYLING --- */
         .preview-area { background-color: var(--preview-bg); padding: 24px; border-radius: 8px; border: 2px solid var(--border-color); overflow-x: auto; min-height: 220px; }
-        .eink-row { display: flex; gap: 12px; margin-bottom: 12px; padding: 18px 12px; border: 2px dashed #999; background: transparent; border-radius: 6px; align-items: center; position: relative; min-height: 120px; cursor: pointer; }
+        .eink-row { display: flex; gap: 10px; margin-bottom: 12px; padding: 10px; border: 2px dashed #999; background: transparent; border-radius: 6px; align-items: center; position: relative; min-height: 140px; cursor: pointer; }
         .eink-row:hover { border-color: #2196f3; }
         .eink-row.active { border-color: #2196f3; background: rgba(33, 150, 243, 0.08); }
-        .eink-widget { background-color: #FFFFFF; border: 2px solid #000; color: #000; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 8px 4px; box-sizing: border-box; position: relative; cursor: pointer; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); flex-shrink: 0; transition: transform 0.1s; border-radius: 6px; }
-        .eink-widget:hover { transform: translateY(-2px); box-shadow: 4px 4px 8px rgba(0,0,0,0.2); z-index: 5; }
-        .eink-widget.being-edited { border: 3px solid #ff9800; transform: scale(1.03); z-index: 10; }
-        .ew-title { font-size: 12px; font-weight: 700; text-align: center; width: 100%; white-space: normal; line-height: 1.2; min-height: 30px; padding: 0 4px; display: flex; align-items: center; justify-content: center; }
-        .ew-icon { font-size: 32px; }
-        .ew-state { font-size: 11px; font-weight: 700; text-transform: uppercase; min-height: 18px; display: flex; align-items: center; }
-        .ew-edit-overlay { position: absolute; top:0; left:0; right:0; bottom:0; background: rgba(33,150,243,0.15); display:none; pointer-events: none;}
+        
+        /* High Contrast E-Ink Preview Widget */
+        .eink-widget { 
+            background-color: #FFFFFF; 
+            border: 3px solid #000; 
+            color: #000; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            padding: 5px; 
+            box-sizing: border-box; 
+            position: relative; 
+            cursor: pointer; 
+            box-shadow: 3px 3px 0px rgba(0,0,0,0.2); /* Flat shadow for E-ink feel */
+            flex-shrink: 0; 
+            transition: transform 0.1s; 
+            border-radius: 2px;
+            font-family: sans-serif;
+        }
+        .eink-widget:hover { transform: translateY(-2px); box-shadow: 5px 5px 0px rgba(0,0,0,0.3); z-index: 5; }
+        .eink-widget.being-edited { border: 3px dashed #ff9800; transform: scale(1.02); z-index: 10; }
+        
+        .ew-title { font-size: 14px; font-weight: 900; text-align: center; width: 100%; white-space: normal; line-height: 1.1; margin-bottom: 5px; }
+        .ew-icon { font-size: 40px; margin-bottom: 2px; }
+        .ew-state { font-size: 13px; font-weight: 900; text-transform: uppercase; margin-top: 5px; border: 1px solid #000; padding: 2px 6px; border-radius: 4px; }
+        
+        .ew-edit-overlay { position: absolute; top:0; left:0; right:0; bottom:0; background: rgba(33,150,243,0.1); display:none; pointer-events: none;}
         .eink-widget:hover .ew-edit-overlay { display: block; }
-        .ew-delete { position: absolute; top: 4px; right: 4px; background: red; color: white; width: 20px; height: 20px; text-align: center; line-height: 20px; font-size: 12px; display: none; z-index: 20; border-radius: 4px; }
+        .ew-delete { position: absolute; top: -5px; right: -5px; background: red; color: white; width: 22px; height: 22px; text-align: center; line-height: 22px; font-weight: bold; border-radius: 50%; display: none; z-index: 20; cursor: pointer; box-shadow: 1px 1px 3px rgba(0,0,0,0.5); }
         .eink-widget:hover .ew-delete { display: block; }
+        
         textarea.output { width: 100%; height: 500px; font-family: monospace; background: #263238; color: #eceff1; border: none; padding: 15px; border-radius: 4px; }
         .hidden { display: none !important; }
         .file-path-info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; padding: 20px; margin-bottom: 20px; border-radius: 6px; font-family: monospace; font-size: 16px; line-height: 1.6; }
-        body.dark-mode .file-path-info { background-color: #263238; color: #eceff1; border-color: #37474f; }
+        .dark-mode .file-path-info { background-color: #263238; color: #eceff1; border-color: #37474f; }
         .file-path-info strong { font-size: 1.3em; display: block; margin-top: 15px; color: #004085; }
-        body.dark-mode .file-path-info strong { color: #90caf9; }
+        .dark-mode .file-path-info strong { color: #90caf9; }
         .file-path-info strong:first-child { margin-top: 0; }
         .file-path-info code { background: rgba(255,255,255,0.6); padding: 5px 10px; border-radius: 4px; font-weight: bold; color: #d63384; display: block; margin-top: 5px; word-break: break-all; }
-        body.dark-mode .file-path-info code { background: rgba(0,0,0,0.3); color: #f48fb1; }
+        .dark-mode .file-path-info code { background: rgba(0,0,0,0.3); color: #f48fb1; }
         .file-path-info a { background: var(--link-bg); padding: 5px 10px; border-radius: 4px; font-weight: bold; color: var(--link-color); text-decoration: none; display: block; margin-top: 5px; word-break: break-all; border: 1px solid var(--link-border); font-size: 18px; }
-        .file-path-info a:hover { text-decoration: underline; background-color: #fff; }
-        body.dark-mode .file-path-info a:hover { background-color: #444; }
     </style>
 </head>
-<body>
+<body class="">
     <div class="container">
         <div class="header-row">
             <h1>Joan 6 E-Ink Generator</h1>
@@ -128,7 +158,6 @@
 
         <form method="POST" id="main-form">
             <input type="hidden" name="ui_language" id="ui_language" value="pl">
-            <input type="hidden" name="ui_theme" id="ui_theme" value="light">
             
             <div class="section">
                 <div class="section-title" data-i18n="sec_settings">1. Ustawienia</div>
@@ -147,9 +176,9 @@
                         <label data-i18n="label_type">Typ Widgetu</label>
                         <select id="new-widget-type" onchange="toggleInputs()">
                             <option value="switch">Switch / Light</option>
+                            <option value="cover">Cover / Gate</option>
                             <option value="sensor">Sensor</option>
                             <option value="binary_sensor">Binary Sensor</option>
-                            <option value="cover">Cover / Gate</option>
                             <option value="lock">Lock (Zamek)</option>
                             <option value="person">Person / Tracker</option>
                             <option value="media_player">Media Player</option>
@@ -165,7 +194,7 @@
                     </div>
                     <div class="flex-col" id="group-entity">
                         <label data-i18n="label_entity">Wybierz Encję (Home Assistant)</label>
-                        <!-- SMART LOGIC TRIGGERED HERE -->
+                        <!-- SMART AUTOFILL IS TRIGGERED ON INPUT -->
                         <input list="entities-list" id="new-entity-id" placeholder="np. light.salon..." oninput="smartAutoFill(this.value)" autocomplete="off">
                         <datalist id="entities-list">
                             {% for entity in entities %}
@@ -294,7 +323,7 @@
         let editingIndices = null;
         let importedDefsMap = {};
         
-        // Smart Logic Control Flags
+        // --- SMART LOGIC CONTROL ---
         let blockSmartFill = false; 
         let lastAutoName = '';
         let userEditedName = false;
@@ -313,9 +342,9 @@
             return last.replace(/_/g,' ').replace(/\b\w/g,l=>l.toUpperCase());
         }
 
-        // --- NEW SMART AUTOFILL FUNCTION ---
+        // --- SMART AUTOFILL (Działa tylko przy wpisywaniu) ---
         function smartAutoFill(val) {
-            // Bezpiecznik: jeśli edytujemy lub importujemy, nie zmieniaj nic automatycznie
+            // Blokada, jeśli edytujemy istniejący widget lub importujemy
             if (blockSmartFill) return;
             
             if (!val) val = document.getElementById('new-entity-id').value;
@@ -333,8 +362,8 @@
             const iconOffInput = document.getElementById('new-widget-icon-off');
             const sizeInput = document.getElementById('new-widget-size');
 
-            // 1. Wykrywanie Typu (Smart Type)
-            let newType = 'switch'; // default
+            // 1. SMART TYPE DETECTOR
+            let newType = 'switch';
             if (id.startsWith('sensor.')) newType = 'sensor';
             else if (id.startsWith('binary_sensor.')) newType = 'binary_sensor';
             else if (id.startsWith('cover.')) newType = 'cover';
@@ -345,22 +374,19 @@
             else if (id.startsWith('input_select.')) newType = 'input_select';
             else if (id.startsWith('input_number.')) newType = 'input_number';
             
-            // Tylko zmień typ jeśli aktualnie jest domyślny lub inny 'zgodny'
             typeSel.value = newType;
 
-            // 2. Automatyczny Tytuł (tylko jeśli user nie wpisał własnego)
+            // 2. SMART TITLE (Tylko jeśli user nie zmienił ręcznie)
             const autoName = formatNameFromId(id);
             if (!userEditedName || nameInput.value === lastAutoName || nameInput.value.trim() === '') {
                 nameInput.value = autoName;
                 lastAutoName = autoName;
             }
 
-            // 3. Automatyczna Ikona (Smart Icon)
-            // Ustalanie czy widget jest "actionable" (ma stan on/off) czy "info" (tylko ikona)
+            // 3. SMART ICONS
             const actionable = ['switch','cover','binary_sensor','lock','input_boolean'].includes(newType);
             
             let smartIcon = '';
-            // Logika ikon na podstawie device_class
             if (deviceClass === 'battery' || id.includes('battery')) smartIcon = 'mdi-battery';
             else if (deviceClass === 'temperature' || id.includes('temp')) smartIcon = 'mdi-thermometer';
             else if (deviceClass === 'humidity') smartIcon = 'mdi-water-percent';
@@ -370,21 +396,13 @@
             else if (newType === 'climate') smartIcon = 'mdi-thermostat';
             else if (newType === 'lock') smartIcon = 'mdi-lock';
             
-            // Jeśli nie znaleziono po device_class, użyj starej logiki fallback
             if (!smartIcon) smartIcon = pickAutoIcon(newType, id);
 
             if (actionable) {
-                // Dla typów z parami ikon (on/off)
                 if (!userEditedIconPairFlag) {
                     if (newType === 'lock') {
                         iconOnInput.value = 'mdi-lock-open';
                         iconOffInput.value = 'mdi-lock';
-                    } else if (smartIcon && smartIcon !== 'mdi-help-circle-outline') {
-                        // Jeśli mamy konkretną ikonę (np. bateria), użyj jej jako bazy
-                        // Ale dla actionable zazwyczaj chcemy pairFor
-                        const pair = iconPairFor(id);
-                        iconOnInput.value = pair[0];
-                        iconOffInput.value = pair[1];
                     } else {
                         const pair = iconPairFor(id);
                         iconOnInput.value = pair[0];
@@ -392,21 +410,20 @@
                     }
                 }
             } else {
-                // Dla typów z jedną ikoną (sensor, etc.)
                 if (!userEditedIconFlag || iconInput.value === lastAutoIcon || iconInput.value.trim() === '') {
                     iconInput.value = smartIcon;
                     lastAutoIcon = smartIcon;
                 }
             }
 
-            // 4. Automatyczny Rozmiar (Smart Size)
+            // 4. SMART SIZE (Zoptymalizowane pod E-Ink i Touch)
             if (!sizeInput.value) {
                 if (newType === 'media_player' || newType === 'climate') sizeInput.value = '(2x2)';
-                else if (newType === 'sensor' || newType === 'binary_sensor') sizeInput.value = '(1x1)';
-                else sizeInput.value = '(2x1)'; // Default standard
+                else if (newType === 'sensor') sizeInput.value = '(1x1)';
+                else sizeInput.value = '(2x1)'; // Standard dla przycisków
             }
 
-            toggleInputs(); // Odśwież widoczność pól
+            toggleInputs();
             updateIconPreview();
         }
 
@@ -446,12 +463,12 @@
         }
 
         function toggleTheme(){
-            const isDark=document.body.classList.toggle('dark-mode');
-            localStorage.setItem('joan_theme',isDark?'dark':'light');
-            const themeInput=document.getElementById('ui_theme');
-            if(themeInput) themeInput.value=isDark?'dark':'light';
-            const btn=document.getElementById('btn-theme');
-            btn.innerText=isDark?'☀️':'🌙';
+            // Zapisz do localStorage i przełącz klasę na <html>
+            const isDark = document.documentElement.classList.toggle('dark-mode');
+            localStorage.setItem('joan_theme', isDark ? 'dark' : 'light');
+            
+            const btn = document.getElementById('btn-theme');
+            btn.innerText = isDark ? '☀️' : '🌙';
         }
 
         function normalizeState(state){
@@ -462,7 +479,7 @@
             if(['0','false','off'].includes(s)) return T.state_off;
             if(s==='open') return T.state_open;
             if(s==='closed') return T.state_closed;
-            if(s==='locked') return T.state_closed; // Lock logic
+            if(s==='locked') return T.state_closed;
             if(s==='unlocked') return T.state_open;
             return null;
         }
@@ -543,10 +560,8 @@
                     off=off||p[1];
                 }
                 const st=ent?String(ent.state).toLowerCase().trim():'off';
-                // Logic for lock is inverted usually (locked = closed/secure)
                 const isOn=(st==='on'||st==='true'||st==='1'||st==='open'||st==='unlocked');
                 
-                // Special handling for lock icons which might be confused
                 if(widget.type === 'lock') return st==='locked' ? off : on;
 
                 return isOn?on:off;
@@ -604,17 +619,27 @@
                     wDiv.className='eink-widget';
                     if(editingIndices && editingIndices.r===index && editingIndices.w===wIndex) wDiv.classList.add('being-edited');
 
-                    let w=160,h=120;
+                    // SCALING PREVIEW
+                    // Base unit: 110px. Gap: 10px.
+                    // 1x1 = 110px
+                    // 2x1 = (110*2) + 10 = 230px
+                    // 2x2 = height 230px
+                    let w=230, h=110; // Default 2x1
+                    let c=2, r=1;
+                    
                     if(widget.size){
                         const dims=widget.size.replace(/[()]/g,'').split('x');
-                        const cols=parseInt(dims[0])||2;
-                        const rowsVal=parseInt(dims[1])||1;
-                        w=(cols*80)+((cols-1)*8);
-                        h=(rowsVal*80)+((rowsVal-1)*8);
+                        c=parseInt(dims[0])||2;
+                        r=parseInt(dims[1])||1;
                     }
+                    
+                    w = (c * 110) + ((c - 1) * 10);
+                    h = (r * 110) + ((r - 1) * 10);
+                    
                     if(widget.type === 'spacer') {
                         wDiv.style.border = '1px dashed #ccc';
                         wDiv.style.background = 'rgba(0,0,0,0.02)';
+                        wDiv.style.boxShadow = 'none';
                     }
                     wDiv.style.width=w+'px';
                     wDiv.style.height=h+'px';
@@ -658,6 +683,9 @@
             const code=document.getElementById('import-code').value;
             if(!code) return;
             try{
+                // PROTECT FROM SMART LOGIC
+                blockSmartFill = true;
+
                 const lines=code.split('\n');
                 const rawDefs={};
                 let currentKey=null;
@@ -754,8 +782,13 @@
                 refreshUIText();
                 highlightActiveRow();
                 toggleImport();
+                
+                // Allow interactions again
+                setTimeout(() => { blockSmartFill = false; }, 500);
+                
                 alert("Import successful!");
             }catch(e){
+                blockSmartFill = false;
                 alert("Import failed: "+e.message);
             }
         }
@@ -767,7 +800,7 @@
             activeRowIndex=r; highlightActiveRow();
             document.getElementById('new-widget-type').value=widget.type;
             
-            toggleInputs(); // Pokaż/ukryj pola zanim wypełnimy
+            toggleInputs();
 
             if(widget.type==='navigate'){
                 document.getElementById('new-dashboard-name').value=widget.id.replace('navigate.','');
@@ -788,7 +821,6 @@
             refreshUIText();
             renderRows();
             
-            // Odblokuj po chwili (dla bezpieczeństwa event loopa)
             setTimeout(() => blockSmartFill = false, 500);
         }
 
@@ -799,6 +831,7 @@
             document.getElementById('btn-cancel').classList.add('hidden');
             refreshUIText();
             renderRows();
+            blockSmartFill = false; // ensure unblocked
         }
 
         function saveWidget(){
@@ -844,15 +877,12 @@
             }else{
                 if(!rows.length) addNewRow();
                 rows[activeRowIndex].push(newWidget);
+                
+                // Clear form but ensure next typing triggers Smart Fill
                 clearForm();
+                blockSmartFill = false; 
             }
             renderRows();
-            // reset helper flags after save
-            lastAutoName='';
-            userEditedName=false;
-            lastAutoIcon='';
-            userEditedIconFlag=false;
-            userEditedIconPairFlag=false;
         }
 
         function clearForm(){
@@ -864,6 +894,8 @@
             document.getElementById('new-widget-icon-off').value='';
             document.getElementById('new-widget-size').value='';
             updateIconPreview();
+            
+            // Reset Smart Flags for next entry
             userEditedName=false;
             userEditedIconFlag=false;
             userEditedIconPairFlag=false;
@@ -952,14 +984,14 @@
                 linkDash.style.color='var(--link-color)';
                 linkDash.style.border='1px solid var(--link-border)';
             }
+            
             const savedLang=localStorage.getItem('joan_lang')||'pl';
             setLang(savedLang);
-            const themeInput=document.getElementById('ui_theme');
-            const persistedTheme=themeInput && themeInput.value ? themeInput.value : (localStorage.getItem('joan_theme')||'light');
-            if(persistedTheme==='dark') document.body.classList.add('dark-mode');
+            
             const btn=document.getElementById('btn-theme');
-            btn.innerText=document.body.classList.contains('dark-mode')?'☀️':'🌙';
-            if(themeInput) themeInput.value=document.body.classList.contains('dark-mode')?'dark':'light';
+            const isDark = document.documentElement.classList.contains('dark-mode');
+            btn.innerText=isDark?'☀️':'🌙';
+            
             if(!rows.length) addNewRow();
         });
     </script>
