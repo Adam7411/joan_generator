@@ -43,10 +43,10 @@ def get_ha_entities():
                 entities.append({
                     'id': state['entity_id'],
                     'state': state['state'],
+                    'attributes': state.get('attributes', {}),
                     'unit': state['attributes'].get('unit_of_measurement', '')
                 })
             entities.sort(key=lambda x: x['id'])
-            print(f"✅ SUCCESS! Fetched {len(entities)} entities.")
             return entities
         else:
             print(f"⚠️ Home Assistant API Error: {response.status_code} - {response.text}")
@@ -54,7 +54,7 @@ def get_ha_entities():
         print(f"❌ Exception while fetching entities: {e}")
     return []
 
-# E-Ink Styles
+# E-Ink Styles (High Contrast)
 STYLES = {
     "title": "color: #000000; font-size: 20px; font-weight: 700; text-align: center; padding-top: 5px; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif;",
     "widget": "color: #000000 !important; background-color: #FFFFFF !important; border: 2px solid #000000 !important;",
@@ -78,8 +78,6 @@ def get_icon_pair(base_icon, w_type):
     if 'lock' in i: return 'mdi-lock-open', 'mdi-lock'
     if 'door' in i: return 'mdi-door-open', 'mdi-door-closed'
     if 'window' in i or 'blind' in i or 'shutter' in i: return 'mdi-window-shutter-open', 'mdi-window-shutter'
-    if 'off' in i or 'outline' in i:
-        return i.replace('-off', '').replace('-outline', ''), i
     return i, i + '-outline'
 
 @app.route('/', methods=['GET', 'POST'])
@@ -93,24 +91,17 @@ def index():
         title = request.form.get('title', 'JoanDashboard')
         dashboard_slug = title.lower().replace(" ", "_")
         dashboard_filename = dashboard_slug + ".dash"
-        
         lang = request.form.get('ui_language', 'pl')
         
         T = {
-            'pl': {'on': 'WŁĄCZONE', 'off': 'WYŁĄCZONE', 'open': 'OTWARTE', 'closed': 'ZAMKNIĘTE', 
-                   'opening': 'OTWIERANIE', 'closing': 'ZAMYKANIE', 'locked': 'ZAMKNIĘTE', 'unlocked': 'OTWARTE',
-                   'home': 'W DOMU', 'not_home': 'POZA'},
+            'pl': {'on': 'WŁ.', 'off': 'WYŁ.', 'open': 'OTWARTE', 'closed': 'ZAMKN.', 
+                   'locked': 'ZAMKN.', 'unlocked': 'OTWARTE', 'home': 'DOM', 'not_home': 'POZA'},
             'en': {'on': 'ON', 'off': 'OFF', 'open': 'OPEN', 'closed': 'CLOSED', 
-                   'opening': 'OPENING', 'closing': 'CLOSING', 'locked': 'LOCKED', 'unlocked': 'UNLOCKED',
-                   'home': 'HOME', 'not_home': 'AWAY'}
+                   'locked': 'LOCKED', 'unlocked': 'UNLOCKED', 'home': 'HOME', 'not_home': 'AWAY'}
         }
         dic = T.get(lang, T['pl'])
 
         generated_yaml += f"# --- JOAN 6 E-INK DASHBOARD ---\n"
-        generated_yaml += f"# File: {dashboard_filename}\n"
-        generated_yaml += f"# Location: \\\\IP_HA\\addon_configs\\appdaemon\\dashboards\\\n"
-        generated_yaml += f"# --------------------------------\n\n"
-
         generated_yaml += f"title: {title}\n"
         generated_yaml += "widget_dimensions: [117, 117]\n"
         generated_yaml += "widget_size: [2, 1]\n"
@@ -122,7 +113,6 @@ def index():
         generated_yaml += "  use_comma: 0\n"
         generated_yaml += "  precision: 1\n"
         generated_yaml += "  use_hass_icon: 1\n"
-        generated_yaml += "  namespace: default\n"
         generated_yaml += "  state_text: 1\n"
         generated_yaml += f"  title_style: \"{STYLES['title']}\"\n"
         generated_yaml += f"  text_style: \"{STYLES['text']}\"\n"
@@ -130,7 +120,6 @@ def index():
         generated_yaml += f"  widget_style: \"{STYLES['widget']}\"\n"
         generated_yaml += f"  icon_style_active: \"{STYLES['icon']}\"\n"
         generated_yaml += f"  icon_style_inactive: \"{STYLES['icon']}\"\n"
-        
         generated_yaml += "skin: simplyred\n\n"
         
         layout_data_str = request.form.get('layout_data_json')
@@ -144,6 +133,10 @@ def index():
                     if not row: continue
                     row_parts = []
                     for w in row:
+                        if w['type'] == 'spacer':
+                            row_parts.append("spacer")
+                            continue
+                            
                         widget_str = w['id']
                         size = w.get('size', '').strip()
                         if size:
@@ -159,6 +152,7 @@ def index():
                 
                 seen_ids = set()
                 for w in processed_widgets:
+                    if w['type'] == 'spacer': continue
                     w_id = w['id']
                     if w_id in seen_ids: continue
                     seen_ids.add(w_id)
@@ -170,99 +164,74 @@ def index():
                     generated_yaml += f"{w_id}:\n"
                     generated_yaml += f"  title: \"{w_name}\"\n"
                     
-                    # 1. NAVIGATE
                     if w_type == 'navigate':
                         dashboard_name = w_id.replace('navigate.', '')
                         generated_yaml += f"  widget_type: navigate\n"
                         generated_yaml += f"  dashboard: {dashboard_name}\n"
-                        nav_icon = w_icon if w_icon else 'mdi-arrow-right-circle'
-                        generated_yaml += f"  icon_inactive: {nav_icon}\n"
-                        generated_yaml += f"  widget_style: \"background-color: #FFFFFF !important; border-radius: 8px !important; padding: 10px !important; color: #000000 !important;\"\n"
-                        generated_yaml += f"  icon_style_inactive: \"color: #000000 !important;\"\n"
+                        generated_yaml += f"  icon_inactive: {w_icon or 'mdi-arrow-right-circle'}\n"
                     
-                    # 2. SENSOR
                     elif w_type == 'sensor':
                         generated_yaml += f"  widget_type: sensor\n"
                         generated_yaml += f"  entity: {w_id}\n"
                         generated_yaml += f"  value_style: \"{STYLES['value']}\"\n"
                         generated_yaml += f"  unit_style: \"{STYLES['unit']}\"\n"
                         if w_icon: generated_yaml += f"  icon: {w_icon}\n"
-                    
-                    # 3. MEDIA PLAYER
+
                     elif w_type == 'media_player':
                         generated_yaml += f"  widget_type: media_player\n"
                         generated_yaml += f"  entity: {w_id}\n"
                         generated_yaml += f"  truncate_name: 20\n"
-                        generated_yaml += f"  step: 5\n"
 
-                    # 4. CLIMATE
                     elif w_type == 'climate':
                         generated_yaml += f"  widget_type: climate\n"
                         generated_yaml += f"  entity: {w_id}\n"
-                        generated_yaml += f"  step: 1\n"
 
-                    # 5. CLOCK
                     elif w_type == 'clock':
                         generated_yaml += f"  widget_type: clock\n"
                         generated_yaml += f"  time_format: 24hr\n"
                         generated_yaml += f"  show_seconds: 0\n"
                         generated_yaml += f"  date_style: \"{STYLES['text']}\"\n"
                         generated_yaml += f"  time_style: \"{STYLES['value']} font-size: 40px !important;\"\n"
-                    
-                    # 6. WEATHER
-                    elif w_type == 'weather':
-                        generated_yaml += f"  widget_type: weather\n"
-                        generated_yaml += f"  main_style: \"color: #000000 !important; font-size: 24px;\"\n"
-                        generated_yaml += f"  unit_style: \"color: #000000 !important;\"\n"
 
-                    # 7. LABEL
                     elif w_type == 'label':
                          generated_yaml += f"  widget_type: label\n"
                          generated_yaml += f"  text: \"{w_name}\"\n"
                          if w_icon: generated_yaml += f"  icon: {w_icon}\n"
                     
-                    # 8. RELOAD
-                    elif w_type == 'reload':
-                         generated_yaml += f"  widget_type: reload\n"
-                         if w_icon: generated_yaml += f"  icon_inactive: {w_icon}\n"
-
-                    # 9. ACTIONABLE
+                    # ACTIONABLE WIDGETS
                     else:
                         ad_type = w_type
                         if w_type == 'binary_sensor': ad_type = 'binary_sensor'
                         if w_type == 'input_boolean': ad_type = 'switch'
-                        if w_type == 'input_number': ad_type = 'input_number'
-                        if w_type == 'input_select': ad_type = 'input_select'
                         if w_type == 'person': ad_type = 'device_tracker'
-                        if w_type == 'scene': ad_type = 'scene'
-                        if w_type == 'light': ad_type = 'switch' # Force light as switch for simplicity
+                        if w_type == 'light': ad_type = 'switch' 
+                        if w_type == 'lock': ad_type = 'lock'
+                        if w_type == 'input_select': ad_type = 'input_select'
+                        if w_type == 'input_number': ad_type = 'input_number'
                         
                         generated_yaml += f"  widget_type: {ad_type}\n"
                         generated_yaml += f"  entity: {w_id}\n"
                         
                         if w_icon:
                             icon_on, icon_off = get_icon_pair(w_icon, ad_type)
-                            if icon_on: generated_yaml += f"  icon_on: {icon_on}\n"
-                            if icon_off: generated_yaml += f"  icon_off: {icon_off}\n"
+                            if w_type == 'lock':
+                                generated_yaml += f"  icon_locked: {icon_off}\n"
+                                generated_yaml += f"  icon_unlocked: {icon_on}\n"
+                            else:
+                                if icon_on: generated_yaml += f"  icon_on: {icon_on}\n"
+                                if icon_off: generated_yaml += f"  icon_off: {icon_off}\n"
                         
                         generated_yaml += f"  state_text: 1\n"
-                        generated_yaml += "  state_map:\n"
-                        generated_yaml += f"    \"on\": \"{dic['on']}\"\n"
-                        generated_yaml += f"    \"off\": \"{dic['off']}\"\n"
-                        
-                        if w_type == 'cover' or w_type == 'binary_sensor':
+                        if ad_type in ['switch', 'binary_sensor', 'cover', 'lock', 'device_tracker']:
+                            generated_yaml += "  state_map:\n"
+                            generated_yaml += f"    \"on\": \"{dic['on']}\"\n"
+                            generated_yaml += f"    \"off\": \"{dic['off']}\"\n"
                             generated_yaml += f"    \"open\": \"{dic['open']}\"\n"
                             generated_yaml += f"    \"closed\": \"{dic['closed']}\"\n"
-                            generated_yaml += f"    \"opening\": \"{dic['opening']}\"\n"
-                            generated_yaml += f"    \"closing\": \"{dic['closing']}\"\n"
-                        
-                        if w_type == 'lock':
-                             generated_yaml += f"    \"locked\": \"{dic['locked']}\"\n"
-                             generated_yaml += f"    \"unlocked\": \"{dic['unlocked']}\"\n"
-                        
-                        if w_type == 'person' or w_type == 'device_tracker':
-                             generated_yaml += f"    \"home\": \"{dic['home']}\"\n"
-                             generated_yaml += f"    \"not_home\": \"{dic['not_home']}\"\n"
+                            generated_yaml += f"    \"locked\": \"{dic['locked']}\"\n"
+                            generated_yaml += f"    \"unlocked\": \"{dic['unlocked']}\"\n"
+                            generated_yaml += f"    \"home\": \"{dic['home']}\"\n"
+                            generated_yaml += f"    \"not_home\": \"{dic['not_home']}\"\n"
 
                     generated_yaml += "\n"
             except Exception as e:
