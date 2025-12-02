@@ -4,31 +4,48 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1.0" />
   <title>Joan 6 E-Ink Generator</title>
+
   <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap" rel="stylesheet" />
+
   <style>
-    :root { --bg-color:#e0e0e0; --container-bg:#ffffff; --text-color:#333; --border-color:#ddd; --accent-color:#d32f2f; --input-bg:#fff; --section-bg:#fafafa; --preview-bg:#f0f0f0; --link-bg:#ffffff; --link-color:#0056b3; --link-border:#bee5eb; }
-    body.dark-mode { --bg-color:#121212; --container-bg:#1e1e1e; --text-color:#e0e0e0; --border-color:#333; --accent-color:#ff5252; --input-bg:#2c2c2c; --section-bg:#252525; --preview-bg:#121212; --link-bg:#1e1e1e; --link-color:#80d8ff; --link-border:#37474f; }
-    body { font-family:'Roboto',sans-serif; background:var(--bg-color); color:var(--text-color); padding:20px; transition:.3s; }
-    .container { max-width:1250px; margin:0 auto; background:var(--container-bg); padding:25px; border-radius:10px; box-shadow:0 4px 15px rgba(0,0,0,.1); transition:.3s; }
+    :root {
+      --bg-color:#e0e0e0; --container-bg:#ffffff; --text-color:#333; --border-color:#ddd; --accent-color:#d32f2f;
+      --input-bg:#fff; --section-bg:#fafafa; --preview-bg:#f0f0f0; --link-bg:#ffffff; --link-color:#0056b3; --link-border:#bee5eb;
+    }
+    body.dark-mode {
+      --bg-color:#121212; --container-bg:#1e1e1e; --text-color:#e0e0e0; --border-color:#333; --accent-color:#ff5252;
+      --input-bg:#2c2c2c; --section-bg:#252525; --preview-bg:#121212; --link-bg:#1e1e1e; --link-color:#80d8ff; --link-border:#37474f;
+    }
+    body { font-family:'Roboto',sans-serif; background:var(--bg-color); color:var(--text-color); padding:20px; transition:background-color 0.3s, color 0.3s; }
+    .container { max-width:1250px; margin:0 auto; background:var(--container-bg); padding:25px; border-radius:10px; box-shadow:0 4px 15px rgba(0,0,0,.1); transition:background-color 0.3s; }
+
     .header-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:2px solid var(--border-color); padding-bottom:15px; }
     h1 { color:var(--accent-color); margin:0; font-size:24px; font-weight:900; }
     .controls { display:flex; gap:10px; }
     .controls button { padding:8px 14px; border:1px solid var(--border-color); background:var(--section-bg); color:var(--text-color); cursor:pointer; border-radius:6px; font-weight:700; }
     .controls button.active { background:var(--accent-color); color:#fff; border-color:var(--accent-color); }
+
     .status-bar { padding:10px; border-radius:6px; font-weight:700; margin-bottom:20px; }
+
     .section { margin-bottom:28px; padding:20px; border:1px solid var(--border-color); border-radius:10px; background:var(--section-bg); }
     .section-title { font-weight:900; font-size:1.15em; margin:0 0 15px; padding:0 0 6px; border-bottom:2px solid var(--accent-color); color:var(--text-color); }
-    .import-box { display:none; } .import-box.visible { display:block; }
+
+    .import-box { display:none; }
+    .import-box.visible { display:block; }
     label { display:block; font-size:.9em; font-weight:700; margin:10px 0 6px; color:var(--text-color); }
     input,select,textarea { width:100%; padding:10px; border:1px solid var(--border-color); border-radius:6px; box-sizing:border-box; background:var(--input-bg); color:var(--text-color); }
-    .add-widget-box { background:#e3f2fd; padding:15px; border-radius:8px; margin-bottom:20px; border:1px solid #2196f3; color:#000; transition:.3s; }
+
+    .add-widget-box { background:#e3f2fd; padding:15px; border-radius:8px; margin-bottom:20px; border:1px solid #2196f3; color:#000; transition:background 0.3s; }
     body.dark-mode .add-widget-box { background:#0d47a1; border-color:#1565c0; color:#fff; }
     .add-widget-box.editing { background:#fff8e1; border-color:#ffc107; border:2px solid #ffc107; }
     body.dark-mode .add-widget-box.editing { background:#3e2723; border-color:#ffb300; }
+
     .flex-row { display:flex; gap:15px; align-items:flex-end; margin-bottom:10px; flex-wrap:wrap; }
     .flex-col { flex:1; min-width:170px; }
+
     .icon-preview-box { width:46px; height:46px; background:#fff; border:1px solid #ccc; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:26px; color:#333; }
+
     .btn { padding:10px 18px; border:none; cursor:pointer; border-radius:6px; font-weight:700; text-transform:uppercase; }
     .btn-primary { background:var(--accent-color); color:#fff; width:100%; font-size:18px; margin-top:10px; }
     .btn-add { background:#4caf50; color:#fff; }
@@ -37,28 +54,36 @@
     .btn-row { background:#2196f3; color:#fff; margin-top:10px; }
     .btn-import { background:#ff9800; color:#fff; margin-bottom:10px; }
     .btn-remove-row { font-size:11px; padding:4px 8px; margin-left:auto; background:#757575; color:#fff; border-radius:4px; position:absolute; right:6px; top:6px; z-index:20; }
+
     .preview-area { background:var(--preview-bg); padding:20px; border-radius:8px; border:2px solid var(--border-color); overflow-x:auto; min-height:240px; }
+
     .eink-row { display:flex; gap:10px; margin-bottom:10px; padding:14px 10px; border:2px dashed #999; background:transparent; border-radius:6px; align-items:center; position:relative; min-height:80px; cursor:pointer; }
     .eink-row:hover { border-color:#2196f3; }
     .eink-row.active { border-color:#2196f3; background:rgba(33, 150, 243, 0.1); }
+
     .eink-widget { background:#FFFFFF; border:2px solid #000; color:#000; display:flex; flex-direction:column; align-items:center; justify-content:space-between; padding:6px 4px; box-sizing:border-box; position:relative; cursor:pointer; box-shadow:2px 2px 5px rgba(0,0,0,0.12); border-radius:6px; min-width:120px; min-height:108px; transition:.1s; }
     .eink-widget:hover { transform:translateY(-2px); box-shadow:4px 4px 8px rgba(0,0,0,0.2); z-index:5; }
     .eink-widget.being-edited { border:3px solid #ff9800; transform:scale(1.03); z-index:10; }
+
     .ew-title { font-size:12px; font-weight:700; text-align:center; width:100%; white-space:normal; line-height:1.2; min-height:30px; padding:0 4px; display:flex; align-items:center; justify-content:center; }
     .ew-icon { font-size:30px; margin:6px 0; }
     .ew-state { font-size:11px; font-weight:700; text-transform:uppercase; min-height:18px; display:flex; align-items:center; }
     .ew-delete { position:absolute; top:4px; right:4px; background:red; color:#fff; width:20px; height:20px; text-align:center; line-height:18px; font-size:10px; display:none; border-radius:4px; }
     .eink-widget:hover .ew-delete { display:block; }
+
     textarea.output { width:100%; min-height:520px; font-family:monospace; background:#263238; color:#eceff1; border:none; padding:15px; border-radius:4px; white-space:pre; }
+
     .file-path-info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; padding: 20px; margin-bottom: 20px; border-radius: 6px; font-family: monospace; font-size: 16px; line-height: 1.6; }
     body.dark-mode .file-path-info { background: #263238; color: #eceff1; border-color: #37474f; }
     .file-path-info strong { font-size: 1.1em; display:block; margin-top:10px; color: #004085; }
     body.dark-mode .file-path-info strong { color:#90caf9; }
     .file-path-info code { background: rgba(255,255,255,0.6); padding: 5px 10px; border-radius: 4px; font-weight: bold; color: #d63384; display: block; margin-top: 5px; word-break: break-all; }
     body.dark-mode .file-path-info code { background: rgba(0,0,0,0.3); color: #f48fb1; }
+
     .dashboard-link-btn { background: var(--link-bg); padding: 10px 15px; border-radius: 6px; font-weight: bold; color: var(--link-color); text-decoration: none; display: block; margin-top: 10px; word-break: break-all; border: 2px solid var(--link-border); font-size: 1.0em; }
     .dashboard-link-btn:hover { background-color: #f0f0f0; text-decoration: underline; }
     body.dark-mode .dashboard-link-btn:hover { background-color: #444; }
+
     .hidden { display:none !important; }
   </style>
 </head>
@@ -118,8 +143,8 @@
         <div class="flex-row">
           <div class="flex-col">
             <label data-i18n="label_type">Typ Widgetu</label>
-            <select id="new-widget-type" onchange="applySmartForForm(true)">
-              <!-- Options generated by JS -->
+            <select id="new-widget-type" onchange="applySmartForForm(true)" onblur="applySmartForForm(true)">
+              <!-- Options will be generated by JS -->
             </select>
           </div>
 
@@ -206,10 +231,10 @@
   </div>
 
   <script>
-    // --- 1. DEFINICJE (NA GÓRZE) ---
+    // 1. GLOBAL VARIABLES (DEFINED FIRST)
     const entitiesData = {{ entities | tojson }};
     
-    // Konfiguracja typów widgetów
+    // Widget Types
     const widgetTypesConfig = [
       { value: 'switch', pl: 'Przełącznik / Światło', en: 'Switch / Light' },
       { value: 'sensor', pl: 'Sensor (Liczba/Tekst)', en: 'Sensor' },
@@ -217,15 +242,15 @@
       { value: 'cover', pl: 'Roleta / Brama', en: 'Cover / Gate' },
       { value: 'lock', pl: 'Zamek', en: 'Lock' },
       { value: 'person', pl: 'Osoba / Tracker', en: 'Person / Tracker' },
-      { value: 'media_player', pl: 'Odtwarzacz (Media)', en: 'Media Player' },
+      { value: 'media_player', pl: 'Odtwarzacz', en: 'Media Player' },
       { value: 'climate', pl: 'Klimatyzacja', en: 'Climate' },
       { value: 'script', pl: 'Skrypt', en: 'Script' },
-      { value: 'scene', pl: 'Scena', en: 'Scene' },
       { value: 'navigate', pl: 'Nawigacja', en: 'Navigate' },
       { value: 'weather', pl: 'Pogoda', en: 'Weather' },
       { value: 'alarm_control_panel', pl: 'Alarm', en: 'Alarm' },
       { value: 'input_number', pl: 'Suwak (Input Number)', en: 'Input Number' },
       { value: 'input_select', pl: 'Lista (Input Select)', en: 'Input Select' },
+      { value: 'scene', pl: 'Scena', en: 'Scene' },
       { value: 'fan', pl: 'Wentylator', en: 'Fan' },
       { value: 'clock', pl: 'Zegar', en: 'Clock' },
       { value: 'label', pl: 'Etykieta', en: 'Label' },
@@ -262,49 +287,7 @@
       }
     };
 
-    // --- FUNCTIONS ---
-
-    function toggleTheme(){
-      const toDark = !document.body.classList.contains('dark-mode');
-      document.body.classList.toggle('dark-mode', toDark);
-      document.getElementById('ui_theme').value = toDark ? 'dark' : 'light';
-      document.getElementById('btn-theme').innerText = toDark ? '☀️' : '🌙';
-      localStorage.setItem('joan_theme', toDark ? 'dark' : 'light');
-    }
-    function setLang(lang){
-      currentLang = lang;
-      localStorage.setItem('joan_lang', lang);
-      document.getElementById('ui_language').value = lang;
-      document.getElementById('btn-pl').classList.toggle('active', lang==='pl');
-      document.getElementById('btn-en').classList.toggle('active', lang==='en');
-      
-      updateWidgetTypeOptions(lang);
-      applyTranslations();
-      renderRows();
-    }
-    function updateWidgetTypeOptions(lang) {
-      const select = document.getElementById('new-widget-type');
-      const currentVal = select.value; 
-      select.innerHTML = '';
-      widgetTypesConfig.forEach(type => {
-        const opt = document.createElement('option');
-        opt.value = type.value;
-        opt.innerText = (lang === 'pl') ? type.pl : type.en;
-        select.appendChild(opt);
-      });
-      if(currentVal) select.value = currentVal;
-      else select.value = 'switch';
-    }
-    function applyTranslations(){
-      const t = i18n[currentLang];
-      document.querySelectorAll('[data-i18n]').forEach(el=>{
-        const k = el.getAttribute('data-i18n');
-        if(t[k]) el.innerText = t[k];
-      });
-      const act = document.getElementById('btn-action').querySelector('span');
-      act.innerText = editingIndices ? i18n[currentLang].btn_update : `${i18n[currentLang].btn_add} (${currentLang==='pl'?'Wiersz':'Row'} ${activeRowIndex+1})`;
-      document.getElementById('form-header').innerText = editingIndices ? i18n[currentLang].btn_update : i18n[currentLang].sec_add;
-    }
+    // 2. FUNCTIONS
 
     function formatNameFromId(id){
       if(!id) return "";
@@ -316,6 +299,7 @@
       return n || last;
     }
     function ensureMdi(icon){ if(!icon) return ""; return icon.startsWith('mdi-') ? icon : 'mdi-'+icon; }
+    
     function inferTypeFromIdOrEntity(val){
       const v = (val||'').toLowerCase();
       if(v.startsWith('lock.')) return 'lock';
@@ -405,7 +389,7 @@
       return ensureMdi(widget.icon || findBaseIconByIdAndType(widget.id, widget.type));
     }
 
-    // --- IMPORT ---
+    // IMPORT
     function toggleImport(){ document.getElementById('import-area').classList.toggle('visible'); }
     function importYaml(){
       const code = document.getElementById('import-code').value;
@@ -461,16 +445,12 @@
             const rawId = item.replace(size,'').trim();
             const def = importedDefsMap[rawId] || importedDefsMap[rawId.split('.').pop()] || {};
             const sourceEntity = def.entity || rawId;
-
             let type = def.widget_type || inferTypeFromIdOrEntity(sourceEntity);
             
-            // FIX: Fallback to title from imported definition OR generated name
             let name = def.title ? def.title : formatNameFromId(rawId);
-
             let icon = ensureMdi(def.icon || def.icon_inactive || '');
             let icon_on = ensureMdi(def.icon_on || def.icon_active || '');
             let icon_off = ensureMdi(def.icon_off || def.icon_inactive || '');
-
             const actionable = ['switch','binary_sensor','cover','media_player','climate','script','fan','light','lock'].includes(type) || sourceEntity.startsWith('input_boolean.');
             if(actionable){
               const pair = findIconPairById(sourceEntity);
@@ -488,7 +468,7 @@
       }catch(e){ alert((currentLang==='pl'?'Błąd importu: ':'Import error: ')+e.message); }
     }
 
-    // SMART FORM LOGIC
+    // SMART Logic
     function applySmartForForm(userAction=false){
       const typeSel = document.getElementById('new-widget-type');
       const entityInput = document.getElementById('new-entity-id');
@@ -499,14 +479,11 @@
       const sizeInput = document.getElementById('new-widget-size');
 
       if(typeSel.value==='navigate'){
-        groupEntity.classList.add('hidden');
-        groupNav.classList.remove('hidden');
+        groupEntity.classList.add('hidden'); groupNav.classList.remove('hidden');
         if(!iconInput.value) iconInput.value='mdi-arrow-right-circle';
-        updateIconPreview();
-        return;
+        updateIconPreview(); return;
       } else {
-        groupEntity.classList.remove('hidden');
-        groupNav.classList.add('hidden');
+        groupEntity.classList.remove('hidden'); groupNav.classList.add('hidden');
       }
 
       const idRaw = (entityInput.value||'').trim();
@@ -520,13 +497,8 @@
 
       if((typeSel.value==='media_player' || typeSel.value==='climate' || typeSel.value==='weather' || typeSel.value==='clock' || typeSel.value==='iframe') && !sizeInput.value) sizeInput.value='(2x2)';
 
-      // Force name update if user is typing entity OR field is empty
       if(userAction || !nameInput.value.trim()){
-         const ent = (entitiesData||[]).find(e => e.id === idRaw);
-         // Use Friendly Name if available (passed from HA), else fallback to formatted ID
-         // Since current Python only passes ID, State, Unit, we fallback to formatted ID
          nameInput.value = formatNameFromId(idRaw);
-
          const actionable = ['switch','binary_sensor','cover','media_player','climate','script','fan','light','lock'].includes(typeSel.value) || id.startsWith('input_boolean.');
          if(actionable){
             const pair = findIconPairById(idRaw);
@@ -543,7 +515,7 @@
     }
 
     function saveWidget(){
-      applySmartForForm(false); 
+      applySmartForForm(false);
       const type = document.getElementById('new-widget-type').value || 'switch';
       let id='';
       if(type==='navigate'){
@@ -579,19 +551,17 @@
       const widget = rows[r][w];
       activeRowIndex=r; highlightActiveRow();
       document.getElementById('new-widget-type').value = widget.type;
-      const groupEntity = document.getElementById('group-entity');
-      const groupNav = document.getElementById('group-nav');
       if(widget.type==='navigate'){
-        groupEntity.classList.add('hidden'); groupNav.classList.remove('hidden');
+        document.getElementById('group-entity').classList.add('hidden'); document.getElementById('group-nav').classList.remove('hidden');
         document.getElementById('new-dashboard-name').value = widget.id.replace('navigate.','');
         document.getElementById('new-entity-id').value = '';
       }else{
-        groupEntity.classList.remove('hidden'); groupNav.classList.add('hidden');
+        document.getElementById('group-entity').classList.remove('hidden'); document.getElementById('group-nav').classList.add('hidden');
         document.getElementById('new-dashboard-name').value = '';
         document.getElementById('new-entity-id').value = widget.id.includes(widget.type+'.') && !widget.id.includes('_') ? '' : widget.id;
       }
       document.getElementById('new-widget-name').value = widget.name;
-      document.getElementById('new-widget-icon').value = widget.icon || widget.icon_on || widget.icon_off || '';
+      document.getElementById('new-widget-icon').value = widget.icon || widget.icon_on || '';
       document.getElementById('new-widget-size').value = widget.size || '';
       document.getElementById('btn-cancel').classList.remove('hidden');
       document.getElementById('widget-form-box').classList.add('editing');
@@ -602,8 +572,47 @@
     function removeWidget(r,w){ if(editingIndices && editingIndices.r===r && editingIndices.w===w) cancelEdit(); rows[r].splice(w,1); renderRows(); }
     function addNewRow(){ rows.push([]); activeRowIndex=rows.length-1; renderRows(); applyTranslations(); }
     function deleteRow(rowIndex){ if(editingIndices && editingIndices.r===rowIndex) cancelEdit(); rows.splice(rowIndex,1); if(activeRowIndex>=rows.length) activeRowIndex=rows.length-1; renderRows(); applyTranslations(); }
+    function highlightActiveRow(){ document.querySelectorAll('.eink-row').forEach(el=>el.classList.remove('active')); const act = document.getElementById('row-'+activeRowIndex); if(act) act.classList.add('active'); }
+    function renderRows(){
+      const container = document.getElementById('rows-container');
+      container.innerHTML='';
+      rows.forEach((rowWidgets,index)=>{
+        const rowDiv=document.createElement('div');
+        rowDiv.className='eink-row';
+        rowDiv.id='row-'+index;
+        rowDiv.onclick=()=>{ if(editingIndices) cancelEdit(); activeRowIndex=index; highlightActiveRow(); applyTranslations(); };
+        const label=document.createElement('div');
+        label.style.position='absolute'; label.style.top='-10px'; label.style.left='5px';
+        label.style.fontSize='10px'; label.style.fontWeight='900'; label.style.color='#666';
+        label.textContent=(currentLang==='pl'?'WIERSZ ':'ROW ')+(index+1);
+        rowDiv.appendChild(label);
+        if(rows.length>1){
+          const del=document.createElement('button');
+          del.className='btn-remove-row';
+          del.textContent = currentLang==='pl'?'USUŃ':'DELETE';
+          del.onclick=(e)=>{ e.stopPropagation(); deleteRow(index); };
+          rowDiv.appendChild(del);
+        }
+        rowWidgets.forEach((widget,wIndex)=>{
+          const wDiv=document.createElement('div');
+          wDiv.className='eink-widget';
+          if(editingIndices && editingIndices.r===index && editingIndices.w===wIndex) wDiv.classList.add('being-edited');
+          let w=140,h=110;
+          if(widget.size){ const dims=widget.size.replace(/[()]/g,'').split('x'); const cols=parseInt(dims[0])||2; const rs=parseInt(dims[1])||1; w=(cols*70)+((cols-1)*6); h=(rs*90)+((rs-1)*6); }
+          wDiv.style.width=w+'px'; wDiv.style.height=h+'px';
+          wDiv.onclick=(e)=>{ e.stopPropagation(); editWidget(index,wIndex); };
+          const ent = (entitiesData||[]).find(e=>e.id===widget.id);
+          const stateText = getLiveStateText(ent, widget.type);
+          const iconClass = pickPreviewIcon(widget);
+          wDiv.innerHTML = `<div class="ew-title">${widget.name}</div><i class="mdi ${iconClass} ew-icon"></i><div class="ew-state">${stateText || ' '}</div><div class="ew-delete" onclick="removeWidget(${index},${wIndex}); event.stopPropagation();">X</div>`;
+          rowDiv.appendChild(wDiv);
+        });
+        container.appendChild(rowDiv);
+      });
+      highlightActiveRow();
+    }
 
-    // --- YAML GEN ---
+    // --- GENERATE YAML ---
     function buildHeader(title){
       return [
         "# --- JOAN 6 E-INK DASHBOARD ---",
@@ -622,9 +631,21 @@
         "skin: simplyred", "", "layout:"
       ].join("\n");
     }
-    function buildLayout(){
-      return rows.map(r=>"  - "+r.map(w=>w.id+(w.size? " "+w.size:"")).join(", ")).join("\n");
+    function buildLayout(){ return rows.map(r=>"  - "+r.map(w=>w.id+(w.size? " "+w.size:"")).join(", ")).join("\n"); }
+    
+    // --- MISSING FUNCTION FROM PREVIOUS VERSION ADDED ---
+    function buildWidgetsSection(){
+      const seen = new Set();
+      const definitions = [];
+      definitions.push("# --- DEFINICJE WIDŻETÓW ---");
+      rows.flat().forEach(w => {
+        if(seen.has(w.id)) return;
+        seen.add(w.id);
+        definitions.push(widgetYaml(w));
+      });
+      return definitions.join("\n\n");
     }
+
     function widgetYaml(w){
       const t=i18n[currentLang];
       const lines=[];
@@ -687,39 +708,34 @@
       return lines.join("\n");
     }
 
-    function buildWidgetsSection(){
-      let out = "\n# -------------------\n# DEFINICJE WIDŻETÓW\n# -------------------\n\n";
-      const seen = new Set();
-      rows.flat().forEach(w => {
-        if(seen.has(w.id)) return;
-        seen.add(w.id);
-        out += widgetYaml(w) + "\n\n";
-      });
-      return out.trimEnd();
-    }
-
     function prepareAndSubmit(e){
-      e.preventDefault();
-      const title = (document.getElementById('dash-title').value || 'Dashboard').replace(/"/g,'');
-      const yaml = [buildHeader(title), buildLayout(), buildWidgetsSection()].join("\n");
-      
-      document.getElementById('generated_yaml_client').value = yaml;
-      document.getElementById('widgets_full_json').value = JSON.stringify(rows);
-      document.getElementById('layout_data_json').value = JSON.stringify(rows.map(r=>r.map(w=>w.id+(w.size? " "+w.size:""))));
-      
-      const host = window.location.hostname;
-      document.getElementById('client-yaml-section').classList.remove('hidden');
-      document.getElementById('client-yaml-output').value = yaml;
-      document.getElementById('client-path-code').innerText = `\\\\${host}\\addon_configs\\appdaemon\\dashboards\\${title.toLowerCase().replace(/\s+/g,'_')}.dash`;
-      
-      const link = `http://${host}:5050/${title.toLowerCase().replace(/\s+/g,'_')}`;
-      const linkEl = document.getElementById('client-dashboard-link');
-      linkEl.href = link; linkEl.innerText = link;
-      
-      document.getElementById('client-yaml-section').scrollIntoView({behavior: "smooth"});
+      try {
+        e.preventDefault();
+        const title = (document.getElementById('dash-title').value || 'Dashboard').replace(/"/g,'');
+        // CALL MISSING FUNCTIONS
+        const yaml = [buildHeader(title), buildLayout(), buildWidgetsSection()].join("\n");
+        
+        document.getElementById('generated_yaml_client').value = yaml;
+        document.getElementById('widgets_full_json').value = JSON.stringify(rows);
+        document.getElementById('layout_data_json').value = JSON.stringify(rows.map(r=>r.map(w=>w.id+(w.size? " "+w.size:""))));
+        
+        const host = window.location.hostname;
+        document.getElementById('client-yaml-section').classList.remove('hidden');
+        document.getElementById('client-yaml-output').value = yaml;
+        document.getElementById('client-path-code').innerText = `\\\\${host}\\addon_configs\\appdaemon\\dashboards\\${title.toLowerCase().replace(/\s+/g,'_')}.dash`;
+        
+        const link = `http://${host}:5050/${title.toLowerCase().replace(/\s+/g,'_')}`;
+        const linkEl = document.getElementById('client-dashboard-link');
+        linkEl.href = link; linkEl.innerText = link;
+
+        document.getElementById('client-yaml-section').scrollIntoView({ behavior: "smooth" });
+      } catch(err) {
+        console.error(err);
+        alert("Błąd generowania kodu: " + err.message);
+      }
     }
 
-    // Init Events
+    // THEME & LANG & INIT
     document.getElementById('btn-theme').addEventListener('click', toggleTheme);
     document.getElementById('btn-pl').addEventListener('click', ()=>setLang('pl'));
     document.getElementById('btn-en').addEventListener('click', ()=>setLang('en'));
@@ -728,7 +744,7 @@
     document.getElementById('btn-action').addEventListener('click', saveWidget);
     document.getElementById('btn-cancel').addEventListener('click', cancelEdit);
     document.getElementById('btn-new-row').addEventListener('click', addNewRow);
-    
+
     ['input','change','blur'].forEach(evt=>{
       document.getElementById('new-entity-id').addEventListener(evt, ()=>applySmartForForm(true));
     });
@@ -756,16 +772,44 @@
 
       const savedLang = localStorage.getItem('joan_lang') || 'pl';
       const savedTheme = localStorage.getItem('joan_theme') || 'light';
+      
+      updateWidgetTypeOptions(savedLang); // Populate dropdown first
       setLang(savedLang);
+      
       if(savedTheme==='dark'){ document.body.classList.add('dark-mode'); document.getElementById('btn-theme').innerText='☀️'; }
       
       fetchIcons();
       if(!rows.length) addNewRow();
       
-      updateWidgetTypeOptions(savedLang);
       applySmartForForm(false);
       renderRows();
     });
+
+    function setLang(lang){
+      currentLang = lang;
+      localStorage.setItem('joan_lang', lang);
+      document.getElementById('ui_language').value = lang;
+      document.getElementById('btn-pl').classList.toggle('active', lang==='pl');
+      document.getElementById('btn-en').classList.toggle('active', lang==='en');
+      
+      updateWidgetTypeOptions(lang);
+      applyTranslations();
+      renderRows();
+    }
+
+    function updateWidgetTypeOptions(lang) {
+      const select = document.getElementById('new-widget-type');
+      const currentVal = select.value; 
+      select.innerHTML = '';
+      widgetTypesConfig.forEach(type => {
+        const opt = document.createElement('option');
+        opt.value = type.value;
+        opt.innerText = (lang === 'pl') ? type.pl : type.en;
+        select.appendChild(opt);
+      });
+      if(currentVal) select.value = currentVal;
+      else select.value = 'switch';
+    }
   </script>
 </body>
 </html>
