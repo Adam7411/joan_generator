@@ -143,23 +143,22 @@
         <div class="flex-row">
           <div class="flex-col">
             <label data-i18n="label_type">Typ Widgetu</label>
-            <select id="new-widget-type" onchange="applySmartForForm()" onblur="applySmartForForm()">
+            <select id="new-widget-type" onchange="applySmartForForm(true)" onblur="applySmartForForm(false)">
               <option value="switch">Switch / Light</option>
               <option value="sensor">Sensor</option>
               <option value="binary_sensor">Binary Sensor</option>
               <option value="cover">Cover / Gate</option>
-              <option value="lock">Lock</option>
-              <option value="person">Person / Tracker</option>
               <option value="media_player">Media Player</option>
               <option value="climate">Climate</option>
               <option value="script">Script</option>
               <option value="navigate">Navigate</option>
               <option value="weather">Weather</option>
-              <option value="clock">Clock (No Seconds)</option>
-              <option value="gauge">Gauge (E-Ink)</option>
-              <option value="input_text">Input Text</option>
-              <option value="input_datetime">Input Datetime</option>
-              <option value="reload">Reload Button</option>
+              <option value="alarm_control_panel">Alarm</option>
+              <option value="input_number">Input Number</option>
+              <option value="input_select">Input Select</option>
+              <option value="scene">Scene</option>
+              <option value="fan">Fan</option>
+              <option value="clock">Clock</option>
               <option value="iframe">Iframe (Image)</option>
               <option value="label">Label</option>
             </select>
@@ -167,15 +166,14 @@
 
           <div class="flex-col" id="group-entity">
             <label data-i18n="label_entity">Wybierz Encję (Home Assistant)</label>
+            <!-- KLUCZOWA ZMIANA: oninput i onchange wywołują applySmartForForm(true), wymuszając zmianę -->
             <input
               list="entities-list"
               id="new-entity-id"
               placeholder="np. light.salon"
               autocomplete="off"
-              oninput="applySmartForForm()"
-              onchange="applySmartForForm()"
-              onblur="applySmartForForm()"
-              onpaste="setTimeout(applySmartForForm,0)"
+              oninput="applySmartForForm(true)"
+              onchange="applySmartForForm(true)"
             />
             <datalist id="entities-list">
               {% for entity in entities %}
@@ -186,7 +184,7 @@
 
           <div class="flex-col hidden" id="group-nav">
             <label data-i18n="label_dashboard">Nazwa pliku dashboardu</label>
-            <input id="new-dashboard-name" placeholder="np. joan3" oninput="applySmartForForm()" />
+            <input id="new-dashboard-name" placeholder="np. joan3" oninput="applySmartForForm(true)" />
           </div>
 
           <div class="flex-col">
@@ -258,10 +256,11 @@
     let editingIndices=null;
     let importedDefsMap={};
 
+    // PRZENIESIONE TŁUMACZENIA NA SAMĄ GÓRĘ (GLOBALNE)
     const i18n = {
       pl: {
         status_ok:"✓ Połączono z Home Assistant", status_error:"⚠ Brak połączenia z API. Sprawdź token.",
-        sec_settings:"1. Ustawienia", sec_add:"2. Dodaj / Edytuj Widget", sec_preview:"3. Podgląd Dashboardu (Kliknij, aby edytować)", sec_code:"Twój kod YAML:",
+        sec_settings:"1. Ustawienia", sec_add:"2. Dodaj / Edytuj Widget", sec_preview:"3. Podgląd Dashboardu (Kliknij, aby edytować)", sec_code:"Twój kod YAML (Klient):",
         dash_title:"Tytuł Dashboardu (Nazwa pliku)", label_entity:"Wybierz Encję (Home Assistant)", label_dashboard:"Nazwa pliku dashboardu (np. joan3)",
         label_type:"Typ Widgetu", label_name:"Tytuł na ekranie", label_icon:"Ikona", label_preview:"Podgląd", label_size:"Rozmiar",
         btn_add:"+ DODAJ DO WIERSZA", btn_update:"ZAPISZ ZMIANY", btn_cancel:"Anuluj", btn_new_row:"+ Dodaj Nowy Wiersz", btn_generate:"GENERUJ KOD .DASH",
@@ -272,17 +271,17 @@
       },
       en: {
         status_ok:"✓ Connected to Home Assistant", status_error:"⚠ No API Connection. Check Token.",
-        sec_settings:"1. Settings", sec_add:"2. Add / Edit Widget", sec_preview:"3. Dashboard Preview (Click to Edit)", sec_code:"Your YAML Code:",
+        sec_settings:"1. Settings", sec_add:"2. Add / Edit Widget", sec_preview:"3. Dashboard Preview (Click to Edit)", sec_code:"Your YAML Code (Client):",
         dash_title:"Dashboard Title (Filename)", label_entity:"Select Entity (Home Assistant)", label_dashboard:"Dashboard filename (e.g. joan3)",
         label_type:"Widget Type", label_name:"Title on Screen", label_icon:"Icon", label_preview:"Preview", label_size:"Size",
         btn_add:"+ ADD TO ROW", btn_update:"SAVE CHANGES", btn_cancel:"Cancel", btn_new_row:"+ Add New Row", btn_generate:"GENERATE .DASH CODE",
         btn_import_toggle:"📂 Import / Edit Code", header_paste_code:"Paste .dash file here:", btn_load_dash:"Load Dashboard",
         info_step1:"1. Save code to file:", info_step2:"2. Dashboard preview:",
-        state_on:"ON", state_off:"OFF", state_open:"OPEN", state_closed:"CLOSED",
-        state_locked:"LOCKED", state_unlocked:"UNLOCKED", state_home:"HOME", state_not_home:"AWAY"
+        state_on:"ON", state_off:"OFF", state_open:"OPEN", state_closed:"CLOSED"
       }
     };
 
+    // Theme/Lang Logic
     function toggleTheme(){
       const toDark = !document.body.classList.contains('dark-mode');
       document.body.classList.toggle('dark-mode', toDark);
@@ -310,11 +309,12 @@
       document.getElementById('form-header').innerText = editingIndices ? i18n[currentLang].btn_update : i18n[currentLang].sec_add;
     }
 
+    // Utils
     function formatNameFromId(id){
       if(!id) return "";
       const last = id.includes('.') ? id.split('.').pop() : id;
       let n = last.replace(/[_\-]+/g,' ').trim();
-      n = n.replace(/\b(esp|node|sensor|switch|light|binary sensor|input boolean|media player|climate|script|lock|cover|person|device tracker)\b/gi,'');
+      n = n.replace(/\b(esp|node|sensor|switch|light|binary sensor|input boolean|media player|climate|script)\b/gi,'');
       n = n.replace(/\s{2,}/g,' ').trim();
       n = n.toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
       return n || last;
@@ -327,7 +327,7 @@
       if(v.startsWith('input_text.')) return 'input_text';
       if(v.startsWith('input_datetime.')) return 'input_datetime';
       if(v.startsWith('weather.')) return 'weather';
-      if(v.startsWith('alarm')) return 'alarm';
+      if(v.startsWith('alarm')) return 'alarm_control_panel';
       if(v.startsWith('sensor.')) return 'sensor';
       if(v.startsWith('binary_sensor.')) return 'binary_sensor';
       if(v.startsWith('cover.')) return 'cover';
@@ -341,10 +341,6 @@
     }
 
     const smartIconMap = [
-      {k:['lock','zamek'],on:'mdi-lock-open',off:'mdi-lock'},
-      {k:['person','track','tracker'],base:'mdi-account'},
-      {k:['clock','zegar'],base:'mdi-clock-outline'},
-      {k:['reload','odswiez'],base:'mdi-refresh'},
       {k:['hydrofor','pump','water pump','zbiornik','tank'],on:'mdi-water-pump',off:'mdi-water-pump-off'},
       {k:['cwu','boiler','woda','water'],on:'mdi-water-outline',off:'mdi-water-off'},
       {k:['grzejnik','radiator','ogrzew','heat'],on:'mdi-radiator',off:'mdi-radiator-off'},
@@ -352,6 +348,7 @@
       {k:['garage','garaz','garaż'],on:'mdi-garage-open',off:'mdi-garage'},
       {k:['blind','roleta','shutter','okno','window'],on:'mdi-window-shutter-open',off:'mdi-window-shutter'},
       {k:['door','drzwi'],on:'mdi-door-open',off:'mdi-door-closed'},
+      {k:['lock','zamek'],on:'mdi-lock-open',off:'mdi-lock'},
       {k:['light','lamp','swiatlo','światło','zarowka','żarówka'],on:'mdi-lightbulb-on',off:'mdi-lightbulb-outline'},
       {k:['fan','wentyl'],on:'mdi-fan',off:'mdi-fan-off'},
       {k:['speaker','radio','media_player','spotify','audio'],on:'mdi-speaker',off:'mdi-speaker-off'},
@@ -387,25 +384,10 @@
       if(!ent) return '';
       const raw = String(ent.state).toLowerCase();
       const t = i18n[currentLang];
-      
-      if(type==='lock'){
-        if(raw==='locked') return t.state_locked;
-        if(raw==='unlocked') return t.state_unlocked;
-      }
-      if(type==='person' || type==='device_tracker'){
-        if(raw==='home') return t.state_home;
-        if(raw==='not_home') return t.state_not_home;
-        return raw;
-      }
       if(type==='sensor' || type==='input_number'){
         let val=ent.state;
         if(!isNaN(parseFloat(val)) && String(val).includes('.')) val=parseFloat(val).toFixed(1);
         return ent.unit ? `${val} ${ent.unit}` : val;
-      }
-      if(type==='cover'){
-        if(raw==='open') return t.state_open;
-        if(raw==='closed') return t.state_closed;
-        return raw.toUpperCase();
       }
       if(['switch','binary_sensor','script','media_player','climate','fan','light','input_boolean'].includes(type) || ent.id?.startsWith?.('input_boolean.')){
         if(['on','playing','open','unlocked','heat','cool','true','1','opening'].includes(raw)) return t.state_on;
@@ -420,7 +402,7 @@
       if(actionable){
         const pair = findIconPairById(widget.id);
         const state = ent ? String(ent.state).toLowerCase() : 'off';
-        const isOn = ['on','open','playing','unlocked','heat','cool','true','1','opening','home'].includes(state);
+        const isOn = ['on','open','playing','unlocked','heat','cool','true','1','opening'].includes(state);
         return ensureMdi(isOn ? (widget.icon_on || pair[0]) : (widget.icon_off || pair[1]));
       }
       return ensureMdi(widget.icon || findBaseIconByIdAndType(widget.id, widget.type));
@@ -446,7 +428,6 @@
             if(val) document.getElementById('dash-title').value = val;
             globalTitleSet=true; continue;
           }
-
           if(/^layout\s*:/i.test(line)){ parsingLayout=true; continue; }
 
           if(parsingLayout){
@@ -505,6 +486,7 @@
               if(!icon) icon = ensureMdi(findBaseIconByIdAndType(sourceEntity, type));
               icon_on=''; icon_off='';
             }
+
             rowWidgets.push({ id: sourceEntity, type, name, icon, icon_on, icon_off, size });
           });
           if(rowWidgets.length) rows.push(rowWidgets);
@@ -521,12 +503,12 @@
       }
     }
 
-    function applySmartForForm(){
+    // Smart Logic (FIXED)
+    function applySmartForForm(entityChanged = false){
       const typeSel = document.getElementById('new-widget-type');
       const entityInput = document.getElementById('new-entity-id');
       const nameInput = document.getElementById('new-widget-name');
       const iconInput = document.getElementById('new-widget-icon');
-      const navName = document.getElementById('new-dashboard-name');
       const groupEntity = document.getElementById('group-entity');
       const groupNav = document.getElementById('group-nav');
       const sizeInput = document.getElementById('new-widget-size');
@@ -546,35 +528,41 @@
       if(!idRaw){ updateIconPreview(); return; }
       const id = idRaw.toLowerCase();
 
-      // Only auto-change type if it's not manually set by user interaction (a bit simplistic but works)
-      // We re-infer type always on entity input change for convenience
-      const inferred = inferTypeFromIdOrEntity(id);
-      // if current type is switch but inferred is more specific, take it
-      if(typeSel.value === 'switch' && inferred !== 'switch') typeSel.value = inferred;
+      // Determine Type
+      const newType = inferTypeFromIdOrEntity(id);
+      if(typeSel.value === 'switch' && newType !== 'switch') typeSel.value = newType;
 
+      // Auto Size
       if((typeSel.value==='media_player' || typeSel.value==='climate' || typeSel.value==='weather' || typeSel.value==='clock' || typeSel.value==='iframe') && !sizeInput.value) sizeInput.value='(2x2)';
 
-      if(!nameInput.value.trim()){
-        nameInput.value = formatNameFromId(idRaw);
+      // SMART NAME & ICON LOGIC:
+      // Only override if this function was triggered by entity input change OR if fields are empty
+      if (entityChanged || !nameInput.value.trim()) {
+          nameInput.value = formatNameFromId(idRaw);
       }
 
-      const actionable = ['switch','binary_sensor','cover','media_player','climate','script','fan','light','lock'].includes(typeSel.value) || id.startsWith('input_boolean.');
-      if(actionable){
-        const pair = findIconPairById(idRaw);
-        if(!iconInput.value) iconInput.value = pair[0];
-      } else {
-        if(!iconInput.value) iconInput.value = findBaseIconByIdAndType(idRaw, typeSel.value);
+      if (entityChanged || !iconInput.value.trim()) {
+          const actionable = ['switch','binary_sensor','cover','media_player','climate','script','fan','light','lock'].includes(typeSel.value) || id.startsWith('input_boolean.');
+          if(actionable){
+            const pair = findIconPairById(idRaw);
+            iconInput.value = pair[0]; // default to ON icon
+          } else {
+            iconInput.value = findBaseIconByIdAndType(idRaw, typeSel.value);
+          }
       }
 
       updateIconPreview();
     }
+
     function updateIconPreview(){
       const icon = document.getElementById('new-widget-icon').value.trim();
       document.getElementById('icon-preview-i').className = (icon && icon.startsWith('mdi-')) ? ('mdi '+icon) : 'mdi mdi-help-circle-outline';
     }
 
     function saveWidget(){
-      applySmartForForm();
+      // Ensure smart fields are filled
+      applySmartForForm(false); 
+
       const type = document.getElementById('new-widget-type').value || 'switch';
       let id='';
       if(type==='navigate'){
@@ -583,14 +571,12 @@
         id = 'navigate.' + dashName;
       }else{
         id = document.getElementById('new-entity-id').value.trim();
-        if(!id && type !== 'clock' && type !== 'reload' && type !== 'label' && type !== 'iframe'){ 
-             // Allow some widgets without entity
-             alert(currentLang==='pl'?'Wymagana encja':'Entity required'); return; 
-        }
-        if(!id) id = type + '.' + Date.now(); // dummy id for static widgets
+        if(!id && type !== 'clock' && type !== 'label' && type !== 'iframe'){ alert(currentLang==='pl'?'Wymagana encja':'Entity required'); return; }
+        if(!id) id = type + '.' + Date.now(); 
       }
 
       let name = document.getElementById('new-widget-name').value.trim();
+      // Final fallback for name
       if(!name && type!=='clock' && type!=='reload') name = formatNameFromId(id);
 
       let icon = document.getElementById('new-widget-icon').value.trim();
@@ -618,6 +604,7 @@
         if(!rows.length) addNewRow();
         rows[activeRowIndex].push(widget);
       }
+
       clearFormInputs();
       renderRows();
       applyTranslations();
@@ -627,10 +614,8 @@
       const widget = rows[r][w];
       activeRowIndex=r; highlightActiveRow();
       document.getElementById('new-widget-type').value = widget.type;
-      
       const groupEntity = document.getElementById('group-entity');
       const groupNav = document.getElementById('group-nav');
-      
       if(widget.type==='navigate'){
         groupEntity.classList.add('hidden'); groupNav.classList.remove('hidden');
         document.getElementById('new-dashboard-name').value = widget.id.replace('navigate.','');
@@ -638,9 +623,9 @@
       }else{
         groupEntity.classList.remove('hidden'); groupNav.classList.add('hidden');
         document.getElementById('new-dashboard-name').value = '';
-        document.getElementById('new-entity-id').value = widget.id.includes(widget.type+'.') && !widget.id.includes('_') ? '' : widget.id; // clear dummy id
+        document.getElementById('new-entity-id').value = widget.id.includes(widget.type+'.') && !widget.id.includes('_') ? '' : widget.id;
       }
-      document.getElementById('new-widget-name').value = widget.name;
+      document.getElementById('new-widget-name').value = widget.name; 
       document.getElementById('new-widget-icon').value = widget.icon || widget.icon_on || widget.icon_off || '';
       document.getElementById('new-widget-size').value = widget.size || '';
       document.getElementById('btn-cancel').classList.remove('hidden');
@@ -769,10 +754,8 @@
         lines.push(`  widget_style: "background-color:#FFFFFF !important; color:#000 !important;"`);
         return lines.join("\n");
       }
-      
       lines.push(`  entity: ${w.id}`);
       lines.push(`  title: "${w.name.replace(/"/g,'\\"')}"`);
-      
       const actionable = ['switch','binary_sensor','cover','media_player','climate','script','fan','light','lock'].includes(w.type) || w.id.startsWith('input_boolean.');
       if(actionable){
         const pair = findIconPairById(w.id);
@@ -786,31 +769,20 @@
         if(w.type==='cover'){
           lines.push(`    "open": "${t.state_open}"`);
           lines.push(`    "closed": "${t.state_closed}"`);
-        } else if(w.type==='lock'){
-          lines.push(`    "locked": "ZAMKNIĘTE"`);
-          lines.push(`    "unlocked": "OTWARTE"`);
-        } else {
+        }else{
           lines.push(`    "on": "${t.state_on}"`);
           lines.push(`    "off": "${t.state_off}"`);
         }
         lines.push(`  icon_style_active: "color:#000 !important;"`);
         lines.push(`  icon_style_inactive: "color:#000 !important;"`);
-      } else if(w.type==='sensor'){
+      }else if(w.type==='sensor'){
         lines.push(`  icon: ${ensureMdi(w.icon||findBaseIconByIdAndType(w.id,'sensor'))}`);
         lines.push(`  title_style: "color:#000; font-size:20px; font-weight:700; text-align:center; padding-top:5px; width:100%;"`);
         lines.push(`  text_style: "color:#000 !important;"`);
         lines.push(`  value_style: "color:#000 !important; font-size:44px !important; font-weight:700 !important;"`);
         lines.push(`  unit_style: "color:#000 !important;"`);
         lines.push(`  widget_style: "color:#000 !important; background-color:#FFFFFF !important;"`);
-      } else if(w.type==='gauge'){
-        lines.push(`  min: 0`);
-        lines.push(`  max: 100`);
-        lines.push(`  low_color: "#000"`);
-        lines.push(`  medium_color: "#444"`);
-        lines.push(`  high_color: "#888"`);
-        lines.push(`  color: "#000"`);
-        lines.push(`  bgcolor: "#FFF"`);
-      } else {
+      }else{
         lines.push(`  icon: ${ensureMdi(w.icon||findBaseIconByIdAndType(w.id,w.type))}`);
         lines.push(`  title_style: "color:#000; font-size:20px; font-weight:700; text-align:center; padding-top:3px; width:100%;"`);
         lines.push(`  widget_style: "color:#000 !important; background-color:#FFFFFF !important;"`);
@@ -838,6 +810,7 @@
       linkEl.href = link; linkEl.innerText = link;
     }
 
+    // Events & init
     document.getElementById('btn-theme').addEventListener('click', toggleTheme);
     document.getElementById('btn-pl').addEventListener('click', ()=>setLang('pl'));
     document.getElementById('btn-en').addEventListener('click', ()=>setLang('en'));
@@ -848,11 +821,12 @@
     document.getElementById('btn-new-row').addEventListener('click', addNewRow);
 
     ['input','change','blur'].forEach(evt=>{
-      document.getElementById('new-entity-id').addEventListener(evt, applySmartForForm);
-      document.getElementById('new-widget-type').addEventListener(evt, applySmartForForm);
+      document.getElementById('new-entity-id').addEventListener(evt, ()=>applySmartForForm(true));
+      document.getElementById('new-widget-type').addEventListener(evt, ()=>applySmartForForm(true));
     });
     document.getElementById('new-widget-icon').addEventListener('input', updateIconPreview);
 
+    // Icons datalist
     async function fetchIcons(){
       const dl=document.getElementById('icons-list');
       try{
@@ -885,7 +859,8 @@
 
       if(!rows.length) addNewRow();
 
-      applySmartForForm();
+      // Run smart once in case browser prefilled fields
+      applySmartForForm(false);
       renderRows();
     });
   </script>
