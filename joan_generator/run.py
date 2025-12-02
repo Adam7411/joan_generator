@@ -37,19 +37,20 @@ def get_ha_entities():
         return []
     headers = {"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json"}
     try:
+        # Pobieramy wszystkie stany z Home Assistant
         response = requests.get(f"{API_URL}/states", headers=headers, timeout=10)
         if response.status_code == 200:
             data = response.json()
             entities = []
             for state in data:
-                # Przekazujemy pełne atrybuty dla logiki Smart JS
+                # Przekazujemy ID oraz Atrybuty (friendly_name, device_class) do JS
                 entities.append({
                     'id': state['entity_id'],
                     'state': state['state'],
                     'attributes': state.get('attributes', {}),
                     'unit': state.get('attributes', {}).get('unit_of_measurement', '')
                 })
-            # Sortowanie alfabetyczne
+            # Sortowanie alfabetyczne po ID dla porządku na liście startowej
             entities.sort(key=lambda x: x['id'])
             return entities
         else:
@@ -59,6 +60,7 @@ def get_ha_entities():
     return []
 
 # --- STYLE E-INK (High Contrast - Joan 6) ---
+# Zgodne z dokumentacją AppDaemon dla ekranów e-papierowych
 STYLES = {
     "title": "color: #000000; font-size: 30px; font-weight: 900; text-align: center; font-family: sans-serif; text-transform: uppercase;",
     "widget": "background-color: #FFFFFF; border: 3px solid #000000; color: #000000;",
@@ -70,7 +72,7 @@ STYLES = {
 }
 
 def get_icon_pair(base_icon, w_type):
-    # Logika fallback w Pythonie (gdyby JS nie przekazał ikon)
+    # Logika fallback w Pythonie (gdyby JS nie przekazał ikon, co jest rzadkie przy Smart Logic)
     if not base_icon:
         if w_type == 'lock': return 'mdi-lock-open', 'mdi-lock'
         if w_type == 'cover': return 'mdi-window-shutter-open', 'mdi-window-shutter'
@@ -100,6 +102,7 @@ def index():
             dashboard_filename = dashboard_slug + ".dash"
             lang = request.form.get('ui_language', 'pl')
             
+            # Tłumaczenia stanów dla AppDaemon (state_map)
             T = {
                 'pl': {'on': 'WŁ.', 'off': 'WYŁ.', 'open': 'OTWARTE', 'closed': 'ZAMKNIĘTE', 
                        'locked': 'ZABEZP.', 'unlocked': 'OTWARTE', 'home': 'DOM', 'not_home': 'POZA'},
@@ -108,6 +111,7 @@ def index():
             }
             dic = T.get(lang, T['pl'])
 
+            # --- NAGŁÓWEK PLIKU DASH ---
             generated_yaml += f"# --- JOAN 6 E-INK DASHBOARD ---\n"
             generated_yaml += f"title: {title}\n"
             generated_yaml += "widget_dimensions: [115, 115]\n"
@@ -135,7 +139,7 @@ def index():
                 generated_yaml += "layout:\n"
                 processed_widgets = []
                 
-                # Layout
+                # --- GENEROWANIE SEKCJI LAYOUT ---
                 for row in layout_rows:
                     if not row: continue
                     row_parts = []
@@ -146,6 +150,7 @@ def index():
                             
                         widget_str = w['id']
                         size = w.get('size', '').strip()
+                        # Domyślny rozmiar to 1x1, jeśli jest inny, dodajemy go do stringa
                         if size and size != "(1x1)":
                             if not size.startswith('('): size = f"({size})"
                             widget_str += size
@@ -157,6 +162,7 @@ def index():
                 
                 generated_yaml += "\n# --- WIDGET DEFINITIONS ---\n\n"
                 
+                # --- GENEROWANIE DEFINICJI WIDGETÓW ---
                 seen_ids = set()
                 for w in processed_widgets:
                     if w['type'] == 'spacer': continue
@@ -171,6 +177,7 @@ def index():
                     generated_yaml += f"{w_id}:\n"
                     generated_yaml += f"  title: \"{w_name}\"\n"
                     
+                    # 1. NAWIGACJA
                     if w_type == 'navigate':
                         dashboard_name = w_id.replace('navigate.', '')
                         generated_yaml += f"  widget_type: navigate\n"
@@ -179,6 +186,7 @@ def index():
                         generated_yaml += f"  widget_style: \"background-color: #000000; color: #FFFFFF; border: 2px solid #000000;\"\n"
                         generated_yaml += f"  icon_style_inactive: \"color: #FFFFFF;\"\n"
                     
+                    # 2. SENSOR
                     elif w_type == 'sensor':
                         generated_yaml += f"  widget_type: sensor\n"
                         generated_yaml += f"  entity: {w_id}\n"
@@ -186,17 +194,20 @@ def index():
                         generated_yaml += f"  unit_style: \"{STYLES['unit']}\"\n"
                         if w_icon: generated_yaml += f"  icon: {w_icon}\n"
 
+                    # 3. MEDIA PLAYER
                     elif w_type == 'media_player':
                         generated_yaml += f"  widget_type: media_player\n"
                         generated_yaml += f"  entity: {w_id}\n"
                         generated_yaml += f"  truncate_name: 20\n"
                         generated_yaml += f"  step: 5\n"
 
+                    # 4. CLIMATE
                     elif w_type == 'climate':
                         generated_yaml += f"  widget_type: climate\n"
                         generated_yaml += f"  entity: {w_id}\n"
                         generated_yaml += f"  step: 1\n"
 
+                    # 5. ZEGAR
                     elif w_type == 'clock':
                         generated_yaml += f"  widget_type: clock\n"
                         generated_yaml += f"  time_format: 24hr\n"
@@ -204,13 +215,16 @@ def index():
                         generated_yaml += f"  date_style: \"{STYLES['text']}\"\n"
                         generated_yaml += f"  time_style: \"{STYLES['value']} font-size: 50px !important;\"\n"
 
+                    # 6. ETYKIETA
                     elif w_type == 'label':
                          generated_yaml += f"  widget_type: label\n"
                          generated_yaml += f"  text: \"{w_name}\"\n"
                          if w_icon: generated_yaml += f"  icon: {w_icon}\n"
                     
+                    # 7. INNE (Actionable - Switch, Light, Binary Sensor, Lock)
                     else:
                         ad_type = w_type
+                        # Mapowanie typów formularza na typy AppDaemon
                         if w_type == 'binary_sensor': ad_type = 'binary_sensor'
                         if w_type == 'input_boolean': ad_type = 'switch'
                         if w_type == 'person': ad_type = 'device_tracker'
@@ -223,7 +237,8 @@ def index():
                         generated_yaml += f"  widget_type: {ad_type}\n"
                         generated_yaml += f"  entity: {w_id}\n"
                         
-                        # Pobieranie ikon z JSON (z JS)
+                        # Pobieramy dokładne ikony z obiektu widgetu (przesłanego JSON z frontendu)
+                        # Musimy znaleźć ten widget w liście processed_widgets
                         current_w_json = next((item for item in processed_widgets if item["id"] == w_id), None)
                         
                         if current_w_json:
@@ -238,6 +253,7 @@ def index():
                                 if i_off: generated_yaml += f"  icon_off: {i_off}\n"
                         
                         generated_yaml += f"  state_text: 1\n"
+                        # Mapowanie stanów na język PL/EN
                         if ad_type in ['switch', 'binary_sensor', 'cover', 'lock', 'device_tracker']:
                             generated_yaml += "  state_map:\n"
                             generated_yaml += f"    \"on\": \"{dic['on']}\"\n"
