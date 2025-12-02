@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Joan 6 E-Ink Generator (Real States)</title>
+    <title>Joan 6 E-Ink Generator (Ultimate)</title>
     <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap" rel="stylesheet">
     
@@ -17,26 +17,18 @@
     </script>
 
     <style>
-        /* ZMIENNE KOLORYSTYCZNE */
         :root {
             --bg-body: #e0e0e0; --bg-container: #ffffff; --bg-section: #fafafa; --bg-input: #ffffff;
             --text-main: #333333; --border: #cccccc; --accent: #d32f2f; --highlight: #e3f2fd;
             --preview-bg: #f0f0f0; --link-bg: #e1f5fe; --link-color: #0277bd;
         }
-        
         html.dark-mode {
             --bg-body: #121212; --bg-container: #1e1e1e; --bg-section: #252525; --bg-input: #2c2c2c;
             --text-main: #e0e0e0; --border: #444444; --accent: #ff5252; --highlight: #0d47a1;
             --preview-bg: #000000; --link-bg: #013655; --link-color: #81d4fa;
         }
 
-        body { 
-            font-family: 'Roboto', sans-serif; 
-            background-color: var(--bg-body); 
-            color: var(--text-main); 
-            padding: 20px; 
-            transition: background 0.3s, color 0.3s; 
-        }
+        body { font-family: 'Roboto', sans-serif; background-color: var(--bg-body); color: var(--text-main); padding: 20px; transition: background 0.3s; }
         .container { max-width: 1400px; margin: 0 auto; background: var(--bg-container); padding: 30px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
         
         .header-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--border); padding-bottom: 20px; margin-bottom: 25px; }
@@ -46,76 +38,64 @@
         .controls button.active { background: var(--accent); color: white; border-color: var(--accent); }
 
         .section { background: var(--bg-section); padding: 25px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 30px; }
-        .section-title { font-size: 1.4em; font-weight: 900; border-bottom: 3px solid var(--accent); display: inline-block; margin-bottom: 20px; color: var(--text-main); }
-
-        .file-path-info { background-color: var(--link-bg); color: var(--link-color); border: 1px solid var(--border); padding: 20px; margin-bottom: 20px; border-radius: 6px; font-family: monospace; font-size: 15px; line-height: 1.6; word-break: break-all; }
-        .file-path-info strong { display: block; margin-top: 10px; color: var(--text-main); font-size: 1.1em; }
-        .file-path-info a { color: var(--accent); font-weight: bold; font-size: 16px; text-decoration: underline; }
+        .file-path-info { background-color: var(--link-bg); color: var(--link-color); border: 1px solid var(--border); padding: 20px; margin-bottom: 20px; border-radius: 6px; font-family: monospace; font-size: 15px; }
+        .file-path-info a { color: var(--accent); font-weight: bold; }
 
         .add-widget-box { background: var(--highlight); padding: 25px; border-radius: 8px; border: 1px solid var(--accent); transition: all 0.3s; margin-bottom: 30px; }
         .add-widget-box.editing { border: 3px solid #ff9800; background: rgba(255, 152, 0, 0.1); }
 
         .flex-row { display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 15px; }
         .flex-col { flex: 1; min-width: 160px; }
-        
         label { display: block; font-weight: bold; font-size: 0.9em; margin-bottom: 8px; color: var(--text-main); }
         input, select, textarea { width: 100%; padding: 12px; border: 1px solid var(--border); background: var(--bg-input); color: var(--text-main); border-radius: 4px; box-sizing: border-box; font-size: 14px; }
         
         #w-id { border: 2px solid var(--accent); background-color: var(--bg-input); font-weight: bold; }
-
-        .btn { padding: 12px 24px; border: none; cursor: pointer; border-radius: 4px; font-weight: bold; text-transform: uppercase; color: white; font-size: 14px; transition: opacity 0.2s; }
-        .btn:hover { opacity: 0.9; }
+        .btn { padding: 12px 24px; border: none; cursor: pointer; border-radius: 4px; font-weight: bold; text-transform: uppercase; color: white; font-size: 14px; }
         .btn-add { background: #4caf50; width: 100%; }
-        .btn-gen { background: var(--accent); width: 100%; font-size: 20px; padding: 15px; margin-top: 20px;}
+        .btn-gen { background: var(--accent); width: 100%; font-size: 20px; padding: 15px; margin-top: 20px; }
         .btn-cancel { background: #757575; }
         .btn-row { background: #2196f3; margin-top: 15px; }
         .btn-import { background: #ff9800; color: white; width: auto; margin-top: 10px; }
 
-        /* PODGLĄD E-INK (POWIĘKSZONY DLA LEPSZEJ WIDOCZNOŚCI) */
-        .preview-area { background: var(--preview-bg); padding: 30px; border: 2px solid var(--border); border-radius: 8px; overflow-x: auto; min-height: 400px; }
+        /* --- PODGLĄD E-INK --- */
+        .preview-area { background: var(--preview-bg); padding: 30px; border: 2px solid var(--border); border-radius: 8px; overflow-x: auto; min-height: 350px; }
         
-        /* Wiersz - zwiększona wysokość */
+        /* WIERSZ (DUŻY, ŻEBY WSZYSTKO WESZŁO) */
         .eink-row { 
-            display: flex; gap: 8px; margin-bottom: 12px; padding: 15px; 
+            display: flex; gap: 10px; margin-bottom: 15px; padding: 15px; 
             border: 2px dashed #999; border-radius: 6px; 
-            min-height: 180px; /* Więcej miejsca w pionie */
+            min-height: 200px; /* Dużo miejsca na przyciski */
             align-items: center; position: relative; 
         }
         .row-label { position: absolute; top: -10px; left: 10px; font-size: 11px; background: var(--bg-body); padding: 2px 8px; color: var(--text-main); border: 1px solid var(--border); border-radius: 4px; font-weight: bold; }
 
-        /* WIDGET STYLING */
+        /* WIDGET (STYL Z PLIKU JOAN.TXT - BIAŁE TŁO, CZARNE RAMKI) */
         .eink-widget {
             background: #FFFFFF; border: 3px solid #000000; color: #000000;
             display: flex; flex-direction: column; align-items: center; justify-content: space-between;
-            padding: 10px; box-sizing: border-box; cursor: pointer; position: relative;
+            padding: 8px; box-sizing: border-box; cursor: pointer; position: relative;
             box-shadow: 4px 4px 0px rgba(0,0,0,0.25); transition: transform 0.1s; flex-shrink: 0; overflow: hidden;
         }
         .eink-widget:hover { transform: translateY(-3px); z-index: 10; border-color: var(--accent); }
         .eink-widget.editing { border: 3px dashed #ff9800; transform: scale(1.03); z-index: 20; }
 
         .ew-header {
-            font-size: 10px;
-            text-transform: uppercase;
-            color: #666;
-            width: 100%;
-            text-align: right;
-            position: absolute;
-            top: 4px;
-            right: 6px;
+            font-size: 10px; text-transform: uppercase; color: #666; width: 100%;
+            text-align: right; position: absolute; top: 2px; right: 4px;
         }
-
+        /* TYTUŁ PRZYCISKU */
         .ew-title { 
-            font-weight: 900; font-size: 15px; text-align: center; width: 100%; 
-            line-height: 1.3; margin-top: 20px; margin-bottom: 5px; 
-            white-space: normal; font-family: sans-serif; text-transform: uppercase;
+            font-weight: 900; font-size: 16px; text-align: center; width: 100%; 
+            line-height: 1.1; margin-top: 10px; white-space: normal; 
+            font-family: 'Roboto', 'Arial Black', sans-serif; text-transform: uppercase;
         }
+        /* IKONA */
+        .ew-icon { font-size: 52px; display: block; margin: 5px 0; }
         
-        .ew-icon { font-size: 50px; display: block; margin: 5px 0; }
-        
-        /* STAN (Prawdziwy) */
+        /* STAN (WARTOŚĆ) */
         .ew-value { 
-            font-weight: 900; font-size: 18px; text-transform: uppercase; 
-            margin-bottom: 10px; text-align: center; border-top: 3px solid #000; 
+            font-weight: 900; font-size: 22px; text-transform: uppercase; 
+            margin-bottom: 5px; text-align: center; border-top: 3px solid #000; 
             width: 90%; padding-top: 5px;
         }
         
@@ -133,8 +113,6 @@
             <h1>Joan 6 E-Ink Generator</h1>
             <div class="controls">
                 <button type="button" onclick="toggleTheme()" id="btn-theme">🌙</button>
-                <button type="button" onclick="setLang('pl')" id="btn-pl" class="active">PL</button>
-                <button type="button" onclick="setLang('en')" id="btn-en">EN</button>
             </div>
         </div>
 
@@ -142,7 +120,7 @@
             <details>
                 <summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">📂 Import / Eksport Kodu .DASH</summary>
                 <div style="margin-top: 15px;">
-                    <textarea id="import-code" style="height: 150px;" placeholder="Wklej tutaj zawartość pliku .dash aby go edytować..."></textarea>
+                    <textarea id="import-code" style="height: 150px;" placeholder="Wklej tutaj zawartość pliku .dash..."></textarea>
                     <button type="button" class="btn btn-import" onclick="importYaml()">Wczytaj Kod</button>
                 </div>
             </details>
@@ -152,67 +130,64 @@
             <input type="hidden" name="title" value="JoanDashboard">
             <input type="hidden" name="ui_language" id="input-lang" value="pl">
             
-            <!-- EDYTOR WIDGETU -->
             <div class="add-widget-box" id="editor-box">
-                <div class="section-title" id="editor-title" data-i18n="sec_add">Dodaj Widget</div>
+                <div class="section-title" id="editor-title">Dodaj Widget</div>
                 
                 <div class="flex-row">
                     <div class="flex-col">
-                        <label data-i18n="lbl_type">Typ Widgetu</label>
+                        <label>Typ Widgetu</label>
                         <select id="w-type" onchange="toggleInputs()">
-                            <option value="switch" data-i18n="opt_switch">Switch / Light</option>
-                            <option value="cover" data-i18n="opt_cover">Cover / Gate</option>
-                            <option value="sensor" data-i18n="opt_sensor">Sensor</option>
-                            <option value="binary_sensor" data-i18n="opt_binary">Binary Sensor</option>
-                            <option value="lock" data-i18n="opt_lock">Lock</option>
-                            <option value="person" data-i18n="opt_person">Person / Tracker</option>
-                            <option value="media_player" data-i18n="opt_media">Media Player</option>
-                            <option value="climate" data-i18n="opt_climate">Climate</option>
-                            <option value="input_select" data-i18n="opt_input_select">Input Select</option>
-                            <option value="input_number" data-i18n="opt_input_number">Input Number</option>
-                            <option value="script" data-i18n="opt_script">Script</option>
-                            <option value="navigate" data-i18n="opt_navigate">Navigate / Button</option>
-                            <option value="label" data-i18n="opt_label">Label (Text)</option>
-                            <option value="clock" data-i18n="opt_clock">Clock</option>
-                            <option value="spacer" data-i18n="opt_spacer">Spacer (Empty)</option>
+                            <option value="switch">Przełącznik / Światło</option>
+                            <option value="cover">Roleta / Brama</option>
+                            <option value="sensor">Sensor (Info)</option>
+                            <option value="binary_sensor">Sensor Binarny (Drzwi)</option>
+                            <option value="media_player">Media Player</option>
+                            <option value="climate">Klimatyzacja / Termostat</option>
+                            <option value="lock">Zamek</option>
+                            <option value="person">Osoba</option>
+                            <option value="input_boolean">Input Boolean</option>
+                            <option value="script">Skrypt</option>
+                            <option value="navigate">Przycisk Nawigacji</option>
+                            <option value="label">Etykieta</option>
+                            <option value="clock">Zegar</option>
+                            <option value="spacer">Spacer (Pusty)</option>
                         </select>
                     </div>
                     <div class="flex-col" id="grp-entity">
-                        <label data-i18n="lbl_entity">Encja (Wyszukaj po nazwie lub ID)</label>
-                        <!-- STANDARDOWY DATALIST - NAJLEPSZE I NAJSZYBSZE WYSZUKIWANIE -->
-                        <input list="entity-list" id="w-id" placeholder="np. głośnik kuchnia, swiatlo..." oninput="searchEntities(this.value)" autocomplete="off">
+                        <label>Encja (Wpisz nazwę lub ID)</label>
+                        <input list="entity-list" id="w-id" placeholder="np. głośnik, swiatlo..." oninput="searchEntities(this.value)" autocomplete="off">
                         <datalist id="entity-list"></datalist>
                     </div>
                     <div class="flex-col hidden" id="grp-nav">
-                        <label data-i18n="lbl_dash">Nazwa Dashboardu</label>
+                        <label>Nazwa Dashboardu</label>
                         <input type="text" id="w-dash" placeholder="np. main" oninput="autoNameNav()">
                     </div>
                     <div class="flex-col">
-                        <label data-i18n="lbl_name">Tytuł na ekranie</label>
+                        <label>Tytuł na ekranie</label>
                         <input type="text" id="w-name" placeholder="np. Salon">
                     </div>
                 </div>
 
                 <div class="flex-row">
                     <div class="flex-col">
-                        <label data-i18n="lbl_size">Rozmiar</label>
+                        <label>Rozmiar</label>
                         <select id="w-size">
-                            <option value="(2x1)" data-i18n="size_2x1">2x1 (Standard Button)</option>
-                            <option value="(1x1)" data-i18n="size_1x1">1x1 (Mały/Info)</option>
-                            <option value="(2x2)" data-i18n="size_2x2">2x2 (Duży/Media)</option>
-                            <option value="(3x1)" data-i18n="size_3x1">3x1 (Szeroki)</option>
-                            <option value="(1x2)" data-i18n="size_1x2">1x2 (Wysoki)</option>
-                            <option value="(3x2)" data-i18n="size_3x2">3x2 (Ogromny)</option>
+                            <option value="(2x1)">2x1 (Standard)</option>
+                            <option value="(1x1)">1x1 (Mały)</option>
+                            <option value="(2x2)">2x2 (Duży)</option>
+                            <option value="(3x1)">3x1 (Szeroki)</option>
+                            <option value="(1x2)">1x2 (Wysoki)</option>
+                            <option value="(3x2)">3x2 (Ogromny)</option>
                         </select>
                     </div>
                     <div class="flex-col" style="flex: 0 0 60px;">
-                        <label data-i18n="lbl_preview">Ikona</label>
+                        <label>Ikona</label>
                         <div style="display:flex; justify-content:center;">
                             <i id="preview-icon" class="mdi mdi-help-circle-outline icon-preview"></i>
                         </div>
                     </div>
                     <div class="flex-col">
-                        <label data-i18n="lbl_icon">Ikona</label>
+                        <label>Ikona (Baza)</label>
                         <input type="text" id="w-icon" oninput="updateIconPreview()" placeholder="mdi-home">
                     </div>
                     <div class="flex-col">
@@ -226,20 +201,19 @@
                 </div>
 
                 <div class="flex-row" style="margin-top: 20px;">
-                    <button type="button" class="btn btn-add" id="btn-submit" onclick="saveWidget()" data-i18n="btn_add">+ DODAJ WIDGET</button>
-                    <button type="button" class="btn btn-cancel hidden" id="btn-cancel" onclick="cancelEdit()" data-i18n="btn_cancel">ANULUJ</button>
+                    <button type="button" class="btn btn-add" id="btn-submit" onclick="saveWidget()">+ DODAJ WIDGET</button>
+                    <button type="button" class="btn btn-cancel hidden" id="btn-cancel" onclick="cancelEdit()">ANULUJ</button>
                 </div>
             </div>
 
-            <!-- PODGLĄD E-INK -->
             <div class="section">
-                <div class="section-title" data-i18n="sec_preview">Podgląd Dashboardu (Kliknij by edytować)</div>
+                <div class="section-title">Podgląd Dashboardu</div>
                 <div class="preview-area" id="preview-container"></div>
-                <button type="button" class="btn btn-row" onclick="addRow()" data-i18n="btn_row">+ Dodaj Wiersz</button>
+                <button type="button" class="btn btn-row" onclick="addRow()">+ Dodaj Wiersz</button>
             </div>
 
             <input type="hidden" name="layout_data_json" id="layout_json">
-            <button type="button" class="btn btn-gen" onclick="submitData()" data-i18n="btn_gen">GENERUJ KOD .DASH</button>
+            <button type="button" class="btn btn-gen" onclick="submitData()">GENERUJ KOD .DASH</button>
         </form>
 
         {% if generated_yaml %}
@@ -256,54 +230,16 @@
         {% endif %}
     </div>
 
-    <!-- LOGIKA JAVASCRIPT -->
     <script>
         // --- 1. DANE I ZMIENNE ---
-        // entitiesData zawiera teraz encje wraz z ich aktualnym stanem (state) i atrybutami
         const entitiesData = {{ entities | tojson | safe }};
-        let rows = [[]]; 
-        let editIdx = null; 
+        let rows = [[]];
+        let editIdx = null;
         let blockSmart = false; 
-        let currentLang = 'pl';
         let importedDefsMap = {}; 
 
-        // --- TŁUMACZENIA ---
-        const TRANSLATIONS = {
-            pl: {
-                sec_add: "Dodaj Widget", sec_edit: "Edytuj Widget", sec_preview: "Podgląd Dashboardu (Kliknij, aby edytować)",
-                lbl_type: "Typ Widgetu", lbl_entity: "Encja (Home Assistant)", lbl_name: "Tytuł na ekranie", lbl_size: "Rozmiar", 
-                lbl_icon: "Ikona", lbl_dash: "Nazwa Dashboardu", lbl_preview: "Podgląd",
-                btn_add: "+ DODAJ WIDGET", btn_update: "ZAPISZ ZMIANY", btn_cancel: "ANULUJ", 
-                btn_row: "+ Dodaj Wiersz", btn_gen: "GENERUJ KOD .DASH",
-                
-                opt_switch: "Przełącznik / Światło", opt_cover: "Roleta / Brama", opt_sensor: "Sensor (Info)",
-                opt_binary: "Sensor Binarny (On/Off)", opt_lock: "Zamek", opt_person: "Osoba / Tracker",
-                opt_media: "Odtwarzacz Media", opt_climate: "Termostat", opt_input_select: "Lista Wyboru",
-                opt_input_number: "Suwak Liczbowy", opt_script: "Skrypt", opt_navigate: "Przycisk Nawigacji",
-                opt_label: "Etykieta (Tekst)", opt_clock: "Zegar", opt_spacer: "Odstęp (Pusty)",
-                
-                size_1x1: "1x1 (Mały/Ikona)", size_2x1: "2x1 (Szeroki Przycisk)", size_2x2: "2x2 (Duży/Media)",
-                size_3x1: "3x1 (Bardzo Szeroki)", size_1x2: "1x2 (Wysoki)", size_3x2: "3x2 (Ogromny)"
-            },
-            en: {
-                sec_add: "Add Widget", sec_edit: "Edit Widget", sec_preview: "Dashboard Preview (Click to Edit)",
-                lbl_type: "Widget Type", lbl_entity: "Entity (Home Assistant)", lbl_name: "Title on Screen", lbl_size: "Size", 
-                lbl_icon: "Icon", lbl_dash: "Dashboard Name", lbl_preview: "Icon",
-                btn_add: "+ ADD WIDGET", btn_update: "SAVE CHANGES", btn_cancel: "CANCEL", 
-                btn_row: "+ Add Row", btn_gen: "GENERATE .DASH CODE",
-                
-                opt_switch: "Switch / Light", opt_cover: "Cover / Gate", opt_sensor: "Sensor (Info)", 
-                opt_binary: "Binary Sensor", opt_lock: "Lock", opt_person: "Person / Tracker",
-                opt_media: "Media Player", opt_climate: "Climate", opt_input_select: "Input Select",
-                opt_input_number: "Input Number", opt_script: "Script", opt_navigate: "Navigation Button",
-                opt_label: "Label (Text)", opt_clock: "Clock", opt_spacer: "Spacer (Empty)",
-
-                size_1x1: "1x1 (Small/Icon)", size_2x1: "2x1 (Wide Button)", size_2x2: "2x2 (Large/Media)",
-                size_3x1: "3x1 (Extra Wide)", size_1x2: "1x2 (Tall)", size_3x2: "3x2 (Huge)"
-            }
-        };
-
-        // --- MAPY SMART LOGIC ---
+        // --- MAPY SMART LOGIC (ZGODNIE Z PLIKIEM JOAN.TXT) ---
+        // Domyślnie: Switch/Cover -> 2x1, Sensor -> 1x1
         const SMART_MAP = {
             'light': { type: 'switch', size: '(2x1)', iconOn: 'mdi-lightbulb-on', iconOff: 'mdi-lightbulb-outline' },
             'switch': { type: 'switch', size: '(2x1)', iconOn: 'mdi-toggle-switch', iconOff: 'mdi-toggle-switch-off' },
@@ -313,45 +249,33 @@
             'sensor': { type: 'sensor', size: '(1x1)', icon: 'mdi-eye' },
             'media_player': { type: 'media_player', size: '(2x2)', icon: '' },
             'climate': { type: 'climate', size: '(2x2)', icon: '' },
-            'lock': { type: 'lock', size: '(2x1)', iconOn: 'mdi-lock-open', iconOff: 'mdi-lock' },
-            'script': { type: 'script', size: '(2x1)', icon: 'mdi-script-text-outline' }
+            'lock': { type: 'lock', size: '(2x1)', iconOn: 'mdi-lock-open', iconOff: 'mdi-lock' }
         };
 
-        // --- 2. FUNKCJE POMOCNICZE (NA GÓRZE) ---
+        // --- 2. FUNKCJE POMOCNICZE ---
 
-        // Normalizacja stringa
         function normalizeString(str) {
             return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
         }
 
-        // ZAAWANSOWANE WYSZUKIWANIE (HYBRYDOWE + MULTI-WORD)
         function searchEntities(val) {
-            // Najpierw uruchom logikę smart dla tego, co już wpisano
-            runSmartLogic(val);
-
-            // Filtrowanie datalist
+            runSmartLogic(val); // Uruchom logikę smart na żywo
+            
             const dl = document.getElementById('entity-list');
-            dl.innerHTML = ''; // Wyczyść listę
+            dl.innerHTML = ''; 
             
             if(!val || val.length < 2) return; 
-
-            // Podziel zapytanie na słowa i znormalizuj
             const terms = normalizeString(val).split(" ").filter(t => t);
             
             let count = 0;
             for(const e of entitiesData) {
-                if(count > 50) break; // Limit 50 wyników
-                
-                // Szukamy w ID i w Friendly Name (oba znormalizowane)
+                if(count > 50) break;
+                // Szukamy w ID i Friendly Name
                 const searchStr = normalizeString(e.id + " " + (e.attributes.friendly_name || ""));
-                
-                // Sprawdź czy WSZYSTKIE wpisane słowa są w stringu (AND logic)
-                const match = terms.every(term => searchStr.includes(term));
-                
-                if(match) {
+                if(terms.every(term => searchStr.includes(term))) {
                     const opt = document.createElement('option');
                     opt.value = e.id;
-                    // Wyświetl: "Przyjazna Nazwa (entity_id)"
+                    // Pokazujemy przyjazną nazwę
                     opt.label = e.attributes.friendly_name ? `${e.attributes.friendly_name} (${e.id})` : e.id;
                     opt.setAttribute('data-dclass', e.attributes.device_class || '');
                     opt.setAttribute('data-friendly', e.attributes.friendly_name || '');
@@ -361,25 +285,14 @@
             }
         }
 
-        function resolveImportedTitle(id) {
-            if (!importedDefsMap) return '';
-            if (importedDefsMap[id] && importedDefsMap[id].title) return importedDefsMap[id].title;
-            const shortId = id.includes('.') ? id.split('.')[1] : id;
-            if (importedDefsMap[shortId] && importedDefsMap[shortId].title) return importedDefsMap[shortId].title;
-            return '';
-        }
-
         function getEntityMeta(id) {
             return entitiesData.find(e => e.id === id) || { attributes: {} };
         }
 
-        // ULEPSZONE GENEROWANIE TYTUŁU
         function formatSmartName(id, friendlyName) {
             if (friendlyName && friendlyName.length > 2) return friendlyName;
-            
             if(!id) return "";
             if(id.startsWith('navigate.')) return id.replace('navigate.','').toUpperCase();
-            
             let name = id.split('.').pop(); 
             name = name.replace(/_[lvr]\d+$/i, '').replace(/_state$/i, '');
             name = name.replace(/_/g, ' ');
@@ -398,80 +311,51 @@
             const type = document.getElementById('w-type').value;
             const isNav = type === 'navigate';
             const isSpacer = type === 'spacer';
-            
             document.getElementById('grp-entity').style.display = (isNav || isSpacer) ? 'none' : 'block';
             document.getElementById('grp-nav').style.display = isNav ? 'block' : 'none';
             document.getElementById('grp-nav').classList.toggle('hidden', !isNav);
         }
 
-        // --- 3. SMART LOGIC (SUPER ROZBUDOWANA) ---
-        
+        // --- 3. SMART LOGIC ---
         function runSmartLogic(val) {
-            if (blockSmart) return; 
+            if (blockSmart) return;
             
             const id = val.toLowerCase();
-            const idNorm = normalizeString(id); 
-            
+            const idNorm = normalizeString(id);
             if (id.length < 3) return;
 
-            // Szukamy danych
             const ent = getEntityMeta(id);
             const dClass = (ent.attributes.device_class || '').toLowerCase();
             const fName = ent.attributes.friendly_name || '';
-            const fNameNorm = normalizeString(fName); 
+            const fNameNorm = normalizeString(fName);
             const domain = id.split('.')[0];
 
-            // 1. USTAL BAZĘ
+            // Baza
             let conf = SMART_MAP[domain] || { type: 'sensor', size: '(1x1)', icon: 'mdi-eye' };
 
-            // 2. DETEKCJA SŁÓW KLUCZOWYCH (W ID i NAZWIE)
+            // Detekcja słów kluczowych (PL)
             const check = (keywords) => keywords.some(k => idNorm.includes(k) || fNameNorm.includes(k));
-
-            if (check(['glosnik', 'speaker', 'audio', 'tv', 'odtwarzacz'])) {
-                conf = SMART_MAP['media_player'];
-            } else if (check(['swiatlo', 'lamp', 'kinkiet', 'led', 'zarowka'])) {
-                conf = SMART_MAP['light'];
-            } else if (check(['gniazdko', 'wtyczka', 'outlet', 'plug'])) {
-                conf = SMART_MAP['switch'];
-            } else if (check(['brama', 'garaz', 'gate'])) {
-                conf = { type: 'cover', size: '(2x1)', iconOn: 'mdi-garage-open', iconOff: 'mdi-garage' };
-            } else if (check(['rolet', 'blind', 'shutter', 'zaslon'])) {
-                conf = SMART_MAP['cover'];
-            } else if (check(['zamek', 'lock', 'rygiel'])) {
-                conf = SMART_MAP['lock'];
-            } else if (check(['drzwi', 'door', 'furtka', 'okno', 'window'])) {
+            
+            if (check(['glosnik', 'audio', 'tv'])) conf = SMART_MAP['media_player'];
+            else if (check(['swiatlo', 'lamp', 'kinkiet'])) conf = SMART_MAP['light'];
+            else if (check(['brama', 'garaz'])) conf = { type: 'cover', size: '(2x1)', iconOn: 'mdi-garage-open', iconOff: 'mdi-garage' };
+            else if (check(['rolet', 'blind'])) conf = SMART_MAP['cover'];
+            else if (check(['zamek'])) conf = SMART_MAP['lock'];
+            else if (check(['drzwi', 'okno'])) {
                 conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-door-open', iconOff: 'mdi-door-closed' };
-                if (check(['okno', 'window'])) {
-                    conf.iconOn = 'mdi-window-open-variant'; conf.iconOff = 'mdi-window-closed-variant';
-                }
-            } else if (check(['temp', 'therm'])) {
-                conf = { type: 'sensor', size: '(1x1)', icon: 'mdi-thermometer' };
-            } else if (check(['wilg', 'humid'])) {
-                conf = { type: 'sensor', size: '(1x1)', icon: 'mdi-water-percent' };
-            } else if (check(['script', 'skrypt', 'radio'])) {
-                conf = SMART_MAP['script'];
             }
 
-            // 3. DETEKCJA DEVICE_CLASS (Priorytet najwyższy)
+            // Detekcja Device Class
             if (dClass === 'garage') conf = { type: 'cover', size: '(2x1)', iconOn: 'mdi-garage-open', iconOff: 'mdi-garage' };
             if (dClass === 'door') conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-door-open', iconOff: 'mdi-door-closed' };
             if (dClass === 'battery') conf = { type: 'sensor', size: '(1x1)', icon: 'mdi-battery' };
             if (dClass === 'temperature') conf = { type: 'sensor', size: '(1x1)', icon: 'mdi-thermometer' };
-            if (dClass === 'humidity') conf = { type: 'sensor', size: '(1x1)', icon: 'mdi-water-percent' };
             if (domain === 'input_boolean') conf = SMART_MAP['switch'];
-            if (domain === 'script') conf = SMART_MAP['script'];
 
-            // 4. APLIKOWANIE DANYCH
+            // Aplikuj
             document.getElementById('w-type').value = conf.type;
-            
-            // Smart Size - zawsze ustawiaj sugerowany rozmiar przy wpisywaniu nowej encji
             document.getElementById('w-size').value = conf.size;
-            
-            // Smart Name
-            const nameField = document.getElementById('w-name');
-            nameField.value = formatSmartName(id, fName);
-
-            // Smart Icons
+            document.getElementById('w-name').value = formatSmartName(id, fName);
             document.getElementById('w-icon').value = conf.icon || '';
             document.getElementById('w-icon-on').value = conf.iconOn || '';
             document.getElementById('w-icon-off').value = conf.iconOff || '';
@@ -486,34 +370,36 @@
             document.getElementById('w-name').value = val.toUpperCase();
         }
 
-        // --- 4. CRUD & RENDER ---
+        // --- 4. PODGLĄD ZE STANAMI (REAL-TIME) ---
+        
+        function getRealState(w) {
+            const type = w.type;
+            const id = (w.id || '');
+            // Szukamy w danych pobranych z Pythona
+            const ent = entitiesData.find(e => e.id === id);
 
-        function setLang(lang) {
-            currentLang = lang;
-            document.getElementById('input-lang').value = lang;
-            document.getElementById('btn-pl').className = lang === 'pl' ? 'active' : '';
-            document.getElementById('btn-en').className = lang === 'en' ? 'active' : '';
-            const t = TRANSLATIONS[lang];
-            document.querySelectorAll('[data-i18n]').forEach(el => {
-                const key = el.getAttribute('data-i18n');
-                if (t[key]) {
-                    if (el.tagName === 'INPUT' && el.type === 'submit') el.value = t[key];
-                    else el.innerText = t[key];
-                }
-            });
-            document.querySelectorAll('option[data-i18n]').forEach(el => {
-                const key = el.getAttribute('data-i18n');
-                if (t[key]) el.text = t[key];
-            });
-            const btn = document.getElementById('btn-submit');
-            btn.innerText = editIdx ? t.btn_update : t.btn_add;
-            renderPreview();
-        }
+            if (!ent) return "---"; // Brak encji
 
-        function toggleTheme() {
-            const isDark = document.documentElement.classList.toggle('dark-mode');
-            localStorage.setItem('joan_theme', isDark ? 'dark' : 'light');
-            document.getElementById('btn-theme').innerText = isDark ? '☀️' : '🌙';
+            const val = ent.state;
+            const unit = ent.unit || "";
+
+            // Mapowanie stanów (PL)
+            if (val === 'on') return "WŁĄCZONE";
+            if (val === 'off') return "WYŁĄCZONE";
+            if (val === 'open') return "OTWARTE";
+            if (val === 'closed') return "ZAMKNIĘTE";
+            if (val === 'locked') return "ZAMKNIĘTE";
+            if (val === 'unlocked') return "OTWARTE";
+            if (val === 'playing') return "ODTWARZA";
+            if (val === 'paused') return "PAUZA";
+            if (val === 'idle') return "BEZCZYNNY";
+            
+            // Liczby (np. 21.567 -> 21.6)
+            if (!isNaN(parseFloat(val)) && val.includes('.')) {
+                return parseFloat(val).toFixed(1) + " " + unit;
+            }
+            
+            return val + " " + unit;
         }
 
         function saveWidget() {
@@ -527,7 +413,6 @@
                 icon_on: document.getElementById('w-icon-on').value,
                 icon_off: document.getElementById('w-icon-off').value
             };
-
             if(w.type === 'navigate') w.id = 'navigate.' + w.dash;
             if(w.type === 'spacer') w.id = 'spacer';
 
@@ -537,21 +422,75 @@
             } else {
                 rows[rows.length-1].push(w);
                 clearForm();
-                blockSmart = false; 
+                blockSmart = false;
             }
             renderPreview();
         }
 
+        function renderPreview() {
+            const container = document.getElementById('preview-container');
+            container.innerHTML = '';
+
+            rows.forEach((row, rI) => {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'eink-row';
+                
+                const label = document.createElement('div');
+                label.className = 'row-label';
+                label.innerText = 'WIERSZ ' + (rI + 1);
+                rowDiv.appendChild(label);
+
+                row.forEach((w, wI) => {
+                    const div = document.createElement('div');
+                    div.className = 'eink-widget';
+                    if(editIdx && editIdx.r === rI && editIdx.w === wI) div.classList.add('editing');
+
+                    let cols = 2, rw = 1; // Domyślnie 2x1
+                    if(w.size) {
+                        const parts = w.size.replace(/[()]/g, '').split('x');
+                        cols = parseInt(parts[0]);
+                        rw = parseInt(parts[1]);
+                    }
+                    
+                    // Skalowanie (115px + 8px margines)
+                    const width = (cols * 115) + ((cols - 1) * 8);
+                    const height = (rw * 115) + ((rw - 1) * 8);
+                    
+                    div.style.width = width + 'px';
+                    div.style.height = height + 'px';
+
+                    if(w.type === 'spacer') {
+                        div.style.border = '1px dashed #aaa';
+                        div.style.boxShadow = 'none';
+                        div.style.opacity = '0.5';
+                        div.innerHTML = '<span style="font-size:10px; color:#999;">SPACER</span>';
+                    } else {
+                        const icon = w.icon || w.icon_on || 'mdi-cube-outline';
+                        const realState = getRealState(w); // TU POBIERAMY STAN
+                        
+                        div.innerHTML = `
+                            <div class="ew-header">${w.type}</div>
+                            <div class="ew-title">${w.name || w.id}</div>
+                            <i class="mdi ${icon} ew-icon"></i>
+                            <div class="ew-value">${realState}</div>
+                            <div class="ew-del" onclick="deleteWidget(${rI}, ${wI}, event)">X</div>
+                        `;
+                    }
+                    div.onclick = () => editWidget(rI, wI);
+                    rowDiv.appendChild(div);
+                });
+                container.appendChild(rowDiv);
+            });
+        }
+
         function editWidget(r, w) {
-            blockSmart = true; // ZABLOKUJ SMART
+            blockSmart = true; 
             editIdx = {r, w};
             const data = rows[r][w];
-
             document.getElementById('editor-box').classList.add('editing');
             document.getElementById('btn-cancel').classList.remove('hidden');
-            const t = TRANSLATIONS[currentLang];
-            document.getElementById('editor-title').innerText = t.sec_edit;
-            document.getElementById('btn-submit').innerText = t.btn_update;
+            document.getElementById('editor-title').innerText = "Edytuj Widget";
+            document.getElementById('btn-submit').innerText = "ZAPISZ ZMIANY";
 
             document.getElementById('w-type').value = data.type;
             toggleInputs();
@@ -560,11 +499,10 @@
             else document.getElementById('w-id').value = data.id;
 
             document.getElementById('w-name').value = data.name;
-            document.getElementById('w-size').value = data.size || '(1x1)';
+            document.getElementById('w-size').value = data.size || '(2x1)';
             document.getElementById('w-icon').value = data.icon || '';
             document.getElementById('w-icon-on').value = data.icon_on || '';
             document.getElementById('w-icon-off').value = data.icon_off || '';
-            
             updateIconPreview();
             setTimeout(() => blockSmart = false, 500);
         }
@@ -574,9 +512,8 @@
             blockSmart = false;
             document.getElementById('editor-box').classList.remove('editing');
             document.getElementById('btn-cancel').classList.add('hidden');
-            const t = TRANSLATIONS[currentLang];
-            document.getElementById('editor-title').innerText = t.sec_add;
-            document.getElementById('btn-submit').innerText = t.btn_add;
+            document.getElementById('editor-title').innerText = "Dodaj Widget";
+            document.getElementById('btn-submit').innerText = "+ DODAJ WIDGET";
             clearForm();
         }
 
@@ -601,105 +538,17 @@
             renderPreview();
         }
 
-        // --- FUNKCJA PRAWDZIWEGO STANU Z HA ---
-        function getRealState(w) {
-            const isPL = currentLang === 'pl';
-            const type = w.type;
-            const id = (w.id || '');
-            
-            // Znajdź encję w danych z HA (entitiesData jest zdefiniowane na początku skryptu)
-            const ent = entitiesData.find(e => e.id === id);
-            
-            // Jeśli nie znaleziono encji (np. navigate, spacer, lub błędne ID), zwróć pusty ciąg
-            if (!ent) {
-                if(type === 'navigate') return "LINK";
-                return "---"; 
-            }
-
-            const val = ent.state;
-            const unit = ent.unit || "";
-
-            // Tłumaczenie stanów (On/Off itp.)
-            if (val === 'on') return isPL ? "WŁĄCZONE" : "ON";
-            if (val === 'off') return isPL ? "WYŁĄCZONE" : "OFF";
-            if (val === 'open') return isPL ? "OTWARTE" : "OPEN";
-            if (val === 'closed') return isPL ? "ZAMKNIĘTE" : "CLOSED";
-            if (val === 'locked') return isPL ? "ZAMKNIĘTE" : "LOCKED";
-            if (val === 'unlocked') return isPL ? "OTWARTE" : "UNLOCKED";
-            
-            // Jeśli to liczba (np. temperatura)
-            if (!isNaN(parseFloat(val)) && val.includes('.')) {
-                // Zaokrąglij do 1 miejsca po przecinku
-                return parseFloat(val).toFixed(1) + " " + unit;
-            }
-            
-            // Inne stany (np. tekstowe) + jednostka
-            return val + " " + unit;
-        }
-
-        function renderPreview() {
-            const container = document.getElementById('preview-container');
-            container.innerHTML = '';
-
-            rows.forEach((row, rI) => {
-                const rowDiv = document.createElement('div');
-                rowDiv.className = 'eink-row';
-                
-                const label = document.createElement('div');
-                label.className = 'row-label';
-                label.innerText = (currentLang === 'pl' ? 'WIERSZ ' : 'ROW ') + (rI + 1);
-                rowDiv.appendChild(label);
-
-                row.forEach((w, wI) => {
-                    const div = document.createElement('div');
-                    div.className = 'eink-widget';
-                    if(editIdx && editIdx.r === rI && editIdx.w === wI) div.classList.add('editing');
-
-                    let cols = 1, rw = 1;
-                    if(w.size) {
-                        const parts = w.size.replace(/[()]/g, '').split('x');
-                        cols = parseInt(parts[0]) || 1;
-                        rw = parseInt(parts[1]) || 1;
-                    }
-                    
-                    // Skalowanie: (115px + 8px margines)
-                    const width = (cols * 115) + ((cols - 1) * 8);
-                    const height = (rw * 115) + ((rw - 1) * 8);
-                    
-                    div.style.width = width + 'px';
-                    div.style.height = height + 'px';
-
-                    if(w.type === 'spacer') {
-                        div.style.border = '1px dashed #aaa';
-                        div.style.boxShadow = 'none';
-                        div.style.opacity = '0.5';
-                        div.innerHTML = '<span style="font-size:10px; color:#999;">SPACER</span>';
-                    } else {
-                        const icon = w.icon || w.icon_on || 'mdi-cube-outline';
-                        // TUTAJ POBIERAMY PRAWDZIWY STAN
-                        const realState = getRealState(w);
-                        
-                        div.innerHTML = `
-                            <div class="ew-header">${w.type}</div>
-                            <div class="ew-title">${w.name || w.id}</div>
-                            <i class="mdi ${icon} ew-icon"></i>
-                            <div class="ew-value">${realState}</div>
-                            <div class="ew-del" onclick="deleteWidget(${rI}, ${wI}, event)">X</div>
-                        `;
-                    }
-                    div.onclick = () => editWidget(rI, wI);
-                    rowDiv.appendChild(div);
-                });
-                container.appendChild(rowDiv);
-            });
-        }
-
         function submitData() {
             document.getElementById('layout_json').value = JSON.stringify(rows);
             document.getElementById('main-form').submit();
         }
 
-        // --- 6. IMPORT LOGIC ---
+        function toggleTheme() {
+            const isDark = document.documentElement.classList.toggle('dark-mode');
+            localStorage.setItem('joan_theme', isDark ? 'dark' : 'light');
+            document.getElementById('btn-theme').innerText = isDark ? '☀️' : '🌙';
+        }
+
         function importYaml() {
             const text = document.getElementById('import-code').value;
             if(!text) return;
@@ -711,6 +560,7 @@
             let rawDefs = {};
             let currentDefKey = null;
 
+            // Parsowanie definicji
             lines.forEach(line => {
                 const tr = line.trim();
                 if(!tr || tr.startsWith('#')) return;
@@ -732,6 +582,7 @@
             
             importedDefsMap = rawDefs;
 
+            // Parsowanie layoutu
             lines.forEach(line => {
                 const tr = line.trim();
                 if(tr.startsWith('layout:')) { inLayout = true; return; }
@@ -742,7 +593,7 @@
                     const rowData = [];
                     widgets.forEach(wStr => {
                         let id = wStr;
-                        let size = '(1x1)';
+                        let size = '(2x1)';
                         const sizeMatch = wStr.match(/\(\d+x\d+\)/);
                         if(sizeMatch) {
                             size = sizeMatch[0];
@@ -762,15 +613,11 @@
                             if(def.icon) icon = def.icon;
                             if(def.icon_on) icon_on = def.icon_on;
                             if(def.icon_off) icon_off = def.icon_off;
-                            if(def.icon_locked) icon_off = def.icon_locked;
-                            if(def.icon_unlocked) icon_on = def.icon_unlocked;
                         } else {
                             if(id === 'spacer') type = 'spacer';
                             else if(id.startsWith('navigate.')) type = 'navigate';
                             else if(id.startsWith('sensor.')) type = 'sensor';
                         }
-                        
-                        if(name === id && type !== 'spacer') name = formatSmartName(id, '');
 
                         rowData.push({
                             id: id, type: type, size: size, name: name, 
@@ -801,9 +648,7 @@
             const pathEl = document.getElementById('path-code');
             const linkEl = document.getElementById('dashboard-link');
             
-            if(pathEl) {
-                pathEl.innerText = pathEl.innerText.replace('IP_HA', host);
-            }
+            if(pathEl) pathEl.innerText = pathEl.innerText.replace('IP_HA', host);
             if(linkEl) {
                 const rawHref = linkEl.getAttribute('href');
                 if (rawHref.includes('[HOST]')) {
@@ -813,12 +658,11 @@
                 }
             }
 
-            setLang('pl');
             const savedTheme = localStorage.getItem('joan_theme') || 'light';
             document.getElementById('btn-theme').innerText = savedTheme === 'dark' ? '☀️' : '🌙';
             
-            if(!rows.length || (rows.length===1 && !rows[0].length)) {
-                // Empty start
+            if(rows.length === 1 && rows[0].length === 0) {
+                // Pusty start
             } else {
                 renderPreview();
             }
