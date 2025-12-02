@@ -46,7 +46,7 @@ def get_ha_entities():
                     'unit': state['attributes'].get('unit_of_measurement', '')
                 })
             entities.sort(key=lambda x: x['id'])
-            print(f"✅ SUCCESS! Fetched {len(entities)} entities with states.")
+            print(f"✅ SUCCESS! Fetched {len(entities)} entities.")
             return entities
         else:
             print(f"⚠️ Home Assistant API Error: {response.status_code} - {response.text}")
@@ -66,7 +66,7 @@ STYLES = {
 
 def get_icon_pair(base_icon, w_type):
     if not base_icon:
-        # Defaults
+        # Defaults specific to E-Ink
         if w_type == 'lock': return 'mdi-lock-open', 'mdi-lock'
         if w_type == 'cover': return 'mdi-window-shutter-open', 'mdi-window-shutter'
         if w_type == 'person' or w_type == 'device_tracker': return 'mdi-home', 'mdi-home-outline'
@@ -100,7 +100,7 @@ def index():
         T = {
             'pl': {'on': 'WŁĄCZONE', 'off': 'WYŁĄCZONE', 'open': 'OTWARTE', 'closed': 'ZAMKNIĘTE', 
                    'opening': 'OTWIERANIE', 'closing': 'ZAMYKANIE', 'locked': 'ZAMKNIĘTE', 'unlocked': 'OTWARTE',
-                   'home': 'W DOMU', 'not_home': 'POZA DOMEM'},
+                   'home': 'W DOMU', 'not_home': 'POZA'},
             'en': {'on': 'ON', 'off': 'OFF', 'open': 'OPEN', 'closed': 'CLOSED', 
                    'opening': 'OPENING', 'closing': 'CLOSING', 'locked': 'LOCKED', 'unlocked': 'UNLOCKED',
                    'home': 'HOME', 'not_home': 'AWAY'}
@@ -171,18 +171,8 @@ def index():
                     generated_yaml += f"{w_id}:\n"
                     generated_yaml += f"  title: \"{w_name}\"\n"
                     
-                    # --- TYPY WIDGETÓW ---
-                    
-                    # 1. CLOCK
-                    if w_type == 'clock':
-                        generated_yaml += f"  widget_type: clock\n"
-                        generated_yaml += f"  time_format: 24hr\n"
-                        generated_yaml += f"  show_seconds: 0\n" # Oszczędzanie baterii
-                        generated_yaml += f"  date_style: \"{STYLES['text']}\"\n"
-                        generated_yaml += f"  time_style: \"{STYLES['value']} font-size: 40px !important;\"\n"
-
-                    # 2. NAVIGATE
-                    elif w_type == 'navigate':
+                    # 1. NAVIGATE
+                    if w_type == 'navigate':
                         dashboard_name = w_id.replace('navigate.', '')
                         generated_yaml += f"  widget_type: navigate\n"
                         generated_yaml += f"  dashboard: {dashboard_name}\n"
@@ -190,56 +180,64 @@ def index():
                         generated_yaml += f"  icon_inactive: {nav_icon}\n"
                         generated_yaml += f"  widget_style: \"background-color: #FFFFFF !important; border-radius: 8px !important; padding: 10px !important; color: #000000 !important;\"\n"
                         generated_yaml += f"  icon_style_inactive: \"color: #000000 !important;\"\n"
-
-                    # 3. SENSOR
+                    
+                    # 2. SENSOR (Number, String, etc)
                     elif w_type == 'sensor':
                         generated_yaml += f"  widget_type: sensor\n"
                         generated_yaml += f"  entity: {w_id}\n"
                         generated_yaml += f"  value_style: \"{STYLES['value']}\"\n"
                         generated_yaml += f"  unit_style: \"{STYLES['unit']}\"\n"
                         if w_icon: generated_yaml += f"  icon: {w_icon}\n"
-
-                    # 4. MEDIA PLAYER
+                    
+                    # 3. MEDIA PLAYER
                     elif w_type == 'media_player':
                         generated_yaml += f"  widget_type: media_player\n"
                         generated_yaml += f"  entity: {w_id}\n"
                         generated_yaml += f"  truncate_name: 20\n"
                         generated_yaml += f"  step: 5\n"
 
-                    # 5. GAUGE (E-INK Style)
-                    elif w_type == 'gauge':
-                        generated_yaml += f"  widget_type: gauge\n"
+                    # 4. CLIMATE
+                    elif w_type == 'climate':
+                        generated_yaml += f"  widget_type: climate\n"
                         generated_yaml += f"  entity: {w_id}\n"
-                        generated_yaml += f"  min: 0\n  max: 100\n"
-                        # Kolory czarno-szare dla E-Ink
-                        generated_yaml += f"  low_color: \"#000000\"\n"
-                        generated_yaml += f"  medium_color: \"#444444\"\n"
-                        generated_yaml += f"  high_color: \"#888888\"\n"
-                        generated_yaml += f"  color: \"#000000\"\n"
-                        generated_yaml += f"  bgcolor: \"#FFFFFF\"\n"
+                        generated_yaml += f"  step: 1\n"
 
-                    # 6. LABEL / TEXT / IFRAME / RELOAD
+                    # 5. CLOCK (Optimized)
+                    elif w_type == 'clock':
+                        generated_yaml += f"  widget_type: clock\n"
+                        generated_yaml += f"  time_format: 24hr\n"
+                        generated_yaml += f"  show_seconds: 0\n"
+                        generated_yaml += f"  date_style: \"{STYLES['text']}\"\n"
+                        generated_yaml += f"  time_style: \"{STYLES['value']} font-size: 40px !important;\"\n"
+                    
+                    # 6. WEATHER
+                    elif w_type == 'weather':
+                        generated_yaml += f"  widget_type: weather\n"
+                        generated_yaml += f"  main_style: \"color: #000000 !important; font-size: 24px;\"\n"
+                        generated_yaml += f"  unit_style: \"color: #000000 !important;\"\n"
+
+                    # 7. LABEL
                     elif w_type == 'label':
                          generated_yaml += f"  widget_type: label\n"
                          generated_yaml += f"  text: \"{w_name}\"\n"
                          if w_icon: generated_yaml += f"  icon: {w_icon}\n"
                     
-                    elif w_type == 'iframe':
-                         generated_yaml += f"  widget_type: iframe\n"
-                         generated_yaml += f"  url_list:\n    - https://www.home-assistant.io\n"
-
+                    # 8. RELOAD
                     elif w_type == 'reload':
                          generated_yaml += f"  widget_type: reload\n"
                          if w_icon: generated_yaml += f"  icon_inactive: {w_icon}\n"
 
-                    # 7. LOCK / COVER / PERSON / BINARY / SWITCH / INPUT_BOOLEAN
+                    # 9. ACTIONABLE (Switch, Cover, Lock, Script, Scene, Input*, Person)
                     else:
                         ad_type = w_type
                         if w_type == 'binary_sensor': ad_type = 'binary_sensor'
+                        # Map light to switch for simple toggle behavior on e-ink
+                        if w_type == 'light': ad_type = 'switch' 
                         if w_type == 'input_boolean': ad_type = 'switch'
-                        if w_type == 'input_text': ad_type = 'input_text'
-                        if w_type == 'input_datetime': ad_type = 'input_datetime'
-                        if w_type == 'person': ad_type = 'device_tracker' # AppDaemon uses device_tracker type often for person
+                        if w_type == 'input_number': ad_type = 'input_number'
+                        if w_type == 'input_select': ad_type = 'input_select'
+                        if w_type == 'person': ad_type = 'device_tracker'
+                        if w_type == 'scene': ad_type = 'scene'
                         
                         generated_yaml += f"  widget_type: {ad_type}\n"
                         generated_yaml += f"  entity: {w_id}\n"
