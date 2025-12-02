@@ -3,14 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Joan 6 E-Ink Generator (Ultimate)</title>
-    <!-- Material Icons -->
+    <title>Joan 6 E-Ink Generator (Real-Time)</title>
     <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css" rel="stylesheet">
-    <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap" rel="stylesheet">
     
-    <!-- MOTYW STARTOWY -->
     <script>
+        // Motyw bez mrugania
         (function() {
             try {
                 const savedTheme = localStorage.getItem('joan_theme') || 'light';
@@ -20,7 +18,7 @@
     </script>
 
     <style>
-        /* KOLORY */
+        /* ZMIENNE */
         :root {
             --bg-body: #e0e0e0; --bg-container: #ffffff; --bg-section: #fafafa; --bg-input: #ffffff;
             --text-main: #333333; --border: #cccccc; --accent: #d32f2f; --highlight: #e3f2fd;
@@ -33,21 +31,8 @@
             --preview-bg: #000000; --link-bg: #013655; --link-color: #81d4fa;
         }
 
-        body { 
-            font-family: 'Roboto', sans-serif; 
-            background-color: var(--bg-body); 
-            color: var(--text-main); 
-            padding: 20px; 
-            transition: background 0.3s, color 0.3s; 
-        }
-        .container { 
-            max-width: 1400px; 
-            margin: 0 auto; 
-            background: var(--bg-container); 
-            padding: 30px; 
-            border-radius: 10px; 
-            box-shadow: 0 4px 20px rgba(0,0,0,0.15); 
-        }
+        body { font-family: 'Roboto', sans-serif; background-color: var(--bg-body); color: var(--text-main); padding: 20px; transition: background 0.3s; }
+        .container { max-width: 1400px; margin: 0 auto; background: var(--bg-container); padding: 30px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
         
         .header-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--border); padding-bottom: 20px; margin-bottom: 25px; }
         h1 { margin: 0; color: var(--accent); font-size: 28px; }
@@ -62,7 +47,6 @@
         .file-path-info strong { display: block; margin-top: 10px; color: var(--text-main); font-size: 1.1em; }
         .file-path-info a { color: var(--accent); font-weight: bold; font-size: 16px; text-decoration: underline; }
 
-        /* FORMULARZ */
         .add-widget-box { background: var(--highlight); padding: 25px; border-radius: 8px; border: 1px solid var(--accent); transition: all 0.3s; margin-bottom: 30px; }
         .add-widget-box.editing { border: 3px solid #ff9800; background: rgba(255, 152, 0, 0.1); }
 
@@ -72,12 +56,8 @@
         label { display: block; font-weight: bold; font-size: 0.9em; margin-bottom: 8px; color: var(--text-main); }
         input, select, textarea { width: 100%; padding: 12px; border: 1px solid var(--border); background: var(--bg-input); color: var(--text-main); border-radius: 4px; box-sizing: border-box; font-size: 14px; }
         
-        /* POLE WYSZUKIWANIA ENCJI */
-        #w-id { 
-            border: 2px solid var(--accent); 
-            background-color: var(--bg-input); 
-            font-weight: bold; 
-        }
+        /* POLE WYSZUKIWANIA */
+        #w-id { border: 2px solid var(--accent); background-color: var(--bg-input); font-weight: bold; }
 
         .btn { padding: 12px 24px; border: none; cursor: pointer; border-radius: 4px; font-weight: bold; text-transform: uppercase; color: white; font-size: 14px; transition: opacity 0.2s; }
         .btn:hover { opacity: 0.9; }
@@ -90,31 +70,24 @@
         /* PODGLĄD E-INK */
         .preview-area { background: var(--preview-bg); padding: 30px; border: 2px solid var(--border); border-radius: 8px; overflow-x: auto; min-height: 300px; }
         
-        /* Zwiększone wymiary wiersza dla lepszej widoczności */
         .eink-row { 
-            display: flex; 
-            gap: 8px; 
-            margin-bottom: 12px; 
-            padding: 15px; 
-            border: 2px dashed #999; 
-            border-radius: 6px; 
-            min-height: 160px; 
-            align-items: center; 
-            position: relative; 
+            display: flex; gap: 8px; margin-bottom: 12px; padding: 15px; 
+            border: 2px dashed #999; border-radius: 6px; 
+            min-height: 160px; /* Wysokie wiersze */
+            align-items: center; position: relative; 
         }
         .row-label { position: absolute; top: -10px; left: 10px; font-size: 11px; background: var(--bg-body); padding: 2px 8px; color: var(--text-main); border: 1px solid var(--border); border-radius: 4px; font-weight: bold; }
 
-        /* WIDGET PREVIEW */
+        /* WIDGET STYLING */
         .eink-widget {
             background: #FFFFFF; border: 3px solid #000000; color: #000000;
             display: flex; flex-direction: column; align-items: center; justify-content: space-between;
-            padding: 10px; box-sizing: border-box; cursor: pointer; position: relative;
+            padding: 8px; box-sizing: border-box; cursor: pointer; position: relative;
             box-shadow: 4px 4px 0px rgba(0,0,0,0.25); transition: transform 0.1s; flex-shrink: 0; overflow: hidden;
         }
         .eink-widget:hover { transform: translateY(-3px); z-index: 10; border-color: var(--accent); }
         .eink-widget.editing { border: 3px dashed #ff9800; transform: scale(1.03); z-index: 20; }
 
-        /* NAGŁÓWEK TYPU */
         .ew-header {
             font-size: 10px;
             text-transform: uppercase;
@@ -122,37 +95,23 @@
             width: 100%;
             text-align: right;
             position: absolute;
-            top: 4px;
-            right: 6px;
+            top: 2px;
+            right: 4px;
         }
 
-        /* TYTUŁ */
         .ew-title { 
-            font-weight: 900; 
-            font-size: 14px; 
-            text-align: center; 
-            width: 100%; 
-            line-height: 1.2; 
-            margin-top: 15px; 
-            margin-bottom: 5px;
-            white-space: normal; 
-            font-family: sans-serif; 
-            text-transform: uppercase;
+            font-weight: 900; font-size: 14px; text-align: center; width: 100%; 
+            line-height: 1.2; margin-top: 15px; margin-bottom: 5px; 
+            white-space: normal; font-family: sans-serif; text-transform: uppercase;
         }
         
-        /* IKONA */
         .ew-icon { font-size: 48px; display: block; margin: 5px 0; }
         
-        /* STAN (DÓŁ) */
+        /* STAN (Prawdziwy) */
         .ew-value { 
-            font-weight: 900; 
-            font-size: 16px; 
-            text-transform: uppercase; 
-            margin-bottom: 5px; 
-            text-align: center;
-            border-top: 2px solid #000;
-            width: 95%;
-            padding-top: 4px;
+            font-weight: 900; font-size: 16px; text-transform: uppercase; 
+            margin-bottom: 5px; text-align: center; border-top: 2px solid #000; 
+            width: 95%; padding-top: 4px;
         }
         
         .ew-del { position: absolute; top: -10px; right: -10px; background: red; color: white; width: 24px; height: 24px; border-radius: 50%; text-align: center; line-height: 24px; font-weight: bold; display: none; box-shadow: 1px 1px 3px rgba(0,0,0,0.5); z-index: 30; }
@@ -166,7 +125,7 @@
 <body>
     <div class="container">
         <div class="header-row">
-            <h1>Joan 6 E-Ink Generator (Ultimate)</h1>
+            <h1>Joan 6 E-Ink Generator</h1>
             <div class="controls">
                 <button type="button" onclick="toggleTheme()" id="btn-theme">🌙</button>
                 <button type="button" onclick="setLang('pl')" id="btn-pl" class="active">PL</button>
@@ -188,7 +147,6 @@
             <input type="hidden" name="title" value="JoanDashboard">
             <input type="hidden" name="ui_language" id="input-lang" value="pl">
             
-            <!-- EDYTOR WIDGETU -->
             <div class="add-widget-box" id="editor-box">
                 <div class="section-title" id="editor-title" data-i18n="sec_add">Dodaj Widget</div>
                 
@@ -233,9 +191,9 @@
                     <div class="flex-col">
                         <label data-i18n="lbl_size">Rozmiar</label>
                         <select id="w-size">
-                            <option value="(2x1)" data-i18n="size_2x1">2x1 (Standard Button)</option>
-                            <option value="(1x1)" data-i18n="size_1x1">1x1 (Mały/Info)</option>
-                            <option value="(2x2)" data-i18n="size_2x2">2x2 (Duży/Media)</option>
+                            <option value="(1x1)" data-i18n="size_1x1">1x1 (Mały)</option>
+                            <option value="(2x1)" data-i18n="size_2x1">2x1 (Standard)</option>
+                            <option value="(2x2)" data-i18n="size_2x2">2x2 (Duży)</option>
                             <option value="(3x1)" data-i18n="size_3x1">3x1 (Szeroki)</option>
                             <option value="(1x2)" data-i18n="size_1x2">1x2 (Wysoki)</option>
                             <option value="(3x2)" data-i18n="size_3x2">3x2 (Ogromny)</option>
@@ -267,7 +225,6 @@
                 </div>
             </div>
 
-            <!-- PODGLĄD E-INK -->
             <div class="section">
                 <div class="section-title" data-i18n="sec_preview">Podgląd Dashboardu (Kliknij by edytować)</div>
                 <div class="preview-area" id="preview-container"></div>
@@ -292,9 +249,9 @@
         {% endif %}
     </div>
 
-    <!-- LOGIKA JAVASCRIPT (KOMPLETNA) -->
     <script>
         // --- 1. DANE I ZMIENNE ---
+        // entitiesData zawiera: id, state, attributes (friendly_name, device_class), unit
         const entitiesData = {{ entities | tojson | safe }};
         let rows = [[]]; // Start with 1 empty row
         let editIdx = null; // {r, w}
@@ -306,7 +263,7 @@
         const TRANSLATIONS = {
             pl: {
                 sec_add: "Dodaj Widget", sec_edit: "Edytuj Widget", sec_preview: "Podgląd Dashboardu (Kliknij, aby edytować)",
-                lbl_type: "Typ Widgetu", lbl_entity: "Encja (Home Assistant)", lbl_name: "Tytuł na ekranie", lbl_size: "Rozmiar", 
+                lbl_type: "Typ Widgetu", lbl_entity: "Encja (Wpisz nazwę lub ID)", lbl_name: "Tytuł na ekranie", lbl_size: "Rozmiar", 
                 lbl_icon: "Ikona", lbl_dash: "Nazwa Dashboardu", lbl_preview: "Podgląd",
                 btn_add: "+ DODAJ WIDGET", btn_update: "ZAPISZ ZMIANY", btn_cancel: "ANULUJ", 
                 btn_row: "+ Dodaj Wiersz", btn_gen: "GENERUJ KOD .DASH",
@@ -322,7 +279,7 @@
             },
             en: {
                 sec_add: "Add Widget", sec_edit: "Edit Widget", sec_preview: "Dashboard Preview (Click to Edit)",
-                lbl_type: "Widget Type", lbl_entity: "Entity (Home Assistant)", lbl_name: "Title on Screen", lbl_size: "Size", 
+                lbl_type: "Widget Type", lbl_entity: "Entity (Type Name or ID)", lbl_name: "Title on Screen", lbl_size: "Size", 
                 lbl_icon: "Icon", lbl_dash: "Dashboard Name", lbl_preview: "Icon",
                 btn_add: "+ ADD WIDGET", btn_update: "SAVE CHANGES", btn_cancel: "CANCEL", 
                 btn_row: "+ Add Row", btn_gen: "GENERATE .DASH CODE",
@@ -339,7 +296,6 @@
         };
 
         // --- MAPY SMART LOGIC ---
-        // 2x1 to standard dla przycisków, 1x1 dla sensorów, 2x2 dla media/climate
         const SMART_MAP = {
             'light': { type: 'switch', size: '(2x1)', iconOn: 'mdi-lightbulb-on', iconOff: 'mdi-lightbulb-outline' },
             'switch': { type: 'switch', size: '(2x1)', iconOn: 'mdi-toggle-switch', iconOff: 'mdi-toggle-switch-off' },
@@ -349,24 +305,23 @@
             'sensor': { type: 'sensor', size: '(1x1)', icon: 'mdi-eye' },
             'media_player': { type: 'media_player', size: '(2x2)', icon: '' },
             'climate': { type: 'climate', size: '(2x2)', icon: '' },
-            'lock': { type: 'lock', size: '(2x1)', iconOn: 'mdi-lock-open', iconOff: 'mdi-lock' }
+            'lock': { type: 'lock', size: '(2x1)', iconOn: 'mdi-lock-open', iconOff: 'mdi-lock' },
+            'script': { type: 'script', size: '(2x1)', icon: 'mdi-script-text-outline' }
         };
 
-        // --- 2. FUNKCJE POMOCNICZE ---
+        // --- 2. FUNKCJE POMOCNICZE (NA GÓRZE) ---
 
-        // Normalizacja (usuwa polskie znaki do wyszukiwania)
+        // Normalizacja stringa (usuwa polskie znaki do wyszukiwania)
         function normalizeString(str) {
             return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
         }
 
         // ZAAWANSOWANE WYSZUKIWANIE (HYBRYDOWE + MULTI-WORD)
         function searchEntities(val) {
-            // Najpierw uruchom logikę smart dla tego, co wpisano
-            runSmartLogic(val);
+            runSmartLogic(val); // Uruchom logikę smart na żywo
 
-            // Filtrowanie datalist
             const dl = document.getElementById('entity-list');
-            dl.innerHTML = ''; // Wyczyść
+            dl.innerHTML = ''; 
             
             if(!val || val.length < 2) return; 
 
@@ -375,18 +330,18 @@
             
             let count = 0;
             for(const e of entitiesData) {
-                if(count > 50) break; // Limit 50 wyników
+                if(count > 50) break;
                 
-                // Szukamy w ID i w Friendly Name
+                // Szukamy w ID i w Friendly Name (oba znormalizowane)
                 const searchStr = normalizeString(e.id + " " + (e.attributes.friendly_name || ""));
                 
-                // Sprawdź czy WSZYSTKIE wpisane słowa są w stringu
+                // Sprawdź czy WSZYSTKIE wpisane słowa są w stringu (AND logic)
                 const match = terms.every(term => searchStr.includes(term));
                 
                 if(match) {
                     const opt = document.createElement('option');
                     opt.value = e.id;
-                    // Wyświetl ładną nazwę w podpowiedzi
+                    // Wyświetl: "Przyjazna Nazwa (entity_id)"
                     opt.label = e.attributes.friendly_name ? `${e.attributes.friendly_name} (${e.id})` : e.id;
                     opt.setAttribute('data-dclass', e.attributes.device_class || '');
                     opt.setAttribute('data-friendly', e.attributes.friendly_name || '');
@@ -415,7 +370,6 @@
             if(!id) return "";
             if(id.startsWith('navigate.')) return id.replace('navigate.','').toUpperCase();
             
-            // light.swiatlo_podworko_ganek_l2 -> Swiatlo Podworko Ganek
             let name = id.split('.').pop(); 
             name = name.replace(/_[lvr]\d+$/i, '').replace(/_state$/i, '');
             name = name.replace(/_/g, ' ');
@@ -446,11 +400,11 @@
             if (blockSmart) return; 
             
             const id = val.toLowerCase();
-            const idNorm = normalizeString(id); // Bez polskich znaków
+            const idNorm = normalizeString(id); 
             
             if (id.length < 3) return;
 
-            // Szukamy w danych
+            // Szukamy danych
             const ent = getEntityMeta(id);
             const dClass = (ent.attributes.device_class || '').toLowerCase();
             const fName = ent.attributes.friendly_name || '';
@@ -484,20 +438,23 @@
                 conf = { type: 'sensor', size: '(1x1)', icon: 'mdi-thermometer' };
             } else if (check(['wilg', 'humid'])) {
                 conf = { type: 'sensor', size: '(1x1)', icon: 'mdi-water-percent' };
+            } else if (check(['script', 'skrypt', 'radio'])) {
+                conf = SMART_MAP['script'];
             }
 
-            // 3. DETEKCJA DEVICE_CLASS (Nadpisuje słowa kluczowe)
+            // 3. DETEKCJA DEVICE_CLASS (Priorytet najwyższy)
             if (dClass === 'garage') conf = { type: 'cover', size: '(2x1)', iconOn: 'mdi-garage-open', iconOff: 'mdi-garage' };
             if (dClass === 'door') conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-door-open', iconOff: 'mdi-door-closed' };
             if (dClass === 'battery') conf = { type: 'sensor', size: '(1x1)', icon: 'mdi-battery' };
             if (dClass === 'temperature') conf = { type: 'sensor', size: '(1x1)', icon: 'mdi-thermometer' };
             if (dClass === 'humidity') conf = { type: 'sensor', size: '(1x1)', icon: 'mdi-water-percent' };
             if (domain === 'input_boolean') conf = SMART_MAP['switch'];
+            if (domain === 'script') conf = SMART_MAP['script'];
 
             // 4. APLIKOWANIE DANYCH
             document.getElementById('w-type').value = conf.type;
             
-            // Wymuś rozmiar (Smart Size)
+            // Smart Size
             document.getElementById('w-size').value = conf.size;
             
             // Smart Name
@@ -569,7 +526,6 @@
                 cancelEdit();
             } else {
                 rows[rows.length-1].push(w);
-                // Wyczyść po dodaniu, aby kolejne dodawanie było czyste
                 clearForm();
                 blockSmart = false; 
             }
@@ -635,28 +591,34 @@
             renderPreview();
         }
 
-        // --- FUNKCJA SYMULACJI STANU DLA PODGLĄDU ---
-        function getSimulatedState(w) {
+        // --- FUNKCJA PRAWDZIWEGO STANU Z HA ---
+        function getRealState(w) {
             const isPL = currentLang === 'pl';
             const type = w.type;
-            const id = (w.id || '').toLowerCase();
+            const id = (w.id || '');
+            
+            // Znajdź encję w danych z HA
+            const ent = entitiesData.find(e => e.id === id);
+            
+            if (!ent) return "---"; // Brak danych
 
-            // Specyficzne stany
-            if (type === 'sensor') {
-                if (id.includes('temp')) return "21.5 °C";
-                if (id.includes('wilg') || id.includes('humid')) return "45 %";
-                if (id.includes('batt')) return "85 %";
-                if (id.includes('power') || id.includes('moc')) return "120 W";
-                return "12.5";
+            const val = ent.state;
+            const unit = ent.unit || "";
+
+            // Obsługa stanów
+            if (val === 'on') return isPL ? "WŁĄCZONE" : "ON";
+            if (val === 'off') return isPL ? "WYŁĄCZONE" : "OFF";
+            if (val === 'open') return isPL ? "OTWARTE" : "OPEN";
+            if (val === 'closed') return isPL ? "ZAMKNIĘTE" : "CLOSED";
+            if (val === 'locked') return isPL ? "ZAMKNIĘTE" : "LOCKED";
+            if (val === 'unlocked') return isPL ? "OTWARTE" : "UNLOCKED";
+            
+            // Dla sensorów numerycznych (zaokrąglenie)
+            if (!isNaN(parseFloat(val)) && val.includes('.')) {
+                return parseFloat(val).toFixed(1) + " " + unit;
             }
-
-            if (type === 'switch' || type === 'light' || type === 'input_boolean') return isPL ? "WŁĄCZONE" : "ON";
-            if (type === 'binary_sensor') return isPL ? "OTWARTE" : "OPEN";
-            if (type === 'cover') return isPL ? "OTWARTE" : "OPEN";
-            if (type === 'lock') return isPL ? "ZAMKNIĘTE" : "LOCKED";
-            if (type === 'climate') return "22.0 °C";
-            if (type === 'media_player') return "PAUSED";
-            return "";
+            
+            return val + " " + unit;
         }
 
         function renderPreview() {
@@ -684,7 +646,6 @@
                         rw = parseInt(parts[1]) || 1;
                     }
                     
-                    // Skalowanie: (115px + 8px margines)
                     const width = (cols * 115) + ((cols - 1) * 8);
                     const height = (rw * 115) + ((rw - 1) * 8);
                     
@@ -698,13 +659,13 @@
                         div.innerHTML = '<span style="font-size:10px; color:#999;">SPACER</span>';
                     } else {
                         const icon = w.icon || w.icon_on || 'mdi-cube-outline';
-                        const simState = getSimulatedState(w);
+                        const realState = getRealState(w); // Użycie prawdziwego stanu
                         
                         div.innerHTML = `
                             <div class="ew-header">${w.type}</div>
                             <div class="ew-title">${w.name || w.id}</div>
                             <i class="mdi ${icon} ew-icon"></i>
-                            <div class="ew-value">${simState}</div>
+                            <div class="ew-value">${realState}</div>
                             <div class="ew-del" onclick="deleteWidget(${rI}, ${wI}, event)">X</div>
                         `;
                     }
@@ -791,7 +752,6 @@
                             else if(id.startsWith('sensor.')) type = 'sensor';
                         }
                         
-                        // Importuj nazwę ale nie nadpisuj jeśli już była
                         if(name === id && type !== 'spacer') name = formatSmartName(id, '');
 
                         rowData.push({
