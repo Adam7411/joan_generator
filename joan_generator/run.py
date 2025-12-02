@@ -34,7 +34,7 @@ def get_ha_entities():
         return []
     headers = {"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json"}
     try:
-        print(f"🌍 Fetching entities from: {API_URL}/states")
+        # print(f"🌍 Fetching entities from: {API_URL}/states") # Odkomentuj do debugowania
         response = requests.get(f"{API_URL}/states", headers=headers, timeout=10)
         if response.status_code == 200:
             data = response.json()
@@ -43,26 +43,25 @@ def get_ha_entities():
                 entities.append({
                     'id': state['entity_id'],
                     'state': state['state'],
-                    # Pobieramy atrybuty, aby JS mógł odczytać device_class
                     'attributes': state.get('attributes', {}),
                     'unit': state['attributes'].get('unit_of_measurement', '')
                 })
             entities.sort(key=lambda x: x['id'])
             return entities
-        else:
-            print(f"⚠️ Home Assistant API Error: {response.status_code} - {response.text}")
     except Exception as e:
         print(f"❌ Exception while fetching entities: {e}")
     return []
 
-# E-Ink Styles (High Contrast)
+# --- E-INK STYLES (High Contrast for Joan 6) ---
+# Czarne ramki, białe tło, brak kolorów pośrednich, grube czcionki.
 STYLES = {
-    "title": "color: #000000; font-size: 20px; font-weight: 700; text-align: center; padding-top: 5px; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif;",
-    "widget": "color: #000000 !important; background-color: #FFFFFF !important; border: 2px solid #000000 !important;",
-    "text": "color: #000000 !important; font-weight: 700 !important;",
-    "value": "color: #000000 !important; font-size: 44px !important; font-weight: 700 !important;",
-    "unit": "color: #000000 !important;",
-    "icon": "color: #000000 !important;"
+    "title": "color: #000000; font-size: 30px; font-weight: 900; text-align: center; font-family: sans-serif; text-transform: uppercase;",
+    "widget": "background-color: #FFFFFF; border: 3px solid #000000; color: #000000;",
+    "text": "color: #000000; font-weight: 900; font-size: 16px;",
+    "value": "color: #000000; font-size: 36px; font-weight: 900;",
+    "unit": "color: #000000; font-size: 14px; font-weight: 700;",
+    "icon": "color: #000000;",
+    "state_text": "color: #000000; font-weight: 900; font-size: 14px; text-transform: uppercase; margin-top: 5px;"
 }
 
 def get_icon_pair(base_icon, w_type):
@@ -95,8 +94,8 @@ def index():
         lang = request.form.get('ui_language', 'pl')
         
         T = {
-            'pl': {'on': 'WŁ.', 'off': 'WYŁ.', 'open': 'OTWARTE', 'closed': 'ZAMKN.', 
-                   'locked': 'ZAMKN.', 'unlocked': 'OTWARTE', 'home': 'DOM', 'not_home': 'POZA'},
+            'pl': {'on': 'WŁ.', 'off': 'WYŁ.', 'open': 'OTWARTE', 'closed': 'ZAMKNIĘTE', 
+                   'locked': 'ZABEZP.', 'unlocked': 'OTWARTE', 'home': 'DOM', 'not_home': 'POZA'},
             'en': {'on': 'ON', 'off': 'OFF', 'open': 'OPEN', 'closed': 'CLOSED', 
                    'locked': 'LOCKED', 'unlocked': 'UNLOCKED', 'home': 'HOME', 'not_home': 'AWAY'}
         }
@@ -104,11 +103,11 @@ def index():
 
         generated_yaml += f"# --- JOAN 6 E-INK DASHBOARD ---\n"
         generated_yaml += f"title: {title}\n"
-        generated_yaml += "widget_dimensions: [117, 117]\n"
+        generated_yaml += "widget_dimensions: [115, 115]\n"
         generated_yaml += "widget_size: [2, 1]\n"
         generated_yaml += "widget_margins: [8, 8]\n"
         generated_yaml += "columns: 6\n"
-        generated_yaml += "rows: 9\n"
+        generated_yaml += "rows: 6\n" # Joan 6 (4:3) usually fits around 6x6 with these dims
         
         generated_yaml += "global_parameters:\n"
         generated_yaml += "  use_comma: 0\n"
@@ -117,11 +116,11 @@ def index():
         generated_yaml += "  state_text: 1\n"
         generated_yaml += f"  title_style: \"{STYLES['title']}\"\n"
         generated_yaml += f"  text_style: \"{STYLES['text']}\"\n"
-        generated_yaml += f"  state_text_style: \"color: #000000 !important; font-weight: 700 !important; font-size: 14px; text-transform: uppercase; margin-top: 5px;\"\n"
+        generated_yaml += f"  state_text_style: \"{STYLES['state_text']}\"\n"
         generated_yaml += f"  widget_style: \"{STYLES['widget']}\"\n"
         generated_yaml += f"  icon_style_active: \"{STYLES['icon']}\"\n"
         generated_yaml += f"  icon_style_inactive: \"{STYLES['icon']}\"\n"
-        generated_yaml += "skin: simplyred\n\n"
+        generated_yaml += "skin: default\n\n"
         
         layout_data_str = request.form.get('layout_data_json')
         if layout_data_str:
@@ -170,6 +169,8 @@ def index():
                         generated_yaml += f"  widget_type: navigate\n"
                         generated_yaml += f"  dashboard: {dashboard_name}\n"
                         generated_yaml += f"  icon_inactive: {w_icon or 'mdi-arrow-right-circle'}\n"
+                        generated_yaml += f"  widget_style: \"background-color: #000000; color: #FFFFFF; border: 2px solid #000000;\"\n"
+                        generated_yaml += f"  icon_style_inactive: \"color: #FFFFFF;\"\n"
                     
                     elif w_type == 'sensor':
                         generated_yaml += f"  widget_type: sensor\n"
@@ -186,13 +187,14 @@ def index():
                     elif w_type == 'climate':
                         generated_yaml += f"  widget_type: climate\n"
                         generated_yaml += f"  entity: {w_id}\n"
+                        generated_yaml += f"  step: 1\n"
 
                     elif w_type == 'clock':
                         generated_yaml += f"  widget_type: clock\n"
                         generated_yaml += f"  time_format: 24hr\n"
-                        generated_yaml += f"  show_seconds: 0\n"
+                        generated_yaml += f"  show_seconds: 0\n" # E-INK Optimization
                         generated_yaml += f"  date_style: \"{STYLES['text']}\"\n"
-                        generated_yaml += f"  time_style: \"{STYLES['value']} font-size: 40px !important;\"\n"
+                        generated_yaml += f"  time_style: \"{STYLES['value']} font-size: 50px !important;\"\n"
 
                     elif w_type == 'label':
                          generated_yaml += f"  widget_type: label\n"
@@ -209,6 +211,7 @@ def index():
                         if w_type == 'lock': ad_type = 'lock'
                         if w_type == 'input_select': ad_type = 'input_select'
                         if w_type == 'input_number': ad_type = 'input_number'
+                        if w_type == 'script': ad_type = 'script'
                         
                         generated_yaml += f"  widget_type: {ad_type}\n"
                         generated_yaml += f"  entity: {w_id}\n"
