@@ -54,6 +54,7 @@ def get_ha_entities():
         print(f"❌ Exception while fetching entities: {e}")
     return []
 
+# E-Ink Styles
 STYLES = {
     "title": "color: #000000; font-size: 20px; font-weight: 700; text-align: center; padding-top: 5px; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif;",
     "widget": "color: #000000 !important; background-color: #FFFFFF !important; border: 2px solid #000000 !important;",
@@ -65,7 +66,12 @@ STYLES = {
 
 def get_icon_pair(base_icon, w_type):
     if not base_icon:
+        # Defaults
+        if w_type == 'lock': return 'mdi-lock-open', 'mdi-lock'
+        if w_type == 'cover': return 'mdi-window-shutter-open', 'mdi-window-shutter'
+        if w_type == 'person' or w_type == 'device_tracker': return 'mdi-home', 'mdi-home-outline'
         return None, None
+        
     i = base_icon.lower()
     if 'garage' in i: return 'mdi-garage-open', 'mdi-garage'
     if 'gate' in i: return 'mdi-gate-open', 'mdi-gate'
@@ -93,9 +99,11 @@ def index():
         
         T = {
             'pl': {'on': 'WŁĄCZONE', 'off': 'WYŁĄCZONE', 'open': 'OTWARTE', 'closed': 'ZAMKNIĘTE', 
-                   'opening': 'OTWIERANIE', 'closing': 'ZAMYKANIE', 'locked': 'ZAMKNIĘTE', 'unlocked': 'OTWARTE'},
+                   'opening': 'OTWIERANIE', 'closing': 'ZAMYKANIE', 'locked': 'ZAMKNIĘTE', 'unlocked': 'OTWARTE',
+                   'home': 'W DOMU', 'not_home': 'POZA DOMEM'},
             'en': {'on': 'ON', 'off': 'OFF', 'open': 'OPEN', 'closed': 'CLOSED', 
-                   'opening': 'OPENING', 'closing': 'CLOSING', 'locked': 'LOCKED', 'unlocked': 'UNLOCKED'}
+                   'opening': 'OPENING', 'closing': 'CLOSING', 'locked': 'LOCKED', 'unlocked': 'UNLOCKED',
+                   'home': 'HOME', 'not_home': 'AWAY'}
         }
         dic = T.get(lang, T['pl'])
 
@@ -163,7 +171,18 @@ def index():
                     generated_yaml += f"{w_id}:\n"
                     generated_yaml += f"  title: \"{w_name}\"\n"
                     
-                    if w_type == 'navigate':
+                    # --- TYPY WIDGETÓW ---
+                    
+                    # 1. CLOCK
+                    if w_type == 'clock':
+                        generated_yaml += f"  widget_type: clock\n"
+                        generated_yaml += f"  time_format: 24hr\n"
+                        generated_yaml += f"  show_seconds: 0\n" # Oszczędzanie baterii
+                        generated_yaml += f"  date_style: \"{STYLES['text']}\"\n"
+                        generated_yaml += f"  time_style: \"{STYLES['value']} font-size: 40px !important;\"\n"
+
+                    # 2. NAVIGATE
+                    elif w_type == 'navigate':
                         dashboard_name = w_id.replace('navigate.', '')
                         generated_yaml += f"  widget_type: navigate\n"
                         generated_yaml += f"  dashboard: {dashboard_name}\n"
@@ -171,29 +190,56 @@ def index():
                         generated_yaml += f"  icon_inactive: {nav_icon}\n"
                         generated_yaml += f"  widget_style: \"background-color: #FFFFFF !important; border-radius: 8px !important; padding: 10px !important; color: #000000 !important;\"\n"
                         generated_yaml += f"  icon_style_inactive: \"color: #000000 !important;\"\n"
-                    
+
+                    # 3. SENSOR
                     elif w_type == 'sensor':
                         generated_yaml += f"  widget_type: sensor\n"
                         generated_yaml += f"  entity: {w_id}\n"
                         generated_yaml += f"  value_style: \"{STYLES['value']}\"\n"
                         generated_yaml += f"  unit_style: \"{STYLES['unit']}\"\n"
                         if w_icon: generated_yaml += f"  icon: {w_icon}\n"
-                    
+
+                    # 4. MEDIA PLAYER
                     elif w_type == 'media_player':
                         generated_yaml += f"  widget_type: media_player\n"
                         generated_yaml += f"  entity: {w_id}\n"
                         generated_yaml += f"  truncate_name: 20\n"
                         generated_yaml += f"  step: 5\n"
 
+                    # 5. GAUGE (E-INK Style)
+                    elif w_type == 'gauge':
+                        generated_yaml += f"  widget_type: gauge\n"
+                        generated_yaml += f"  entity: {w_id}\n"
+                        generated_yaml += f"  min: 0\n  max: 100\n"
+                        # Kolory czarno-szare dla E-Ink
+                        generated_yaml += f"  low_color: \"#000000\"\n"
+                        generated_yaml += f"  medium_color: \"#444444\"\n"
+                        generated_yaml += f"  high_color: \"#888888\"\n"
+                        generated_yaml += f"  color: \"#000000\"\n"
+                        generated_yaml += f"  bgcolor: \"#FFFFFF\"\n"
+
+                    # 6. LABEL / TEXT / IFRAME / RELOAD
                     elif w_type == 'label':
                          generated_yaml += f"  widget_type: label\n"
                          generated_yaml += f"  text: \"{w_name}\"\n"
                          if w_icon: generated_yaml += f"  icon: {w_icon}\n"
+                    
+                    elif w_type == 'iframe':
+                         generated_yaml += f"  widget_type: iframe\n"
+                         generated_yaml += f"  url_list:\n    - https://www.home-assistant.io\n"
 
+                    elif w_type == 'reload':
+                         generated_yaml += f"  widget_type: reload\n"
+                         if w_icon: generated_yaml += f"  icon_inactive: {w_icon}\n"
+
+                    # 7. LOCK / COVER / PERSON / BINARY / SWITCH / INPUT_BOOLEAN
                     else:
                         ad_type = w_type
                         if w_type == 'binary_sensor': ad_type = 'binary_sensor'
                         if w_type == 'input_boolean': ad_type = 'switch'
+                        if w_type == 'input_text': ad_type = 'input_text'
+                        if w_type == 'input_datetime': ad_type = 'input_datetime'
+                        if w_type == 'person': ad_type = 'device_tracker' # AppDaemon uses device_tracker type often for person
                         
                         generated_yaml += f"  widget_type: {ad_type}\n"
                         generated_yaml += f"  entity: {w_id}\n"
@@ -207,20 +253,25 @@ def index():
                         generated_yaml += "  state_map:\n"
                         generated_yaml += f"    \"on\": \"{dic['on']}\"\n"
                         generated_yaml += f"    \"off\": \"{dic['off']}\"\n"
+                        
                         if w_type == 'cover' or w_type == 'binary_sensor':
                             generated_yaml += f"    \"open\": \"{dic['open']}\"\n"
                             generated_yaml += f"    \"closed\": \"{dic['closed']}\"\n"
                             generated_yaml += f"    \"opening\": \"{dic['opening']}\"\n"
                             generated_yaml += f"    \"closing\": \"{dic['closing']}\"\n"
+                        
                         if w_type == 'lock':
                              generated_yaml += f"    \"locked\": \"{dic['locked']}\"\n"
                              generated_yaml += f"    \"unlocked\": \"{dic['unlocked']}\"\n"
+                        
+                        if w_type == 'person' or w_type == 'device_tracker':
+                             generated_yaml += f"    \"home\": \"{dic['home']}\"\n"
+                             generated_yaml += f"    \"not_home\": \"{dic['not_home']}\"\n"
 
                     generated_yaml += "\n"
             except Exception as e:
                 print(f"❌ Error processing JSON: {e}")
 
-    # !!! TU BYŁA ZMIANA: Dodałem dash_name !!!
     return render_template('index.html', generated_yaml=generated_yaml, entities=ha_entities, filename=dashboard_filename, dash_name=dashboard_slug)
 
 if __name__ == "__main__":
