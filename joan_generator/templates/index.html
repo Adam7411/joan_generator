@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Joan 6 E-Ink Generator</title>
-    <!-- Ikony i Czcionki -->
+    <title>Joan 6 E-Ink Generator (Pro)</title>
     <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap" rel="stylesheet">
     
@@ -32,15 +31,30 @@
             --preview-bg: #000000; --link-bg: #013655; --link-color: #81d4fa;
         }
 
-        body { font-family: 'Roboto', sans-serif; background-color: var(--bg-body); color: var(--text-main); padding: 20px; transition: background 0.3s, color 0.3s; }
-        .container { max-width: 1400px; margin: 0 auto; background: var(--bg-container); padding: 30px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
+        body { 
+            font-family: 'Roboto', sans-serif; 
+            background-color: var(--bg-body); 
+            color: var(--text-main); 
+            padding: 20px; 
+            transition: background 0.3s, color 0.3s; 
+        }
+        .container { 
+            max-width: 1400px; 
+            margin: 0 auto; 
+            background: var(--bg-container); 
+            padding: 30px; 
+            border-radius: 10px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15); 
+        }
         
+        /* HEADER */
         .header-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--border); padding-bottom: 20px; margin-bottom: 25px; }
         h1 { margin: 0; color: var(--accent); font-size: 28px; }
         
         .controls button { padding: 8px 16px; border: 1px solid var(--border); background: var(--bg-section); color: var(--text-main); border-radius: 4px; cursor: pointer; font-weight: bold; }
         .controls button.active { background: var(--accent); color: white; border-color: var(--accent); }
 
+        /* SEKCJE I INFO */
         .section { background: var(--bg-section); padding: 25px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 30px; }
         .section-title { font-size: 1.4em; font-weight: 900; border-bottom: 3px solid var(--accent); display: inline-block; margin-bottom: 20px; color: var(--text-main); }
 
@@ -49,6 +63,7 @@
         .file-path-info strong:first-child { margin-top: 0; }
         .file-path-info a { color: var(--accent); font-weight: bold; font-size: 16px; text-decoration: underline; }
 
+        /* FORMULARZ EDYCJI */
         .add-widget-box { background: var(--highlight); padding: 25px; border-radius: 8px; border: 1px solid var(--accent); transition: all 0.3s; margin-bottom: 30px; }
         .add-widget-box.editing { border: 3px solid #ff9800; background: rgba(255, 152, 0, 0.1); }
 
@@ -58,8 +73,12 @@
         label { display: block; font-weight: bold; font-size: 0.9em; margin-bottom: 8px; color: var(--text-main); }
         input, select, textarea { width: 100%; padding: 12px; border: 1px solid var(--border); background: var(--bg-input); color: var(--text-main); border-radius: 4px; box-sizing: border-box; font-size: 14px; }
         
-        /* Styl pola wyszukiwania encji - standardowy */
-        #w-id { border: 2px solid var(--accent); background-color: var(--bg-input); font-weight: bold; }
+        /* WYSZUKIWARKA ENCJI */
+        #w-id { 
+            border: 2px solid var(--accent); 
+            background-color: var(--bg-input); 
+            font-weight: bold; 
+        }
 
         .btn { padding: 12px 24px; border: none; cursor: pointer; border-radius: 4px; font-weight: bold; text-transform: uppercase; color: white; font-size: 14px; transition: opacity 0.2s; }
         .btn:hover { opacity: 0.9; }
@@ -72,8 +91,17 @@
         /* PODGLĄD E-INK (ULEPSZONY, WIĘKSZY) */
         .preview-area { background: var(--preview-bg); padding: 30px; border: 2px solid var(--border); border-radius: 8px; overflow-x: auto; min-height: 300px; }
         
-        /* Zwiększona wysokość wiersza, żeby przyciski miały miejsce */
-        .eink-row { display: flex; gap: 8px; margin-bottom: 12px; padding: 15px; border: 2px dashed #999; border-radius: 6px; min-height: 160px; align-items: center; position: relative; }
+        .eink-row { 
+            display: flex; 
+            gap: 8px; 
+            margin-bottom: 12px; 
+            padding: 15px; 
+            border: 2px dashed #999; 
+            border-radius: 6px; 
+            min-height: 160px; /* Zwiększona wysokość */
+            align-items: center; 
+            position: relative; 
+        }
         .row-label { position: absolute; top: -10px; left: 10px; font-size: 11px; background: var(--bg-body); padding: 2px 8px; color: var(--text-main); border: 1px solid var(--border); border-radius: 4px; font-weight: bold; }
 
         /* WIDGET STYLING (HIGH CONTRAST & BIGGER) */
@@ -87,7 +115,7 @@
         .eink-widget.editing { border: 3px dashed #ff9800; transform: scale(1.03); z-index: 20; }
 
         .ew-header {
-            font-size: 9px;
+            font-size: 10px;
             text-transform: uppercase;
             color: #666;
             width: 100%;
@@ -103,24 +131,24 @@
             text-align: center; 
             width: 100%; 
             line-height: 1.2; 
-            margin-top: 15px; /* Więcej miejsca od góry */
+            margin-top: 15px; 
             margin-bottom: 5px;
             white-space: normal; 
             font-family: sans-serif; 
             text-transform: uppercase;
         }
         
-        .ew-icon { font-size: 48px; display: block; margin: 5px 0; } /* Większa ikona */
+        .ew-icon { font-size: 48px; display: block; margin: 5px 0; }
         
         .ew-value { 
             font-weight: 900; 
-            font-size: 18px; 
+            font-size: 16px; 
             text-transform: uppercase; 
             margin-bottom: 8px; 
             text-align: center;
             border-top: 2px solid #000;
             width: 90%;
-            padding-top: 2px;
+            padding-top: 4px;
         }
         
         .ew-del { position: absolute; top: -10px; right: -10px; background: red; color: white; width: 24px; height: 24px; border-radius: 50%; text-align: center; line-height: 24px; font-weight: bold; display: none; box-shadow: 1px 1px 3px rgba(0,0,0,0.5); z-index: 30; }
@@ -183,16 +211,9 @@
                     </div>
                     <div class="flex-col" id="grp-entity">
                         <label data-i18n="lbl_entity">Encja (Home Assistant)</label>
-                        <!-- STANDARDOWY INPUT Z DATALIST (Działa najlepiej) -->
-                        <input list="entity-list" id="w-id" placeholder="Wybierz lub wpisz..." oninput="runSmartLogic(this.value)" autocomplete="off">
-                        <datalist id="entity-list">
-                            {% for e in entities %}
-                            <option value="{{ e.id }}" 
-                                    data-dclass="{{ e.attributes.device_class or '' }}" 
-                                    data-friendly="{{ e.attributes.friendly_name or '' }}">
-                            </option>
-                            {% endfor %}
-                        </datalist>
+                        <!-- SEARCH BAR ULEPSZONY -->
+                        <input list="entity-list" id="w-id" placeholder="np. glosnik kuchnia, swiatlo..." oninput="searchEntities(this.value)" autocomplete="off">
+                        <datalist id="entity-list"></datalist>
                     </div>
                     <div class="flex-col hidden" id="grp-nav">
                         <label data-i18n="lbl_dash">Nazwa Dashboardu</label>
@@ -261,7 +282,6 @@
                 <strong>1. Zapisz kod w pliku:</strong>
                 <code id="path-code">\\IP_HA\addon_configs\appdaemon\dashboards\{{ filename }}</code>
                 <strong>2. Uruchom ponownie AppDaemon i sprawdź dashboard:</strong>
-                <!-- HOST zostanie podmieniony przez JS -->
                 <a href="http://[HOST]:5050/{{ dash_name }}" id="dashboard-link" target="_blank">http://[HOST]:5050/{{ dash_name }}</a>
             </div>
 
@@ -316,8 +336,7 @@
             }
         };
 
-        // --- MAPY SMART LOGIC (ZGODNIE Z DOKUMENTACJĄ APPDAEMON I WYMAGANIAMI) ---
-        // 2x1 to standard dla przycisków (dotyk), 1x1 dla info, 2x2 dla złożonych
+        // --- MAPY SMART LOGIC ---
         const SMART_MAP = {
             'light': { type: 'switch', size: '(2x1)', iconOn: 'mdi-lightbulb-on', iconOff: 'mdi-lightbulb-outline' },
             'switch': { type: 'switch', size: '(2x1)', iconOn: 'mdi-toggle-switch', iconOff: 'mdi-toggle-switch-off' },
@@ -330,22 +349,51 @@
             'lock': { type: 'lock', size: '(2x1)', iconOn: 'mdi-lock-open', iconOff: 'mdi-lock' }
         };
 
-        const DEVICE_CLASS_ICONS = {
-            'temperature': 'mdi-thermometer',
-            'humidity': 'mdi-water-percent',
-            'battery': 'mdi-battery',
-            'power': 'mdi-flash',
-            'energy': 'mdi-lightning-bolt',
-            'door': ['mdi-door-open', 'mdi-door-closed'],
-            'window': ['mdi-window-open-variant', 'mdi-window-closed-variant'],
-            'garage': ['mdi-garage-open', 'mdi-garage'],
-            'moisture': 'mdi-water',
-            'safety': 'mdi-shield-alert'
-        };
+        // --- 2. FUNKCJE POMOCNICZE (NA GÓRZE) ---
 
-        // --- 2. FUNKCJE POMOCNICZE (NA GÓRZE, BY UNIKNĄĆ BŁĘDÓW) ---
+        // Normalizacja stringa (usuwa polskie znaki, np. ą->a, ś->s)
+        function normalizeString(str) {
+            return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+        }
 
-        // Znajduje tytuł zaimportowany z kodu (z mapy definicji)
+        // ZAAWANSOWANE WYSZUKIWANIE (HYBRYDOWE + MULTI-WORD)
+        function searchEntities(val) {
+            // Najpierw uruchom logikę smart dla tego, co już wpisano (tytuły, ikony)
+            runSmartLogic(val);
+
+            // Filtrowanie datalist
+            const dl = document.getElementById('entity-list');
+            dl.innerHTML = ''; // Wyczyść listę
+            
+            if(!val || val.length < 2) return; 
+
+            // Podziel zapytanie na słowa i znormalizuj
+            const terms = normalizeString(val).split(" ").filter(t => t);
+            
+            // Szukaj
+            let count = 0;
+            for(const e of entitiesData) {
+                if(count > 50) break; // Limit dla wydajności
+                
+                // Przygotuj string do przeszukania (ID + Nazwa przyjazna)
+                const searchStr = normalizeString(e.id + " " + (e.attributes.friendly_name || ""));
+                
+                // Sprawdź czy WSZYSTKIE słowa są w stringu (AND logic)
+                const match = terms.every(term => searchStr.includes(term));
+                
+                if(match) {
+                    const opt = document.createElement('option');
+                    opt.value = e.id;
+                    // Dodajemy dodatkowy tekst w nawiasie dla lepszej czytelności na liście
+                    opt.label = e.attributes.friendly_name ? `${e.attributes.friendly_name} (${e.id})` : e.id;
+                    opt.setAttribute('data-dclass', e.attributes.device_class || '');
+                    opt.setAttribute('data-friendly', e.attributes.friendly_name || '');
+                    dl.appendChild(opt);
+                    count++;
+                }
+            }
+        }
+
         function resolveImportedTitle(id) {
             if (!importedDefsMap) return '';
             if (importedDefsMap[id] && importedDefsMap[id].title) return importedDefsMap[id].title;
@@ -360,6 +408,7 @@
 
         // ULEPSZONE GENEROWANIE TYTUŁU (CZYSZCZENIE NAZWY)
         function formatSmartName(id, friendlyName) {
+            // Jeśli mamy ładną nazwę z HA, użyj jej
             if (friendlyName && friendlyName.length > 2) return friendlyName;
             
             if(!id) return "";
@@ -367,14 +416,8 @@
             
             // light.swiatlo_podworko_ganek_l2 -> Swiatlo Podworko Ganek
             let name = id.split('.').pop(); 
-            // Usuń suffixy techniczne (np. _l2, _v1, _state)
             name = name.replace(/_[lvr]\d+$/i, '').replace(/_state$/i, '');
             name = name.replace(/_/g, ' ');
-            
-            // Zamień CamelCase na spacje (opcjonalnie, dla nazw typu swiatloGanek)
-            name = name.replace(/([a-z])([A-Z])/g, '$1 $2');
-
-            // Kapitalizacja (pierwsza litera każdego słowa duża)
             return name.replace(/\b\w/g, l => l.toUpperCase());
         }
 
@@ -396,84 +439,58 @@
             document.getElementById('grp-nav').classList.toggle('hidden', !isNav);
         }
 
-        // --- 3. USTAWIENIA JĘZYKA I MOTYWU ---
-
-        function setLang(lang) {
-            currentLang = lang;
-            document.getElementById('input-lang').value = lang;
-            document.getElementById('btn-pl').className = lang === 'pl' ? 'active' : '';
-            document.getElementById('btn-en').className = lang === 'en' ? 'active' : '';
-            
-            const t = TRANSLATIONS[lang];
-            
-            document.querySelectorAll('[data-i18n]').forEach(el => {
-                const key = el.getAttribute('data-i18n');
-                if (t[key]) {
-                    if (el.tagName === 'INPUT' && el.type === 'submit') el.value = t[key];
-                    else el.innerText = t[key];
-                }
-            });
-            document.querySelectorAll('option[data-i18n]').forEach(el => {
-                const key = el.getAttribute('data-i18n');
-                if (t[key]) el.text = t[key];
-            });
-            const btn = document.getElementById('btn-submit');
-            btn.innerText = editIdx ? t.btn_update : t.btn_add;
-            renderPreview();
-        }
-
-        function toggleTheme() {
-            const isDark = document.documentElement.classList.toggle('dark-mode');
-            localStorage.setItem('joan_theme', isDark ? 'dark' : 'light');
-            document.getElementById('btn-theme').innerText = isDark ? '☀️' : '🌙';
-        }
-
-        // --- 4. SMART LOGIC (AUTOMATYKA) ---
-
+        // --- 3. SMART LOGIC (ROZBUDOWANA) ---
+        
         function runSmartLogic(val) {
             if (blockSmart) return; // Nie psuj importu!
             
             const id = val.toLowerCase();
+            const idNorm = normalizeString(id); // Wersja bez polskich znaków
+            
             if (id.length < 3) return;
 
             // Szukamy w danych (z datalist lub array)
             const ent = getEntityMeta(id);
             const dClass = (ent.attributes.device_class || '').toLowerCase();
             const fName = ent.attributes.friendly_name || '';
+            const fNameNorm = normalizeString(fName); // Nazwa przyjazna bez polskich znaków
             const domain = id.split('.')[0];
 
-            // 1. USTALENIE TYPU I BAZY
+            // 1. USTAL BAZĘ
             let conf = SMART_MAP[domain] || { type: 'sensor', size: '(1x1)', icon: 'mdi-eye' };
 
-            // 2. DETEKCJA PO SŁOWACH KLUCZOWYCH (Dla polskich nazw bez znaków)
-            if (id.includes('glosnik') || id.includes('speaker') || id.includes('audio') || id.includes('tv')) {
+            // 2. DETEKCJA SŁÓW KLUCZOWYCH (Dla polskich nazw bez znaków, w ID i Nazwie)
+            const check = (keywords) => keywords.some(k => idNorm.includes(k) || fNameNorm.includes(k));
+
+            if (check(['glosnik', 'speaker', 'audio', 'tv', 'odtwarzacz'])) {
                 conf = SMART_MAP['media_player'];
-            } else if (id.includes('swiatlo') || id.includes('lamp') || id.includes('kinkiet') || id.includes('led')) {
+            } else if (check(['swiatlo', 'lamp', 'kinkiet', 'led', 'zarowka'])) {
                 conf = SMART_MAP['light'];
-            } else if (id.includes('gniazdko') || id.includes('wtyczka') || id.includes('outlet')) {
+            } else if (check(['gniazdko', 'wtyczka', 'outlet', 'plug'])) {
                 conf = SMART_MAP['switch'];
-            } else if (id.includes('brama') || id.includes('garaz') || id.includes('gate')) {
+            } else if (check(['brama', 'garaz', 'gate'])) {
                 conf = { type: 'cover', size: '(2x1)', iconOn: 'mdi-garage-open', iconOff: 'mdi-garage' };
-            } else if (id.includes('rolet') || id.includes('blind') || id.includes('shutter') || id.includes('zaslon')) {
+            } else if (check(['rolet', 'blind', 'shutter', 'zaslon'])) {
                 conf = SMART_MAP['cover'];
-            } else if (id.includes('zamek') || id.includes('lock')) {
+            } else if (check(['zamek', 'lock', 'rygiel'])) {
                 conf = SMART_MAP['lock'];
-            } else if (id.includes('drzwi') || id.includes('door') || id.includes('furtka') || id.includes('okno')) {
+            } else if (check(['drzwi', 'door', 'furtka', 'okno', 'window'])) {
                 conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-door-open', iconOff: 'mdi-door-closed' };
-                if (id.includes('okno') || id.includes('window')) {
+                if (check(['okno', 'window'])) {
                     conf.iconOn = 'mdi-window-open-variant'; conf.iconOff = 'mdi-window-closed-variant';
                 }
-            } else if (id.includes('temp') || id.includes('therm')) {
+            } else if (check(['temp', 'therm'])) {
                 conf = { type: 'sensor', size: '(1x1)', icon: 'mdi-thermometer' };
-            } else if (id.includes('wilg') || id.includes('humid')) {
+            } else if (check(['wilg', 'humid'])) {
                 conf = { type: 'sensor', size: '(1x1)', icon: 'mdi-water-percent' };
             }
 
-            // 3. DETEKCJA PO DEVICE_CLASS (Priorytet)
+            // 3. DETEKCJA DEVICE_CLASS (Priorytet najwyższy)
             if (dClass === 'garage') conf = { type: 'cover', size: '(2x1)', iconOn: 'mdi-garage-open', iconOff: 'mdi-garage' };
             if (dClass === 'door') conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-door-open', iconOff: 'mdi-door-closed' };
             if (dClass === 'battery') conf = { type: 'sensor', size: '(1x1)', icon: 'mdi-battery' };
             if (dClass === 'temperature') conf = { type: 'sensor', size: '(1x1)', icon: 'mdi-thermometer' };
+            if (dClass === 'humidity') conf = { type: 'sensor', size: '(1x1)', icon: 'mdi-water-percent' };
             if (domain === 'input_boolean') conf = SMART_MAP['switch'];
 
             // 4. APLIKOWANIE DANYCH
@@ -501,7 +518,35 @@
             document.getElementById('w-name').value = val.toUpperCase();
         }
 
-        // --- 5. CRUD & RENDER ---
+        // --- 4. CRUD & RENDER ---
+
+        function setLang(lang) {
+            currentLang = lang;
+            document.getElementById('input-lang').value = lang;
+            document.getElementById('btn-pl').className = lang === 'pl' ? 'active' : '';
+            document.getElementById('btn-en').className = lang === 'en' ? 'active' : '';
+            const t = TRANSLATIONS[lang];
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (t[key]) {
+                    if (el.tagName === 'INPUT' && el.type === 'submit') el.value = t[key];
+                    else el.innerText = t[key];
+                }
+            });
+            document.querySelectorAll('option[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (t[key]) el.text = t[key];
+            });
+            const btn = document.getElementById('btn-submit');
+            btn.innerText = editIdx ? t.btn_update : t.btn_add;
+            renderPreview();
+        }
+
+        function toggleTheme() {
+            const isDark = document.documentElement.classList.toggle('dark-mode');
+            localStorage.setItem('joan_theme', isDark ? 'dark' : 'light');
+            document.getElementById('btn-theme').innerText = isDark ? '☀️' : '🌙';
+        }
 
         function saveWidget() {
             const w = {
