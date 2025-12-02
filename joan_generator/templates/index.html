@@ -195,9 +195,7 @@
             justify-content: center;
             gap: 6px;
         }
-        .btn:hover {
-            filter: brightness(.93);
-        }
+        .btn:hover { filter: brightness(.93); }
         .btn-add { background: #4caf50; color: #fff; width: 100%; }
         .btn-cancel { background: #757575; color: #fff; }
         .btn-row { background: #2196f3; color: #fff; }
@@ -253,9 +251,9 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: space-between;
+            justify-content: flex-start;
             position: relative;
-            padding: 12px 10px 10px;
+            padding: 8px 6px 6px;
             border-radius: 10px;
             box-shadow: 5px 5px 0 rgba(0,0,0,.28);
             font-weight: 700;
@@ -274,38 +272,78 @@
             transform: scale(1.02);
         }
 
+        /* Bazowe elementy */
         .ew-header {
             position: absolute;
-            top: 4px;
+            top: 3px;
             right: 6px;
-            font-size: 10px;
+            font-size: 9px;
             font-weight: 800;
             opacity: .55;
-            letter-spacing: .8px;
+            letter-spacing: .6px;
             text-transform: uppercase;
         }
         .ew-title {
-            font-size: 15px;
-            font-weight: 900;
             width: 100%;
             text-align: center;
-            margin-top: 22px;
-            margin-bottom: 6px;
-            line-height: 1.25;
-            text-transform: uppercase;
-            letter-spacing: .7px;
+            font-weight: 800;
+            margin: 4px 0 2px;
+            line-height: 1.1;
             word-break: break-word;
         }
-        .ew-icon { font-size: 50px; margin: 4px 0; }
+        .ew-icon { margin: 2px 0 2px; }
         .ew-value {
-            font-size: 20px;
-            font-weight: 900;
-            width: 92%;
+            width: 100%;
             text-align: center;
-            border-top: 3px solid #000;
-            padding-top: 6px;
-            margin-top: 4px;
-            letter-spacing: .6px;
+            font-weight: 800;
+            margin-top: 2px;
+            border-top: 2px solid #000;
+            padding-top: 3px;
+            line-height: 1.05;
+            word-break: break-word;
+        }
+
+        /* Rozmiary DYNAMICZNE – tak żeby stan się zmieścił */
+        /* 1x1 – najmniejsze: redukuj tytuł, ikonę, stan */
+        .size-1x1 .ew-title { font-size: 11px; letter-spacing:.3px; }
+        .size-1x1 .ew-icon { font-size: 26px; }
+        .size-1x1 .ew-value { font-size: 12px; }
+        /* 2x1 standard */
+        .size-2x1 .ew-title { font-size: 13px; }
+        .size-2x1 .ew-icon { font-size: 36px; }
+        .size-2x1 .ew-value { font-size: 14px; }
+        /* 3x1 szeroki */
+        .size-3x1 .ew-title { font-size: 14px; }
+        .size-3x1 .ew-icon { font-size: 40px; }
+        .size-3x1 .ew-value { font-size: 15px; }
+        /* 1x2 wysoki */
+        .size-1x2 .ew-title { font-size: 12px; }
+        .size-1x2 .ew-icon { font-size: 34px; }
+        .size-1x2 .ew-value { font-size: 18px; }
+        /* 2x2 duży */
+        .size-2x2 .ew-title { font-size: 16px; }
+        .size-2x2 .ew-icon { font-size: 46px; }
+        .size-2x2 .ew-value { font-size: 20px; }
+        /* 3x2 ogromny */
+        .size-3x2 .ew-title { font-size: 18px; }
+        .size-3x2 .ew-icon { font-size: 54px; }
+        .size-3x2 .ew-value { font-size: 22px; }
+
+        /* Dla przełączników – pokaż stan wyżej (mniej miejsca na ikonę) */
+        .switch.size-1x1 .ew-icon,
+        .binary_sensor.size-1x1 .ew-icon,
+        .cover.size-1x1 .ew-icon,
+        .lock.size-1x1 .ew-icon {
+            font-size: 22px;
+            margin: 1px 0;
+        }
+        .switch.size-1x1 .ew-value,
+        .binary_sensor.size-1x1 .ew-value,
+        .cover.size-1x1 .ew-value,
+        .lock.size-1x1 .ew-value {
+            font-size: 12px;
+            padding-top: 2px;
+            border-top: 2px solid #000;
         }
 
         .ew-del {
@@ -327,9 +365,9 @@
         .eink-widget:hover .ew-del { display: flex; }
 
         .icon-preview {
-            font-size: 34px;
-            width: 54px;
-            height: 54px;
+            font-size: 30px;
+            width: 50px;
+            height: 50px;
             border: 2px solid var(--border);
             border-radius: 10px;
             display: flex;
@@ -539,376 +577,308 @@
     <script>
         // ========== Dane globalne ==========
         const entitiesData = {{ entities | tojson | safe }};
-        let rows = [[]];          // Lista wierszy: każdy wiersz = tablica widgetów
-        let editIdx = null;       // {r, w} gdy edytujemy
-        let smartLock = false;    // Blokada auto wypełniania podczas edycji
-        let currentLang = 'pl';   // Język UI
+        let rows = [[]];
+        let editIdx = null;
+        let smartLock = false;
+        let currentLang = 'pl';
 
-        // ========== Funkcje pomocnicze ==========
         function toggleTheme() {
             const isDark = document.documentElement.classList.toggle('dark-mode');
             localStorage.setItem('joan_theme', isDark ? 'dark' : 'light');
             document.getElementById('btn-theme').innerText = isDark ? '☀️' : '🌙';
         }
-
         function setLang(lang) {
             currentLang = lang;
             document.getElementById('ui_language').value = lang;
             document.getElementById('btn-pl').classList.toggle('active', lang === 'pl');
             document.getElementById('btn-en').classList.toggle('active', lang === 'en');
-            renderPreview(); // (prostota – moglibyśmy zmieniać etykiety dynamicznie)
-        }
-
-        function normalize(str) {
-            return (str || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-        }
-
-        function formatNameFromId(id) {
-            if (!id) return '';
-            if (id.startsWith('navigate.')) return id.replace('navigate.', '').replace(/_/g,' ').toUpperCase();
-            let base = id.split('.').pop();
-            base = base.replace(/_[lvr]\d+$/i, '').replace(/_state$/i, '').replace(/_/g, ' ');
-            return base.replace(/\b\w/g, l => l.toUpperCase());
-        }
-
-        function updateIconPreview() {
-            const icon = document.getElementById('w-icon').value.trim();
-            const iconOn = document.getElementById('w-icon-on').value.trim();
-            const iconOff = document.getElementById('w-icon-off').value.trim();
-            const chosen = icon || iconOn || iconOff || 'mdi-help-circle-outline';
-            document.getElementById('preview-icon').className = 'mdi ' + chosen;
-        }
-
-        function toggleInputs() {
-            const type = document.getElementById('w-type').value;
-            const isNav = type === 'navigate';
-            const isSpacer = type === 'spacer';
-            document.getElementById('grp-entity').classList.toggle('hidden', isNav || isSpacer);
-            document.getElementById('grp-nav').classList.toggle('hidden', !isNav);
-        }
-
-        function autoNameNavigate() {
-            const val = document.getElementById('w-dash').value.trim();
-            if(!smartLock) {
-                document.getElementById('w-name').value = val ? val.toUpperCase() : '';
-            }
-        }
-
-        // Map domen do logiki auto
-        const SMART_DOMAINS = {
-            'light': { type:'switch', size:'(2x1)', icon_on:'mdi-lightbulb-on', icon_off:'mdi-lightbulb-outline' },
-            'switch': { type:'switch', size:'(2x1)', icon_on:'mdi-toggle-switch', icon_off:'mdi-toggle-switch-off' },
-            'sensor': { type:'sensor', size:'(1x1)', icon:'mdi-eye' },
-            'binary_sensor': { type:'binary_sensor', size:'(1x1)', icon_on:'mdi-checkbox-marked-circle', icon_off:'mdi-checkbox-blank-circle-outline' },
-            'cover': { type:'cover', size:'(2x1)', icon_on:'mdi-window-shutter-open', icon_off:'mdi-window-shutter' },
-            'lock': { type:'lock', size:'(2x1)', icon_on:'mdi-lock-open', icon_off:'mdi-lock' },
-            'media_player': { type:'media_player', size:'(2x2)', icon:'mdi-play-circle' },
-            'climate': { type:'climate', size:'(2x2)', icon:'mdi-home-thermometer' },
-            'script': { type:'script', size:'(2x1)', icon:'mdi-script-text-outline' }
-        };
-
-        function smartFill(rawVal) {
-            if (smartLock) return;
-            const id = (rawVal || '').trim().toLowerCase();
-            if (!id || id.length < 3) return;
-
-            const domain = id.split('.')[0];
-            const conf = SMART_DOMAINS[domain] || { type:'sensor', size:'(1x1)', icon:'mdi-eye' };
-            document.getElementById('w-type').value = conf.type;
-            document.getElementById('w-size').value = conf.size;
-
-            const ent = entitiesData.find(e => e.id === id);
-            const friendly = ent && ent.attributes && ent.attributes.friendly_name ? ent.attributes.friendly_name : '';
-            if(!smartLock) {
-                document.getElementById('w-name').value = formatNameFromId(id) || friendly || id;
-            }
-
-            // Ikony
-            document.getElementById('w-icon').value = conf.icon || '';
-            document.getElementById('w-icon-on').value = conf.icon_on || '';
-            document.getElementById('w-icon-off').value = conf.icon_off || '';
-
-            toggleInputs();
-            updateIconPreview();
-        }
-
-        function saveWidget() {
-            const type = document.getElementById('w-type').value;
-            let id = document.getElementById('w-id').value.trim();
-            const dashName = document.getElementById('w-dash').value.trim();
-            const name = document.getElementById('w-name').value.trim();
-            const size = document.getElementById('w-size').value || '(2x1)';
-            const icon = document.getElementById('w-icon').value.trim();
-            const icon_on = document.getElementById('w-icon-on').value.trim();
-            const icon_off = document.getElementById('w-icon-off').value.trim();
-
-            if (type === 'navigate') {
-                if (!dashName) { alert('Wpisz nazwę dashboardu.'); return; }
-                id = 'navigate.' + dashName;
-            }
-            if (type !== 'navigate' && type !== 'spacer' && !id) {
-                alert('Wpisz entity_id.');
-                return;
-            }
-
-            const widget = { type, id, name: name || formatNameFromId(id), size, icon, icon_on, icon_off };
-            if (type === 'spacer') widget.id = 'spacer';
-
-            if (editIdx) {
-                rows[editIdx.r][editIdx.w] = widget;
-                cancelEdit();
-            } else {
-                rows[rows.length - 1].push(widget);
-                clearForm();
-            }
             renderPreview();
         }
-
-        function clearForm() {
-            document.getElementById('w-id').value = '';
-            document.getElementById('w-dash').value = '';
-            document.getElementById('w-name').value = '';
-            document.getElementById('w-icon').value = '';
-            document.getElementById('w-icon-on').value = '';
-            document.getElementById('w-icon-off').value = '';
-            document.getElementById('w-size').value = '(2x1)';
+        function normalize(str){ return (str||'').normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase(); }
+        function formatNameFromId(id){
+            if(!id) return '';
+            if(id.startsWith('navigate.')) return id.replace('navigate.','').replace(/_/g,' ').toUpperCase();
+            let base=id.split('.').pop();
+            base=base.replace(/_[lvr]\d+$/i,'').replace(/_state$/i,'').replace(/_/g,' ');
+            return base.replace(/\b\w/g,l=>l.toUpperCase());
+        }
+        function updateIconPreview(){
+            const icon=document.getElementById('w-icon').value.trim();
+            const iconOn=document.getElementById('w-icon-on').value.trim();
+            const iconOff=document.getElementById('w-icon-off').value.trim();
+            const chosen=icon||iconOn||iconOff||'mdi-help-circle-outline';
+            document.getElementById('preview-icon').className='mdi '+chosen;
+        }
+        function toggleInputs(){
+            const type=document.getElementById('w-type').value;
+            const isNav=type==='navigate';
+            const isSpacer=type==='spacer';
+            document.getElementById('grp-entity').classList.toggle('hidden', isNav||isSpacer);
+            document.getElementById('grp-nav').classList.toggle('hidden', !isNav);
+        }
+        const SMART_DOMAINS={
+            'light':{type:'switch',size:'(1x1)',icon_on:'mdi-lightbulb-on',icon_off:'mdi-lightbulb-outline'},
+            'switch':{type:'switch',size:'(1x1)',icon_on:'mdi-toggle-switch',icon_off:'mdi-toggle-switch-off'},
+            'sensor':{type:'sensor',size:'(1x1)',icon:'mdi-eye'},
+            'binary_sensor':{type:'binary_sensor',size:'(1x1)',icon_on:'mdi-checkbox-marked-circle',icon_off:'mdi-checkbox-blank-circle-outline'},
+            'cover':{type:'cover',size:'(1x1)',icon_on:'mdi-window-shutter-open',icon_off:'mdi-window-shutter'},
+            'lock':{type:'lock',size:'(1x1)',icon_on:'mdi-lock-open',icon_off:'mdi-lock'},
+            'media_player':{type:'media_player',size:'(2x2)',icon:'mdi-speaker'},
+            'climate':{type:'climate',size:'(2x2)',icon:'mdi-home-thermometer'},
+            'script':{type:'script',size:'(1x1)',icon:'mdi-script-text-outline'},
+            'fan':{type:'switch',size:'(1x1)',icon_on:'mdi-fan',icon_off:'mdi-fan-off'}
+        };
+        function smartFill(raw){
+            if(smartLock) return;
+            const id=(raw||'').trim().toLowerCase();
+            if(!id||id.length<3) return;
+            const domain=id.split('.')[0];
+            const conf=SMART_DOMAINS[domain]||{type:'sensor',size:'(1x1)',icon:'mdi-eye'};
+            document.getElementById('w-type').value=conf.type;
+            document.getElementById('w-size').value=conf.size;
+            const ent=entitiesData.find(e=>e.id===id);
+            const friendly=ent && ent.attributes && ent.attributes.friendly_name ? ent.attributes.friendly_name : '';
+            document.getElementById('w-name').value=friendly||formatNameFromId(id)||id;
+            document.getElementById('w-icon').value=conf.icon||'';
+            document.getElementById('w-icon-on').value=conf.icon_on||'';
+            document.getElementById('w-icon-off').value=conf.icon_off||'';
+            toggleInputs();
             updateIconPreview();
         }
-
-        function editWidget(r, w) {
-            smartLock = true;
-            editIdx = { r, w };
-            const data = rows[r][w];
+        function autoNameNavigate(){
+            const val=document.getElementById('w-dash').value.trim();
+            if(!smartLock) document.getElementById('w-name').value=val?val.toUpperCase():'';
+        }
+        function saveWidget(){
+            const type=document.getElementById('w-type').value;
+            let id=document.getElementById('w-id').value.trim();
+            const dashName=document.getElementById('w-dash').value.trim();
+            const name=document.getElementById('w-name').value.trim();
+            const size=document.getElementById('w-size').value||'(1x1)';
+            const icon=document.getElementById('w-icon').value.trim();
+            const icon_on=document.getElementById('w-icon-on').value.trim();
+            const icon_off=document.getElementById('w-icon-off').value.trim();
+            if(type==='navigate'){
+                if(!dashName){ alert('Wpisz nazwę dashboardu.'); return; }
+                id='navigate.'+dashName;
+            }
+            if(type!=='navigate' && type!=='spacer' && !id){ alert('Wpisz entity_id.'); return; }
+            const widget={type, id: (type==='spacer'?'spacer':id), name: name||formatNameFromId(id), size, icon, icon_on, icon_off};
+            if(editIdx){ rows[editIdx.r][editIdx.w]=widget; cancelEdit(); }
+            else { rows[rows.length-1].push(widget); clearForm(); }
+            renderPreview();
+        }
+        function clearForm(){
+            document.getElementById('w-id').value='';
+            document.getElementById('w-dash').value='';
+            document.getElementById('w-name').value='';
+            document.getElementById('w-icon').value='';
+            document.getElementById('w-icon-on').value='';
+            document.getElementById('w-icon-off').value='';
+            document.getElementById('w-size').value='(1x1)';
+            updateIconPreview();
+        }
+        function editWidget(r,w){
+            smartLock=true;
+            editIdx={r,w};
+            const data=rows[r][w];
             document.getElementById('editor-box').classList.add('editing');
             document.getElementById('btn-cancel').classList.remove('hidden');
-            document.getElementById('editor-title').innerText = currentLang === 'pl' ? 'Edytuj Widget' : 'Edit Widget';
-            document.getElementById('btn-submit').innerText = currentLang === 'pl' ? 'ZAPISZ ZMIANY' : 'SAVE CHANGES';
-
-            document.getElementById('w-type').value = data.type;
+            document.getElementById('editor-title').innerText=currentLang==='pl'?'Edytuj Widget':'Edit Widget';
+            document.getElementById('btn-submit').innerText=currentLang==='pl'?'ZAPISZ ZMIANY':'SAVE CHANGES';
+            document.getElementById('w-type').value=data.type;
             toggleInputs();
-
-            if (data.type === 'navigate') {
-                document.getElementById('w-dash').value = data.id.replace('navigate.', '');
-            } else if (data.type !== 'spacer') {
-                document.getElementById('w-id').value = data.id;
-            }
-
-            document.getElementById('w-name').value = data.name;
-            document.getElementById('w-size').value = data.size || '(2x1)';
-            document.getElementById('w-icon').value = data.icon || '';
-            document.getElementById('w-icon-on').value = data.icon_on || '';
-            document.getElementById('w-icon-off').value = data.icon_off || '';
+            if(data.type==='navigate') document.getElementById('w-dash').value=data.id.replace('navigate.','');
+            else if(data.type!=='spacer') document.getElementById('w-id').value=data.id;
+            document.getElementById('w-name').value=data.name;
+            document.getElementById('w-size').value=data.size||'(1x1)';
+            document.getElementById('w-icon').value=data.icon||'';
+            document.getElementById('w-icon-on').value=data.icon_on||'';
+            document.getElementById('w-icon-off').value=data.icon_off||'';
             updateIconPreview();
-
-            setTimeout(() => smartLock = false, 450);
+            setTimeout(()=>smartLock=false,400);
         }
-
-        function cancelEdit() {
-            editIdx = null;
-            smartLock = false;
+        function cancelEdit(){
+            editIdx=null;
+            smartLock=false;
             document.getElementById('editor-box').classList.remove('editing');
             document.getElementById('btn-cancel').classList.add('hidden');
-            document.getElementById('editor-title').innerText = currentLang === 'pl' ? 'Dodaj Widget' : 'Add Widget';
-            document.getElementById('btn-submit').innerText = currentLang === 'pl' ? '+ DODAJ WIDGET' : '+ ADD WIDGET';
+            document.getElementById('editor-title').innerText=currentLang==='pl'?'Dodaj Widget':'Add Widget';
+            document.getElementById('btn-submit').innerText=currentLang==='pl'?'+ DODAJ WIDGET':'+ ADD WIDGET';
             clearForm();
             renderPreview();
         }
-
-        function deleteWidget(r, w, ev) {
+        function deleteWidget(r,w,ev){
             ev.stopPropagation();
-            rows[r].splice(w, 1);
-            if (editIdx && editIdx.r === r && editIdx.w === w) cancelEdit();
+            rows[r].splice(w,1);
+            if(editIdx && editIdx.r===r && editIdx.w===w) cancelEdit();
             renderPreview();
         }
+        function addRow(){ rows.push([]); renderPreview(); }
 
-        function addRow() {
-            rows.push([]);
-            renderPreview();
+        function getRealState(widget){
+            const ent=entitiesData.find(e=>e.id===widget.id);
+            if(!ent) return '---';
+            const val=(ent.state||'').toString();
+            const unit=ent.unit||'';
+            const mapPL={on:'WŁĄCZONE',off:'WYŁĄCZONE',open:'OTWARTE',closed:'ZAMKNIĘTE',locked:'ZAMKNIĘTE',unlocked:'OTWARTE'};
+            const mapEN={on:'ON',off:'OFF',open:'OPEN',closed:'CLOSED',locked:'LOCKED',unlocked:'UNLOCKED'};
+            const M=currentLang==='pl'?mapPL:mapEN;
+            if(M[val]) return M[val];
+            if(!isNaN(parseFloat(val)) && val.includes('.')) return parseFloat(val).toFixed(1)+(unit?(' '+unit):'');
+            return val+(unit?(' '+unit):'');
         }
 
-        function getRealState(widget) {
-            const ent = entitiesData.find(e => e.id === widget.id);
-            if (!ent) return '---';
-            const val = (ent.state || '').toString();
-            const unit = ent.unit || '';
-            const mapPL = { on:'WŁĄCZONE', off:'WYŁĄCZONE', open:'OTWARTE', closed:'ZAMKNIĘTE', locked:'ZAMKNIĘTE', unlocked:'OTWARTE' };
-            const mapEN = { on:'ON', off:'OFF', open:'OPEN', closed:'CLOSED', locked:'LOCKED', unlocked:'UNLOCKED' };
-            const M = currentLang === 'pl' ? mapPL : mapEN;
-
-            if (M[val]) return M[val];
-            if (!isNaN(parseFloat(val)) && val.includes('.')) {
-                return parseFloat(val).toFixed(1) + (unit ? ' ' + unit : '');
-            }
-            return val + (unit ? ' ' + unit : '');
+        function sizeClass(sizeStr){
+            const s=(sizeStr||'(1x1)').replace(/[()]/g,'');
+            return 'size-'+s;
         }
 
-        function renderPreview() {
-            const container = document.getElementById('preview-container');
-            container.innerHTML = '';
-            rows.forEach((row, rIndex) => {
-                const rowDiv = document.createElement('div');
-                rowDiv.className = 'eink-row';
-                const label = document.createElement('div');
-                label.className = 'row-label';
-                label.innerText = (currentLang === 'pl' ? 'WIERSZ ' : 'ROW ') + (rIndex + 1);
+        function renderPreview(){
+            const container=document.getElementById('preview-container');
+            container.innerHTML='';
+            rows.forEach((row,rIndex)=>{
+                const rowDiv=document.createElement('div');
+                rowDiv.className='eink-row';
+                const label=document.createElement('div');
+                label.className='row-label';
+                label.innerText=(currentLang==='pl'?'WIERSZ ':'ROW ')+(rIndex+1);
                 rowDiv.appendChild(label);
 
-                row.forEach((w, wIndex) => {
-                    const box = document.createElement('div');
-                    box.className = 'eink-widget';
-                    if (editIdx && editIdx.r === rIndex && editIdx.w === wIndex) box.classList.add('editing');
+                row.forEach((w,wIndex)=>{
+                    const box=document.createElement('div');
+                    box.className='eink-widget '+sizeClass(w.size)+' '+w.type;
+                    if(editIdx && editIdx.r===rIndex && editIdx.w===wIndex) box.classList.add('editing');
 
-                    // wielkość wg size
-                    let c = 2, r = 1;
-                    if (w.size) {
-                        const parts = w.size.replace(/[()]/g,'').split('x');
-                        c = parseInt(parts[0]) || 2;
-                        r = parseInt(parts[1]) || 1;
+                    // kalkulacja wymiarów
+                    let c=1,rh=1;
+                    if(w.size){
+                        const parts=w.size.replace(/[()]/g,'').split('x');
+                        c=parseInt(parts[0])||1;
+                        rh=parseInt(parts[1])||1;
                     }
-                    box.style.width = (c * 115 + (c - 1) * 8) + 'px';
-                    box.style.height = (r * 115 + (r - 1) * 8) + 'px';
+                    box.style.width=(c*115+(c-1)*8)+'px';
+                    box.style.height=(rh*115+(rh-1)*8)+'px';
 
-                    if (w.type === 'spacer') {
-                        box.style.borderStyle = 'dashed';
-                        box.style.opacity = '.5';
-                        box.innerHTML = '<span style="font-size:11px;letter-spacing:.7px;">SPACER</span>';
+                    if(w.type==='spacer'){
+                        box.style.borderStyle='dashed';
+                        box.style.opacity='.5';
+                        box.innerHTML='<span style="font-size:10px;">SPACER</span>';
                     } else {
-                        const icon = w.icon || w.icon_on || 'mdi-cube-outline';
-                        const stateText = getRealState(w);
-                        box.innerHTML = `
+                        const icon=w.icon||w.icon_on||'mdi-cube-outline';
+                        const stateText=getRealState(w);
+                        box.innerHTML=`
                             <div class="ew-header">${w.type}</div>
-                            <div class="ew-title">${w.name || w.id}</div>
+                            <div class="ew-title">${w.name||w.id}</div>
                             <i class="mdi ${icon} ew-icon"></i>
                             <div class="ew-value">${stateText}</div>
-                            <div class="ew-del" onclick="deleteWidget(${rIndex}, ${wIndex}, event)">X</div>
+                            <div class="ew-del" onclick="deleteWidget(${rIndex},${wIndex},event)">X</div>
                         `;
                     }
-                    box.onclick = () => editWidget(rIndex, wIndex);
+                    box.onclick=()=>editWidget(rIndex,wIndex);
                     rowDiv.appendChild(box);
                 });
-
                 container.appendChild(rowDiv);
             });
-
-            if (!entitiesData || entitiesData.length === 0) {
+            if(!entitiesData || entitiesData.length===0){
                 console.warn('Brak encji z backendu – sprawdź token i logi kontenera.');
             }
         }
 
-        function importYaml() {
-            const raw = document.getElementById('import-code').value;
-            if (!raw.trim()) return;
-            smartLock = true;
+        function importYaml(){
+            const raw=document.getElementById('import-code').value;
+            if(!raw.trim()) return;
+            smartLock=true;
+            const lines=raw.split('\n');
+            let inLayout=false;
+            let widgetDefs={};
+            let currentKey=null;
+            let newRows=[];
 
-            const lines = raw.split('\n');
-            let inLayout = false;
-            let widgetDefs = {};
-            let currentKey = null;
-            let newRows = [];
-
-            // Parsuj definicje
-            lines.forEach(line => {
-                const t = line.trim();
-                if (!t || t.startsWith('#')) return;
-                if (t.startsWith('layout:')) { inLayout = true; return; }
-
-                if (inLayout) {
-                    if (t.startsWith('-')) {
-                        const content = t.substring(1).trim();
-                        const parts = content.split(',').map(x => x.trim());
-                        const rowArr = [];
-                        parts.forEach(p => {
-                            let id = p;
-                            let size = '(2x1)';
-                            const sm = p.match(/\(\d+x\d+\)/);
-                            if (sm) {
-                                size = sm[0];
-                                id = p.replace(sm[0], '').trim();
-                            }
-                            if (id === 'spacer') {
-                                rowArr.push({ type:'spacer', id:'spacer', name:'', size:'(2x1)', icon:'', icon_on:'', icon_off:'' });
-                                return;
-                            }
-                            // Podstawa
-                            let typeGuess = 'switch';
-                            if (id.startsWith('sensor.')) typeGuess='sensor';
-                            else if (id.startsWith('binary_sensor.')) typeGuess='binary_sensor';
-                            else if (id.startsWith('cover.')) typeGuess='cover';
-                            else if (id.startsWith('lock.')) typeGuess='lock';
-                            else if (id.startsWith('media_player.')) typeGuess='media_player';
-                            else if (id.startsWith('climate.')) typeGuess='climate';
-                            else if (id.startsWith('script.')) typeGuess='script';
-                            else if (id.startsWith('navigate.')) typeGuess='navigate';
-
-                            const def = widgetDefs[id] || widgetDefs[id.split('.').pop()] || {};
-                            let name = def.title || formatNameFromId(id);
-                            const icon = def.icon || '';
-                            const icon_on = def.icon_on || '';
-                            const icon_off = def.icon_off || '';
-                            rowArr.push({ type:typeGuess, id, name, size, icon, icon_on, icon_off });
+            lines.forEach(line=>{
+                const t=line.trim();
+                if(!t||t.startsWith('#')) return;
+                if(t.startsWith('layout:')){ inLayout=true; return; }
+                if(inLayout){
+                    if(t.startsWith('-')){
+                        const content=t.substring(1).trim();
+                        const parts=content.split(',').map(x=>x.trim());
+                        const rowArr=[];
+                        parts.forEach(p=>{
+                            let id=p;
+                            let size='(1x1)';
+                            const sm=p.match(/\(\d+x\d+\)/);
+                            if(sm){ size=sm[0]; id=p.replace(sm[0],'').trim(); }
+                            if(id==='spacer'){ rowArr.push({type:'spacer',id:'spacer',name:'',size:'(1x1)',icon:'',icon_on:'',icon_off:''}); return; }
+                            let typeGuess='switch';
+                            if(id.startsWith('sensor.')) typeGuess='sensor';
+                            else if(id.startsWith('binary_sensor.')) typeGuess='binary_sensor';
+                            else if(id.startsWith('cover.')) typeGuess='cover';
+                            else if(id.startsWith('lock.')) typeGuess='lock';
+                            else if(id.startsWith('media_player.')) typeGuess='media_player';
+                            else if(id.startsWith('climate.')) typeGuess='climate';
+                            else if(id.startsWith('script.')) typeGuess='script';
+                            else if(id.startsWith('fan.')) typeGuess='switch';
+                            else if(id.startsWith('navigate.')) typeGuess='navigate';
+                            const def=widgetDefs[id]||widgetDefs[id.split('.').pop()]||{};
+                            let name=def.title||formatNameFromId(id);
+                            const icon=def.icon||'';
+                            const icon_on=def.icon_on||'';
+                            const icon_off=def.icon_off||'';
+                            rowArr.push({type:typeGuess,id,name,size,icon,icon_on,icon_off});
                         });
                         newRows.push(rowArr);
-                    } else if (!t.startsWith('-') && !t.startsWith(' ')) {
-                        inLayout = false;
+                    } else if(!t.startsWith('-') && !t.startsWith(' ')){
+                        inLayout=false;
                     }
                 } else {
-                    // definicje widgetów
-                    if (/^[A-Za-z0-9_\.\-]+:/.test(line) && !t.startswith('title:')) {
-                        currentKey = line.split(':')[0].trim();
-                        widgetDefs[currentKey] = {};
-                    } else if (currentKey && line.startsWith('  ')) {
-                        const parts = t.split(':');
-                        if (parts.length >= 2) {
-                            const k = parts[0].trim();
-                            let v = parts.slice(1).join(':').trim();
-                            v = v.replace(/^['"]|['"]$/g,'');
-                            widgetDefs[currentKey][k] = v;
+                    if(/^[A-Za-z0-9_\.\-]+:/.test(line) && !t.startswith('title:')){
+                        currentKey=line.split(':')[0].trim();
+                        widgetDefs[currentKey]={};
+                    } else if(currentKey && line.startsWith('  ')){
+                        const parts=t.split(':');
+                        if(parts.length>=2){
+                            const k=parts[0].trim();
+                            let v=parts.slice(1).join(':').trim().replace(/^['"]|['"]$/g,'');
+                            widgetDefs[currentKey][k]=v;
                         }
-                    } else if (!line.startsWith('  ')) {
-                        currentKey = null;
+                    } else if(!line.startsWith('  ')){
+                        currentKey=null;
                     }
                 }
             });
 
-            if (newRows.length) {
-                rows = newRows;
+            if(newRows.length){
+                rows=newRows;
                 renderPreview();
                 alert('Import zakończony sukcesem.');
             } else {
                 alert('Nie znaleziono sekcji layout:');
             }
-
-            setTimeout(() => smartLock = false, 600);
+            setTimeout(()=>smartLock=false,600);
         }
 
-        function generateYaml() {
-            document.getElementById('layout_json').value = JSON.stringify(rows);
+        function generateYaml(){
+            document.getElementById('layout_json').value=JSON.stringify(rows);
             document.getElementById('main-form').submit();
         }
 
-        // ========== Inicjalizacja ==========
-        window.addEventListener('DOMContentLoaded', () => {
-            // Podmiana IP w linkach
-            const host = window.location.hostname;
-            const pathCode = document.getElementById('path-code');
-            const dashLink = document.getElementById('dashboard-link');
-            if (pathCode) pathCode.innerText = pathCode.innerText.replace('IP_HA', host);
-            if (dashLink) {
-                const href = dashLink.getAttribute('href');
-                if (href && href.includes('[HOST]')) {
-                    const newHref = href.replace('[HOST]', host);
-                    dashLink.setAttribute('href', newHref);
-                    dashLink.innerText = newHref;
+        window.addEventListener('DOMContentLoaded',()=>{
+            const host=window.location.hostname;
+            const pathCode=document.getElementById('path-code');
+            const dashLink=document.getElementById('dashboard-link');
+            if(pathCode) pathCode.innerText=pathCode.innerText.replace('IP_HA',host);
+            if(dashLink){
+                const href=dashLink.getAttribute('href');
+                if(href && href.includes('[HOST]')){
+                    const newHref=href.replace('[HOST]',host);
+                    dashLink.setAttribute('href',newHref);
+                    dashLink.innerText=newHref;
                 }
             }
-
-            const savedTheme = localStorage.getItem('joan_theme') || 'light';
-            document.getElementById('btn-theme').innerText = savedTheme === 'dark' ? '☀️' : '🌙';
-
-            // Start z jedną pustą linią
-            if (!rows.length || (rows.length === 1 && rows[0].length === 0)) {
-                rows = [[]];
-            }
+            const savedTheme=localStorage.getItem('joan_theme')||'light';
+            document.getElementById('btn-theme').innerText=savedTheme==='dark'?'☀️':'🌙';
+            if(!rows.length || (rows.length===1 && rows[0].length===0)) rows=[[]];
             renderPreview();
         });
     </script>
