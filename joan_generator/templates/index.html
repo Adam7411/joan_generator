@@ -7,7 +7,7 @@
     <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap" rel="stylesheet">
     <script>
-        // NATYCHMIASTOWE USTAWIENIE MOTYWU (Zapobiega mruganiu i resetowaniu)
+        // NATYCHMIASTOWE USTAWIENIE MOTYWU
         (function() {
             const savedTheme = localStorage.getItem('joan_theme') || 'light';
             if (savedTheme === 'dark') {
@@ -51,7 +51,6 @@
         .lang-switch button.active { background: var(--accent-color); color: white; border-color: var(--accent-color); }
         .status-bar { padding: 10px; margin-bottom: 20px; border-radius: 4px; text-align: center; font-weight: bold; }
         .section { margin-bottom: 30px; border: 1px solid var(--border-color); padding: 20px; border-radius: 8px; background: var(--section-bg); }
-        .section-title { font-size: 1.2em; font-weight: bold; color: var(--text-color); margin-bottom: 15px; border-bottom: 2px solid var(--accent-color); display: inline-block; }
         .import-box { background: #fff3e0; border: 1px solid #ffe0b2; color: #000; display: none; }
         .dark-mode .import-box { background: #3e2723; border-color: #5d4037; color: #fff; }
         .import-box.visible { display: block; }
@@ -176,21 +175,21 @@
                     <div class="flex-col">
                         <label data-i18n="label_type">Typ Widgetu</label>
                         <select id="new-widget-type" onchange="toggleInputs()">
-                            <option value="switch">Switch / Light</option>
-                            <option value="cover">Cover / Gate</option>
-                            <option value="sensor">Sensor</option>
-                            <option value="binary_sensor">Binary Sensor</option>
-                            <option value="lock">Lock (Zamek)</option>
-                            <option value="person">Person / Tracker</option>
-                            <option value="media_player">Media Player</option>
-                            <option value="climate">Climate</option>
-                            <option value="input_select">Input Select</option>
-                            <option value="input_number">Input Number</option>
-                            <option value="script">Script</option>
-                            <option value="navigate">Navigate / Dashboard Button</option>
-                            <option value="label">Label (Text)</option>
-                            <option value="clock">Clock (Zegar)</option>
-                            <option value="spacer">Spacer (Pusty)</option>
+                            <option value="switch" data-i18n="opt_switch">Switch / Light</option>
+                            <option value="cover" data-i18n="opt_cover">Cover / Gate</option>
+                            <option value="sensor" data-i18n="opt_sensor">Sensor</option>
+                            <option value="binary_sensor" data-i18n="opt_binary">Binary Sensor</option>
+                            <option value="lock" data-i18n="opt_lock">Lock</option>
+                            <option value="person" data-i18n="opt_person">Person / Tracker</option>
+                            <option value="media_player" data-i18n="opt_media">Media Player</option>
+                            <option value="climate" data-i18n="opt_climate">Climate</option>
+                            <option value="input_select" data-i18n="opt_input_select">Input Select</option>
+                            <option value="input_number" data-i18n="opt_input_number">Input Number</option>
+                            <option value="script" data-i18n="opt_script">Script</option>
+                            <option value="navigate" data-i18n="opt_navigate">Navigate / Button</option>
+                            <option value="label" data-i18n="opt_label">Label (Text)</option>
+                            <option value="clock" data-i18n="opt_clock">Clock</option>
+                            <option value="spacer" data-i18n="opt_spacer">Spacer (Empty)</option>
                         </select>
                     </div>
                     <div class="flex-col" id="group-entity">
@@ -220,12 +219,12 @@
                     <div class="flex-col" style="max-width: 150px;">
                         <label data-i18n="label_size">Rozmiar</label>
                         <select id="new-widget-size">
-                            <option value="(2x1)">Standard (2x1) - Przycisk</option>
-                            <option value="(1x1)">Mały (1x1) - Ikona</option>
-                            <option value="(2x2)">Duży (2x2) - Media/Klimat</option>
-                            <option value="(3x1)">Szeroki (3x1)</option>
-                            <option value="(1x2)">Wysoki (1x2)</option>
-                            <option value="(3x2)">Bardzo Duży (3x2)</option>
+                            <option value="(1x1)" data-i18n="size_1x1">1x1 (Small/Standard)</option>
+                            <option value="(2x1)" data-i18n="size_2x1">2x1 (Wide Button)</option>
+                            <option value="(2x2)" data-i18n="size_2x2">2x2 (Large/Media)</option>
+                            <option value="(3x1)" data-i18n="size_3x1">3x1 (Extra Wide)</option>
+                            <option value="(1x2)" data-i18n="size_1x2">1x2 (Tall)</option>
+                            <option value="(3x2)" data-i18n="size_3x2">3x2 (Huge)</option>
                         </select>
                     </div>
                     <div style="width: 50px;">
@@ -301,7 +300,17 @@
                 btn_new_row: "+ Dodaj Nowy Wiersz", btn_generate: "GENERUJ KOD .DASH", btn_cancel: "Anuluj",
                 state_on: "WŁĄCZONE", state_off: "WYŁĄCZONE", state_open: "OTWARTE", state_closed: "ZAMKNIĘTE",
                 info_step1: "1. Zapisz kod w pliku:", info_step2: "2. Uruchom ponownie AppDaemon i sprawdź dashboard:",
-                btn_import_toggle: "📂 Importuj / Edytuj Kod", header_paste_code: "Wklej kod pliku .dash tutaj:", btn_load_dash: "Wczytaj Dashboard"
+                btn_import_toggle: "📂 Importuj / Edytuj Kod", header_paste_code: "Wklej kod pliku .dash tutaj:", btn_load_dash: "Wczytaj Dashboard",
+                
+                // Dropdown Options
+                opt_switch: "Przełącznik / Światło", opt_cover: "Roleta / Brama", opt_sensor: "Sensor (Info)",
+                opt_binary: "Sensor Binarny (On/Off)", opt_lock: "Zamek", opt_person: "Osoba / Tracker",
+                opt_media: "Odtwarzacz Media", opt_climate: "Termostat (Climate)", opt_input_select: "Lista Wyboru",
+                opt_input_number: "Suwak Liczbowy", opt_script: "Skrypt", opt_navigate: "Przycisk Nawigacji",
+                opt_label: "Etykieta (Tekst)", opt_clock: "Zegar", opt_spacer: "Odstęp (Pusty)",
+                
+                size_1x1: "1x1 (Mały/Standard)", size_2x1: "2x1 (Szeroki Przycisk)", size_2x2: "2x2 (Duży/Media)",
+                size_3x1: "3x1 (Bardzo Szeroki)", size_1x2: "1x2 (Wysoki)", size_3x2: "3x2 (Ogromny)"
             },
             en: {
                 status_ok: "✓ Connected to Home Assistant", status_error: "⚠ No API Connection. Check Token.",
@@ -316,7 +325,17 @@
                 btn_new_row: "+ Add New Row", btn_generate: "GENERATE .DASH CODE", btn_cancel: "Cancel",
                 state_on: "ON", state_off: "OFF", state_open: "OPEN", state_closed: "CLOSED",
                 info_step1: "1. Save code to file:", info_step2: "2. Restart AppDaemon and check dashboard:",
-                btn_import_toggle: "📂 Import / Edit Code", header_paste_code: "Paste .dash file code here:", btn_load_dash: "Load Dashboard"
+                btn_import_toggle: "📂 Import / Edit Code", header_paste_code: "Paste .dash file code here:", btn_load_dash: "Load Dashboard",
+
+                // Dropdown Options
+                opt_switch: "Switch / Light", opt_cover: "Cover / Gate", opt_sensor: "Sensor (Info)",
+                opt_binary: "Binary Sensor", opt_lock: "Lock", opt_person: "Person / Tracker",
+                opt_media: "Media Player", opt_climate: "Climate", opt_input_select: "Input Select",
+                opt_input_number: "Input Number", opt_script: "Script", opt_navigate: "Navigation Button",
+                opt_label: "Label (Text)", opt_clock: "Clock", opt_spacer: "Spacer (Empty)",
+
+                size_1x1: "1x1 (Small/Standard)", size_2x1: "2x1 (Wide Button)", size_2x2: "2x2 (Large/Media)",
+                size_3x1: "3x1 (Extra Wide)", size_1x2: "1x2 (Tall)", size_3x2: "3x2 (Huge)"
             }
         };
 
@@ -335,15 +354,16 @@
         let userEditedIconFlag = false;
         let userEditedIconPairFlag = false;
 
-        // --- SMART MAPS (MAPY LOGIKI TYPÓW) ---
+        // --- SMART MAPS (Based on Docs: Base 1x1, but Actionable often 1x1 or 2x1) ---
+        // Docs say: widget_size default is [1, 1].
         const SMART_MAP = {
-            'light': { type: 'switch', size: '(2x1)', iconOn: 'mdi-lightbulb-on', iconOff: 'mdi-lightbulb-outline' },
-            'switch': { type: 'switch', size: '(2x1)', iconOn: 'mdi-toggle-switch', iconOff: 'mdi-toggle-switch-off' },
+            'light': { type: 'switch', size: '(1x1)', iconOn: 'mdi-lightbulb-on', iconOff: 'mdi-lightbulb-outline' },
+            'switch': { type: 'switch', size: '(1x1)', iconOn: 'mdi-toggle-switch', iconOff: 'mdi-toggle-switch-off' },
             'cover': { type: 'cover', size: '(2x1)', iconOn: 'mdi-window-shutter-open', iconOff: 'mdi-window-shutter' },
             'garage': { type: 'cover', size: '(2x1)', iconOn: 'mdi-garage-open', iconOff: 'mdi-garage' },
             'binary_sensor': { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-checkbox-marked-circle', iconOff: 'mdi-checkbox-blank-circle-outline' },
             'sensor': { type: 'sensor', size: '(1x1)', icon: 'mdi-eye' },
-            'lock': { type: 'lock', size: '(2x1)', iconOn: 'mdi-lock-open', iconOff: 'mdi-lock' },
+            'lock': { type: 'lock', size: '(1x1)', iconOn: 'mdi-lock-open', iconOff: 'mdi-lock' },
             'climate': { type: 'climate', size: '(2x2)', icon: '' },
             'media_player': { type: 'media_player', size: '(2x2)', icon: '' },
             'person': { type: 'person', size: '(1x1)', icon: 'mdi-account' },
@@ -376,17 +396,15 @@
             return last.replace(/_/g,' ').replace(/\b\w/g,l=>l.toUpperCase());
         }
 
-        // --- SMART AUTOFILL (GŁÓWNA LOGIKA DOBIERANIA) ---
+        // --- SMART AUTOFILL (GŁÓWNA LOGIKA) ---
         function smartAutoFill(val) {
-            if (blockSmartFill) return; // Blokada dla edycji/importu
+            if (blockSmartFill) return;
             
             if (!val) val = document.getElementById('new-entity-id').value;
             const raw = (val || '').trim();
             if (!raw || raw.length < 3) return;
             
             const id = raw.toLowerCase();
-            
-            // Pobranie danych z datalist zamiast przeszukiwania dużej tablicy (szybciej)
             const option = document.querySelector(`#entities-list option[value="${raw}"]`);
             let deviceClass = '';
             let fName = '';
@@ -395,7 +413,6 @@
                 deviceClass = (option.getAttribute('data-dclass') || '').toLowerCase();
                 fName = option.getAttribute('data-friendly') || '';
             } else {
-                // Fallback do tablicy jeśli nie znaleziono w DOM
                 const ent = getEntityMeta(id);
                 deviceClass = (ent.attributes.device_class || '').toLowerCase();
                 fName = ent.attributes.friendly_name || '';
@@ -410,9 +427,8 @@
             const sizeInput = document.getElementById('new-widget-size');
 
             // 1. SMART TYPE DETECTOR
-            let config = SMART_MAP[domain] || SMART_MAP['sensor']; // Domyślnie sensor
+            let config = SMART_MAP[domain] || SMART_MAP['sensor'];
             
-            // Wyjątki na podstawie device_class
             if (deviceClass === 'garage' || id.includes('garage')) config = SMART_MAP['garage'];
             if (deviceClass === 'door') config = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-door-open', iconOff: 'mdi-door-closed' };
             if (domain === 'input_boolean') config = SMART_MAP['switch'];
@@ -428,7 +444,6 @@
             // 3. SMART ICONS
             const actionable = ['switch','cover','binary_sensor','lock','input_boolean'].includes(config.type);
             
-            // Reset ikon tylko jeśli użytkownik ich nie edytował ręcznie
             if(!userEditedIconFlag && !userEditedIconPairFlag) {
                 iconInput.value = '';
                 iconOnInput.value = '';
@@ -437,7 +452,6 @@
                 if (config.type === 'sensor') {
                     const specificIcon = DEVICE_CLASS_ICONS[deviceClass];
                     iconInput.value = (typeof specificIcon === 'string') ? specificIcon : (config.icon || 'mdi-eye');
-                    lastAutoIcon = iconInput.value;
                 } else if (actionable) {
                     let specificIcon = DEVICE_CLASS_ICONS[deviceClass];
                     if (Array.isArray(specificIcon)) {
@@ -452,11 +466,9 @@
                 }
             }
 
-            // 4. SMART SIZE
-            // Ustaw rozmiar tylko jeśli jest pusty lub ustawiony na domyślny, aby nie nadpisywać wyboru usera
-            if (!sizeInput.value || sizeInput.value === '(2x1)') { 
-                sizeInput.value = config.size;
-            }
+            // 4. SMART SIZE - SET IT EXPLICITLY
+            // Only if size is not manually edited or is currently default
+            sizeInput.value = config.size;
 
             toggleInputs();
             updateIconPreview();
@@ -527,14 +539,14 @@
 
         function iconPairFor(id){
             const v=(id||'').toLowerCase();
-            // Rozszerzona lista par
-            if(v.startsWith('light.')||v.includes('swiatlo')) return ['mdi-lightbulb-on','mdi-lightbulb-outline'];
-            if(v.startsWith('cover.')||v.includes('brama')) return ['mdi-gate-open','mdi-gate'];
-            if(v.includes('garage')) return ['mdi-garage-open','mdi-garage'];
-            if(v.includes('radiator')||v.includes('heat')) return ['mdi-radiator','mdi-radiator-off'];
-            if(v.includes('water')) return ['mdi-water-outline','mdi-water-off'];
-            if(v.includes('window')||v.includes('blind')) return ['mdi-window-open-variant','mdi-window-closed-variant'];
-            if(v.startsWith('lock.')) return ['mdi-lock-open', 'mdi-lock'];
+            if(v.startsWith('light.')||v.includes('swiatlo')||v.includes('light')) return ['mdi-lightbulb-on','mdi-lightbulb-outline'];
+            if(v.startsWith('cover.')||v.includes('brama')||v.includes('gate')) return ['mdi-gate-open','mdi-gate'];
+            if(v.includes('garage')||v.includes('garaz')||v.includes('garaż')) return ['mdi-garage-open','mdi-garage'];
+            if(v.includes('radiator')||v.includes('ogrzew')||v.includes('grzejnik')) return ['mdi-radiator','mdi-radiator-off'];
+            if(v.includes('cwu')||v.includes('woda')||v.includes('water')) return ['mdi-water-outline','mdi-water-off'];
+            if(v.includes('window')||v.includes('roleta')||v.includes('blind')) return ['mdi-window-shutter-open','mdi-window-shutter'];
+            if(v.startsWith('input_boolean.')) return ['mdi-toggle-switch','mdi-toggle-switch-off'];
+            if(v.startsWith('lock.') || v.includes('zamek')) return ['mdi-lock-open', 'mdi-lock'];
             return ['mdi-toggle-switch','mdi-toggle-switch-off'];
         }
 
@@ -640,10 +652,9 @@
                     wDiv.className='eink-widget';
                     if(editingIndices && editingIndices.r===index && editingIndices.w===wIndex) wDiv.classList.add('being-edited');
 
-                    // SCALING PREVIEW (Dokładne odwzorowanie AppDaemon dla 115px bazy)
-                    // Baza: 110px (przybliżenie dla CSS) + 10px margines
-                    // Wzór: (Col * 110) + ((Col - 1) * 10)
-                    let w=230, h=110; 
+                    // SCALING PREVIEW (Base unit 115px, margin 8px)
+                    // Calculation: (Cols * 115) + ((Cols - 1) * 8)
+                    let w=238, h=115; // Default 2x1 -> (2*115)+(1*8) = 230 + 8 = 238
                     let c=2, r=1;
                     
                     if(widget.size){
@@ -652,8 +663,8 @@
                         r=parseInt(dims[1])||1;
                     }
                     
-                    w = (c * 110) + ((c - 1) * 10);
-                    h = (r * 110) + ((r - 1) * 10);
+                    w = (c * 115) + ((c - 1) * 8);
+                    h = (r * 115) + ((r - 1) * 8);
                     
                     if(widget.type === 'spacer') {
                         wDiv.style.border = '1px dashed #ccc';
