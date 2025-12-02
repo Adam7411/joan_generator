@@ -100,12 +100,12 @@ def get_ha_entities():
 # 3. DEFINICJE STYLÓW (ZGODNE Z JOAN.TXT)
 # -------------------------------------------------------------------------
 # Te stałe są używane do generowania kodu YAML, aby zachować spójność stylu.
-# ZMIANA: STYLE_VALUE ma teraz padding-top: 33px, aby obniżyć tekst poniżej tytułu w kafelkach 2x1.
+# ZMIANA: Dodano padding-top: 33px oraz display: inline-block dla wartości i jednostek.
 STYLE_TITLE = "color: #000000; font-size: 20px; font-weight: 700; text-align: center; padding-top: 3px; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif;"
 STYLE_WIDGET = "color: #000000 !important; background-color: #FFFFFF !important;"
 STYLE_TEXT = "color: #000000 !important; font-weight: 700 !important;"
-STYLE_VALUE = "color: #000000 !important; font-size: 44px !important; font-weight: 700 !important; padding-top: 33px !important; line-height: 1.2 !important;"
-STYLE_UNIT = "color: #000000 !important;"
+STYLE_VALUE = "color: #000000 !important; font-size: 44px !important; font-weight: 700 !important; padding-top: 33px !important; line-height: 1.2 !important; display: inline-block !important;"
+STYLE_UNIT = "color: #000000 !important; padding-top: 33px !important; display: inline-block !important;"
 STYLE_ICON = "color: #000000 !important;"
 STYLE_STATE_TEXT = "color: #000000 !important; font-weight: 700 !important; font-size: 16px !important;"
 
@@ -146,8 +146,8 @@ def index():
             dashboard_filename = dashboard_slug + ".dash"
             
             # Parametry siatki (Smart Grid)
-            # ZMIANA: Domyślnie 3 kolumny (zamiast 6)
-            cols = request.form.get('grid_columns', '3')
+            # ZMIANA: Domyślnie 4 kolumny (aby uzyskać układ 3-kolumnowy w AppDaemon)
+            cols = request.form.get('grid_columns', '4')
             rows = request.form.get('grid_rows', '8')
             
             # Język interfejsu (wpływa na state_map)
