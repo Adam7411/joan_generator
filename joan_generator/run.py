@@ -43,14 +43,14 @@ def get_ha_entities():
             data = response.json()
             entities = []
             for state in data:
-                # Przekazujemy pełne dane dla JS
+                # Przekazujemy pełne dane (attributes) dla JS, aby Smart Logic działał na device_class i friendly_name
                 entities.append({
                     'id': state['entity_id'],
                     'state': state['state'],
                     'attributes': state.get('attributes', {}),
                     'unit': state.get('attributes', {}).get('unit_of_measurement', '')
                 })
-            # Sortowanie alfabetyczne
+            # Sortowanie alfabetyczne po ID dla porządku
             entities.sort(key=lambda x: x['id'])
             return entities
         else:
@@ -60,6 +60,7 @@ def get_ha_entities():
     return []
 
 # --- STYLE E-INK (High Contrast - Joan 6) ---
+# Style zgodne z dokumentacją AppDaemon dla E-Ink
 STYLES = {
     "title": "color: #000000; font-size: 30px; font-weight: 900; text-align: center; font-family: sans-serif; text-transform: uppercase;",
     "widget": "background-color: #FFFFFF; border: 3px solid #000000; color: #000000;",
@@ -101,6 +102,7 @@ def index():
             dashboard_filename = dashboard_slug + ".dash"
             lang = request.form.get('ui_language', 'pl')
             
+            # Tłumaczenia stanów dla AppDaemon (state_map)
             T = {
                 'pl': {'on': 'WŁ.', 'off': 'WYŁ.', 'open': 'OTWARTE', 'closed': 'ZAMKNIĘTE', 
                        'locked': 'ZABEZP.', 'unlocked': 'OTWARTE', 'home': 'DOM', 'not_home': 'POZA'},
@@ -109,6 +111,7 @@ def index():
             }
             dic = T.get(lang, T['pl'])
 
+            # --- NAGŁÓWEK PLIKU DASH ---
             generated_yaml += f"# --- JOAN 6 E-INK DASHBOARD ---\n"
             generated_yaml += f"title: {title}\n"
             generated_yaml += "widget_dimensions: [115, 115]\n"
@@ -136,7 +139,7 @@ def index():
                 generated_yaml += "layout:\n"
                 processed_widgets = []
                 
-                # Generowanie sekcji layout
+                # --- GENEROWANIE SEKCJI LAYOUT ---
                 for row in layout_rows:
                     if not row: continue
                     row_parts = []
@@ -159,7 +162,7 @@ def index():
                 
                 generated_yaml += "\n# --- WIDGET DEFINITIONS ---\n\n"
                 
-                # Generowanie definicji widgetów
+                # --- GENEROWANIE DEFINICJI WIDGETÓW ---
                 seen_ids = set()
                 for w in processed_widgets:
                     if w['type'] == 'spacer': continue
@@ -212,7 +215,7 @@ def index():
                         generated_yaml += f"  date_style: \"{STYLES['text']}\"\n"
                         generated_yaml += f"  time_style: \"{STYLES['value']} font-size: 50px !important;\"\n"
 
-                    # 6. Etykieta
+                    # 6. ETYKIETA
                     elif w_type == 'label':
                          generated_yaml += f"  widget_type: label\n"
                          generated_yaml += f"  text: \"{w_name}\"\n"
@@ -232,17 +235,6 @@ def index():
                         
                         generated_yaml += f"  widget_type: {ad_type}\n"
                         generated_yaml += f"  entity: {w_id}\n"
-                        
-                        # Ikonki ON/OFF
-                        if w_icon:
-                            # Próbujemy pobrać z formularza icon_on/off jeśli user je ustawił
-                            # W JS saveWidget są zapisywane, ale tutaj w pythonie mamy tylko w_icon jeśli nie rozdzieliliśmy
-                            # W nowym JS (poniżej) przekazujemy icon_on/off osobno w JSON, ale tu dla uproszczenia
-                            # użyjemy funkcji pomocniczej jeśli w_icon jest ustawione jako "baza".
-                            # Jednak JSON z JS przekazuje też icon_on/icon_off w obiekcie 'w'.
-                            # W tym miejscu kodu w Pythonie mamy tylko podstawową pętlę.
-                            # Zróbmy to tak:
-                            pass # Ikony będą dodane poniżej z danych widgetu, jeśli są w JSON
                         
                         # Pobieramy dokładne ikony z obiektu widgetu (JSON)
                         # Musimy znaleźć ten widget w liście processed_widgets
