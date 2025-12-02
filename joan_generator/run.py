@@ -66,7 +66,6 @@ STYLES = {
 
 def get_icon_pair(base_icon, w_type):
     if not base_icon:
-        # Defaults specific to E-Ink
         if w_type == 'lock': return 'mdi-lock-open', 'mdi-lock'
         if w_type == 'cover': return 'mdi-window-shutter-open', 'mdi-window-shutter'
         if w_type == 'person' or w_type == 'device_tracker': return 'mdi-home', 'mdi-home-outline'
@@ -181,7 +180,7 @@ def index():
                         generated_yaml += f"  widget_style: \"background-color: #FFFFFF !important; border-radius: 8px !important; padding: 10px !important; color: #000000 !important;\"\n"
                         generated_yaml += f"  icon_style_inactive: \"color: #000000 !important;\"\n"
                     
-                    # 2. SENSOR (Number, String, etc)
+                    # 2. SENSOR
                     elif w_type == 'sensor':
                         generated_yaml += f"  widget_type: sensor\n"
                         generated_yaml += f"  entity: {w_id}\n"
@@ -202,7 +201,7 @@ def index():
                         generated_yaml += f"  entity: {w_id}\n"
                         generated_yaml += f"  step: 1\n"
 
-                    # 5. CLOCK (Optimized)
+                    # 5. CLOCK
                     elif w_type == 'clock':
                         generated_yaml += f"  widget_type: clock\n"
                         generated_yaml += f"  time_format: 24hr\n"
@@ -227,17 +226,16 @@ def index():
                          generated_yaml += f"  widget_type: reload\n"
                          if w_icon: generated_yaml += f"  icon_inactive: {w_icon}\n"
 
-                    # 9. ACTIONABLE (Switch, Cover, Lock, Script, Scene, Input*, Person)
+                    # 9. ACTIONABLE
                     else:
                         ad_type = w_type
                         if w_type == 'binary_sensor': ad_type = 'binary_sensor'
-                        # Map light to switch for simple toggle behavior on e-ink
-                        if w_type == 'light': ad_type = 'switch' 
                         if w_type == 'input_boolean': ad_type = 'switch'
                         if w_type == 'input_number': ad_type = 'input_number'
                         if w_type == 'input_select': ad_type = 'input_select'
                         if w_type == 'person': ad_type = 'device_tracker'
                         if w_type == 'scene': ad_type = 'scene'
+                        if w_type == 'light': ad_type = 'switch' # Force light as switch for simplicity
                         
                         generated_yaml += f"  widget_type: {ad_type}\n"
                         generated_yaml += f"  entity: {w_id}\n"
@@ -273,5 +271,4 @@ def index():
     return render_template('index.html', generated_yaml=generated_yaml, entities=ha_entities, filename=dashboard_filename, dash_name=dashboard_slug)
 
 if __name__ == "__main__":
-    print("🚀 3. Starting Dev Server...")
     app.run(host='0.0.0.0', port=5000, debug=False)
