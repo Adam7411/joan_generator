@@ -146,7 +146,7 @@ def index():
             dashboard_filename = dashboard_slug + ".dash"
             
             # Parametry siatki (Smart Grid)
-            # Domyślnie 3 kolumny jeśli nie podano
+            # ZMIANA: Domyślnie 3 kolumny (zamiast 6)
             cols = request.form.get('grid_columns', '3')
             rows = request.form.get('grid_rows', '8')
             
