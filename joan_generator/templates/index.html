@@ -3,11 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Joan 6 E-Ink Generator (Full Version)</title>
+    <title>Joan 6 E-Ink Generator</title>
+    <!-- Material Design Icons -->
     <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css" rel="stylesheet">
+    <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap" rel="stylesheet">
     
-    <!-- SKRYPT MOTYWU - MUSI BYĆ W HEAD -->
+    <!-- SCRIPT MOTYWU - ŁADOWANY PRZED RENDEROWANIEM STRONY -->
     <script>
         (function() {
             try {
@@ -31,7 +33,8 @@
             --accent: #d32f2f;
             --highlight: #e3f2fd;
             --preview-bg: #f0f0f0;
-            --link-color: #1976d2;
+            --link-bg: #e1f5fe;
+            --link-color: #0277bd;
         }
         
         html.dark-mode {
@@ -44,10 +47,10 @@
             --accent: #ff5252;
             --highlight: #0d47a1;
             --preview-bg: #000000;
-            --link-color: #90caf9;
+            --link-bg: #013655;
+            --link-color: #81d4fa;
         }
 
-        /* --- STYLE OGÓLNE --- */
         body { 
             font-family: 'Roboto', sans-serif; 
             background-color: var(--bg-body); 
@@ -75,7 +78,6 @@
         }
         h1 { margin: 0; color: var(--accent); font-size: 28px; }
         
-        .controls { display: flex; gap: 10px; }
         .controls button { 
             padding: 8px 16px; 
             border: 1px solid var(--border); 
@@ -91,7 +93,7 @@
             border-color: var(--accent); 
         }
 
-        /* SEKCJE */
+        /* SEKCJE I INFO */
         .section { 
             background: var(--bg-section); 
             padding: 25px; 
@@ -106,6 +108,40 @@
             display: inline-block; 
             margin-bottom: 20px; 
             color: var(--text-main);
+        }
+
+        /* PLIK INFO (PO WYGENEROWANIU) */
+        .file-path-info {
+            background-color: var(--link-bg);
+            color: var(--link-color);
+            border: 1px solid var(--border);
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 15px;
+            line-height: 1.6;
+            word-break: break-all;
+        }
+        .file-path-info strong {
+            display: block;
+            margin-top: 10px;
+            color: var(--text-main);
+            font-size: 1.1em;
+        }
+        .file-path-info strong:first-child { margin-top: 0; }
+        .file-path-info code {
+            display: block;
+            background: rgba(255,255,255,0.3);
+            padding: 5px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .file-path-info a {
+            color: var(--accent);
+            font-weight: bold;
+            font-size: 16px;
+            text-decoration: underline;
         }
 
         /* FORMULARZ EDYCJI */
@@ -180,7 +216,7 @@
         
         .eink-row { 
             display: flex; 
-            gap: 8px; /* MARGINES POMIĘDZY WIDGETAMI */
+            gap: 8px; 
             margin-bottom: 12px; 
             padding: 15px; 
             border: 2px dashed #999; 
@@ -225,7 +261,6 @@
         .eink-widget:hover { 
             transform: translateY(-3px); 
             z-index: 10; 
-            box-shadow: 6px 6px 0px rgba(0,0,0,0.35);
             border-color: var(--accent); 
         }
         .eink-widget.editing { 
@@ -299,20 +334,6 @@
             font-size: 14px;
             line-height: 1.5;
         }
-        
-        .info-box {
-            background: #e1f5fe;
-            border: 1px solid #b3e5fc;
-            color: #01579b;
-            padding: 15px;
-            border-radius: 4px;
-            margin-bottom: 20px;
-        }
-        .dark-mode .info-box {
-            background: #02283a;
-            border-color: #034261;
-            color: #81d4fa;
-        }
     </style>
 </head>
 <body>
@@ -325,6 +346,19 @@
                 <button type="button" onclick="setLang('en')" id="btn-en">EN</button>
             </div>
         </div>
+
+        {% if generated_yaml %}
+        <div class="section">
+            <h3 style="margin-top:0">✅ Kod wygenerowany pomyślnie!</h3>
+            <div class="file-path-info">
+                <strong>1. Zapisz kod w pliku:</strong>
+                <code id="path-code">\\IP_HA\addon_configs\appdaemon\dashboards\{{ filename }}</code>
+                <strong>2. Uruchom ponownie AppDaemon i sprawdź dashboard:</strong>
+                <a href="#" id="dashboard-link" target="_blank">http://IP_HA:5050/{{ dash_name }}</a>
+            </div>
+            <textarea class="output" readonly>{{ generated_yaml }}</textarea>
+        </div>
+        {% endif %}
 
         <!-- SEKCJA IMPORTU -->
         <div class="section" id="import-section">
@@ -430,9 +464,6 @@
             <!-- PODGLĄD E-INK -->
             <div class="section">
                 <div class="section-title" data-i18n="sec_preview">Podgląd Dashboardu (Kliknij by edytować)</div>
-                <div class="info-box" style="font-size:12px;">
-                    <strong>Info:</strong> Podgląd odzwierciedla układ Joan 6. Szerokie przyciski (2x1) są zalecane dla łatwej obsługi dotykowej.
-                </div>
                 <div class="preview-area" id="preview-container"></div>
                 <button type="button" class="btn btn-row" onclick="addRow()" data-i18n="btn_row">+ Dodaj Wiersz</button>
             </div>
@@ -440,13 +471,6 @@
             <input type="hidden" name="layout_data_json" id="layout_json">
             <button type="button" class="btn btn-gen" onclick="submitData()" data-i18n="btn_gen">GENERUJ KOD .DASH</button>
         </form>
-
-        {% if generated_yaml %}
-        <div class="section" style="margin-top:30px;">
-            <div class="section-title">Wynikowy Kod YAML</div>
-            <textarea class="output" readonly>{{ generated_yaml }}</textarea>
-        </div>
-        {% endif %}
     </div>
 
     <!-- LOGIKA JAVASCRIPT (KOMPLETNA) -->
@@ -497,7 +521,10 @@
             }
         };
 
-        // Mapy Smart Logic
+        // --- MAPY SMART LOGIC (ZGODNIE Z DOKUMENTACJĄ APPDAEMON I WYMAGANIAMI) ---
+        // Switch/Light/Cover/Lock -> 2x1 (Easier touch target)
+        // Sensor/Binary -> 1x1 (Info)
+        // Media/Climate -> 2x2 (Controls)
         const SMART_MAP = {
             'light': { type: 'switch', size: '(2x1)', iconOn: 'mdi-lightbulb-on', iconOff: 'mdi-lightbulb-outline' },
             'switch': { type: 'switch', size: '(2x1)', iconOn: 'mdi-toggle-switch', iconOff: 'mdi-toggle-switch-off' },
@@ -519,6 +546,7 @@
             'door': ['mdi-door-open', 'mdi-door-closed'],
             'window': ['mdi-window-open-variant', 'mdi-window-closed-variant'],
             'garage': ['mdi-garage-open', 'mdi-garage'],
+            'moisture': 'mdi-water',
             'safety': 'mdi-shield-alert'
         };
 
@@ -538,10 +566,21 @@
             return entitiesData.find(e => e.id === id) || { attributes: {} };
         }
 
-        function formatTitle(id) {
+        // ULEPSZONE GENEROWANIE TYTUŁU
+        function formatSmartName(id, friendlyName) {
+            if (friendlyName && friendlyName.length > 2) return friendlyName;
+            
             if(!id) return "";
             if(id.startsWith('navigate.')) return id.replace('navigate.','').toUpperCase();
-            return id.split('.').pop().replace(/_/g, ' ').toUpperCase();
+            
+            // light.swiatlo_ganek_l2 -> Swiatlo Ganek
+            let name = id.split('.').pop(); 
+            // Usuń suffixy techniczne (np. _l2, _v1)
+            name = name.replace(/_[lvr]\d+$/i, ''); 
+            name = name.replace(/_/g, ' ');
+            
+            // Kapitalizacja (pierwsza litera każdego słowa)
+            return name.replace(/\b\w/g, l => l.toUpperCase());
         }
 
         function updateIconPreview() {
@@ -612,7 +651,18 @@
 
             // Pobierz dane z datalist (device_class)
             const option = document.querySelector(`#entity-list option[value="${val}"]`);
-            const dClass = option ? option.getAttribute('data-dclass') : '';
+            let dClass = '';
+            let fName = '';
+            
+            if (option) {
+                dClass = (option.getAttribute('data-dclass') || '').toLowerCase();
+                fName = option.getAttribute('data-friendly') || '';
+            } else {
+                const ent = getEntityMeta(id);
+                dClass = (ent.attributes.device_class || '').toLowerCase();
+                fName = ent.attributes.friendly_name || '';
+            }
+
             const domain = id.split('.')[0];
 
             // Domyślna konfiguracja
@@ -627,17 +677,14 @@
             // Ustaw pola formularza
             document.getElementById('w-type').value = conf.type;
             
-            // Ustaw rozmiar tylko jeśli jest domyślny lub pusty (nie nadpisuj wyboru usera)
-            const sizeField = document.getElementById('w-size');
-            if (sizeField.value === '(1x1)' || sizeField.value === '') {
-                sizeField.value = conf.size;
-            }
+            // Ustaw rozmiar (Nadpisujemy ZAWSZE przy wpisywaniu nowej encji, bo to smart action)
+            document.getElementById('w-size').value = conf.size;
             
-            // Ustaw tytuł jeśli pusty
+            // Ustaw Tytuł
             const nameField = document.getElementById('w-name');
-            if(!nameField.value) nameField.value = formatTitle(id);
+            nameField.value = formatSmartName(id, fName);
 
-            // Ustaw ikony
+            // Ustaw Ikony
             document.getElementById('w-icon').value = conf.icon || '';
             document.getElementById('w-icon-on').value = conf.iconOn || '';
             document.getElementById('w-icon-off').value = conf.iconOff || '';
@@ -686,17 +733,15 @@
 
             document.getElementById('editor-box').classList.add('editing');
             document.getElementById('btn-cancel').classList.remove('hidden');
-            document.getElementById('editor-title').innerText = TRANSLATIONS[currentLang].sec_edit;
-            document.getElementById('btn-submit').innerText = TRANSLATIONS[currentLang].btn_update;
+            const t = TRANSLATIONS[currentLang];
+            document.getElementById('editor-title').innerText = t.sec_edit;
+            document.getElementById('btn-submit').innerText = t.btn_update;
 
             document.getElementById('w-type').value = data.type;
             toggleInputs();
 
-            if(data.type === 'navigate') {
-                document.getElementById('w-dash').value = data.id.replace('navigate.', '');
-            } else {
-                document.getElementById('w-id').value = data.id;
-            }
+            if(data.type === 'navigate') document.getElementById('w-dash').value = data.id.replace('navigate.', '');
+            else document.getElementById('w-id').value = data.id;
 
             document.getElementById('w-name').value = data.name;
             document.getElementById('w-size').value = data.size || '(1x1)';
@@ -715,8 +760,9 @@
             blockSmart = false;
             document.getElementById('editor-box').classList.remove('editing');
             document.getElementById('btn-cancel').classList.add('hidden');
-            document.getElementById('editor-title').innerText = TRANSLATIONS[currentLang].sec_add;
-            document.getElementById('btn-submit').innerText = TRANSLATIONS[currentLang].btn_add;
+            const t = TRANSLATIONS[currentLang];
+            document.getElementById('editor-title').innerText = t.sec_add;
+            document.getElementById('btn-submit').innerText = t.btn_add;
             clearForm();
         }
 
@@ -759,7 +805,6 @@
                     div.className = 'eink-widget';
                     if(editIdx && editIdx.r === rI && editIdx.w === wI) div.classList.add('editing');
 
-                    // SKALOWANIE PODGLĄDU (Base 115px, Margin 8px)
                     let cols = 1, rw = 1;
                     if(w.size) {
                         const parts = w.size.replace(/[()]/g, '').split('x');
@@ -767,6 +812,7 @@
                         rw = parseInt(parts[1]) || 1;
                     }
                     
+                    // Skalowanie: 115px + 8px margines
                     const width = (cols * 115) + ((cols - 1) * 8);
                     const height = (rw * 115) + ((rw - 1) * 8);
                     
@@ -813,19 +859,14 @@
             let rawDefs = {};
             let currentDefKey = null;
 
-            // Krok 1: Parsowanie Definicji Widgetów (klucz: właściwości)
-            // Uproszczony parser: szuka linii bez wcięcia z dwukropkiem (np. light.salon:)
-            // a potem czyta wcięte linie pod spodem
             lines.forEach(line => {
                 const tr = line.trim();
                 if(!tr || tr.startsWith('#')) return;
 
                 if (line.match(/^\S+:/) && !line.startsWith('layout:') && !line.startsWith('global_parameters:')) {
-                    // Znaleziono definicję widgetu
                     currentDefKey = line.split(':')[0].trim();
                     rawDefs[currentDefKey] = {};
                 } else if (currentDefKey && (line.startsWith('  ') || line.startsWith('\t'))) {
-                    // Właściwość widgetu
                     const parts = tr.split(':');
                     if(parts.length >= 2) {
                         const key = parts[0].trim();
@@ -837,10 +878,8 @@
                 }
             });
             
-            // Zapisz do zmiennej globalnej dla funkcji pomocniczych
             importedDefsMap = rawDefs;
 
-            // Krok 2: Parsowanie Layoutu
             lines.forEach(line => {
                 const tr = line.trim();
                 if(tr.startsWith('layout:')) { inLayout = true; return; }
@@ -848,13 +887,10 @@
                 if(inLayout && tr.startsWith('-')) {
                     const content = tr.substring(1).trim();
                     const widgets = content.split(',').map(s => s.trim());
-                    
                     const rowData = [];
                     widgets.forEach(wStr => {
                         let id = wStr;
-                        let size = '(1x1)'; // Domyślny rozmiar
-                        
-                        // Wyciągnij rozmiar np. (2x1)
+                        let size = '(1x1)';
                         const sizeMatch = wStr.match(/\(\d+x\d+\)/);
                         if(sizeMatch) {
                             size = sizeMatch[0];
@@ -867,7 +903,6 @@
                         let icon_on = '';
                         let icon_off = '';
 
-                        // Pobierz dane z definicji jeśli istnieją
                         const def = rawDefs[id];
                         if(def) {
                             if(def.widget_type) type = def.widget_type;
@@ -875,18 +910,16 @@
                             if(def.icon) icon = def.icon;
                             if(def.icon_on) icon_on = def.icon_on;
                             if(def.icon_off) icon_off = def.icon_off;
-                            // Obsługa Lock (zmapuj icon_locked -> icon_off)
                             if(def.icon_locked) icon_off = def.icon_locked;
                             if(def.icon_unlocked) icon_on = def.icon_unlocked;
                         } else {
-                            // Prosta detekcja po ID
                             if(id === 'spacer') type = 'spacer';
                             else if(id.startsWith('navigate.')) type = 'navigate';
                             else if(id.startsWith('sensor.')) type = 'sensor';
                         }
                         
-                        // Fallback dla nazwy
-                        if(name === id && type !== 'spacer') name = formatTitle(id);
+                        // Fallback Title (jeśli import nie znalazł tytułu w definicji)
+                        if(name === id && type !== 'spacer') name = formatSmartName(id, '');
 
                         rowData.push({
                             id: id, type: type, size: size, name: name, 
@@ -896,7 +929,6 @@
                     newRows.push(rowData);
                 }
                 
-                // Koniec sekcji layout (gdy napotkamy inną sekcję główną)
                 if(inLayout && tr.length > 0 && !tr.startsWith('-') && !tr.startsWith(' ') && !tr.startsWith('layout:')) {
                     inLayout = false;
                 }
@@ -905,17 +937,36 @@
             if(newRows.length > 0) {
                 rows = newRows;
                 renderPreview();
-                alert("Pomyślnie zaimportowano układ dashboardu.");
+                alert("Pomyślnie zaimportowano układ.");
             } else {
-                alert("Nie znaleziono sekcji 'layout:' w kodzie.");
+                alert("Błąd: Nie znaleziono sekcji 'layout:' w kodzie.");
             }
-            
             setTimeout(() => blockSmart = false, 1000);
         }
 
-        // INIT
-        setLang('pl');
-        renderPreview();
+        // --- START ---
+        window.addEventListener('DOMContentLoaded', () => {
+            // Wypełnij info o pliku
+            const host = window.location.hostname;
+            const pathEl = document.getElementById('path-code');
+            const linkEl = document.getElementById('dashboard-link');
+            if(pathEl) pathEl.innerText = pathEl.innerText.replace('IP_HA', host);
+            if(linkEl) {
+                const href = linkEl.getAttribute('href').replace('IP_HA', host);
+                linkEl.innerText = href;
+                linkEl.setAttribute('href', href);
+            }
+
+            setLang('pl');
+            const savedTheme = localStorage.getItem('joan_theme') || 'light';
+            document.getElementById('btn-theme').innerText = savedTheme === 'dark' ? '☀️' : '🌙';
+            
+            if(!rows.length || (rows.length===1 && !rows[0].length)) {
+                // Pusty start
+            } else {
+                renderPreview();
+            }
+        });
     </script>
 </body>
 </html>
