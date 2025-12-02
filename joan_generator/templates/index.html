@@ -4,8 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1.0" />
   <title>Joan 6 E-Ink Generator</title>
+
   <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap" rel="stylesheet" />
+
   <style>
     :root { --bg-color:#e0e0e0; --container-bg:#ffffff; --text-color:#333; --border-color:#ddd; --accent-color:#d32f2f; --input-bg:#fff; --section-bg:#fafafa; --preview-bg:#f0f0f0; --link-bg:#ffffff; --link-color:#0056b3; --link-border:#bee5eb; }
     body.dark-mode { --bg-color:#121212; --container-bg:#1e1e1e; --text-color:#e0e0e0; --border-color:#333; --accent-color:#ff5252; --input-bg:#2c2c2c; --section-bg:#252525; --preview-bg:#121212; --link-bg:#1e1e1e; --link-color:#80d8ff; --link-border:#37474f; }
@@ -15,7 +17,6 @@
     h1 { color:var(--accent-color); margin:0; font-size:24px; font-weight:900; }
     .controls { display:flex; gap:10px; }
     .controls button { padding:8px 14px; border:1px solid var(--border-color); background:var(--section-bg); color:var(--text-color); cursor:pointer; border-radius:6px; font-weight:700; }
-    .controls button.active { background:var(--accent-color); color:#fff; border-color:var(--accent-color); }
     .status-bar { padding:10px; border-radius:6px; font-weight:700; margin-bottom:20px; }
     .section { margin-bottom:28px; padding:20px; border:1px solid var(--border-color); border-radius:10px; background:var(--section-bg); }
     .section-title { font-weight:900; font-size:1.15em; margin:0 0 15px; padding:0 0 6px; border-bottom:2px solid var(--accent-color); color:var(--text-color); }
@@ -37,30 +38,23 @@
     .btn-row { background:#2196f3; color:#fff; margin-top:10px; }
     .btn-import { background:#ff9800; color:#fff; margin-bottom:10px; }
     .btn-remove-row { font-size:11px; padding:4px 8px; margin-left:auto; background:#757575; color:#fff; border-radius:4px; position:absolute; right:6px; top:6px; z-index:20; }
-    .preview-area { background:var(--preview-bg); padding:20px; border-radius:8px; border:2px solid var(--border-color); overflow-x:auto; min-height:240px; }
-    .eink-row { display:flex; gap:10px; margin-bottom:10px; padding:14px 10px; border:2px dashed #999; background:transparent; border-radius:6px; align-items:center; position:relative; min-height:80px; cursor:pointer; }
-    .eink-row:hover { border-color:#2196f3; }
+    
+    /* PREVIEW CSS FIX */
+    .preview-area { background:var(--preview-bg); padding:20px; border-radius:8px; border:2px solid var(--border-color); overflow-x:auto; min-height:200px; display:block; }
+    .eink-row { display:flex; gap:10px; margin-bottom:10px; padding:14px 10px; border:2px dashed #999; background:transparent; border-radius:6px; align-items:center; position:relative; min-height:120px; cursor:pointer; }
     .eink-row.active { border-color:#2196f3; background:rgba(33, 150, 243, 0.1); }
     .eink-widget { background:#FFFFFF; border:2px solid #000; color:#000; display:flex; flex-direction:column; align-items:center; justify-content:space-between; padding:6px 4px; box-sizing:border-box; position:relative; cursor:pointer; box-shadow:2px 2px 5px rgba(0,0,0,0.12); border-radius:6px; min-width:120px; min-height:108px; transition:.1s; }
-    .eink-widget:hover { transform:translateY(-2px); box-shadow:4px 4px 8px rgba(0,0,0,0.2); z-index:5; }
     .eink-widget.being-edited { border:3px solid #ff9800; transform:scale(1.03); z-index:10; }
     .ew-title { font-size:12px; font-weight:700; text-align:center; width:100%; white-space:normal; line-height:1.2; min-height:30px; padding:0 4px; display:flex; align-items:center; justify-content:center; }
     .ew-icon { font-size:30px; margin:6px 0; }
     .ew-state { font-size:11px; font-weight:700; text-transform:uppercase; min-height:18px; display:flex; align-items:center; }
-    .ew-edit-overlay { position:absolute; top:0; left:0; right:0; bottom:0; background:rgba(33, 150, 243, 0.15); display:none; pointer-events:none;}
-    .eink-widget:hover .ew-edit-overlay { display:block; }
     .ew-delete { position:absolute; top:4px; right:4px; background:red; color:#fff; width:20px; height:20px; text-align:center; line-height:18px; font-size:10px; display:none; border-radius:4px; z-index:20; }
     .eink-widget:hover .ew-delete { display:block; }
+
     textarea.output { width:100%; min-height:520px; font-family:monospace; background:#263238; color:#eceff1; border:none; padding:15px; border-radius:4px; white-space:pre; }
     .file-path-info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; padding: 20px; margin-bottom: 20px; border-radius: 6px; font-family: monospace; font-size: 16px; line-height: 1.6; }
     body.dark-mode .file-path-info { background: #263238; color: #eceff1; border-color: #37474f; }
-    .file-path-info strong { font-size: 1.1em; display:block; margin-top:10px; color: #004085; }
-    body.dark-mode .file-path-info strong { color:#90caf9; }
-    .file-path-info code { background: rgba(255,255,255,0.6); padding: 5px 10px; border-radius: 4px; font-weight: bold; color: #d63384; display: block; margin-top: 5px; word-break: break-all; }
-    body.dark-mode .file-path-info code { background: rgba(0,0,0,0.3); color: #f48fb1; }
-    .dashboard-link-btn { background: var(--link-bg); padding: 10px 15px; border-radius: 6px; font-weight: bold; color: var(--link-color); text-decoration: none; display: block; margin-top: 10px; word-break: break-all; border: 2px solid var(--link-border); font-size: 1.0em; }
-    .dashboard-link-btn:hover { background-color: #f0f0f0; text-decoration: underline; }
-    body.dark-mode .dashboard-link-btn:hover { background-color: #444; }
+    .file-path-info a { background: var(--link-bg); padding: 10px 15px; border-radius: 6px; font-weight: bold; color: var(--link-color); text-decoration: none; display: block; margin-top: 10px; word-break: break-all; border: 2px solid var(--link-border); font-size: 1.0em; }
     .hidden { display:none !important; }
   </style>
 </head>
@@ -91,7 +85,7 @@
 
     <div id="import-area" class="section import-box">
       <h4 style="margin-top:0" data-i18n="header_paste_code">Wklej kod pliku .dash tutaj:</h4>
-      <textarea id="import-code" style="height:150px;background:#fff;color:#000;" placeholder="Wklej cały plik .dash"></textarea>
+      <textarea id="import-code" style="height:150px;background:#fff;color:#000;" placeholder="Wklej cały plik .dash..."></textarea>
       <button type="button" class="btn btn-add" onclick="importYaml()">
         <span data-i18n="btn_load_dash">Wczytaj Dashboard</span>
       </button>
@@ -102,7 +96,6 @@
       <input type="hidden" name="ui_theme" id="ui_theme" value="light" />
       <input type="hidden" name="layout_data_json" id="layout_data_json" />
       <input type="hidden" name="widgets_full_json" id="widgets_full_json" />
-      <input type="hidden" name="generated_yaml_client" id="generated_yaml_client" />
 
       <div class="section">
         <div class="section-title" data-i18n="sec_settings">1. Ustawienia</div>
@@ -121,19 +114,13 @@
           <div class="flex-col">
             <label data-i18n="label_type">Typ Widgetu</label>
             <select id="new-widget-type" onchange="applySmartForForm(true)">
-               <!-- Generowane przez JS -->
+              <!-- JS populated -->
             </select>
           </div>
 
           <div class="flex-col" id="group-entity">
             <label data-i18n="label_entity">Wybierz Encję (Home Assistant)</label>
-            <input
-              list="entities-list"
-              id="new-entity-id"
-              placeholder="np. light.salon"
-              autocomplete="off"
-              oninput="applySmartForForm(true)"
-            />
+            <input list="entities-list" id="new-entity-id" placeholder="np. light.salon" autocomplete="off" oninput="applySmartForForm(true)" />
             <datalist id="entities-list">
               {% for entity in entities %}
               <option value="{{ entity.id }}">{{ entity.id }}</option>
@@ -202,24 +189,29 @@
     </form>
 
     <div class="section hidden" id="client-yaml-section">
-      <h3 data-i18n="sec_code">Twój kod YAML (Klient):</h3>
+      <h3 data-i18n="sec_code">Twój kod YAML:</h3>
       <div class="file-path-info">
         <strong data-i18n="info_step1">1. Zapisz kod w pliku:</strong>
-        <code id="client-path-code">\\IP_HA\addon_configs\appdaemon\dashboards\dashboard.dash</code>
+        <code id="client-path-code">...</code>
         <strong data-i18n="info_step2">2. Podgląd dashboardu:</strong>
         <a id="client-dashboard-link" class="dashboard-link-btn" target="_blank" href="#">Link...</a>
       </div>
       <textarea id="client-yaml-output" class="output" readonly></textarea>
+      <!-- Hidden field for python if needed -->
+      <input type="hidden" name="generated_yaml_client" id="generated_yaml_client" />
     </div>
   </div>
 
   <script>
-    /* ==========================================
-       1. GLOBAL VARIABLES (MUST BE FIRST)
-       ========================================== */
-    const entitiesData = {{ entities | tojson }};
+    // --- 1. GLOBAL VARIABLES (SAFE INIT) ---
+    const entitiesData = {{ entities | tojson }} || [];
+    let currentLang='pl';
+    let rows=[]; 
+    let activeRowIndex=0;
+    let editingIndices=null;
+    let importedDefsMap={};
 
-    // Config
+    // Widget Config
     const widgetTypesConfig = [
       { value: 'switch', pl: 'Przełącznik / Światło', en: 'Switch / Light' },
       { value: 'sensor', pl: 'Sensor (Liczba/Tekst)', en: 'Sensor' },
@@ -246,7 +238,7 @@
       pl: {
         status_ok:"✓ Połączono z Home Assistant", status_error:"⚠ Brak połączenia z API. Sprawdź token.",
         sec_settings:"1. Ustawienia", sec_add:"2. Dodaj / Edytuj Widget", sec_edit:"2. Edytuj Widget",
-        sec_preview:"3. Podgląd Dashboardu (Kliknij, aby edytować)", sec_code:"Twój kod YAML (Klient):",
+        sec_preview:"3. Podgląd Dashboardu (Kliknij, aby edytować)", sec_code:"Twój kod YAML:",
         dash_title:"Tytuł Dashboardu (Nazwa pliku)", label_entity:"Wybierz Encję (Home Assistant)", label_dashboard:"Nazwa pliku dashboardu (np. joan3)",
         label_type:"Typ Widgetu", label_name:"Tytuł na ekranie", label_icon:"Ikona", label_preview:"Podgląd", label_size:"Rozmiar",
         btn_add:"+ DODAJ DO WIERSZA", btn_update:"ZAPISZ ZMIANY", btn_cancel:"Anuluj", btn_new_row:"+ Dodaj Nowy Wiersz", btn_generate:"GENERUJ KOD .DASH",
@@ -258,7 +250,7 @@
       en: {
         status_ok:"✓ Connected to Home Assistant", status_error:"⚠ No API Connection. Check Token.",
         sec_settings:"1. Settings", sec_add:"2. Add / Edit Widget", sec_edit:"2. Edit Widget",
-        sec_preview:"3. Dashboard Preview (Click to Edit)", sec_code:"Your YAML Code (Client):",
+        sec_preview:"3. Dashboard Preview (Click to Edit)", sec_code:"Your YAML Code:",
         dash_title:"Dashboard Title (Filename)", label_entity:"Select Entity (Home Assistant)", label_dashboard:"Dashboard filename (e.g. joan3)",
         label_type:"Widget Type", label_name:"Title on Screen", label_icon:"Icon", label_preview:"Preview", label_size:"Size",
         btn_add:"+ ADD TO ROW", btn_update:"SAVE CHANGES", btn_cancel:"Cancel", btn_new_row:"+ Add New Row", btn_generate:"GENERATE .DASH CODE",
@@ -288,18 +280,51 @@
       {k:['power','moc','energia','energy'],base:'mdi-flash'}
     ];
 
-    // State Variables
-    let currentLang='pl';
-    let rows=[]; 
-    let activeRowIndex=0;
-    let editingIndices=null;
-    let importedDefsMap={};
+    // --- FUNCTIONS ---
 
-    /* ==========================================
-       2. HELPER FUNCTIONS
-       ========================================== */
+    function toggleTheme(){
+      const toDark = !document.body.classList.contains('dark-mode');
+      document.body.classList.toggle('dark-mode', toDark);
+      document.getElementById('ui_theme').value = toDark ? 'dark' : 'light';
+      document.getElementById('btn-theme').innerText = toDark ? '☀️' : '🌙';
+      localStorage.setItem('joan_theme', toDark ? 'dark' : 'light');
+    }
 
-    function ensureMdi(icon){ if(!icon) return ""; return icon.startsWith('mdi-') ? icon : 'mdi-'+icon; }
+    function setLang(lang){
+      currentLang = lang;
+      localStorage.setItem('joan_lang', lang);
+      document.getElementById('ui_language').value = lang;
+      document.getElementById('btn-pl').classList.toggle('active', lang==='pl');
+      document.getElementById('btn-en').classList.toggle('active', lang==='en');
+      
+      updateWidgetTypeOptions(lang);
+      applyTranslations();
+      renderRows();
+    }
+
+    function updateWidgetTypeOptions(lang) {
+      const select = document.getElementById('new-widget-type');
+      const currentVal = select.value; 
+      select.innerHTML = '';
+      widgetTypesConfig.forEach(type => {
+        const opt = document.createElement('option');
+        opt.value = type.value;
+        opt.innerText = (lang === 'pl') ? type.pl : type.en;
+        select.appendChild(opt);
+      });
+      if(currentVal) select.value = currentVal; else select.value = 'switch';
+    }
+
+    function applyTranslations(){
+      const t = i18n[currentLang];
+      document.querySelectorAll('[data-i18n]').forEach(el=>{
+        const k = el.getAttribute('data-i18n');
+        if(t[k]) el.innerText = t[k];
+      });
+      const act = document.getElementById('btn-action').querySelector('span');
+      act.innerText = editingIndices ? i18n[currentLang].btn_update : `${i18n[currentLang].btn_add} (${currentLang==='pl'?'Wiersz':'Row'} ${activeRowIndex+1})`;
+      document.getElementById('form-header').innerText = editingIndices ? i18n[currentLang].btn_update : i18n[currentLang].sec_add;
+    }
 
     function formatNameFromId(id){
       if(!id) return "";
@@ -309,6 +334,7 @@
       n = n.replace(/\s{2,}/g,' ').trim();
       return n.toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
     }
+    function ensureMdi(icon){ if(!icon) return ""; return icon.startsWith('mdi-') ? icon : 'mdi-'+icon; }
 
     function inferTypeFromIdOrEntity(val){
       const v = (val||'').toLowerCase();
@@ -341,7 +367,6 @@
       }
       return ['mdi-toggle-switch','mdi-toggle-switch-off'];
     }
-
     function findBaseIconByIdAndType(id,type){
       const lower = (id||'').toLowerCase();
       for(const e of smartIconMap){
@@ -353,6 +378,33 @@
       return ensureMdi(fallback[type] || 'mdi-help-circle-outline');
     }
 
+    function getLiveStateText(ent, type){
+      if(!ent) return '';
+      const raw = String(ent.state).toLowerCase();
+      const t = i18n[currentLang];
+      if(type==='sensor' || type==='input_number'){
+        let val=ent.state;
+        if(!isNaN(parseFloat(val)) && String(val).includes('.')) val=parseFloat(val).toFixed(1);
+        return ent.unit ? `${val} ${ent.unit}` : val;
+      }
+      if(['switch','binary_sensor','script','media_player','climate','fan','light','input_boolean','lock'].includes(type) || ent.id?.startsWith?.('input_boolean.')){
+        if(['on','playing','open','unlocked','heat','cool','true','1','opening'].includes(raw)) return t.state_on;
+        if(['off','closed','locked','idle','stopped','standby','false','0','closing'].includes(raw)) return t.state_off;
+        return raw.toUpperCase();
+      }
+      return ent.state;
+    }
+    function pickPreviewIcon(widget){
+      const ent = (entitiesData||[]).find(e=>e.id===widget.id);
+      const actionable = ['switch','binary_sensor','cover','media_player','climate','script','fan','light','lock','input_boolean'].includes(widget.type) || widget.id.startsWith('input_boolean.');
+      if(actionable){
+        const pair = findIconPairById(widget.id);
+        const state = ent ? String(ent.state).toLowerCase() : 'off';
+        const isOn = ['on','open','playing','unlocked','heat','cool','true','1','opening','home'].includes(state);
+        return ensureMdi(isOn ? (widget.icon_on || pair[0]) : (widget.icon_off || pair[1]));
+      }
+      return ensureMdi(widget.icon || findBaseIconByIdAndType(widget.id, widget.type));
+    }
     function resolveImportedTitle(id) {
         if (importedDefsMap[id] && importedDefsMap[id].title) return importedDefsMap[id].title;
         const shortId = id.split('.').pop();
@@ -363,52 +415,6 @@
         return '';
     }
 
-    // --- UI HELPERS ---
-    function toggleTheme(){
-      const toDark = !document.body.classList.contains('dark-mode');
-      document.body.classList.toggle('dark-mode', toDark);
-      document.getElementById('btn-theme').innerText = toDark ? '☀️' : '🌙';
-      localStorage.setItem('joan_theme', toDark ? 'dark' : 'light');
-    }
-    function setLang(lang){
-      currentLang = lang;
-      localStorage.setItem('joan_lang', lang);
-      document.getElementById('ui_language').value = lang;
-      document.getElementById('btn-pl').classList.toggle('active', lang==='pl');
-      document.getElementById('btn-en').classList.toggle('active', lang==='en');
-      updateWidgetTypeOptions(lang);
-      applyTranslations();
-      renderRows();
-    }
-    function updateWidgetTypeOptions(lang) {
-      const select = document.getElementById('new-widget-type');
-      const currentVal = select.value; 
-      select.innerHTML = '';
-      widgetTypesConfig.forEach(type => {
-        const opt = document.createElement('option');
-        opt.value = type.value;
-        opt.innerText = (lang === 'pl') ? type.pl : type.en;
-        select.appendChild(opt);
-      });
-      if(currentVal) select.value = currentVal; else select.value = 'switch';
-    }
-    function applyTranslations(){
-      const t = i18n[currentLang];
-      document.querySelectorAll('[data-i18n]').forEach(el=>{
-        const k = el.getAttribute('data-i18n');
-        if(t[k]) el.innerText = t[k];
-      });
-      const btnSpan = document.getElementById('btn-action').querySelector('span');
-      const rowNum = activeRowIndex + 1;
-      btnSpan.innerText = editingIndices ? t.btn_update : `${t.btn_add} (${currentLang==='pl'?'Wiersz':'Row'} ${rowNum})`;
-      document.getElementById('form-header').innerText = editingIndices ? t.sec_edit : t.sec_add;
-    }
-    function updateIconPreview(){
-      const icon = document.getElementById('new-widget-icon').value.trim();
-      document.getElementById('icon-preview-i').className = (icon && icon.startsWith('mdi-')) ? ('mdi '+icon) : 'mdi mdi-help-circle-outline';
-    }
-
-    // --- SMART LOGIC ---
     function applySmartForForm(userAction=false){
       const typeSel = document.getElementById('new-widget-type');
       const entityInput = document.getElementById('new-entity-id');
@@ -434,9 +440,9 @@
           const newType = inferTypeFromIdOrEntity(id);
           if(typeSel.value === 'switch' && newType !== 'switch') typeSel.value = newType;
       }
-      if((typeSel.value==='media_player' || typeSel.value==='climate' || typeSel.value==='weather' || typeSel.value==='clock') && !sizeInput.value) sizeInput.value='(2x2)';
+      
+      if((typeSel.value==='media_player' || typeSel.value==='climate' || typeSel.value==='weather' || typeSel.value==='clock' || typeSel.value==='iframe') && !sizeInput.value) sizeInput.value='(2x2)';
 
-      // Smart Name & Icon
       if(userAction || !nameInput.value.trim()){
          nameInput.value = formatNameFromId(idRaw);
          const actionable = ['switch','binary_sensor','cover','media_player','climate','script','fan','light','lock'].includes(typeSel.value) || id.startsWith('input_boolean.');
@@ -449,76 +455,11 @@
       }
       updateIconPreview();
     }
-
-    // --- RENDER ---
-    function getLiveStateText(ent, type){
-      if(!ent) return '';
-      const raw = String(ent.state).toLowerCase();
-      const t = i18n[currentLang];
-      if(type==='sensor' || type==='input_number'){
-        let val=ent.state;
-        if(!isNaN(parseFloat(val)) && String(val).includes('.')) val=parseFloat(val).toFixed(1);
-        return ent.unit ? `${val} ${ent.unit}` : val;
-      }
-      if(['switch','binary_sensor','script','media_player','climate','fan','light','input_boolean','lock'].includes(type) || ent.id?.startsWith?.('input_boolean.')){
-        if(['on','playing','open','unlocked','heat','cool','true','1','opening'].includes(raw)) return t.state_on;
-        if(['off','closed','locked','idle','stopped','standby','false','0','closing'].includes(raw)) return t.state_off;
-        return raw.toUpperCase();
-      }
-      return ent.state;
+    function updateIconPreview(){
+      const icon = document.getElementById('new-widget-icon').value.trim();
+      document.getElementById('icon-preview-i').className = (icon && icon.startsWith('mdi-')) ? ('mdi '+icon) : 'mdi mdi-help-circle-outline';
     }
 
-    function renderRows() {
-      const container = document.getElementById('rows-container');
-      container.innerHTML='';
-      rows.forEach((rowWidgets,index)=>{
-        const rowDiv=document.createElement('div');
-        rowDiv.className='eink-row';
-        rowDiv.id='row-'+index;
-        rowDiv.onclick=()=>{ if(editingIndices) cancelEdit(); activeRowIndex=index; highlightActiveRow(); applyTranslations(); };
-        const label=document.createElement('div');
-        label.style.position='absolute'; label.style.top='-10px'; label.style.left='5px';
-        label.style.fontSize='10px'; label.style.fontWeight='900'; label.style.color='#666';
-        label.textContent=(currentLang==='pl'?'WIERSZ ':'ROW ')+(index+1);
-        rowDiv.appendChild(label);
-        if(rows.length>1){
-          const del=document.createElement('button');
-          del.className='btn-remove-row';
-          del.textContent = currentLang==='pl'?'USUŃ':'DELETE';
-          del.onclick=(e)=>{ e.stopPropagation(); deleteRow(index); };
-          rowDiv.appendChild(del);
-        }
-        rowWidgets.forEach((widget,wIndex)=>{
-          const wDiv=document.createElement('div');
-          wDiv.className='eink-widget';
-          if(editingIndices && editingIndices.r===index && editingIndices.w===wIndex) wDiv.classList.add('being-edited');
-          let w=140,h=110;
-          if(widget.size){ const dims=widget.size.replace(/[()]/g,'').split('x'); const cols=parseInt(dims[0])||2; const rs=parseInt(dims[1])||1; w=(cols*70)+((cols-1)*6); h=(rs*90)+((rs-1)*6); }
-          wDiv.style.width=w+'px'; wDiv.style.height=h+'px';
-          wDiv.onclick=(e)=>{ e.stopPropagation(); editWidget(index,wIndex); };
-          
-          const ent = (entitiesData||[]).find(e=>e.id===widget.id);
-          const stateText = getLiveStateText(ent, widget.type);
-          const iconClass = pickPreviewIcon(widget);
-          
-          // Ensure title is displayed
-          let displayTitle = widget.name;
-          if(!displayTitle) displayTitle = resolveImportedTitle(widget.id) || formatNameFromId(widget.id);
-
-          wDiv.innerHTML = `<div class="ew-title">${displayTitle}</div><i class="mdi ${iconClass} ew-icon"></i><div class="ew-state">${stateText || ' '}</div><div class="ew-delete" onclick="removeWidget(${index},${wIndex}); event.stopPropagation();">X</div>`;
-          rowDiv.appendChild(wDiv);
-        });
-        container.appendChild(rowDiv);
-      });
-      highlightActiveRow();
-    }
-    function highlightActiveRow(){
-      document.querySelectorAll('.eink-row').forEach(el=>el.classList.remove('active'));
-      const act = document.getElementById('row-'+activeRowIndex);
-      if(act) act.classList.add('active');
-    }
-
-    // --- CRUD ---
     function saveWidget(){
       applySmartForForm(false);
       const type = document.getElementById('new-widget-type').value || 'switch';
@@ -529,14 +470,13 @@
         id = 'navigate.' + dashName;
       }else{
         id = document.getElementById('new-entity-id').value.trim();
-        if(!id && type !== 'clock' && type !== 'label' && type !== 'reload'){ alert(currentLang==='pl'?'Wymagana encja':'Entity required'); return; }
+        if(!id && type !== 'clock' && type !== 'label' && type !== 'reload' && type !== 'iframe'){ alert(currentLang==='pl'?'Wymagana encja':'Entity required'); return; }
         if(!id) id = type + '.' + Date.now(); 
       }
       let name = document.getElementById('new-widget-name').value.trim();
       if(!name && type!=='clock' && type!=='reload') name = formatNameFromId(id);
       let icon = document.getElementById('new-widget-icon').value.trim();
       const size = document.getElementById('new-widget-size').value;
-      
       const actionable = ['switch','binary_sensor','cover','media_player','climate','script','fan','light','lock'].includes(type) || id.toLowerCase().startsWith('input_boolean.');
       let icon_on='', icon_off='';
       if(actionable){
@@ -578,7 +518,48 @@
     function removeWidget(r,w){ if(editingIndices && editingIndices.r===r && editingIndices.w===w) cancelEdit(); rows[r].splice(w,1); renderRows(); }
     function addNewRow(){ rows.push([]); activeRowIndex=rows.length-1; renderRows(); applyTranslations(); }
     function deleteRow(rowIndex){ if(editingIndices && editingIndices.r===rowIndex) cancelEdit(); rows.splice(rowIndex,1); if(activeRowIndex>=rows.length) activeRowIndex=rows.length-1; renderRows(); applyTranslations(); }
-    
+    function highlightActiveRow(){ document.querySelectorAll('.eink-row').forEach(el=>el.classList.remove('active')); const act = document.getElementById('row-'+activeRowIndex); if(act) act.classList.add('active'); }
+    function renderRows(){
+      const container = document.getElementById('rows-container');
+      container.innerHTML='';
+      rows.forEach((rowWidgets,index)=>{
+        const rowDiv=document.createElement('div');
+        rowDiv.className='eink-row';
+        rowDiv.id='row-'+index;
+        rowDiv.onclick=()=>{ if(editingIndices) cancelEdit(); activeRowIndex=index; highlightActiveRow(); applyTranslations(); };
+        const label=document.createElement('div');
+        label.style.position='absolute'; label.style.top='-10px'; label.style.left='5px';
+        label.style.fontSize='10px'; label.style.fontWeight='900'; label.style.color='#666';
+        label.textContent=(currentLang==='pl'?'WIERSZ ':'ROW ')+(index+1);
+        rowDiv.appendChild(label);
+        if(rows.length>1){
+          const del=document.createElement('button');
+          del.className='btn-remove-row';
+          del.textContent = currentLang==='pl'?'USUŃ':'DELETE';
+          del.onclick=(e)=>{ e.stopPropagation(); deleteRow(index); };
+          rowDiv.appendChild(del);
+        }
+        rowWidgets.forEach((widget,wIndex)=>{
+          const wDiv=document.createElement('div');
+          wDiv.className='eink-widget';
+          if(editingIndices && editingIndices.r===index && editingIndices.w===wIndex) wDiv.classList.add('being-edited');
+          let w=140,h=110;
+          if(widget.size){ const dims=widget.size.replace(/[()]/g,'').split('x'); const cols=parseInt(dims[0])||2; const rs=parseInt(dims[1])||1; w=(cols*70)+((cols-1)*6); h=(rs*90)+((rs-1)*6); }
+          wDiv.style.width=w+'px'; wDiv.style.height=h+'px';
+          wDiv.onclick=(e)=>{ e.stopPropagation(); editWidget(index,wIndex); };
+          const ent = (entitiesData||[]).find(e=>e.id===widget.id);
+          const stateText = getLiveStateText(ent, widget.type);
+          const iconClass = pickPreviewIcon(widget);
+          let displayTitle = widget.name;
+          if(!displayTitle) displayTitle = resolveImportedTitle(widget.id) || formatNameFromId(widget.id);
+          wDiv.innerHTML = `<div class="ew-title">${displayTitle}</div><i class="mdi ${iconClass} ew-icon"></i><div class="ew-state">${stateText || ' '}</div><div class="ew-delete" onclick="removeWidget(${index},${wIndex}); event.stopPropagation();">X</div>`;
+          rowDiv.appendChild(wDiv);
+        });
+        container.appendChild(rowDiv);
+      });
+      highlightActiveRow();
+    }
+
     function toggleImport(){ document.getElementById('import-area').classList.toggle('visible'); }
     function importYaml(){
       const code = document.getElementById('import-code').value;
@@ -587,7 +568,7 @@
         const lines = code.split('\n');
         let parsingLayout=false, currentKey=null, globalTitleSet=false;
         const layoutLines=[]; const defs={};
-        const ignore=['global_parameters','widget_dimensions','widget_size','widget_margins','columns','rows','skin','title'];
+        const ignore=['global_parameters','widget_dimensions','widget_size','widget_margins','columns','rows','skin'];
         for(const raw of lines){
           const cut = raw.split('#')[0]; const line = (cut || '').trim(); if(!line) continue;
           if(!parsingLayout && /^title\s*:/i.test(line) && !globalTitleSet){
@@ -639,6 +620,7 @@
               if(!icon_off) icon_off = ensureMdi(pair[1]);
             }else{
               if(!icon) icon = ensureMdi(findBaseIconByIdAndType(sourceEntity, type));
+              icon_on=''; icon_off='';
             }
             rowWidgets.push({ id: sourceEntity, type, name, icon, icon_on, icon_off, size });
           });
@@ -649,7 +631,6 @@
       }catch(e){ alert((currentLang==='pl'?'Błąd importu: ':'Import error: ')+e.message); }
     }
 
-    // --- GENERATION ---
     function buildHeader(title){
       return [
         "# --- JOAN 6 E-INK DASHBOARD ---", `# File: ${title.toLowerCase().replace(/\s+/g,'_')}.dash`, "# Location: \\\\IP_HA\\addon_configs\\appdaemon\\dashboards\\", "# --------------------------------", "", `title: ${title}`, "widget_dimensions: [117, 117]", "widget_size: [2, 1]", "widget_margins: [8, 8]", "columns: 6", `rows: ${(rows.length||8)} # auto`, "global_parameters:", "  refresh: 0", "  use_comma: 0", "  precision: 1", "  use_hass_icon: 1", "  namespace: default", "  state_text: 1", "  white_text_style: \"color: #000000 !important; font-weight: 700 !important;\"", "  state_text_style: \"color: #000000 !important; font-weight: 700 !important; font-size: 16px !important;\"", "  widget_style: \"color: #000000 !important; background-color: #FFFFFF !important; border: 2px solid #000000 !important;\"", "skin: simplyred", "", "layout:"
@@ -711,6 +692,7 @@
       }
       return lines.join("\n");
     }
+
     function prepareAndSubmit(e){
       e.preventDefault();
       try{
@@ -730,7 +712,7 @@
       }catch(err){ console.error(err); alert("Błąd generowania: " + err.message); }
     }
 
-    // INIT
+    // --- INIT ---
     window.addEventListener('DOMContentLoaded', ()=>{
       const host=window.location.hostname;
       const codePath=document.getElementById('client-path-code');
@@ -740,15 +722,29 @@
 
       const savedLang = localStorage.getItem('joan_lang') || 'pl';
       const savedTheme = localStorage.getItem('joan_theme') || 'light';
+      
+      updateWidgetTypeOptions(savedLang);
       setLang(savedLang);
       if(savedTheme==='dark'){ document.body.classList.add('dark-mode'); document.getElementById('btn-theme').innerText='☀️'; }
       
       fetchIcons();
       if(!rows.length) addNewRow();
-      
       applySmartForForm(false);
       renderRows();
     });
+
+    function updateWidgetTypeOptions(lang) {
+      const select = document.getElementById('new-widget-type');
+      const currentVal = select.value; 
+      select.innerHTML = '';
+      widgetTypesConfig.forEach(type => {
+        const opt = document.createElement('option');
+        opt.value = type.value;
+        opt.innerText = (lang === 'pl') ? type.pl : type.en;
+        select.appendChild(opt);
+      });
+      if(currentVal) select.value = currentVal; else select.value = 'switch';
+    }
   </script>
 </body>
 </html>
