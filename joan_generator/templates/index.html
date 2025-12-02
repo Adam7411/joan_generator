@@ -3,13 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Joan 6 E-Ink Generator</title>
-    <!-- Material Design Icons -->
+    <title>Joan 6 E-Ink Generator (Full)</title>
     <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css" rel="stylesheet">
-    <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap" rel="stylesheet">
     
-    <!-- SCRIPT MOTYWU - ŁADOWANY PRZED RENDEROWANIEM STRONY -->
+    <!-- SKRYPT MOTYWU - ŁADOWANY PRZED RENDEROWANIEM STRONY -->
     <script>
         (function() {
             try {
@@ -184,6 +182,18 @@
             box-sizing: border-box; 
             font-size: 14px;
         }
+        
+        /* ULEPSZONE POLE ENCJI */
+        #w-id {
+            border: 2px solid #2196f3;
+            background-color: #fffde7; /* Lekko żółte by wyróżnić */
+            color: #000;
+        }
+        html.dark-mode #w-id {
+            background-color: #3e2723;
+            color: #fff;
+            border-color: #ff9800;
+        }
 
         /* PRZYCISKI */
         .btn { 
@@ -347,20 +357,6 @@
             </div>
         </div>
 
-        {% if generated_yaml %}
-        <div class="section">
-            <h3 style="margin-top:0">✅ Kod wygenerowany pomyślnie!</h3>
-            <div class="file-path-info">
-                <strong>1. Zapisz kod w pliku:</strong>
-                <code id="path-code">\\IP_HA\addon_configs\appdaemon\dashboards\{{ filename }}</code>
-                <strong>2. Uruchom ponownie AppDaemon i sprawdź dashboard:</strong>
-                <a href="#" id="dashboard-link" target="_blank">http://IP_HA:5050/{{ dash_name }}</a>
-            </div>
-            <textarea class="output" readonly>{{ generated_yaml }}</textarea>
-        </div>
-        {% endif %}
-
-        <!-- SEKCJA IMPORTU -->
         <div class="section" id="import-section">
             <details>
                 <summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">📂 Import / Eksport Kodu .DASH</summary>
@@ -471,6 +467,22 @@
             <input type="hidden" name="layout_data_json" id="layout_json">
             <button type="button" class="btn btn-gen" onclick="submitData()" data-i18n="btn_gen">GENERUJ KOD .DASH</button>
         </form>
+
+        {% if generated_yaml %}
+        <div class="section" style="margin-top:30px;">
+            <div class="section-title">Wynikowy Kod YAML</div>
+            
+            <div class="file-path-info">
+                <strong>1. Zapisz kod w pliku:</strong>
+                <code id="path-code">\\IP_HA\addon_configs\appdaemon\dashboards\{{ filename }}</code>
+                <strong>2. Uruchom ponownie AppDaemon i sprawdź dashboard:</strong>
+                <!-- NAPRAWIONY LINK: Używamy [HOST], który JS podmieni na IP -->
+                <a href="http://[HOST]:5050/{{ dash_name }}" id="dashboard-link" target="_blank">http://[HOST]:5050/{{ dash_name }}</a>
+            </div>
+
+            <textarea class="output" readonly>{{ generated_yaml }}</textarea>
+        </div>
+        {% endif %}
     </div>
 
     <!-- LOGIKA JAVASCRIPT (KOMPLETNA) -->
@@ -492,7 +504,6 @@
                 btn_add: "+ DODAJ WIDGET", btn_update: "ZAPISZ ZMIANY", btn_cancel: "ANULUJ", 
                 btn_row: "+ Dodaj Wiersz", btn_gen: "GENERUJ KOD .DASH",
                 
-                // Opcje select
                 opt_switch: "Przełącznik / Światło", opt_cover: "Roleta / Brama", opt_sensor: "Sensor (Info)",
                 opt_binary: "Sensor Binarny (On/Off)", opt_lock: "Zamek", opt_person: "Osoba / Tracker",
                 opt_media: "Odtwarzacz Media", opt_climate: "Termostat", opt_input_select: "Lista Wyboru",
@@ -509,7 +520,6 @@
                 btn_add: "+ ADD WIDGET", btn_update: "SAVE CHANGES", btn_cancel: "CANCEL", 
                 btn_row: "+ Add Row", btn_gen: "GENERATE .DASH CODE",
                 
-                // Select options
                 opt_switch: "Switch / Light", opt_cover: "Cover / Gate", opt_sensor: "Sensor (Info)", 
                 opt_binary: "Binary Sensor", opt_lock: "Lock", opt_person: "Person / Tracker",
                 opt_media: "Media Player", opt_climate: "Climate", opt_input_select: "Input Select",
@@ -522,9 +532,7 @@
         };
 
         // --- MAPY SMART LOGIC (ZGODNIE Z DOKUMENTACJĄ APPDAEMON I WYMAGANIAMI) ---
-        // Switch/Light/Cover/Lock -> 2x1 (Easier touch target)
-        // Sensor/Binary -> 1x1 (Info)
-        // Media/Climate -> 2x2 (Controls)
+        // 2x1 to standard dla przycisków (dotyk), 1x1 dla info, 2x2 dla złożonych
         const SMART_MAP = {
             'light': { type: 'switch', size: '(2x1)', iconOn: 'mdi-lightbulb-on', iconOff: 'mdi-lightbulb-outline' },
             'switch': { type: 'switch', size: '(2x1)', iconOn: 'mdi-toggle-switch', iconOff: 'mdi-toggle-switch-off' },
@@ -556,7 +564,6 @@
         function resolveImportedTitle(id) {
             if (!importedDefsMap) return '';
             if (importedDefsMap[id] && importedDefsMap[id].title) return importedDefsMap[id].title;
-            // Próbuj znaleźć po ID bez domeny (np. 'salon' zamiast 'light.salon')
             const shortId = id.includes('.') ? id.split('.')[1] : id;
             if (importedDefsMap[shortId] && importedDefsMap[shortId].title) return importedDefsMap[shortId].title;
             return '';
@@ -566,20 +573,26 @@
             return entitiesData.find(e => e.id === id) || { attributes: {} };
         }
 
-        // ULEPSZONE GENEROWANIE TYTUŁU
+        // ULEPSZONE GENEROWANIE TYTUŁU (CZYSZCZENIE NAZWY)
         function formatSmartName(id, friendlyName) {
             if (friendlyName && friendlyName.length > 2) return friendlyName;
             
             if(!id) return "";
             if(id.startsWith('navigate.')) return id.replace('navigate.','').toUpperCase();
             
-            // light.swiatlo_ganek_l2 -> Swiatlo Ganek
-            let name = id.split('.').pop(); 
-            // Usuń suffixy techniczne (np. _l2, _v1)
-            name = name.replace(/_[lvr]\d+$/i, ''); 
+            // light.swiatlo_podworko_ganek_l2 -> Swiatlo Podworko Ganek
+            let name = id.split('.').pop(); // weź wszystko po kropce
+            
+            // Usuń typowe techniczne suffixy (np. _l2, _v1, _state)
+            name = name.replace(/_[lvr]\d+$/i, '').replace(/_state$/i, '');
+            
+            // Zamień podkreślenia na spacje
             name = name.replace(/_/g, ' ');
             
-            // Kapitalizacja (pierwsza litera każdego słowa)
+            // Zamień CamelCase na spacje (opcjonalnie, dla nazw typu swiatloGanek)
+            name = name.replace(/([a-z])([A-Z])/g, '$1 $2');
+
+            // Kapitalizacja (pierwsza litera każdego słowa duża)
             return name.replace(/\b\w/g, l => l.toUpperCase());
         }
 
@@ -611,27 +624,19 @@
             
             const t = TRANSLATIONS[lang];
             
-            // Tłumaczenie etykiet tekstowych
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
                 if (t[key]) {
-                    // Jeśli to input button, zmieniamy value, jeśli element tekstowy, zmieniamy innerText
                     if (el.tagName === 'INPUT' && el.type === 'submit') el.value = t[key];
                     else el.innerText = t[key];
                 }
             });
-
-            // Tłumaczenie opcji w Select
             document.querySelectorAll('option[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
                 if (t[key]) el.text = t[key];
             });
-            
-            // Aktualizacja przycisku głównego
             const btn = document.getElementById('btn-submit');
             btn.innerText = editIdx ? t.btn_update : t.btn_add;
-            
-            // Odśwież widok nagłówków w podglądzie
             renderPreview();
         }
 
@@ -649,7 +654,7 @@
             const id = val.toLowerCase();
             if (id.length < 3) return;
 
-            // Pobierz dane z datalist (device_class)
+            // Pobierz dane z datalist
             const option = document.querySelector(`#entity-list option[value="${val}"]`);
             let dClass = '';
             let fName = '';
@@ -668,11 +673,12 @@
             // Domyślna konfiguracja
             let conf = SMART_MAP[domain] || { type: 'sensor', size: '(1x1)', icon: 'mdi-eye' };
 
-            // Ulepszenia na podstawie device_class
-            if (dClass === 'garage') conf = SMART_MAP['garage'];
-            if (dClass === 'door') conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-door-open', iconOff: 'mdi-door-closed' };
+            // Ulepszenia na podstawie device_class i słów kluczowych
+            if (dClass === 'garage' || id.includes('garage')) conf = SMART_MAP['garage'];
+            if (dClass === 'door' || id.includes('door')) conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-door-open', iconOff: 'mdi-door-closed' };
             if (dClass === 'battery') conf.icon = 'mdi-battery';
             if (dClass === 'temperature') conf.icon = 'mdi-thermometer';
+            if (domain === 'input_boolean') conf = SMART_MAP['switch'];
 
             // Ustaw pola formularza
             document.getElementById('w-type').value = conf.type;
@@ -680,7 +686,7 @@
             // Ustaw rozmiar (Nadpisujemy ZAWSZE przy wpisywaniu nowej encji, bo to smart action)
             document.getElementById('w-size').value = conf.size;
             
-            // Ustaw Tytuł
+            // Ustaw Tytuł (Smart Name)
             const nameField = document.getElementById('w-name');
             nameField.value = formatSmartName(id, fName);
 
@@ -727,7 +733,7 @@
         }
 
         function editWidget(r, w) {
-            blockSmart = true; // ZABLOKUJ SMART przy edycji
+            blockSmart = true; // ZABLOKUJ SMART przy edycji (ważne!)
             editIdx = {r, w};
             const data = rows[r][w];
 
@@ -918,7 +924,8 @@
                             else if(id.startsWith('sensor.')) type = 'sensor';
                         }
                         
-                        // Fallback Title (jeśli import nie znalazł tytułu w definicji)
+                        // Jeśli wczytany kod nie miał definicji tytułu (np. szybki layout), 
+                        // używamy formatowania, ale NIE logiki smart icon/size
                         if(name === id && type !== 'spacer') name = formatSmartName(id, '');
 
                         rowData.push({
@@ -946,15 +953,22 @@
 
         // --- START ---
         window.addEventListener('DOMContentLoaded', () => {
-            // Wypełnij info o pliku
+            // Wypełnij info o pliku i napraw link
             const host = window.location.hostname;
             const pathEl = document.getElementById('path-code');
             const linkEl = document.getElementById('dashboard-link');
-            if(pathEl) pathEl.innerText = pathEl.innerText.replace('IP_HA', host);
+            
+            if(pathEl) {
+                pathEl.innerText = pathEl.innerText.replace('IP_HA', host);
+            }
             if(linkEl) {
-                const href = linkEl.getAttribute('href').replace('IP_HA', host);
-                linkEl.innerText = href;
-                linkEl.setAttribute('href', href);
+                // Podmień [HOST] na prawdziwe IP
+                const rawHref = linkEl.getAttribute('href');
+                if (rawHref.includes('[HOST]')) {
+                    const newHref = rawHref.replace('[HOST]', host);
+                    linkEl.setAttribute('href', newHref);
+                    linkEl.innerText = newHref;
+                }
             }
 
             setLang('pl');
