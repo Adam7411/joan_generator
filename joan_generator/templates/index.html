@@ -3,138 +3,464 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Joan 6 E-Ink Generator (Ultra Master)</title>
+    <title>Joan 6 E-Ink Generator (ULTRA MASTER)</title>
+    
+    <!-- 1. BIBLIOTEKI IKON I CZCIONEK -->
     <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap" rel="stylesheet">
     
+    <!-- 2. SKRYPT INICJUJĄCY MOTYW (W HEAD DLA BRAKU MRUGANIA) -->
     <script>
         (function() {
             try {
                 const savedTheme = localStorage.getItem('joan_theme') || 'light';
-                if (savedTheme === 'dark') document.documentElement.classList.add('dark-mode');
-            } catch(e) {}
+                if (savedTheme === 'dark') {
+                    document.documentElement.classList.add('dark-mode');
+                }
+            } catch(e) {
+                console.error("Błąd ładowania motywu:", e);
+            }
         })();
     </script>
 
     <style>
+        /* ------------------------------------------------------------------ */
+        /* 3. ZMIENNE KOLORYSTYCZNE (CSS VARIABLES) */
+        /* ------------------------------------------------------------------ */
         :root {
-            --bg-body: #e0e0e0; --bg-container: #ffffff; --bg-section: #fafafa; --bg-input: #ffffff;
-            --text-main: #333333; --border: #cccccc; --accent: #d32f2f; --highlight: #e3f2fd;
-            --preview-bg: #f0f0f0; --link-bg: #e1f5fe; --link-color: #0277bd;
+            --bg-body: #e0e0e0;
+            --bg-container: #ffffff;
+            --bg-section: #fafafa;
+            --bg-input: #ffffff;
+            --text-main: #333333;
+            --border: #cccccc;
+            --accent: #d32f2f; /* Czerwony Joan */
+            --highlight: #e3f2fd;
+            --preview-bg: #f0f0f0;
+            --link-bg: #e1f5fe;
+            --link-color: #0277bd;
+            --shadow: 0 4px 10px rgba(0,0,0,0.1);
+            --btn-text: #ffffff;
         }
+        
         html.dark-mode {
-            --bg-body: #121212; --bg-container: #1e1e1e; --bg-section: #252525; --bg-input: #2c2c2c;
-            --text-main: #e0e0e0; --border: #444444; --accent: #ff5252; --highlight: #0d47a1;
-            --preview-bg: #000000; --link-bg: #013655; --link-color: #81d4fa;
+            --bg-body: #121212;
+            --bg-container: #1e1e1e;
+            --bg-section: #252525;
+            --bg-input: #2c2c2c;
+            --text-main: #e0e0e0;
+            --border: #444444;
+            --accent: #ff5252;
+            --highlight: #0d47a1;
+            --preview-bg: #000000;
+            --link-bg: #013655;
+            --link-color: #81d4fa;
+            --shadow: 0 4px 10px rgba(0,0,0,0.5);
         }
 
-        body { font-family: 'Roboto', sans-serif; background-color: var(--bg-body); color: var(--text-main); padding: 20px; transition: background 0.3s; }
-        .container { max-width: 1400px; margin: 0 auto; background: var(--bg-container); padding: 30px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
+        /* ------------------------------------------------------------------ */
+        /* 4. STYLE GŁÓWNE */
+        /* ------------------------------------------------------------------ */
+        body { 
+            font-family: 'Roboto', sans-serif; 
+            background-color: var(--bg-body); 
+            color: var(--text-main); 
+            padding: 20px; 
+            transition: background-color 0.3s, color 0.3s; 
+        }
+
+        .container { 
+            max-width: 1400px; 
+            margin: 0 auto; 
+            background: var(--bg-container); 
+            padding: 30px; 
+            border-radius: 10px; 
+            box-shadow: var(--shadow); 
+        }
         
-        .header-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--border); padding-bottom: 20px; margin-bottom: 25px; }
-        h1 { margin: 0; color: var(--accent); font-size: 28px; font-weight: 900; }
+        /* HEADER */
+        .header-row { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            border-bottom: 2px solid var(--border); 
+            padding-bottom: 20px; 
+            margin-bottom: 25px; 
+        }
+
+        h1 { 
+            margin: 0; 
+            color: var(--accent); 
+            font-size: 28px; 
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
         
-        .controls button { padding: 8px 16px; border: 1px solid var(--border); background: var(--bg-section); color: var(--text-main); border-radius: 4px; cursor: pointer; font-weight: bold; margin-left:5px; }
-        .controls button.active { background: var(--accent); color: white; border-color: var(--accent); }
+        /* KONTROLKI MOTYWU I JĘZYKA */
+        .controls button { 
+            padding: 8px 16px; 
+            border: 1px solid var(--border); 
+            background: var(--bg-section); 
+            color: var(--text-main); 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            margin-left: 5px;
+            transition: all 0.2s;
+        }
+        
+        .controls button:hover {
+            filter: brightness(0.9);
+        }
 
-        .section { background: var(--bg-section); padding: 25px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 30px; }
-        .section-title { font-size: 1.4em; font-weight: 900; border-bottom: 3px solid var(--accent); display: inline-block; margin-bottom: 20px; color: var(--text-main); }
+        .controls button.active { 
+            background: var(--accent); 
+            color: var(--btn-text); 
+            border-color: var(--accent); 
+        }
 
-        .file-path-info { background-color: var(--link-bg); color: var(--link-color); border: 1px solid var(--border); padding: 20px; margin-bottom: 20px; border-radius: 6px; font-family: monospace; font-size: 15px; line-height: 1.6; word-break: break-all; }
-        .file-info-block { display: block; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid rgba(0,0,0,0.1); }
-        .file-info-block:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
-        .file-path-info strong { display: block; margin-bottom: 5px; color: var(--text-main); font-size: 1.1em; }
-        .file-path-info a { display: inline-block; color: var(--accent); font-weight: bold; font-size: 16px; text-decoration: underline; padding: 5px 0; }
+        /* SEKCJE */
+        .section { 
+            background: var(--bg-section); 
+            padding: 25px; 
+            border-radius: 8px; 
+            border: 1px solid var(--border); 
+            margin-bottom: 30px; 
+        }
 
-        .add-widget-box { background: var(--highlight); padding: 25px; border-radius: 8px; border: 1px solid var(--accent); transition: all 0.3s; margin-bottom: 30px; }
-        .add-widget-box.editing { border: 3px solid #ff9800; background: rgba(255, 152, 0, 0.1); }
+        .section-title { 
+            font-size: 1.4em; 
+            font-weight: 900; 
+            border-bottom: 3px solid var(--accent); 
+            display: inline-block; 
+            margin-bottom: 20px; 
+            color: var(--text-main); 
+        }
 
-        .flex-row { display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 15px; }
-        .flex-col { flex: 1; min-width: 160px; }
-        label { display: block; font-weight: bold; font-size: 0.9em; margin-bottom: 8px; color: var(--text-main); }
-        input, select, textarea { width: 100%; padding: 12px; border: 1px solid var(--border); background: var(--bg-input); color: var(--text-main); border-radius: 4px; box-sizing: border-box; font-size: 14px; }
-        #w-id { border: 2px solid var(--accent); background-color: var(--bg-input); font-weight: bold; }
+        /* INFO O PLIKU (NA DOLE) */
+        .file-path-info { 
+            background-color: var(--link-bg); 
+            color: var(--link-color); 
+            border: 1px solid var(--border); 
+            padding: 20px; 
+            margin-bottom: 20px; 
+            border-radius: 6px; 
+            font-family: monospace; 
+            font-size: 15px; 
+            line-height: 1.6; 
+            word-break: break-all; 
+        }
+        
+        .file-info-block {
+            display: block;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+        .file-info-block:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
 
-        .btn { padding: 12px 24px; border: none; cursor: pointer; border-radius: 4px; font-weight: bold; text-transform: uppercase; color: white; font-size: 14px; transition: opacity 0.2s; }
-        .btn:hover { opacity: 0.9; }
+        .file-path-info strong { 
+            display: block; 
+            margin-bottom: 5px; 
+            color: var(--text-main); 
+            font-size: 1.1em; 
+        }
+
+        .file-path-info a { 
+            color: var(--accent); 
+            font-weight: bold; 
+            font-size: 16px; 
+            text-decoration: underline; 
+        }
+        
+        .file-path-info code {
+            display: block;
+            background: rgba(255,255,255,0.4);
+            padding: 8px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        /* ------------------------------------------------------------------ */
+        /* FORMULARZE */
+        /* ------------------------------------------------------------------ */
+        .add-widget-box { 
+            background: var(--highlight); 
+            padding: 25px; 
+            border-radius: 8px; 
+            border: 1px solid var(--accent); 
+            transition: all 0.3s; 
+            margin-bottom: 30px; 
+        }
+
+        .add-widget-box.editing { 
+            border: 3px solid #ff9800; 
+            background: rgba(255, 152, 0, 0.15); 
+        }
+
+        .flex-row { 
+            display: flex; 
+            gap: 20px; 
+            flex-wrap: wrap; 
+            align-items: flex-end; 
+            margin-bottom: 15px; 
+        }
+
+        .flex-col { 
+            flex: 1; 
+            min-width: 160px; 
+        }
+        
+        label { 
+            display: block; 
+            font-weight: bold; 
+            font-size: 0.9em; 
+            margin-bottom: 8px; 
+            color: var(--text-main); 
+        }
+
+        input, select, textarea { 
+            width: 100%; 
+            padding: 12px; 
+            border: 1px solid var(--border); 
+            background: var(--bg-input); 
+            color: var(--text-main); 
+            border-radius: 4px; 
+            box-sizing: border-box; 
+            font-size: 14px; 
+        }
+        
+        /* WYSZUKIWARKA ENCJI - WYRÓŻNIENIE */
+        #w-id { 
+            border: 2px solid var(--accent); 
+            background-color: var(--bg-input); 
+            font-weight: bold; 
+        }
+        
+        /* LICZNIK ZNAKÓW */
+        .char-counter {
+            font-size: 11px;
+            text-align: right;
+            margin-top: 4px;
+            color: #666;
+            font-weight: bold;
+        }
+        .char-counter.limit {
+            color: red;
+        }
+
+        /* PRZYCISKI AKCJI */
+        .btn { 
+            padding: 12px 24px; 
+            border: none; 
+            cursor: pointer; 
+            border-radius: 4px; 
+            font-weight: bold; 
+            text-transform: uppercase; 
+            color: var(--btn-text); 
+            font-size: 14px; 
+            transition: opacity 0.2s, transform 0.1s; 
+        }
+        .btn:hover { 
+            opacity: 0.9; 
+            transform: translateY(-1px); 
+        }
+        .btn:active {
+            transform: translateY(0);
+        }
+
         .btn-add { background: #4caf50; width: 100%; }
-        .btn-gen { background: var(--accent); width: 100%; font-size: 20px; padding: 15px; margin-top: 20px; }
+        .btn-gen { background: var(--accent); width: 100%; font-size: 20px; padding: 15px; margin-top: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .btn-cancel { background: #757575; }
         .btn-row { background: #2196f3; margin-top: 15px; }
         .btn-import { background: #ff9800; color: white; width: auto; margin-top: 10px; }
 
-        /* PODGLĄD E-INK */
-        .preview-area { background: var(--preview-bg); padding: 30px; border: 2px solid var(--border); border-radius: 8px; overflow-x: auto; min-height: 400px; }
+        /* ------------------------------------------------------------------ */
+        /* PODGLĄD E-INK (PIXEL PERFECT JOAN 6 STYLE) */
+        /* ------------------------------------------------------------------ */
+        .preview-area { 
+            background: var(--preview-bg); 
+            padding: 30px; 
+            border: 2px solid var(--border); 
+            border-radius: 8px; 
+            overflow-x: auto; 
+            min-height: 400px; 
+        }
         
-        /* Kontener na Widget (Label na zewnątrz) */
+        /* Wiersz - Bardzo wysoki, żeby przyciski miały oddech */
+        .eink-row { 
+            display: flex; 
+            gap: 8px; /* Margines z Joan.txt */
+            margin-bottom: 15px; 
+            padding: 15px; 
+            border: 2px dashed #999; 
+            border-radius: 6px; 
+            min-height: 180px; /* Zwiększona wysokość */
+            align-items: flex-end; /* Wyrównaj do dołu */
+            position: relative; 
+        }
+        
+        .row-label { 
+            position: absolute; 
+            top: -10px; 
+            left: 10px; 
+            font-size: 11px; 
+            background: var(--bg-body); 
+            padding: 2px 8px; 
+            color: var(--text-main); 
+            border: 1px solid var(--border); 
+            border-radius: 4px; 
+            font-weight: bold; 
+        }
+        
+        /* Wrapper dla etykiety nad przyciskiem */
         .widget-wrapper {
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin-right: 10px;
+            margin-right: 0;
             position: relative;
+            flex-shrink: 0;
         }
         
-        /* Etykieta Typu (Na zewnątrz przycisku) */
+        /* Etykieta Typu (SWITCH, SENSOR) - NAD Przyciskiem */
         .ew-type-label {
             font-size: 10px;
             text-transform: uppercase;
             color: var(--text-main);
-            margin-bottom: 3px;
+            margin-bottom: 4px;
             font-weight: bold;
-            letter-spacing: 0.5px;
+            letter-spacing: 1px;
             opacity: 0.7;
             text-align: center;
             width: 100%;
         }
 
-        .eink-row { 
-            display: flex; gap: 8px; margin-bottom: 20px; padding: 15px; 
-            border: 2px dashed #999; border-radius: 6px; 
-            min-height: 180px; align-items: flex-end; position: relative; 
-        }
-        .row-label { position: absolute; top: -10px; left: 10px; font-size: 11px; background: var(--bg-body); padding: 2px 8px; color: var(--text-main); border: 1px solid var(--border); border-radius: 4px; font-weight: bold; }
-
-        /* PRZYCISK (Właściwy E-Ink) */
+        /* GŁÓWNY KAFELEK (WYGLĄD E-INK) */
         .eink-widget {
-            background: #FFFFFF; border: 3px solid #000000; color: #000000;
-            display: flex; flex-direction: column; align-items: center; justify-content: space-between;
-            padding: 5px; box-sizing: border-box; cursor: pointer; position: relative;
-            box-shadow: 4px 4px 0px rgba(0,0,0,0.25); transition: transform 0.1s; flex-shrink: 0; overflow: hidden;
+            background: #FFFFFF; 
+            border: 3px solid #000000; 
+            color: #000000;
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: space-between; /* Rozciągnij treść góra-dół */
+            padding: 8px; 
+            box-sizing: border-box; 
+            cursor: pointer; 
+            position: relative;
+            box-shadow: 4px 4px 0px rgba(0,0,0,0.25); 
+            transition: transform 0.1s; 
+            flex-shrink: 0; 
+            overflow: hidden;
         }
-        .eink-widget:hover { transform: translateY(-3px); z-index: 10; border-color: var(--accent); }
-        .eink-widget.editing { border: 3px dashed #ff9800; transform: scale(1.03); z-index: 20; }
 
-        /* Tytuł (Mniejszy, żeby nie zasłaniał) */
+        .eink-widget:hover { 
+            transform: translateY(-3px); 
+            z-index: 10; 
+            border-color: var(--accent); 
+        }
+
+        .eink-widget.editing { 
+            border: 3px dashed #ff9800; 
+            transform: scale(1.03); 
+            z-index: 20; 
+        }
+
+        /* Tytuł - Mniejszy aby nie zasłaniał */
         .ew-title { 
-            font-weight: 900; font-size: 13px; text-align: center; width: 100%; 
-            line-height: 1.1; margin-top: 8px; margin-bottom: 2px; 
-            white-space: normal; font-family: 'Roboto', 'Arial Black', sans-serif; text-transform: uppercase;
+            font-weight: 900; 
+            font-size: 12px; /* Mała czcionka */
+            text-align: center; 
+            width: 100%; 
+            line-height: 1.2; 
+            margin-top: 8px; 
+            margin-bottom: 2px; 
+            white-space: normal; 
+            font-family: 'Roboto', 'Arial Black', sans-serif; 
+            text-transform: uppercase;
+            pointer-events: none;
         }
         
-        /* Ikona */
-        .ew-icon { font-size: 40px; display: block; margin: 2px 0; }
+        /* Ikona - Dopasowana */
+        .ew-icon { 
+            font-size: 38px; /* Zmniejszona z 50px */
+            display: block; 
+            margin: 2px 0; 
+            pointer-events: none;
+        }
         
-        /* Stan (Na dole) */
+        /* STAN (WARTOŚĆ) - Wyraźny na dole */
         .ew-value { 
-            font-weight: 900; font-size: 16px; text-transform: uppercase; 
-            margin-bottom: 5px; text-align: center; border-top: 2px solid #000; 
-            width: 90%; padding-top: 3px; margin-top: auto;
+            font-weight: 900; 
+            font-size: 15px; 
+            text-transform: uppercase; 
+            margin-bottom: 5px; 
+            text-align: center; 
+            border-top: 2px solid #000; 
+            width: 90%; 
+            padding-top: 3px;
+            margin-top: auto; /* Dopycha do dołu */
+            pointer-events: none;
         }
         
-        .ew-del { position: absolute; top: -8px; right: -8px; background: red; color: white; width: 20px; height: 20px; border-radius: 50%; text-align: center; line-height: 20px; font-weight: bold; display: none; box-shadow: 1px 1px 3px rgba(0,0,0,0.5); z-index: 30; }
+        /* Przycisk usuwania */
+        .ew-del { 
+            position: absolute; 
+            top: -8px; 
+            right: -8px; 
+            background: red; 
+            color: white; 
+            width: 20px; 
+            height: 20px; 
+            border-radius: 50%; 
+            text-align: center; 
+            line-height: 20px; 
+            font-weight: bold; 
+            display: none; 
+            box-shadow: 1px 1px 3px rgba(0,0,0,0.5); 
+            z-index: 30; 
+        }
         .eink-widget:hover .ew-del { display: block; }
+
+        /* Podgląd ikony w formularzu */
+        .icon-preview { 
+            font-size: 32px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            width: 48px; 
+            height: 48px; 
+            border: 1px solid var(--border); 
+            border-radius: 4px; 
+            background: var(--bg-input); 
+        }
         
-        .char-counter { font-size: 11px; color: #666; text-align: right; margin-top: 2px; }
-        .icon-preview { font-size: 32px; display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-input); }
         .hidden { display: none !important; }
-        textarea.output { width: 100%; height: 500px; font-family: 'Consolas', 'Monaco', monospace; background: #263238; color: #eceff1; border: none; padding: 20px; border-radius: 8px; font-size: 14px; line-height: 1.5; }
+        
+        textarea.output { 
+            width: 100%; 
+            height: 500px; 
+            font-family: 'Consolas', 'Monaco', monospace; 
+            background: #263238; 
+            color: #eceff1; 
+            border: none; 
+            padding: 20px; 
+            border-radius: 8px; 
+            font-size: 14px; 
+            line-height: 1.5; 
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header-row">
-            <h1>Joan 6 E-Ink Generator (Ultra Master)</h1>
+            <h1>Joan 6 E-Ink Generator (Final)</h1>
             <div class="controls">
                 <button type="button" onclick="toggleTheme()" id="btn-theme">🌙</button>
                 <button type="button" onclick="setLang('pl')" id="btn-pl" class="active">PL</button>
@@ -142,6 +468,7 @@
             </div>
         </div>
 
+        <!-- SEKCJA 1: USTAWIENIA -->
         <div class="section">
             <div class="section-title">1. Ustawienia Dashboardu</div>
             <div class="flex-row">
@@ -163,11 +490,12 @@
             </div>
         </div>
 
+        <!-- SEKCJA IMPORTU -->
         <div class="section" id="import-section">
             <details>
                 <summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">📂 Import / Eksport Kodu .DASH</summary>
                 <div style="margin-top: 15px;">
-                    <textarea id="import-code" style="height: 150px;" placeholder="Wklej tutaj zawartość pliku .dash..."></textarea>
+                    <textarea id="import-code" style="height: 150px;" placeholder="Wklej tutaj zawartość pliku .dash aby go edytować..."></textarea>
                     <button type="button" class="btn btn-import" onclick="importYaml()">Wczytaj Kod</button>
                 </div>
             </details>
@@ -179,8 +507,10 @@
             <input type="hidden" name="grid_columns" id="form-cols" value="6">
             <input type="hidden" name="grid_rows" id="form-rows" value="8">
             
+            <!-- SEKCJA 2: EDYTOR WIDGETU -->
             <div class="add-widget-box" id="editor-box">
                 <div class="section-title" id="editor-title" data-i18n="sec_add">2. Dodaj Widget</div>
+                
                 <div class="flex-row">
                     <div class="flex-col">
                         <label data-i18n="lbl_type">Typ Widgetu</label>
@@ -204,6 +534,7 @@
                     </div>
                     <div class="flex-col" id="grp-entity">
                         <label data-i18n="lbl_entity">Encja (Wyszukaj po nazwie lub ID)</label>
+                        <!-- DATALIST -->
                         <input list="entity-list" id="w-id" placeholder="np. głośnik kuchnia..." oninput="searchEntities(this.value)" autocomplete="off">
                         <datalist id="entity-list"></datalist>
                     </div>
@@ -213,17 +544,18 @@
                     </div>
                     <div class="flex-col">
                         <label data-i18n="lbl_name">Tytuł na ekranie</label>
-                        <input type="text" id="w-name" maxlength="20" oninput="checkTitleLimit()">
+                        <input type="text" id="w-name" placeholder="np. Salon" oninput="checkTitleLimit()">
                         <div id="char-count" class="char-counter">0/20</div>
                     </div>
                 </div>
+
                 <div class="flex-row">
                     <div class="flex-col">
                         <label data-i18n="lbl_size">Rozmiar</label>
                         <select id="w-size" onchange="updateTitleLimit()">
                             <option value="(2x1)" data-i18n="size_2x1">2x1 (Szeroki Przycisk)</option>
-                            <option value="(1x1)" data-i18n="size_1x1">1x1 (Mały/Ikona)</option>
-                            <option value="(2x2)" data-i18n="size_2x2">2x2 (Duży/Media)</option>
+                            <option value="(1x1)" data-i18n="size_1x1">1x1 (Mały)</option>
+                            <option value="(2x2)" data-i18n="size_2x2">2x2 (Duży)</option>
                             <option value="(3x1)" data-i18n="size_3x1">3x1 (Bardzo Szeroki)</option>
                             <option value="(1x2)" data-i18n="size_1x2">1x2 (Wysoki)</option>
                             <option value="(3x2)" data-i18n="size_3x2">3x2 (Ogromny)</option>
@@ -248,12 +580,14 @@
                         <input type="text" id="w-icon-off" oninput="updateIconPreview()" placeholder="mdi-lightbulb-outline">
                     </div>
                 </div>
+
                 <div class="flex-row" style="margin-top: 20px;">
                     <button type="button" class="btn btn-add" id="btn-submit" onclick="saveWidget()" data-i18n="btn_add">+ DODAJ WIDGET</button>
                     <button type="button" class="btn btn-cancel hidden" id="btn-cancel" onclick="cancelEdit()" data-i18n="btn_cancel">ANULUJ</button>
                 </div>
             </div>
 
+            <!-- SEKCJA 3: PODGLĄD -->
             <div class="section">
                 <div class="section-title" data-i18n="sec_preview">3. Podgląd Dashboardu (Kliknij by edytować)</div>
                 <div class="preview-area" id="preview-container"></div>
@@ -264,9 +598,11 @@
             <button type="button" class="btn btn-gen" onclick="submitData()" data-i18n="btn_gen">GENERUJ KOD .DASH</button>
         </form>
 
+        <!-- SEKCJA 4: WYNIK (NA DOLE) -->
         {% if generated_yaml %}
         <div class="section" style="margin-top:30px;">
             <div class="section-title">Wynikowy Kod YAML</div>
+            
             <div class="file-path-info">
                 <div class="file-info-block">
                     <strong>1. Zapisz kod w pliku:</strong>
@@ -274,15 +610,21 @@
                 </div>
                 <div class="file-info-block">
                     <strong>2. Uruchom ponownie AppDaemon i sprawdź dashboard:</strong>
+                    <!-- HOST zostanie podmieniony przez JS -->
                     <a href="http://[HOST]:5050/{{ dash_name }}" id="dashboard-link" target="_blank">http://[HOST]:5050/{{ dash_name }}</a>
                 </div>
             </div>
+
             <textarea class="output" readonly>{{ generated_yaml }}</textarea>
         </div>
         {% endif %}
     </div>
 
+    <!-- ------------------------------------------------------------------ -->
+    <!-- LOGIKA JAVASCRIPT -->
+    <!-- ------------------------------------------------------------------ -->
     <script>
+        // --- ZMIENNE GLOBALNE ---
         const entitiesData = {{ entities | tojson | safe }};
         let rows = [[]]; 
         let editIdx = null; 
@@ -290,6 +632,7 @@
         let currentLang = 'pl';
         let importedDefsMap = {}; 
 
+        // --- TŁUMACZENIA ---
         const TRANSLATIONS = {
             pl: {
                 sec_add: "2. Dodaj Widget", sec_edit: "2. Edytuj Widget", sec_preview: "3. Podgląd Dashboardu",
@@ -298,17 +641,17 @@
                 btn_add: "+ DODAJ WIDGET", btn_update: "ZAPISZ ZMIANY", btn_cancel: "ANULUJ", 
                 btn_row: "+ Dodaj Wiersz", btn_gen: "GENERUJ KOD .DASH",
                 opt_switch: "Przełącznik / Światło", opt_cover: "Roleta / Brama", opt_sensor: "Sensor (Info)",
-                opt_binary: "Sensor Binarny", opt_lock: "Zamek", opt_person: "Osoba",
+                opt_binary: "Sensor Binarny (On/Off)", opt_lock: "Zamek", opt_person: "Osoba / Tracker",
                 opt_media: "Media Player", opt_climate: "Termostat", opt_input_select: "Lista Wyboru",
-                opt_input_number: "Suwak", opt_script: "Skrypt", opt_navigate: "Nawigacja",
-                opt_label: "Etykieta", opt_clock: "Zegar", opt_spacer: "Odstęp",
+                opt_input_number: "Suwak", opt_script: "Skrypt", opt_navigate: "Przycisk Nawigacji",
+                opt_label: "Etykieta (Tekst)", opt_clock: "Zegar", opt_spacer: "Odstęp (Pusty)",
                 size_1x1: "1x1 (Mały)", size_2x1: "2x1 (Szeroki)", size_2x2: "2x2 (Duży)",
-                size_3x1: "3x1 (Szeroki+)", size_1x2: "1x2 (Wysoki)", size_3x2: "3x2 (Ogromny)",
+                size_3x1: "3x1 (Bardzo Szeroki)", size_1x2: "1x2 (Wysoki)", size_3x2: "3x2 (Ogromny)",
                 limit_15: "Maks 15 znaków", limit_20: "Maks 20 znaków"
             },
             en: {
                 sec_add: "2. Add Widget", sec_edit: "2. Edit Widget", sec_preview: "3. Dashboard Preview",
-                lbl_type: "Widget Type", lbl_entity: "Entity", lbl_name: "Title", lbl_size: "Size", 
+                lbl_type: "Widget Type", lbl_entity: "Entity (Type Name or ID)", lbl_name: "Title on Screen", lbl_size: "Size", 
                 lbl_icon: "Icon", lbl_dash: "Dashboard Name", lbl_preview: "Icon",
                 btn_add: "+ ADD WIDGET", btn_update: "SAVE CHANGES", btn_cancel: "CANCEL", 
                 btn_row: "+ Add Row", btn_gen: "GENERATE .DASH CODE",
@@ -323,6 +666,7 @@
             }
         };
 
+        // --- MAPY SMART LOGIC ---
         const SMART_MAP = {
             'light': { type: 'switch', size: '(2x1)', iconOn: 'mdi-lightbulb-on', iconOff: 'mdi-lightbulb-outline' },
             'switch': { type: 'switch', size: '(2x1)', iconOn: 'mdi-toggle-switch', iconOff: 'mdi-toggle-switch-off' },
@@ -335,6 +679,8 @@
             'lock': { type: 'lock', size: '(2x1)', iconOn: 'mdi-lock-open', iconOff: 'mdi-lock' },
             'script': { type: 'script', size: '(2x1)', icon: 'mdi-script-text-outline' }
         };
+
+        // --- HELPERY ---
 
         function normalizeString(str) {
             return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
@@ -355,8 +701,6 @@
                     const opt = document.createElement('option');
                     opt.value = e.id;
                     opt.label = e.attributes.friendly_name ? `${e.attributes.friendly_name} (${e.id})` : e.id;
-                    opt.setAttribute('data-dclass', e.attributes.device_class || '');
-                    opt.setAttribute('data-friendly', e.attributes.friendly_name || '');
                     dl.appendChild(opt);
                     count++;
                 }
@@ -401,31 +745,36 @@
             document.getElementById('grp-nav').classList.toggle('hidden', !isNav);
         }
 
-        // --- OGRANICZENIE ZNAKÓW I POMOC ---
+        // --- LIMIT ZNAKÓW TYTUŁU ---
         function updateTitleLimit() {
             const size = document.getElementById('w-size').value;
             const input = document.getElementById('w-name');
             const counter = document.getElementById('char-count');
             let max = 20;
+            // Małe widgety mają mniej miejsca na tekst
             if(size === '(1x1)' || size === '(1x2)') max = 15;
             
             input.maxLength = max;
             const current = input.value.length;
             const limitText = currentLang === 'pl' ? TRANSLATIONS.pl.limit_20 : TRANSLATIONS.en.limit_20;
-            // Dynamiczny tekst limitu
             const txt = max === 15 ? (currentLang==='pl'?"Maks 15":"Max 15") : (currentLang==='pl'?"Maks 20":"Max 20");
             counter.innerText = `${current}/${max} (${txt})`;
+            
+            if(current >= max) counter.classList.add('limit');
+            else counter.classList.remove('limit');
         }
         
         function checkTitleLimit() {
             updateTitleLimit();
         }
 
+        // --- SMART LOGIC ---
         function runSmartLogic(val) {
             if (blockSmart) return;
             const id = val.toLowerCase();
             const idNorm = normalizeString(id);
             if (id.length < 3) return;
+
             const ent = getEntityMeta(id);
             const dClass = (ent.attributes.device_class || '').toLowerCase();
             const fName = ent.attributes.friendly_name || '';
@@ -435,6 +784,7 @@
             let conf = SMART_MAP[domain] || { type: 'sensor', size: '(1x1)', icon: 'mdi-eye' };
 
             const check = (keywords) => keywords.some(k => idNorm.includes(k) || fNameNorm.includes(k));
+
             if (check(['glosnik', 'speaker', 'audio', 'tv', 'odtwarzacz'])) conf = SMART_MAP['media_player'];
             else if (check(['swiatlo', 'lamp', 'kinkiet', 'led', 'zarowka'])) conf = SMART_MAP['light'];
             else if (check(['gniazdko', 'wtyczka', 'outlet', 'plug'])) conf = SMART_MAP['switch'];
@@ -455,6 +805,7 @@
             if (domain === 'input_boolean') conf = SMART_MAP['switch'];
             if (domain === 'script') conf = SMART_MAP['script'];
 
+            // SMART GRID: Wymuś 2x1 na dużych siatkach
             const currentGrid = document.getElementById('grid-preset').value;
             if (currentGrid !== '6x9' && conf.size === '(1x1)' && conf.type !== 'binary_sensor') {
                 conf.size = '(2x1)';
@@ -538,7 +889,6 @@
             document.getElementById('w-icon').value = data.icon || '';
             document.getElementById('w-icon-on').value = data.icon_on || '';
             document.getElementById('w-icon-off').value = data.icon_off || '';
-            
             updateIconPreview();
             updateTitleLimit();
             setTimeout(() => blockSmart = false, 500);
@@ -577,10 +927,13 @@
             renderPreview();
         }
 
+        // --- POBIERANIE RZECZYWISTEGO STANU Z HA ---
         function getRealState(w) {
             const isPL = currentLang === 'pl';
             const id = (w.id || '');
+            // Szukamy encji w danych z backendu
             const ent = entitiesData.find(e => e.id === id);
+            
             if (!ent) return "---";
             const val = String(ent.state);
             const unit = ent.unit || "";
@@ -610,7 +963,7 @@
                 rowDiv.appendChild(label);
 
                 row.forEach((w, wI) => {
-                    // WRAPPER DLA ETYKIETY TYPU NAD PRZYCISKIEM
+                    // WRAPPER (TYP NA GÓRZE)
                     const wrapper = document.createElement('div');
                     wrapper.className = 'widget-wrapper';
 
@@ -641,6 +994,7 @@
                         div.innerHTML = '<span style="font-size:10px; color:#999;">SPACER</span>';
                     } else {
                         const icon = w.icon || w.icon_on || 'mdi-cube-outline';
+                        // STAN
                         const realState = getRealState(w);
                         div.innerHTML = `
                             <div class="ew-title">${w.name || w.id}</div>
@@ -690,8 +1044,8 @@
                     currentDefKey = null;
                 }
             });
-            
             importedDefsMap = rawDefs;
+
             lines.forEach(line => {
                 const tr = line.trim();
                 if(tr.startsWith('layout:')) { inLayout = true; return; }
