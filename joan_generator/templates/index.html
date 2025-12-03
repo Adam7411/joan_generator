@@ -36,17 +36,22 @@
         .header-top { width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         h1 { margin: 0; color: var(--accent); font-size: 28px; font-weight: 900; text-transform: uppercase; }
         
-        /* MODYFIKACJA: WIĘKSZY STATUS NAGŁÓWKA */
-        #header-status { 
-            font-size: 1.5em; font-weight: 900; color: #009688; 
-            background: rgba(0, 150, 136, 0.1); padding: 10px 30px; border-radius: 30px; 
-            display: inline-block; margin-top: 10px; border: 1px solid rgba(0, 150, 136, 0.2);
+        /* STATUS STYLES */
+        .small-status { 
+            font-size: 0.6em; color: #009688; font-weight: normal; 
+            margin-left: 10px; text-transform: none; 
+            display: inline-block; vertical-align: middle;
         }
-        #header-status span { color: var(--text-main); font-weight: bold; }
+        
+        #status-manager-box {
+            font-size: 1.3em; font-weight: 900; color: #009688; 
+            margin-bottom: 15px; display: none;
+        }
 
         .controls button { padding: 8px 16px; border: 1px solid var(--border); background: var(--bg-section); color: var(--text-main); border-radius: 4px; cursor: pointer; font-weight: bold; margin-left: 5px; }
         .controls button.active { background: var(--accent); color: var(--btn-text); border-color: var(--accent); }
         .section { background: var(--bg-section); padding: 25px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 30px; }
+        
         .section-title { font-size: 1.4em; font-weight: 900; border-bottom: 3px solid var(--accent); display: inline-block; margin-bottom: 20px; color: var(--text-main); }
         
         .file-path-info { background-color: var(--link-bg); color: var(--link-color); border: 1px solid var(--border); padding: 20px; margin-bottom: 20px; border-radius: 6px; font-family: monospace; }
@@ -70,6 +75,7 @@
         .btn-cancel { background: #757575; }
         .btn-row { background: #2196f3; margin-top: 15px; }
         .btn-import { background: #ff9800; color: white; margin-top: 10px; }
+        .btn-tetris { background: #9c27b0; color: white; margin-left: 10px; }
         .btn-dash-save { background: #009688; color: white; width: auto; padding: 8px 15px; font-size: 13px; }
         
         .btn-tool { padding: 6px 12px; font-size: 14px; margin-left: 6px; border-radius: 4px; cursor: pointer; color: white; border: none; font-weight: bold; display: inline-block; text-align: center; }
@@ -160,10 +166,6 @@
                     <button type="button" onclick="setLang('en')" id="btn-en">EN</button>
                 </div>
             </div>
-            <!-- MODYFIKACJA: STATUS W NAGŁÓWKU (WIĘKSZY) -->
-            <div id="header-status" class="hidden">
-                <span data-i18n="lbl_current_work">AKTUALNIE PRACUJESZ NA DASHBOARDZIE:</span> <span id="header-dash-name">---</span>
-            </div>
         </div>
 
         <div class="section">
@@ -207,7 +209,11 @@
             <input type="hidden" name="default_widget_size" id="input-def-size" value="2, 1">
             
             <div class="add-widget-box" id="editor-box">
-                <div class="section-title" id="editor-title" data-i18n="sec_add">2. Dodaj Widget</div>
+                <div class="section-title">
+                    <span data-i18n="sec_add">2. Dodaj Widget</span>
+                    <!-- MAŁY STATUS -->
+                    <span id="status-sec-2" class="small-status"></span>
+                </div>
                 
                 <!-- RZĄD 1: ENCJA / NAWIGACJA -->
                 <div class="flex-row" style="margin-bottom: 20px;">
@@ -218,7 +224,6 @@
                     </div>
                     <div class="flex-col hidden" id="grp-nav" style="flex: 100%;">
                         <label data-i18n="lbl_dash_name">Nazwa Dashboardu (target)</label>
-                        <!-- Używamy datalist dla podpowiedzi z zapisanych dashboardów -->
                         <input type="text" id="w-dash" placeholder="np. main" list="nav-dash-suggestions" oninput="autoNameNav()">
                         <datalist id="nav-dash-suggestions"></datalist>
                         <small id="nav-hint" class="input-hint"></small>
@@ -295,16 +300,26 @@
             </div>
 
             <div class="section">
-                <div class="section-title" data-i18n="sec_preview">3. Podgląd Dashboardu</div>
+                <div class="section-title">
+                    <span data-i18n="sec_preview">3. Podgląd Dashboardu</span>
+                    <!-- MAŁY STATUS -->
+                    <span id="status-sec-3" class="small-status"></span>
+                </div>
                 <p style="font-size:0.85em; margin-bottom: 10px; color: #666;">Możesz przeciągać przyciski między wierszami oraz zmieniać ich kolejność w wierszu (Drag&Drop).</p>
                 <div class="preview-area" id="preview-container"></div>
                 <button type="button" class="btn btn-row" onclick="addRow()" data-i18n="btn_row">+ Dodaj Wiersz</button>
-                <!-- USUNIĘTY TETRIS -->
             </div>
 
-            <!-- MODYFIKACJA: PRZENIESIONY MENADŻER -->
+            <!-- PRZENIESIONY MENADŻER -->
             <div class="section" style="border: 2px solid #009688; background: rgba(0, 150, 136, 0.05);">
-                <div class="section-title" style="border-bottom-color: #009688; color: #009688;">Multi-Dashboard Manager (Browser)</div>
+                <div class="section-title" style="border-bottom-color: #009688; color: #009688;">
+                    <span data-i18n="sec_manager">Multi-Dashboard Manager (Browser)</span>
+                </div>
+                <!-- DUŻY STATUS -->
+                <div id="status-manager-box">
+                    <span data-i18n="lbl_current_big">AKTUALNIE PRACUJESZ NA DASHBOARDZIE:</span> <span id="header-dash-name"></span>
+                </div>
+
                 <p style="font-size: 0.9em; margin-bottom: 10px; font-weight:bold;">
                     Zapisz swoje układy w przeglądarce, aby łatwo się między nimi przełączać. 
                     Aby przełączać strony na samym urządzeniu Joan 6, użyj widgetu 'Przycisk Nawigacji' (Navigate).
@@ -386,8 +401,12 @@
                 sec_preview: "3. Podgląd Dashboardu", btn_row: "+ Dodaj Wiersz", btn_gen: "GENERUJ KOD .DASH",
                 sec_result: "Wynikowy Kod YAML", lbl_save_path: "1. Zapisz kod w pliku:", lbl_open_link: "2. Uruchom ponownie AppDaemon i sprawdź:",
                 limit_15: "Maks 15 znaków", limit_20: "Maks 20 znaków", alert_full: "Brak miejsca w tym wierszu! Zmień siatkę lub dodaj nowy wiersz.",
-                hint_nav: "<b>Wskazówka:</b> Wpisz nazwę pliku <code>.dash</code> (bez rozszerzenia), który znajduje się w folderze <code>\\\\IP_HA\\addon_configs\\appdaemon\\dashboards\\</code>.<br>Służy do przełączania stron (np. wpisz <code>salon</code> aby przejść do dashboardu <code>salon.dash</code>).",
-                lbl_current_work: "AKTUALNIE PRACUJESZ NA DASHBOARDZIE:"
+                
+                hint_nav: "<b>Wskazówka:</b> Wpisz nazwę pliku <code>.dash</code> (bez rozszerzenia), który znajduje się w folderze <code>\\\\100.117.192.46\\addon_configs\\appdaemon\\dashboards\\</code>.<br>Służy to do przełączania dasbordów (np. wpisz <code>salon</code> aby przejść do dashboardu <code>salon.dash</code>).<br>Jeśli masz zapisany dasboard W Joan 6 E-Ink Generator wybież go z listy.",
+                
+                lbl_current_small: "(AKTUALNIE PRACUJESZ NA DASHBOARDZIE: {0})",
+                lbl_current_big: "AKTUALNIE PRACUJESZ NA DASHBOARDZIE:",
+                sec_manager: "Multi-Dashboard Manager (Przeglądarka)"
             },
             en: {
                 title_main: "Joan 6 E-Ink Generator (Final Monster Edition)",
@@ -410,8 +429,12 @@
                 sec_preview: "3. Dashboard Preview", btn_row: "+ Add Row", btn_gen: "GENERATE .DASH CODE",
                 sec_result: "Generated YAML Code", lbl_save_path: "1. Save code to file:", lbl_open_link: "2. Restart AppDaemon and check:",
                 limit_15: "Max 15 chars", limit_20: "Max 20 chars", alert_full: "No space in this row! Change grid or add new row.",
-                hint_nav: "<b>Hint:</b> Enter the <code>.dash</code> filename (without extension) located in <code>\\\\IP_HA\\addon_configs\\appdaemon\\dashboards\\</code>.<br>Used for page navigation (e.g. enter <code>livingroom</code> to go to dashboard <code>livingroom.dash</code>).",
-                lbl_current_work: "CURRENTLY WORKING ON DASHBOARD:"
+                
+                hint_nav: "<b>Hint:</b> Enter the <code>.dash</code> filename (without extension) located in <code>\\\\100.117.192.46\\addon_configs\\appdaemon\\dashboards\\</code>.<br>Used for dashboard switching (e.g. enter <code>salon</code> to go to <code>salon.dash</code>).<br>If you have a saved dashboard in Joan 6 E-Ink Generator, select it from the list.",
+                
+                lbl_current_small: "(CURRENTLY WORKING ON: {0})",
+                lbl_current_big: "CURRENTLY WORKING ON DASHBOARD:",
+                sec_manager: "Multi-Dashboard Manager (Browser)"
             }
         };
 
@@ -1007,15 +1030,25 @@
             const list = document.getElementById('saved-dash-list');
             list.innerHTML = '';
             
-            // Update header status
-            const headerStatus = document.getElementById('header-status');
-            const headerName = document.getElementById('header-dash-name');
+            // Update headers
+            const headerBig = document.getElementById('status-manager-box');
+            const headerSmallName2 = document.getElementById('status-sec-2');
+            const headerSmallName3 = document.getElementById('status-sec-3');
+            const dashNameDisplay = document.getElementById('header-dash-name');
             
             if(currentLoadedDashName) {
-                headerStatus.classList.remove('hidden');
-                headerName.innerText = currentLoadedDashName;
+                // Show big status
+                headerBig.style.display = 'block';
+                dashNameDisplay.innerText = currentLoadedDashName;
+                
+                // Show small statuses
+                let txt = TRANSLATIONS[currentLang].lbl_current_small.replace('{0}', currentLoadedDashName);
+                headerSmallName2.innerText = txt;
+                headerSmallName3.innerText = txt;
             } else {
-                headerStatus.classList.add('hidden');
+                headerBig.style.display = 'none';
+                headerSmallName2.innerText = '';
+                headerSmallName3.innerText = '';
             }
 
             // Populate list
@@ -1056,7 +1089,7 @@
                 document.getElementById('nav-hint').innerHTML = hintHtml;
             }
 
-            updateTitleLimit(); renderPreview();
+            updateTitleLimit(); renderPreview(); refreshSavedList(); // Refresh to update translated status
         }
 
         function toggleTheme() {
