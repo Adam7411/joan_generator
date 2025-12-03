@@ -38,23 +38,12 @@
         .section { background: var(--bg-section); padding: 25px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 30px; }
         .section-title { font-size: 1.4em; font-weight: 900; border-bottom: 3px solid var(--accent); display: inline-block; margin-bottom: 20px; color: var(--text-main); }
         
-        /* File Info i Link Box */
+        /* Link Box */
         .file-path-info { background-color: var(--link-bg); color: var(--link-color); border: 1px solid var(--border); padding: 20px; margin-bottom: 20px; border-radius: 6px; font-family: monospace; }
         .file-info-block { margin-bottom: 15px; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 15px; }
         .file-path-info strong { display: block; margin-bottom: 5px; color: var(--text-main); }
         .file-path-info code { display: block; background: rgba(255,255,255,0.4); padding: 8px; border-radius: 4px; font-weight: bold; }
-        
-        /* Ramka dla linku (widoczność w dark mode) */
-        .link-box {
-            background-color: #ffffff;
-            border: 2px solid var(--accent);
-            padding: 10px;
-            border-radius: 4px;
-            display: inline-block;
-            color: #000000;
-            font-weight: bold;
-            margin-top: 5px;
-        }
+        .link-box { background-color: #ffffff; border: 2px solid var(--accent); padding: 10px; border-radius: 4px; display: inline-block; color: #000000; font-weight: bold; margin-top: 5px; }
         .link-box a { color: #0277bd; text-decoration: underline; font-size: 16px; }
 
         .add-widget-box { background: var(--highlight); padding: 25px; border-radius: 8px; border: 1px solid var(--accent); margin-bottom: 30px; }
@@ -63,7 +52,6 @@
         .flex-col { flex: 1; min-width: 160px; }
         label { display: block; font-weight: bold; font-size: 0.9em; margin-bottom: 8px; color: var(--text-main); }
         input, select, textarea { width: 100%; padding: 12px; border: 1px solid var(--border); background: var(--bg-input); color: var(--text-main); border-radius: 4px; box-sizing: border-box; }
-        #w-id { border: 2px solid var(--accent); font-weight: bold; }
         
         .btn { padding: 12px 24px; border: none; cursor: pointer; border-radius: 4px; font-weight: bold; text-transform: uppercase; color: var(--btn-text); font-size: 14px; }
         .btn:hover { opacity: 0.9; transform: translateY(-1px); }
@@ -71,50 +59,25 @@
         .btn-gen { background: var(--accent); width: 100%; font-size: 20px; padding: 15px; margin-top: 20px; }
         .btn-cancel { background: #757575; }
         .btn-row { background: #2196f3; margin-top: 15px; }
-        .btn-del-row { background: #d32f2f; padding: 4px 8px; font-size: 12px; margin-left: 10px; border-radius: 4px; cursor: pointer; color: white; border: none; }
         .btn-import { background: #ff9800; color: white; margin-top: 10px; }
+        
+        .btn-tool { padding: 4px 8px; font-size: 12px; margin-left: 6px; border-radius: 4px; cursor: pointer; color: white; border: none; font-weight: bold; display: inline-block; width: 25px; text-align: center; }
+        .btn-del-row { background: #d32f2f; }
+        .btn-move-row { background: #757575; }
 
-        /* PODGLĄD Z KRATOWNICĄ */
-        .preview-area { 
-            background: var(--preview-bg); 
-            padding: 30px; 
-            border: 2px solid var(--border); 
-            border-radius: 8px; 
-            overflow-x: auto; 
-            min-height: 400px; 
-        }
-        
-        .eink-row { 
-            display: flex; gap: 8px; margin-bottom: 15px; padding: 15px; 
-            border: 2px dashed #999; border-radius: 6px; min-height: 140px; 
-            align-items: flex-end; position: relative; 
-            background-image: linear-gradient(to right, rgba(0,0,0,0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,0,0,0.05) 1px, transparent 1px);
-            background-size: 125px 125px;
-            transition: border-color 0.3s, box-shadow 0.3s;
-        }
-        /* Podświetlenie aktywnego wiersza */
-        .eink-row.row-active {
-            border: 2px solid #2196f3;
-            box-shadow: 0 0 10px rgba(33, 150, 243, 0.3);
-            background-color: rgba(33, 150, 243, 0.05);
-        }
-        
-        .row-controls { position: absolute; top: -12px; left: 10px; display: flex; align-items: center; }
+        /* PODGLĄD */
+        .preview-area { background: var(--preview-bg); padding: 30px; border: 2px solid var(--border); border-radius: 8px; overflow-x: auto; min-height: 400px; }
+        .eink-row { display: flex; gap: 8px; margin-bottom: 15px; padding: 15px; border: 2px dashed #999; border-radius: 6px; min-height: 140px; align-items: flex-end; position: relative; background-image: linear-gradient(to right, rgba(0,0,0,0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,0,0,0.05) 1px, transparent 1px); background-size: 125px 125px; transition: border-color 0.3s, box-shadow 0.3s; }
+        .eink-row.row-active { border: 2px solid #2196f3; box-shadow: 0 0 10px rgba(33, 150, 243, 0.3); background-color: rgba(33, 150, 243, 0.05); }
+        .row-controls { position: absolute; top: -12px; left: 10px; display: flex; align-items: center; z-index: 50; }
         .row-label { font-size: 11px; background: var(--bg-body); padding: 2px 8px; color: var(--text-main); border: 1px solid var(--border); border-radius: 4px; font-weight: bold; }
         
         .widget-wrapper { display: flex; flex-direction: column; align-items: center; margin-right: 0; position: relative; flex-shrink: 0; }
         .ew-type-label { font-size: 10px; text-transform: uppercase; color: var(--text-main); margin-bottom: 4px; font-weight: bold; opacity: 0.7; text-align: center; }
 
-        .eink-widget {
-            background: #FFFFFF; border: 3px solid #000000; color: #000000;
-            display: flex; flex-direction: column; align-items: center; justify-content: space-between;
-            padding: 8px; box-sizing: border-box; cursor: pointer; position: relative;
-            box-shadow: 4px 4px 0px rgba(0,0,0,0.25); transition: transform 0.1s; flex-shrink: 0; overflow: hidden;
-        }
+        .eink-widget { background: #FFFFFF; border: 3px solid #000000; color: #000000; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 8px; box-sizing: border-box; cursor: pointer; position: relative; box-shadow: 4px 4px 0px rgba(0,0,0,0.25); transition: transform 0.1s; flex-shrink: 0; overflow: hidden; }
         .eink-widget:hover { transform: translateY(-3px); z-index: 10; border-color: var(--accent); }
-        /* Podświetlenie edytowanego widgetu */
         .eink-widget.editing { border: 4px solid #ff9800; transform: scale(1.05); z-index: 20; box-shadow: 0 0 15px rgba(255, 152, 0, 0.5); }
-
         .ew-title { font-weight: 900; font-size: 13px; text-align: center; width: 100%; line-height: 1.2; margin-top: 12px; margin-bottom: 2px; white-space: normal; text-transform: uppercase; pointer-events: none; }
         .ew-icon { font-size: 38px; display: block; margin: 2px 0; pointer-events: none; }
         .ew-value { font-weight: 900; font-size: 15px; text-transform: uppercase; margin-bottom: 5px; text-align: center; border-top: 2px solid #000; width: 90%; padding-top: 3px; margin-top: auto; pointer-events: none; }
@@ -131,7 +94,7 @@
 <body>
     <div class="container">
         <div class="header-row">
-            <h1 data-i18n="title_main">Joan 6 E-Ink Generator (MONUMENTAL)</h1>
+            <h1 data-i18n="title_main">Joan 6 E-Ink Generator (MONSTER EDITION)</h1>
             <div class="controls">
                 <button type="button" onclick="toggleTheme()" id="btn-theme">🌙</button>
                 <button type="button" onclick="setLang('pl')" id="btn-pl" class="active">PL</button>
@@ -191,6 +154,7 @@
                             <option value="cover" data-i18n="opt_cover">Cover / Gate</option>
                             <option value="sensor" data-i18n="opt_sensor">Sensor</option>
                             <option value="binary_sensor" data-i18n="opt_binary">Binary Sensor</option>
+                            <option value="weather" data-i18n="opt_weather">Pogoda (Weather)</option> <!-- DODANO POGODĘ -->
                             <option value="lock" data-i18n="opt_lock">Lock</option>
                             <option value="person" data-i18n="opt_person">Person / Tracker</option>
                             <option value="media_player" data-i18n="opt_media">Media Player</option>
@@ -315,7 +279,7 @@
                 opt_binary: "Sensor Binarny (On/Off)", opt_lock: "Zamek", opt_person: "Osoba / Tracker",
                 opt_media: "Media Player", opt_climate: "Termostat", opt_input_select: "Lista Wyboru",
                 opt_input_number: "Suwak", opt_script: "Skrypt", opt_navigate: "Przycisk Nawigacji",
-                opt_label: "Etykieta (Tekst)", opt_clock: "Zegar", opt_spacer: "Odstęp (Pusty)",
+                opt_label: "Etykieta (Tekst)", opt_clock: "Zegar", opt_spacer: "Odstęp (Pusty)", opt_weather: "Pogoda",
                 size_2x1: "2x1 (Szeroki Przycisk)", size_1x1: "1x1 (Mały)", size_2x2: "2x2 (Duży)",
                 size_3x1: "3x1 (Bardzo Szeroki)", size_1x2: "1x2 (Wysoki)", size_3x2: "3x2 (Ogromny)",
                 btn_add: "+ DODAJ WIDGET", btn_update: "ZAPISZ ZMIANY", btn_cancel: "ANULUJ",
@@ -337,7 +301,7 @@
                 opt_binary: "Binary Sensor", opt_lock: "Lock", opt_person: "Person / Tracker",
                 opt_media: "Media Player", opt_climate: "Climate", opt_input_select: "Input Select",
                 opt_input_number: "Input Number", opt_script: "Script", opt_navigate: "Navigation Button",
-                opt_label: "Label (Text)", opt_clock: "Clock", opt_spacer: "Spacer (Empty)",
+                opt_label: "Label (Text)", opt_clock: "Clock", opt_spacer: "Spacer (Empty)", opt_weather: "Weather",
                 size_2x1: "2x1 (Wide Button)", size_1x1: "1x1 (Small)", size_2x2: "2x2 (Large)",
                 size_3x1: "3x1 (Extra Wide)", size_1x2: "1x2 (Tall)", size_3x2: "3x2 (Huge)",
                 btn_add: "+ ADD WIDGET", btn_update: "SAVE CHANGES", btn_cancel: "CANCEL",
@@ -353,11 +317,12 @@
             'cover': { type: 'cover', size: '(2x1)', iconOn: 'mdi-window-shutter-open', iconOff: 'mdi-window-shutter' },
             'garage': { type: 'cover', size: '(2x1)', iconOn: 'mdi-garage-open', iconOff: 'mdi-garage' },
             'binary_sensor': { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-checkbox-marked-circle', iconOff: 'mdi-checkbox-blank-circle-outline' },
-            'sensor': { type: 'sensor', size: '(2x1)', icon: 'mdi-eye' }, // Smart Grid: 2x1 dla sensorów
+            'sensor': { type: 'sensor', size: '(2x1)', icon: 'mdi-eye' }, 
             'media_player': { type: 'media_player', size: '(2x2)', icon: '' },
             'climate': { type: 'climate', size: '(2x2)', icon: '' },
             'lock': { type: 'lock', size: '(2x1)', iconOn: 'mdi-lock-open', iconOff: 'mdi-lock' },
-            'script': { type: 'script', size: '(2x1)', icon: 'mdi-script-text-outline' }
+            'script': { type: 'script', size: '(2x1)', icon: 'mdi-script-text-outline' },
+            'weather': { type: 'weather', size: '(2x2)', icon: 'mdi-weather-cloudy' } // PRZYWROCONO
         };
 
         function normalizeString(str) {
@@ -373,14 +338,15 @@
             if (val.length < 2) return;
             const terms = normalizeString(val).split(" ").filter(t => t);
             let count = 0;
-            for (const e of entitiesData) {
+            for (const e in entitiesData) {
+                const obj = entitiesData[e];
                 if (count > 50) break;
-                const searchStr = normalizeString(e.id + " " + (e.attributes.friendly_name || ""));
+                const searchStr = normalizeString(obj.id + " " + (obj.attributes.friendly_name || ""));
                 const match = terms.every(term => searchStr.includes(term));
                 if (match) {
                     const opt = document.createElement('option');
-                    opt.value = e.id;
-                    opt.label = e.attributes.friendly_name ? `${e.attributes.friendly_name} (${e.id})` : e.id;
+                    opt.value = obj.id;
+                    opt.label = obj.attributes.friendly_name ? `${obj.attributes.friendly_name} (${obj.id})` : obj.id;
                     dl.appendChild(opt);
                     count++;
                 }
@@ -393,7 +359,6 @@
             const inputNorm = normalizeString(input);
             if (input.length < 3) return;
 
-            // Domyślnie 2x1 dla sensorów w Smart Logic
             let conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-eye' };
             
             if (!isTitleSearch) {
@@ -419,9 +384,8 @@
             else if (check(['okno', 'window'])) conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-window-open-variant', iconOff: 'mdi-window-closed-variant' };
             else if (check(['temp', 'therm'])) conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-thermometer' };
             else if (check(['wilg', 'humid'])) conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-water-percent' };
-            else if (check(['pogoda', 'weather'])) conf = { type: 'switch', size: '(2x1)', iconOn: 'mdi-weather-cloudy', iconOff: 'mdi-weather-cloudy' };
+            else if (check(['pogoda', 'weather'])) conf = SMART_MAP['weather'];
 
-            // WYMUSZENIE 2x1 dla Standardowych siatek (chyba że to binary_sensor 1x1)
             const currentGrid = document.getElementById('grid-preset').value;
             if ((currentGrid === '4x8' || currentGrid === '4x6') && conf.size === '(1x1)' && conf.type !== 'binary_sensor') {
                 conf.size = '(2x1)';
@@ -488,7 +452,6 @@
             if(w.type === 'navigate') w.id = 'navigate.' + w.dash;
             if(w.type === 'spacer') w.id = 'spacer';
 
-            // Sztywna walidacja siatki (Grid Enforcement)
             let targetRowIdx = editIdx ? editIdx.r : rows.length - 1;
             let currentRow = [...rows[targetRowIdx]];
             if (editIdx) currentRow.splice(editIdx.w, 1); 
@@ -497,8 +460,8 @@
             if (w.size) newCols = parseInt(w.size.replace(/[()]/g, '').split('x')[0]) || 1;
             
             const gridVal = document.getElementById('grid-preset').value;
-            let maxSlots = 3; // Standard (3 kolumny Joan)
-            if (gridVal === '4x4') maxSlots = 4; // Duży
+            let maxSlots = 3; 
+            if (gridVal === '4x4') maxSlots = 4; 
             
             let currentRowWidth = 0;
             currentRow.forEach(item => {
@@ -507,7 +470,6 @@
                 currentRowWidth += c;
             });
 
-            // Przelicznik: 1 slot Joan = 2 jednostki szerokości w kodzie (dla Standard+)
             const maxUnits = maxSlots * 2; 
             if (currentRowWidth + newCols > maxUnits) {
                 alert(TRANSLATIONS[currentLang].alert_full);
@@ -536,8 +498,10 @@
         function toggleInputs() {
             const type = document.getElementById('w-type').value;
             const isNav = type === 'navigate';
-            const isSpacer = type === 'spacer';
-            document.getElementById('grp-entity').style.display = (isNav || isSpacer) ? 'none' : 'block';
+            // ZEGAR, LABEL, SPACER - nie potrzebują encji
+            const hideEntity = ['clock', 'label', 'spacer'].includes(type);
+            
+            document.getElementById('grp-entity').style.display = (isNav || hideEntity) ? 'none' : 'block';
             document.getElementById('grp-nav').style.display = isNav ? 'block' : 'none';
             document.getElementById('grp-nav').classList.toggle('hidden', !isNav);
         }
@@ -579,7 +543,7 @@
             updateIconPreview();
             updateTitleLimit();
             setTimeout(() => blockSmart = false, 500);
-            renderPreview(); // Odśwież podświetlenie wiersza
+            renderPreview(); 
         }
 
         function cancelEdit() {
@@ -591,7 +555,7 @@
             document.getElementById('editor-title').innerText = t.sec_add;
             document.getElementById('btn-submit').innerText = t.btn_add;
             clearForm();
-            renderPreview(); // Odśwież podświetlenie wiersza
+            renderPreview(); 
         }
 
         function clearForm() {
@@ -620,6 +584,24 @@
             }
         }
 
+        // --- FUNKCJE EDYCJI WIERSZY (UP/DOWN) ---
+        function moveRow(idx, direction) {
+            if (direction === -1 && idx > 0) {
+                [rows[idx], rows[idx - 1]] = [rows[idx - 1], rows[idx]];
+                if(editIdx) { 
+                   if(editIdx.r === idx) editIdx.r = idx - 1;
+                   else if(editIdx.r === idx - 1) editIdx.r = idx;
+                }
+            } else if (direction === 1 && idx < rows.length - 1) {
+                [rows[idx], rows[idx + 1]] = [rows[idx + 1], rows[idx]];
+                 if(editIdx) { 
+                   if(editIdx.r === idx) editIdx.r = idx + 1;
+                   else if(editIdx.r === idx + 1) editIdx.r = idx;
+                }
+            }
+            renderPreview();
+        }
+
         function addRow() {
             rows.push([]);
             renderPreview();
@@ -644,7 +626,6 @@
             const container = document.getElementById('preview-container');
             container.innerHTML = '';
             
-            // Ustal, który wiersz jest "aktywny" (edytowany lub ostatni)
             const activeRowIndex = editIdx ? editIdx.r : rows.length - 1;
 
             rows.forEach((row, rI) => {
@@ -661,9 +642,23 @@
                 label.innerText = txt + (rI + 1);
                 controls.appendChild(label);
 
-                // Przycisk usuwania wiersza
+                // PRZYCISKI EDYCJI WIERSZA
+                const upBtn = document.createElement('button');
+                upBtn.className = 'btn-tool btn-move-row';
+                upBtn.innerText = '▲';
+                upBtn.onclick = () => moveRow(rI, -1);
+                if (rI === 0) upBtn.style.opacity = 0.3;
+                controls.appendChild(upBtn);
+
+                const downBtn = document.createElement('button');
+                downBtn.className = 'btn-tool btn-move-row';
+                downBtn.innerText = '▼';
+                downBtn.onclick = () => moveRow(rI, 1);
+                if (rI === rows.length - 1) downBtn.style.opacity = 0.3;
+                controls.appendChild(downBtn);
+
                 const delBtn = document.createElement('button');
-                delBtn.className = 'btn-del-row';
+                delBtn.className = 'btn-tool btn-del-row';
                 delBtn.innerText = 'X';
                 delBtn.onclick = () => deleteRow(rI);
                 controls.appendChild(delBtn);
@@ -726,7 +721,6 @@
             let currentDefKey = null;
             let currentDefLines = [];
 
-            // Parsowanie definicji
             lines.forEach(line => {
                 if (line.match(/^\S+:/) && !line.startsWith('layout:') && !line.startsWith('global_parameters:')) {
                     if (currentDefKey) { rawDefs[currentDefKey] = currentDefLines.join('\n'); }
@@ -739,7 +733,6 @@
             if(currentDefKey) rawDefs[currentDefKey] = currentDefLines.join('\n');
             rawImportedDefs = rawDefs;
 
-            // Parsowanie layoutu
             lines.forEach(line => {
                 const tr = line.trim();
                 if(tr.startsWith('layout:')) { inLayout = true; return; }
@@ -771,8 +764,6 @@
                             else if(id.startsWith('navigate.')) type = 'navigate';
                             else if(id.startsWith('sensor.')) type = 'sensor';
                         }
-                        
-                        if(name === id && type !== 'spacer') name = formatSmartName(id, '');
                         rowData.push({ id, type, size, name, icon, icon_on, icon_off, was_edited: false });
                     });
                     newRows.push(rowData);
