@@ -152,7 +152,6 @@
             <input type="hidden" name="grid_columns" id="form-cols" value="4">
             <input type="hidden" name="grid_rows" id="form-rows" value="8">
             
-            <!-- NOWE POLE: PRZECHOWYWANIE DOMYŚLNEGO ROZMIARU DLA BACKENDU -->
             <input type="hidden" name="default_widget_size" id="input-def-size" value="2, 1">
             
             <div class="add-widget-box" id="editor-box">
@@ -212,7 +211,6 @@
                             <i id="preview-icon" class="mdi mdi-help-circle-outline icon-preview"></i>
                         </div>
                     </div>
-                    <!-- GRUPA IKON, UKRYWANA DLA SENSORA -->
                     <div id="grp-icons" style="display:contents;">
                         <div class="flex-col">
                             <label data-i18n="lbl_icon">Ikona (Standard)</label>
@@ -279,7 +277,7 @@
         let currentLang = 'pl';
         let rawImportedDefs = {}; 
         let dragSrc = null; 
-        let globalDefaultSize = {w: 2, h: 1}; // Domyślny rozmiar (2x1)
+        let globalDefaultSize = {w: 2, h: 1}; 
 
         const POPULAR_ICONS = [ "mdi-home", "mdi-home-outline", "mdi-lightbulb", "mdi-lightbulb-on", "mdi-lightbulb-outline", "mdi-toggle-switch", "mdi-toggle-switch-off", "mdi-power", "mdi-window-shutter", "mdi-window-shutter-open", "mdi-garage", "mdi-garage-open", "mdi-door", "mdi-door-open", "mdi-lock", "mdi-lock-open", "mdi-thermometer", "mdi-water-percent", "mdi-battery", "mdi-weather-cloudy", "mdi-play", "mdi-pause", "mdi-wifi", "mdi-clock-outline", "mdi-calendar", "mdi-alert", "mdi-check", "mdi-close" ];
 
@@ -434,11 +432,9 @@
 
         function getSlots(w) {
             let c = 2;
-            // Jeśli widget ma jawnie ustawiony rozmiar, użyj go
             if (w.size) {
                 c = parseInt(w.size.replace(/[()]/g, '').split('x')[0]) || 1;
             } else {
-                // W przeciwnym razie użyj globalnego domyślnego rozmiaru
                 c = globalDefaultSize.w;
             }
             return c;
@@ -708,12 +704,10 @@
 
                     let cols = 2, rw = 1;
                     if (w.size) { 
-                        // Użyj rozmiaru przypisanego do widgetu (jeśli jest)
                         const parts = w.size.replace(/[()]/g, '').split('x'); 
                         cols = parseInt(parts[0]) || 1; 
                         rw = parseInt(parts[1]) || 1; 
                     } else {
-                        // Użyj globalnego domyślnego rozmiaru
                         cols = globalDefaultSize.w;
                         rw = globalDefaultSize.h;
                     }
@@ -745,25 +739,42 @@
             const text = document.getElementById('import-code').value; if(!text) return; blockSmart = true;
             const lines = text.split('\n'); const newRows = []; let inLayout = false; let rawDefs = {}; let currentDefKey = null; let currentDefLines = [];
             
-            // 1. Parsowanie nagłówka (szukanie widget_size)
             let importedW = 2, importedH = 1;
+            // --- NEW: AUTO GRID VARIABLES ---
+            let foundCols = null;
+            let foundRows = null;
             
             lines.forEach(line => {
                 const t = line.trim();
                 if (t.startsWith('widget_size:')) {
-                    // Parsuj [X, Y]
                     const match = t.match(/\[\s*(\d+)\s*,\s*(\d+)\s*\]/);
                     if (match) {
                         importedW = parseInt(match[1]);
                         importedH = parseInt(match[2]);
                         globalDefaultSize = { w: importedW, h: importedH };
                         document.getElementById('input-def-size').value = `${importedW}, ${importedH}`;
-                        
-                        // Aktualizacja UI wyboru rozmiaru, jeśli pasuje do jednego z predefiniowanych
-                        // (opcjonalne, ale miłe dla oka)
                     }
                 }
+                // --- FIX: PARSE COLUMNS/ROWS ---
+                if (t.startsWith('columns:')) foundCols = parseInt(t.split(':')[1]);
+                if (t.startsWith('rows:')) foundRows = parseInt(t.split(':')[1]);
             });
+
+            // --- FIX: AUTO-SELECT PRESET ---
+            if (foundCols && foundRows) {
+                let preset = '4x8';
+                // Logic: Internal AppDaemon cols vs Dropdown Value
+                // AppDaemon cols = dropdown_cols * 2.
+                // So YAML cols 6 -> dropdown 3. YAML cols 8 -> dropdown 4. YAML cols 12 -> dropdown 6.
+                if (foundCols === 6 && foundRows === 8) preset = '4x8'; // "3 cols" in UI
+                else if (foundCols === 6 && foundRows === 6) preset = '4x6'; // "3 cols" in UI
+                else if (foundCols === 8 && foundRows === 4) preset = '4x4'; // "4 cols" in UI
+                else if (foundCols === 8 && foundRows === 6) preset = '4x6m'; // "4 cols" in UI
+                else if (foundCols === 12 && foundRows === 9) preset = '6x9'; // "6 cols" in UI
+                
+                const sel = document.getElementById('grid-preset');
+                if(sel.querySelector(`option[value="${preset}"]`)) sel.value = preset;
+            }
 
             lines.forEach(line => {
                 if (line.match(/^\S+:/) && !line.startsWith('layout:') && !line.startsWith('global_parameters:')) { if (currentDefKey) rawDefs[currentDefKey] = currentDefLines.join('\n'); currentDefKey = line.split(':')[0].trim(); currentDefLines = []; }
@@ -785,9 +796,7 @@
                         const content = tr.substring(1).trim(); const widgets = content.split(',').map(s => s.trim()); const rowData = [];
                         widgets.forEach(wStr => {
                             let id = wStr; 
-                            let size = ''; // Pusty rozmiar = domyślny
-                            
-                            // Sprawdź czy widget ma jawnie podany rozmiar (np. climate(2x1))
+                            let size = ''; 
                             const sizeMatch = wStr.match(/\(\d+x\d+\)/);
                             if(sizeMatch) { 
                                 size = sizeMatch[0]; 
