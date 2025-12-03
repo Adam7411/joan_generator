@@ -5,10 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Joan 6 E-Ink Generator (Final Monster Edition)</title>
     
-    <!-- 1. BIBLIOTEKI -->
+    <!-- 1. BIBLIOTEKI ZEWNĘTRZNE -->
     <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap" rel="stylesheet">
     
+    <!-- 2. INICJALIZACJA MOTYWU -->
     <script>
         (function() {
             try {
@@ -61,7 +62,7 @@
         .btn-row { background: #2196f3; margin-top: 15px; }
         .btn-import { background: #ff9800; color: white; margin-top: 10px; }
 
-        /* PODGLĄD Z KRATOWNICĄ */
+        /* PODGLĄD E-INK Z KRATOWNICĄ */
         .preview-area { 
             background: var(--preview-bg); 
             padding: 30px; 
@@ -81,12 +82,13 @@
             min-height: 140px; 
             align-items: flex-end; 
             position: relative; 
-            /* Kratownica */
+            /* KRATOWNICA TŁA */
             background-image: linear-gradient(to right, rgba(0,0,0,0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,0,0,0.05) 1px, transparent 1px);
-            background-size: 125px 125px;
+            background-size: 125px 125px; /* ~117px widget + gap */
         }
         
         .row-label { position: absolute; top: -10px; left: 10px; font-size: 11px; background: var(--bg-body); padding: 2px 8px; color: var(--text-main); border: 1px solid var(--border); border-radius: 4px; font-weight: bold; }
+        
         .widget-wrapper { display: flex; flex-direction: column; align-items: center; margin-right: 0; position: relative; flex-shrink: 0; }
         .ew-type-label { font-size: 10px; text-transform: uppercase; color: var(--text-main); margin-bottom: 4px; font-weight: bold; opacity: 0.7; text-align: center; }
 
@@ -134,7 +136,7 @@
                 <div class="flex-col">
                     <label data-i18n="lbl_grid">Układ Siatki (Smart Grid)</label>
                     <select id="grid-preset" onchange="applyGrid()">
-                        <option value="4x8" data-i18n="grid_std_plus" selected>Standard+ (3 kolumny x 8 wierszy) - DOMYŚLNY</option>
+                        <option value="4x8" data-i18n="grid_std_plus" selected>Standard+ (3 kolumny x 8 wierszy)</option>
                         <option value="4x6" data-i18n="grid_std">Standard (3 kolumny x 6 wierszy)</option>
                         <option value="4x4" data-i18n="grid_large">Duży (4 kolumny x 4 wiersze)</option>
                         <option value="4x6m" data-i18n="grid_med">Średni (4 kolumny x 6 wierszy)</option>
@@ -250,9 +252,7 @@
             </div>
 
             <input type="hidden" name="layout_data_json" id="layout_json">
-            <!-- Pole do przekazywania surowych definicji z importu -->
             <input type="hidden" name="custom_definitions_json" id="custom_defs">
-            
             <button type="button" class="btn btn-gen" onclick="submitData()" data-i18n="btn_gen">GENERUJ KOD .DASH</button>
         </form>
 
@@ -331,6 +331,7 @@
             }
         };
 
+        // Mapa Smart Logic - Słowa kluczowe i ikony
         const SMART_MAP = {
             'light': { type: 'switch', size: '(2x1)', iconOn: 'mdi-lightbulb-on', iconOff: 'mdi-lightbulb-outline' },
             'switch': { type: 'switch', size: '(2x1)', iconOn: 'mdi-toggle-switch', iconOff: 'mdi-toggle-switch-off' },
@@ -347,14 +348,16 @@
             return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
         }
 
-        // searchEntities: forceSmartTitle pozwala na szukanie po tytule (wpisywanym ręcznie)
+        // Zmodyfikowane SearchEntities - teraz reaguje też na wpisywanie Tytułu (forceSmartTitle)
         function searchEntities(val, forceSmartTitle = false) {
             if (!val && !forceSmartTitle) return;
+            
             if (forceSmartTitle) {
-                runSmartLogic(val, true); 
+                runSmartLogic(val, true); // Analiza po tytule
                 return;
             }
-            runSmartLogic(val, false); 
+
+            runSmartLogic(val, false); // Analiza po ID
             const dl = document.getElementById('entity-list');
             dl.innerHTML = '';
             if (val.length < 2) return;
@@ -382,6 +385,7 @@
 
             let conf = { type: 'sensor', size: '(1x1)', icon: 'mdi-eye' };
             
+            // Jeśli szukamy po ID encji (nie po tytule), sprawdź metadane
             if (!isTitleSearch) {
                 const ent = entitiesData.find(e => e.id === input) || { attributes: {} };
                 const dClass = (ent.attributes.device_class || '').toLowerCase();
@@ -393,6 +397,7 @@
                 if (dClass === 'temperature') conf = { type: 'sensor', size: '(1x1)', icon: 'mdi-thermometer' };
             }
 
+            // Analiza słów kluczowych (działa dla ID i Tytułu)
             const check = (keywords) => keywords.some(k => inputNorm.includes(k));
 
             if (check(['glosnik', 'speaker', 'audio', 'tv', 'odtwarzacz', 'radio'])) conf = SMART_MAP['media_player'];
@@ -407,11 +412,16 @@
             else if (check(['wilg', 'humid'])) conf = { type: 'sensor', size: '(1x1)', icon: 'mdi-water-percent' };
             else if (check(['pogoda', 'weather'])) conf = { type: 'switch', size: '(2x1)', iconOn: 'mdi-weather-cloudy', iconOff: 'mdi-weather-cloudy' };
 
+            // Aplikowanie logiki - tylko jeśli typy się zgadzają lub pole jest puste
+            const currentType = document.getElementById('w-type').value;
+            
+            // Wymuszenie 2x1 dla układów Standard
             const currentGrid = document.getElementById('grid-preset').value;
             if ((currentGrid === '4x8' || currentGrid === '4x6') && conf.size === '(1x1)' && conf.type !== 'binary_sensor' && conf.type !== 'sensor') {
                 conf.size = '(2x1)';
             }
 
+            // Jeśli to wyszukiwanie po tytule, aktualizuj tylko ikony
             if (isTitleSearch) {
                 if (conf.iconOn) document.getElementById('w-icon-on').value = conf.iconOn;
                 if (conf.iconOff) document.getElementById('w-icon-off').value = conf.iconOff;
@@ -420,9 +430,11 @@
                 return;
             }
 
+            // Jeśli to wyszukiwanie po ID - aktualizuj wszystko
             document.getElementById('w-type').value = conf.type;
             document.getElementById('w-size').value = conf.size;
             
+            // Formatowanie nazwy z ID
             if (!isTitleSearch) {
                 let name = input.split('.').pop();
                 name = name.replace(/_[lvr]\d+$/i, '').replace(/_state$/i, '').replace(/_/g, ' ');
@@ -441,7 +453,7 @@
 
         function applyGrid() {
             const val = document.getElementById('grid-preset').value;
-            const parts = val.replace('m','').split('x');
+            const parts = val.replace('m','').split('x'); // 'm' from 4x6m
             document.getElementById('h-cols').value = parts[0];
             document.getElementById('h-rows').value = parts[1];
             document.getElementById('form-cols').value = parts[0];
@@ -458,6 +470,27 @@
             document.getElementById('w-name').value = val.toUpperCase();
         }
 
+        function calculateRowWidth(row) {
+            let width = 0;
+            row.forEach(w => {
+                let cols = 2; // Default 2x1
+                if (w.size) {
+                    const parts = w.size.replace(/[()]/g, '').split('x');
+                    cols = parseInt(parts[0]) || 1;
+                }
+                // W układzie 4x8/4x6, widget 2x1 zajmuje tak naprawdę 2 sloty z 4 wirtualnych, 
+                // ale wizualnie to 3 kolumny Joan. 
+                // Wymóg użytkownika: "sztywno jak wybiorę 3x8 to nie zrobię 4x6".
+                // W Joan6 layout logiczny:
+                // 3x8 (Standard+) -> W kodzie columns: 4. 
+                // Wiersz ma max width 6 (3 * 2x1). 
+                // Jeśli w wierszu są 3 widgety 2x1 -> width = 6. 
+                // Jeśli są 2 widgety 2x1 + 2 widgety 1x1 -> width = 6.
+                width += cols;
+            });
+            return width;
+        }
+
         function saveWidget() {
             const w = {
                 type: document.getElementById('w-type').value,
@@ -468,23 +501,32 @@
                 icon: document.getElementById('w-icon').value,
                 icon_on: document.getElementById('w-icon-on').value,
                 icon_off: document.getElementById('w-icon-off').value,
-                was_edited: true // Flaga edycji
+                was_edited: true // Flaga edycji dla ochrony importu
             };
             if(w.type === 'navigate') w.id = 'navigate.' + w.dash;
             if(w.type === 'spacer') w.id = 'spacer';
 
-            // Sztywna walidacja siatki
+            // WALIDACJA MIEJSCA W WIERSZU
             let targetRowIdx = editIdx ? editIdx.r : rows.length - 1;
             let currentRow = [...rows[targetRowIdx]];
-            if (editIdx) currentRow.splice(editIdx.w, 1); 
+            if (editIdx) currentRow.splice(editIdx.w, 1); // Usuń stary przy edycji
             
+            // Oblicz szerokość nowego
             let newCols = 2;
             if (w.size) newCols = parseInt(w.size.replace(/[()]/g, '').split('x')[0]) || 1;
             
-            const gridVal = document.getElementById('grid-preset').value;
-            let maxSlots = 3; 
-            if (gridVal === '4x4') maxSlots = 4; 
+            // Oblicz zajętość wiersza
+            // Dla Standard (4x..) max szerokość to wirtualnie 6 (bo 3 kolumny x szerokość 2).
+            // Ale w pliku joan columns: 4. 
+            // W rzeczywistości wiersz w YAML to lista ID. AppDaemon układa je.
+            // Jeśli mamy 3 kolumny fizyczne, to limit to 3 elementy (jeśli 2x1) lub 6 elementów (jeśli 1x1).
+            // Uproszczenie: Limit to 3 "duże" sloty.
             
+            const gridVal = document.getElementById('grid-preset').value;
+            let maxSlots = 3; // Domyślne 3 kolumny Joan
+            if (gridVal === '4x4') maxSlots = 4; // Duży
+            
+            // Przeliczamy na "połówki" (1x1 to 1, 2x1 to 2). Max szerokość Joan to ~6 jednostek 1x1.
             let currentRowWidth = 0;
             currentRow.forEach(item => {
                 let c = 2;
@@ -492,7 +534,7 @@
                 currentRowWidth += c;
             });
 
-            const maxUnits = maxSlots * 2; 
+            const maxUnits = maxSlots * 2; // 3 kolumny * 2 = 6 jednostek
             if (currentRowWidth + newCols > maxUnits) {
                 alert(TRANSLATIONS[currentLang].alert_full);
                 return;
@@ -682,18 +724,23 @@
             let currentDefKey = null;
             let currentDefLines = [];
 
-            // Parsowanie definicji
+            // Parsowanie definicji (zachowanie surowego tekstu dla ochrony)
             lines.forEach(line => {
+                const tr = line.trim();
                 if (line.match(/^\S+:/) && !line.startsWith('layout:') && !line.startsWith('global_parameters:')) {
-                    if (currentDefKey) { rawDefs[currentDefKey] = currentDefLines.join('\n'); }
+                    if (currentDefKey) {
+                        rawDefs[currentDefKey] = currentDefLines.join('\n');
+                    }
                     currentDefKey = line.split(':')[0].trim();
                     currentDefLines = [];
                 } else if (currentDefKey) {
-                    if (!line.startsWith('layout:') && !line.startsWith('#')) { currentDefLines.push(line); }
+                    if (!line.startsWith('layout:') && !line.startsWith('#')) {
+                        currentDefLines.push(line);
+                    }
                 }
             });
             if(currentDefKey) rawDefs[currentDefKey] = currentDefLines.join('\n');
-            rawImportedDefs = rawDefs;
+            rawImportedDefs = rawDefs; // Zapisz do globalnej zmiennej
 
             // Parsowanie layoutu
             lines.forEach(line => {
@@ -707,9 +754,15 @@
                         let id = wStr;
                         let size = '(2x1)'; 
                         const sizeMatch = wStr.match(/\(\d+x\d+\)/);
-                        if(sizeMatch) { size = sizeMatch[0]; id = wStr.replace(size, '').trim(); }
-                        let type = 'switch'; let name = id; let icon = ''; let icon_on = ''; let icon_off = '';
+                        if(sizeMatch) {
+                            size = sizeMatch[0];
+                            id = wStr.replace(size, '').trim();
+                        }
+                        let type = 'switch';
+                        let name = id;
+                        let icon = ''; let icon_on = ''; let icon_off = '';
                         
+                        // Próbujemy wyciągnąć dane z surowej definicji dla podglądu
                         if(rawDefs[id]) {
                             const d = rawDefs[id];
                             const tMatch = d.match(/widget_type:\s*(.*)/);
@@ -733,7 +786,9 @@
                     });
                     newRows.push(rowData);
                 }
-                if(inLayout && tr.length > 0 && !tr.startsWith('-') && !tr.startsWith(' ') && !tr.startsWith('layout:')) { inLayout = false; }
+                if(inLayout && tr.length > 0 && !tr.startsWith('-') && !tr.startsWith(' ') && !tr.startsWith('layout:')) {
+                    inLayout = false;
+                }
             });
 
             if(newRows.length > 0) {
