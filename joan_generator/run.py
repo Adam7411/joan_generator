@@ -10,12 +10,10 @@ app = Flask(__name__)
 # -------------------------------------------------------------------------
 # 1. KONFIGURACJA API I TOKENU (HOME ASSISTANT)
 # -------------------------------------------------------------------------
-# Domyślnie pobieramy token z Supervisora (środowisko Hass.io)
 TOKEN = os.environ.get('SUPERVISOR_TOKEN')
 API_URL = "http://supervisor/core/api" 
 TOKEN_SOURCE = "System (Supervisor)"
 
-# Sprawdzamy, czy użytkownik podał własny token w konfiguracji dodatku (dla trybu manualnego)
 try:
     options_path = '/data/options.json'
     if os.path.exists(options_path):
@@ -28,11 +26,10 @@ try:
                 TOKEN_SOURCE = "Manual (Konfiguracja)"
                 print(f"🔧 Wykryto manualny token. Przełączam API na: {API_URL}")
 except Exception as e:
-    print(f"ℹ️ Info: Nie udało się odczytać pliku opcji (to normalne przy pierwszym uruchomieniu lokalnie): {e}")
+    print(f"ℹ️ Info: Nie udało się odczytać pliku opcji: {e}")
 
 if not TOKEN:
     print("❌ OSTRZEŻENIE: Brak tokena autoryzacji! Lista encji będzie pusta.")
-    print("   Upewnij się, że dodatek ma odpowiednie uprawnienia lub wpisz token w konfiguracji.")
 else:
     print(f"🔑 Źródło tokena: {TOKEN_SOURCE}")
 
@@ -64,15 +61,13 @@ def get_ha_entities():
             entities.sort(key=lambda x: x['id'])
             return entities
         elif response.status_code == 401:
-            print("❌ Błąd 401: Nieautoryzowany dostęp. Sprawdź token.")
-        else:
-            print(f"⚠️ Błąd API Home Assistant: {response.status_code} - {response.text}")
+            print("❌ Błąd 401: Nieautoryzowany dostęp.")
     except Exception as e:
-        print(f"❌ Wyjątek podczas pobierania encji: {e}")
+        print(f"❌ Wyjątek: {e}")
     return []
 
 # -------------------------------------------------------------------------
-# 3. STYLE
+# 3. STYLE (ZGODNE Z WYMOGAMI 33px i INLINE-BLOCK)
 # -------------------------------------------------------------------------
 STYLE_TITLE = "color: #000000; font-size: 20px; font-weight: 700; text-align: center; padding-top: 3px; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif;"
 STYLE_WIDGET = "color: #000000 !important; background-color: #FFFFFF !important;"
@@ -98,7 +93,7 @@ def index():
             dashboard_slug = title.lower().replace(" ", "_")
             dashboard_filename = dashboard_slug + ".dash"
             
-            # Domyślnie 4 kolumny dla układu (wizualnie 3)
+            # Domyślnie 4 kolumny (aby uzyskać układ 3-kolumnowy w AppDaemon dla Standard+)
             cols = request.form.get('grid_columns', '4')
             rows = request.form.get('grid_rows', '8')
             lang = request.form.get('ui_language', 'pl')
@@ -142,6 +137,7 @@ def index():
                             continue
                         widget_id = w['id']
                         size = w.get('size', '').strip()
+                        # Jeśli widget nie jest standardowy 2x1, dodaj rozmiar w nawiasie
                         if size and size != "(2x1)":
                             if not size.startswith('('): size = f"({size})"
                             widget_id += size
@@ -152,7 +148,7 @@ def index():
                 generated_yaml += "\n# -------------------\n# DEFINICJE WIDŻETÓW\n# -------------------\n\n"
                 seen_ids = set()
                 
-                # IMPORTOWANE DEFINICJE (Custom Code preservation)
+                # OCHRONA IMPORTU: Pobierz oryginalne definicje z formularza
                 custom_defs_str = request.form.get('custom_definitions_json', '{}')
                 custom_defs = json.loads(custom_defs_str)
 
@@ -161,21 +157,15 @@ def index():
                     if w_id in seen_ids: continue
                     seen_ids.add(w_id)
                     
-                    # Jeśli widget był importowany i nie był edytowany, użyj oryginalnego YAML
-                    # (Logika po stronie JS decyduje czy wysłać definicję czy polegać na generowaniu, 
-                    # tutaj dla uproszczenia generujemy nowe, chyba że mamy "custom blobs" - ale 
-                    # Twój wymóg to "zostawiamy jak wczytano".
-                    # Najlepszym sposobem jest sprawdzenie, czy mamy surowy YAML dla tego ID w custom_defs)
-                    
+                    # 1. Jeśli widget był importowany i NIE BYŁ edytowany -> Użyj starego kodu
                     if w_id in custom_defs and not w.get('was_edited', False):
-                        # Wstawiamy surowy kod z importu
                         generated_yaml += f"{w_id}:\n"
                         for line in custom_defs[w_id].split('\n'):
                             if line.strip(): generated_yaml += f"  {line}\n"
                         generated_yaml += "\n"
                         continue
 
-                    # GENEROWANIE NOWEGO / EDYTOWANEGO KODU
+                    # 2. Generuj nowy kod
                     w_type = w['type']
                     w_name = w['name']
                     w_icon = w['icon']
