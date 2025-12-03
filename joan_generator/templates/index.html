@@ -152,6 +152,9 @@
             <input type="hidden" name="grid_columns" id="form-cols" value="4">
             <input type="hidden" name="grid_rows" id="form-rows" value="8">
             
+            <!-- NOWE POLE: PRZECHOWYWANIE DOMYŚLNEGO ROZMIARU DLA BACKENDU -->
+            <input type="hidden" name="default_widget_size" id="input-def-size" value="2, 1">
+            
             <div class="add-widget-box" id="editor-box">
                 <div class="section-title" id="editor-title" data-i18n="sec_add">2. Dodaj Widget</div>
                 <div class="flex-row">
@@ -276,6 +279,7 @@
         let currentLang = 'pl';
         let rawImportedDefs = {}; 
         let dragSrc = null; 
+        let globalDefaultSize = {w: 2, h: 1}; // Domyślny rozmiar (2x1)
 
         const POPULAR_ICONS = [ "mdi-home", "mdi-home-outline", "mdi-lightbulb", "mdi-lightbulb-on", "mdi-lightbulb-outline", "mdi-toggle-switch", "mdi-toggle-switch-off", "mdi-power", "mdi-window-shutter", "mdi-window-shutter-open", "mdi-garage", "mdi-garage-open", "mdi-door", "mdi-door-open", "mdi-lock", "mdi-lock-open", "mdi-thermometer", "mdi-water-percent", "mdi-battery", "mdi-weather-cloudy", "mdi-play", "mdi-pause", "mdi-wifi", "mdi-clock-outline", "mdi-calendar", "mdi-alert", "mdi-check", "mdi-close" ];
 
@@ -430,7 +434,13 @@
 
         function getSlots(w) {
             let c = 2;
-            if (w.size) c = parseInt(w.size.replace(/[()]/g, '').split('x')[0]) || 1;
+            // Jeśli widget ma jawnie ustawiony rozmiar, użyj go
+            if (w.size) {
+                c = parseInt(w.size.replace(/[()]/g, '').split('x')[0]) || 1;
+            } else {
+                // W przeciwnym razie użyj globalnego domyślnego rozmiaru
+                c = globalDefaultSize.w;
+            }
             return c;
         }
 
@@ -697,7 +707,17 @@
                     if(editIdx && editIdx.r === rI && editIdx.w === wI) div.classList.add('editing');
 
                     let cols = 2, rw = 1;
-                    if(w.size) { const parts = w.size.replace(/[()]/g, '').split('x'); cols = parseInt(parts[0]) || 1; rw = parseInt(parts[1]) || 1; }
+                    if (w.size) { 
+                        // Użyj rozmiaru przypisanego do widgetu (jeśli jest)
+                        const parts = w.size.replace(/[()]/g, '').split('x'); 
+                        cols = parseInt(parts[0]) || 1; 
+                        rw = parseInt(parts[1]) || 1; 
+                    } else {
+                        // Użyj globalnego domyślnego rozmiaru
+                        cols = globalDefaultSize.w;
+                        rw = globalDefaultSize.h;
+                    }
+                    
                     const width = (cols * 117) + ((cols - 1) * 8); const height = (rw * 117) + ((rw - 1) * 8);
                     div.style.width = width + 'px'; div.style.height = height + 'px';
 
@@ -725,6 +745,26 @@
             const text = document.getElementById('import-code').value; if(!text) return; blockSmart = true;
             const lines = text.split('\n'); const newRows = []; let inLayout = false; let rawDefs = {}; let currentDefKey = null; let currentDefLines = [];
             
+            // 1. Parsowanie nagłówka (szukanie widget_size)
+            let importedW = 2, importedH = 1;
+            
+            lines.forEach(line => {
+                const t = line.trim();
+                if (t.startsWith('widget_size:')) {
+                    // Parsuj [X, Y]
+                    const match = t.match(/\[\s*(\d+)\s*,\s*(\d+)\s*\]/);
+                    if (match) {
+                        importedW = parseInt(match[1]);
+                        importedH = parseInt(match[2]);
+                        globalDefaultSize = { w: importedW, h: importedH };
+                        document.getElementById('input-def-size').value = `${importedW}, ${importedH}`;
+                        
+                        // Aktualizacja UI wyboru rozmiaru, jeśli pasuje do jednego z predefiniowanych
+                        // (opcjonalne, ale miłe dla oka)
+                    }
+                }
+            });
+
             lines.forEach(line => {
                 if (line.match(/^\S+:/) && !line.startsWith('layout:') && !line.startsWith('global_parameters:')) { if (currentDefKey) rawDefs[currentDefKey] = currentDefLines.join('\n'); currentDefKey = line.split(':')[0].trim(); currentDefLines = []; }
                 else if (currentDefKey) { if (!line.startsWith('layout:') && !line.startsWith('#')) currentDefLines.push(line); }
@@ -733,8 +773,6 @@
 
             lines.forEach(line => {
                 const tr = line.trim();
-                
-                // --- FIX: IGNOROWANIE KOMENTARZY ---
                 if (!tr || tr.startsWith('#')) return; 
 
                 if (tr.startsWith('layout:')) { 
@@ -746,8 +784,16 @@
                     if (tr.startsWith('-')) {
                         const content = tr.substring(1).trim(); const widgets = content.split(',').map(s => s.trim()); const rowData = [];
                         widgets.forEach(wStr => {
-                            let id = wStr; let size = '(2x1)'; const sizeMatch = wStr.match(/\(\d+x\d+\)/);
-                            if(sizeMatch) { size = sizeMatch[0]; id = wStr.replace(size, '').trim(); }
+                            let id = wStr; 
+                            let size = ''; // Pusty rozmiar = domyślny
+                            
+                            // Sprawdź czy widget ma jawnie podany rozmiar (np. climate(2x1))
+                            const sizeMatch = wStr.match(/\(\d+x\d+\)/);
+                            if(sizeMatch) { 
+                                size = sizeMatch[0]; 
+                                id = wStr.replace(size, '').trim(); 
+                            } 
+                            
                             let type = 'switch'; let name = id; let icon = ''; let icon_on = ''; let icon_off = '';
                             if(rawDefs[id]) {
                                 const d = rawDefs[id]; const tMatch = d.match(/widget_type:\s*(.*)/); if(tMatch) type = tMatch[1].trim();
@@ -756,11 +802,11 @@
                                 const ionMatch = d.match(/icon_on:\s*(.*)/); if(ionMatch) icon_on = ionMatch[1].trim();
                                 const ioffMatch = d.match(/icon_off:\s*(.*)/); if(ioffMatch) icon_off = ioffMatch[1].trim();
                             } else { if(id === 'spacer') type = 'spacer'; else if(id.startsWith('navigate.')) type = 'navigate'; else if(id.startsWith('sensor.')) type = 'sensor'; }
+                            
                             rowData.push({ id, type, size, name, icon, icon_on, icon_off, was_edited: false });
                         });
                         newRows.push(rowData);
                     } else if (tr.match(/^[a-z0-9_]+:/i)) {
-                        // Jeśli linia wygląda jak klucz (np. "global_parameters:"), wychodzimy z layoutu
                         inLayout = false;
                     }
                 }
