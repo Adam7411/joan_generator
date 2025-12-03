@@ -65,22 +65,18 @@ def get_ha_entities():
 # -------------------------------------------------------------------------
 # 3. STYLE (E-INK OPTIMIZED)
 # -------------------------------------------------------------------------
-# STYLE OGÓLNE
-STYLE_TITLE = "color: #000000; font-size: 20px; font-weight: 700; text-align: center; padding-top: 3px; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif;"
+# Tytuł wyżej, żeby zrobić miejsce
+STYLE_TITLE = "color: #000000; font-size: 20px; font-weight: 700; text-align: center; padding-top: 5px; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif;"
+
 STYLE_WIDGET = "color: #000000 !important; background-color: #FFFFFF !important;"
 STYLE_TEXT = "color: #000000 !important; font-weight: 700 !important;"
-STYLE_STATE_TEXT = "color: #000000 !important; font-weight: 700 !important; font-size: 16px !important;"
+
+# ZMIANA: Obniżona wartość (padding-top zwiększony z 33px na 45px), aby oddalić od tytułu
+STYLE_VALUE = "color: #000000 !important; font-size: 44px !important; font-weight: 700 !important; padding-top: 45px !important; line-height: 1.2 !important; display: inline-block !important;"
+STYLE_UNIT = "color: #000000 !important; padding-top: 45px !important; display: inline-block !important;"
+
 STYLE_ICON = "color: #000000 !important;"
-
-# STYLE DLA SENSORA BEZ IKONY (Standardowy)
-STYLE_VALUE = "color: #000000 !important; font-size: 44px !important; font-weight: 700 !important; padding-top: 33px !important; line-height: 1.2 !important; display: inline-block !important;"
-STYLE_UNIT = "color: #000000 !important; padding-top: 33px !important; display: inline-block !important;"
-
-# STYLE DLA SENSORA Z IKONĄ (Naprawione pozycjonowanie)
-# position: absolute dla ikony wyjmuje ją z przepływu, więc nie chowa się pod tekstem
-STYLE_ICON_SENSOR = "color: #000000 !important; font-size: 45px !important; position: absolute !important; top: 38px !important; left: 15px !important; z-index: 5 !important;"
-STYLE_VALUE_WITH_ICON = "color: #000000 !important; font-size: 32px !important; font-weight: 700 !important; padding-top: 45px !important; padding-left: 65px !important; display: inline-block !important; text-align: left !important;"
-STYLE_UNIT_WITH_ICON = "color: #000000 !important; font-size: 18px !important; padding-top: 55px !important; display: inline-block !important;"
+STYLE_STATE_TEXT = "color: #000000 !important; font-weight: 700 !important; font-size: 16px !important;"
 
 # -------------------------------------------------------------------------
 # 4. ROUTE GŁÓWNY
@@ -189,25 +185,12 @@ def index():
                         generated_yaml += f"  widget_type: sensor\n"
                         generated_yaml += f"  entity: {w_id}\n"
                         generated_yaml += f"  title: \"{w_name}\"\n"
+                        # USUNIĘTO GENEROWANIE IKONY DLA SENSORA - TYLKO WARTOŚĆ
                         generated_yaml += f"  title_style: \"{STYLE_TITLE}\"\n"
                         generated_yaml += f"  text_style: \"{STYLE_TEXT}\"\n"
+                        generated_yaml += f"  value_style: \"{STYLE_VALUE}\"\n"
+                        generated_yaml += f"  unit_style: \"{STYLE_UNIT}\"\n"
                         generated_yaml += f"  widget_style: \"{STYLE_WIDGET}\"\n"
-                        
-                        # --- FIX: SENSOR Z IKONĄ ---
-                        if w_icon: 
-                            # Jeśli ikona jest zdefiniowana:
-                            # 1. Dodaj ikonę
-                            # 2. Ustaw styl ikony na absolute (żeby była widoczna)
-                            # 3. Przesuń tekst w prawo (padding-left)
-                            generated_yaml += f"  icon: {w_icon}\n"
-                            generated_yaml += f"  icon_style: \"{STYLE_ICON_SENSOR}\"\n"
-                            generated_yaml += f"  value_style: \"{STYLE_VALUE_WITH_ICON}\"\n"
-                            generated_yaml += f"  unit_style: \"{STYLE_UNIT_WITH_ICON}\"\n"
-                        else:
-                            # Jeśli brak ikony - styl standardowy (duży tekst)
-                            generated_yaml += f"  value_style: \"{STYLE_VALUE}\"\n"
-                            generated_yaml += f"  unit_style: \"{STYLE_UNIT}\"\n"
-
                         if any(k in w_id for k in ['battery', 'bateria', 'level']):
                             generated_yaml += "  precision: 0\n"
                         else:
