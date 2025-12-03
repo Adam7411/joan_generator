@@ -66,35 +66,21 @@
 
         .preview-area { background: var(--preview-bg); padding: 30px; border: 2px solid var(--border); border-radius: 8px; overflow-x: auto; min-height: 400px; transition: width 0.3s; }
         
-        /* --- KLUCZOWE ZMIANY CSS DLA NAPRAWY KONTROLEK --- */
         .eink-row { 
-            display: flex; gap: 8px; 
-            margin-bottom: 15px; 
-            margin-top: 50px; /* DUŻY MARGINES GÓRNY ŻEBY ZMIEŚCIĆ PRZYCISKI */
-            padding: 15px; 
+            display: flex; gap: 8px; margin-bottom: 15px; margin-top: 50px; padding: 15px; 
             border: 2px dashed #999; border-radius: 6px; min-height: 140px; 
             align-items: flex-end; position: relative; 
             background-image: linear-gradient(to right, rgba(0,0,0,0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,0,0,0.05) 1px, transparent 1px); 
             background-size: 125px 125px; 
             transition: border-color 0.3s, box-shadow 0.3s, width 0.3s; 
-            cursor: pointer; 
-            flex-wrap: nowrap; 
-            overflow-x: hidden; 
-            overflow: visible !important; /* NIE UCINAJ ELEMENTÓW WYSTAJĄCYCH */
+            cursor: pointer; flex-wrap: nowrap; overflow-x: hidden; overflow: visible !important; 
         }
-        
         .eink-row:hover { background-color: rgba(0,0,0,0.02); }
         .eink-row.row-selected { border: 2px solid #2196f3; background-color: rgba(33, 150, 243, 0.1); }
         .eink-row.row-active { border: 2px solid #ff9800; box-shadow: 0 0 10px rgba(255, 152, 0, 0.3); }
         .eink-row.drag-over { border: 2px dashed #4caf50; background: rgba(76, 175, 80, 0.1); }
 
-        .row-controls { 
-            position: absolute; 
-            top: -40px; /* WYRAŹNIE NAD RAMKĄ */
-            left: 0; 
-            display: flex; align-items: center; z-index: 100; 
-            white-space: nowrap;
-        }
+        .row-controls { position: absolute; top: -40px; left: 0; display: flex; align-items: center; z-index: 100; white-space: nowrap; }
         .row-label { font-size: 13px; background: var(--bg-body); padding: 4px 10px; color: var(--text-main); border: 1px solid var(--border); border-radius: 4px; font-weight: bold; margin-right: 10px; }
         
         .widget-wrapper { display: flex; flex-direction: column; align-items: center; margin-right: 0; position: relative; flex-shrink: 0; cursor: grab; }
@@ -616,48 +602,37 @@
             if (dragSrc === null) return;
             const movedWidget = rows[dragSrc.r][dragSrc.w];
             
-            // Remove from source
             rows[dragSrc.r].splice(dragSrc.w, 1);
             
-            // Check Capacity
             if (getRowUsage(rows[targetR]) + getSlots(movedWidget) > getMaxSlots()) {
                 rows[dragSrc.r].splice(dragSrc.w, 0, movedWidget);
                 alert(TRANSLATIONS[currentLang].alert_full);
                 renderPreview(); return;
             }
             
-            // Push to end of target row
             rows[targetR].push(movedWidget);
             dragSrc = null; renderPreview();
         }
 
-        // NEW: Handle drop specifically on a widget to insert before it
         function handleWidgetDrop(e, targetR, targetW) {
             e.stopPropagation(); e.preventDefault();
             if (dragSrc === null) return;
             
             const movedWidget = rows[dragSrc.r][dragSrc.w];
-            
-            // 1. Remove from source
             rows[dragSrc.r].splice(dragSrc.w, 1);
             
-            // 2. Adjust target index if we are in the same row and moved from left to right
-            // Because removing the element shifted indices
             let adjustedTargetW = targetW;
             if (dragSrc.r === targetR && dragSrc.w < targetW) {
                 adjustedTargetW--; 
             }
 
-            // 3. Check Capacity
             if (getRowUsage(rows[targetR]) + getSlots(movedWidget) > getMaxSlots()) {
                 rows[dragSrc.r].splice(dragSrc.w, 0, movedWidget);
                 alert(TRANSLATIONS[currentLang].alert_full);
                 renderPreview(); return;
             }
 
-            // 4. Insert at specific index
             rows[targetR].splice(adjustedTargetW, 0, movedWidget);
-            
             dragSrc = null; renderPreview();
         }
 
@@ -676,7 +651,6 @@
                 if (rI === selectedRowIdx) rowDiv.classList.add('row-selected');
                 if (editIdx && editIdx.r === rI) rowDiv.classList.add('row-active');
                 
-                // Drop on ROW (appends to end)
                 rowDiv.ondragover = handleDragOver;
                 rowDiv.ondragleave = handleDragLeave;
                 rowDiv.ondrop = (e) => handleRowDrop(e, rI);
@@ -707,8 +681,6 @@
                     wrapper.draggable = true;
                     wrapper.ondragstart = (e) => handleDragStart(e, rI, wI);
                     wrapper.ondragend = handleDragEnd;
-                    
-                    // Drop on WIDGET (inserts before)
                     wrapper.ondrop = (e) => handleWidgetDrop(e, rI, wI);
 
                     const typeLabel = document.createElement('div'); typeLabel.className = 'ew-type-label'; typeLabel.innerText = w.type;
