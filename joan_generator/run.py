@@ -3,13 +3,9 @@ import json
 import requests
 from flask import Flask, render_template, request
 
-# Inicjalizacja aplikacji
 print("📦 1. Inicjalizacja aplikacji Joan 6 Generator...")
 app = Flask(__name__)
 
-# -------------------------------------------------------------------------
-# 1. KONFIGURACJA API I TOKENU (HOME ASSISTANT)
-# -------------------------------------------------------------------------
 TOKEN = os.environ.get('SUPERVISOR_TOKEN')
 API_URL = "http://supervisor/core/api" 
 TOKEN_SOURCE = "System (Supervisor)"
@@ -33,9 +29,6 @@ if not TOKEN:
 else:
     print(f"🔑 Źródło tokena: {TOKEN_SOURCE}")
 
-# -------------------------------------------------------------------------
-# 2. POBIERANIE DANYCH Z HOME ASSISTANT
-# -------------------------------------------------------------------------
 def get_ha_entities():
     if not TOKEN: return []
     headers = { "Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json" }
@@ -68,9 +61,6 @@ def get_ha_entities():
         print(f"❌ Wyjątek: {e}")
     return []
 
-# -------------------------------------------------------------------------
-# 3. STYLE (ZGODNE Z WYMOGAMI 33px i INLINE-BLOCK)
-# -------------------------------------------------------------------------
 STYLE_TITLE = "color: #000000; font-size: 20px; font-weight: 700; text-align: center; padding-top: 3px; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif;"
 STYLE_WIDGET = "color: #000000 !important; background-color: #FFFFFF !important;"
 STYLE_TEXT = "color: #000000 !important; font-weight: 700 !important;"
@@ -79,9 +69,6 @@ STYLE_UNIT = "color: #000000 !important; padding-top: 33px !important; display: 
 STYLE_ICON = "color: #000000 !important;"
 STYLE_STATE_TEXT = "color: #000000 !important; font-weight: 700 !important; font-size: 16px !important;"
 
-# -------------------------------------------------------------------------
-# 4. ROUTE
-# -------------------------------------------------------------------------
 @app.route('/', methods=['GET', 'POST'])
 def index():
     generated_yaml = ""
@@ -95,7 +82,6 @@ def index():
             dashboard_slug = title.lower().replace(" ", "_")
             dashboard_filename = dashboard_slug + ".dash"
             
-            # Domyślnie 4 kolumny (aby uzyskać układ 3-kolumnowy w AppDaemon dla Standard+)
             cols = request.form.get('grid_columns', '4')
             rows = request.form.get('grid_rows', '8')
             lang = request.form.get('ui_language', 'pl')
@@ -139,7 +125,6 @@ def index():
                             continue
                         widget_id = w['id']
                         size = w.get('size', '').strip()
-                        # Jeśli widget nie jest standardowy 2x1, dodaj rozmiar w nawiasie
                         if size and size != "(2x1)":
                             if not size.startswith('('): size = f"({size})"
                             widget_id += size
@@ -150,7 +135,6 @@ def index():
                 generated_yaml += "\n# -------------------\n# DEFINICJE WIDŻETÓW\n# -------------------\n\n"
                 seen_ids = set()
                 
-                # OCHRONA IMPORTU: Pobierz oryginalne definicje z formularza
                 custom_defs_str = request.form.get('custom_definitions_json', '{}')
                 custom_defs = json.loads(custom_defs_str)
 
@@ -159,7 +143,6 @@ def index():
                     if w_id in seen_ids: continue
                     seen_ids.add(w_id)
                     
-                    # 1. Jeśli widget był importowany i NIE BYŁ edytowany -> Użyj starego kodu
                     if w_id in custom_defs and not w.get('was_edited', False):
                         generated_yaml += f"{w_id}:\n"
                         for line in custom_defs[w_id].split('\n'):
@@ -167,7 +150,6 @@ def index():
                         generated_yaml += "\n"
                         continue
 
-                    # 2. Generuj nowy kod
                     w_type = w['type']
                     w_name = w['name']
                     w_icon = w['icon']
@@ -239,9 +221,9 @@ def index():
                         generated_yaml += f"  time_style: \"{STYLE_VALUE}\"\n"
 
                     elif w_type == 'label':
-                         generated_yaml += f"  widget_type: label\n"
-                         generated_yaml += f"  text: \"{w_name}\"\n"
-                         if w_icon: generated_yaml += f"  icon: {w_icon}\n"
+                        generated_yaml += f"  widget_type: label\n"
+                        generated_yaml += f"  text: \"{w_name}\"\n"
+                        if w_icon: generated_yaml += f"  icon: {w_icon}\n"
                     
                     else:
                         ad_type = w_type
