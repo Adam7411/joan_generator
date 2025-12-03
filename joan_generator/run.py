@@ -73,6 +73,11 @@ STYLE_UNIT = "color: #000000 !important; padding-top: 33px !important; display: 
 STYLE_ICON = "color: #000000 !important;"
 STYLE_STATE_TEXT = "color: #000000 !important; font-weight: 700 !important; font-size: 16px !important;"
 
+# STYLE DLA SENSORA Z IKONĄ (MNIEJSZA CZCIONKA, INNY UKŁAD)
+STYLE_VALUE_WITH_ICON = "color: #000000 !important; font-size: 25px !important; font-weight: 700 !important; padding-top: 5px !important; display: inline-block !important;"
+STYLE_UNIT_WITH_ICON = "color: #000000 !important; padding-top: 5px !important; font-size: 16px !important; display: inline-block !important;"
+STYLE_ICON_SENSOR = "color: #000000 !important; font-size: 40px !important; margin-top: 5px !important;"
+
 # -------------------------------------------------------------------------
 # 4. ROUTE GŁÓWNY
 # -------------------------------------------------------------------------
@@ -180,12 +185,22 @@ def index():
                         generated_yaml += f"  widget_type: sensor\n"
                         generated_yaml += f"  entity: {w_id}\n"
                         generated_yaml += f"  title: \"{w_name}\"\n"
-                        if w_icon: generated_yaml += f"  icon: {w_icon}\n"
                         generated_yaml += f"  title_style: \"{STYLE_TITLE}\"\n"
                         generated_yaml += f"  text_style: \"{STYLE_TEXT}\"\n"
-                        generated_yaml += f"  value_style: \"{STYLE_VALUE}\"\n"
-                        generated_yaml += f"  unit_style: \"{STYLE_UNIT}\"\n"
                         generated_yaml += f"  widget_style: \"{STYLE_WIDGET}\"\n"
+                        
+                        # --- LOGIKA DLA IKONY I TEKSTU ---
+                        if w_icon: 
+                            # Jeśli jest ikona, użyj mniejszej czcionki i dodaj styl ikony
+                            generated_yaml += f"  icon: {w_icon}\n"
+                            generated_yaml += f"  icon_style: \"{STYLE_ICON_SENSOR}\"\n"
+                            generated_yaml += f"  value_style: \"{STYLE_VALUE_WITH_ICON}\"\n"
+                            generated_yaml += f"  unit_style: \"{STYLE_UNIT_WITH_ICON}\"\n"
+                        else:
+                            # Jeśli brak ikony, użyj wielkiej czcionki
+                            generated_yaml += f"  value_style: \"{STYLE_VALUE}\"\n"
+                            generated_yaml += f"  unit_style: \"{STYLE_UNIT}\"\n"
+
                         if any(k in w_id for k in ['battery', 'bateria', 'level']):
                             generated_yaml += "  precision: 0\n"
                         else:
