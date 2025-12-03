@@ -59,6 +59,9 @@
         .btn-cancel { background: #757575; }
         .btn-row { background: #2196f3; margin-top: 15px; }
         .btn-import { background: #ff9800; color: white; margin-top: 10px; }
+        .btn-tetris { background: #9c27b0; color: white; margin-left: 10px; }
+        .btn-dash-save { background: #009688; color: white; width: auto; padding: 8px 15px; font-size: 13px; }
+        .btn-dash-load { background: #607d8b; color: white; width: auto; padding: 8px 15px; font-size: 13px; margin-right: 5px; }
         
         .btn-tool { padding: 6px 12px; font-size: 14px; margin-left: 6px; border-radius: 4px; cursor: pointer; color: white; border: none; font-weight: bold; display: inline-block; text-align: center; }
         .btn-del-row { background: #d32f2f; }
@@ -107,7 +110,6 @@
         .char-counter { font-size: 11px; text-align: right; margin-top: 4px; color: #666; font-weight: bold; }
         .char-counter.limit { color: red; }
 
-        /* NOWA KLASA DLA WSKAZÓWKI */
         .input-hint {
             display: block; font-size: 0.75em; margin-top: 4px; line-height: 1.3;
             padding: 6px; border-radius: 4px;
@@ -116,6 +118,12 @@
             border: 1px solid var(--border);
         }
         .input-hint code { background: rgba(255,255,255,0.3); padding: 2px 4px; border-radius: 3px; font-weight: bold; }
+        
+        .dash-list { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 5px; }
+        .dash-item { background: var(--bg-input); border: 1px solid var(--border); padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 5px; }
+        .dash-item:hover { background: var(--highlight); }
+        .dash-item span { font-weight: bold; }
+        .dash-item button { font-size: 10px; padding: 2px 5px; margin-left: 5px; background: #d32f2f; color: white; border: none; border-radius: 3px; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -148,6 +156,27 @@
                 </div>
                 <input type="hidden" id="h-cols" value="4">
                 <input type="hidden" id="h-rows" value="8">
+            </div>
+        </div>
+
+        <!-- NEW: MULTI DASHBOARD MANAGER -->
+        <div class="section" style="border: 2px solid #009688; background: rgba(0, 150, 136, 0.05);">
+            <div class="section-title" style="border-bottom-color: #009688; color: #009688;">Multi-Dashboard Manager (Browser)</div>
+            <p style="font-size: 0.9em; margin-bottom: 10px;">Zapisz swoje układy w przeglądarce, aby łatwo się między nimi przełączać.</p>
+            <div class="flex-row" style="align-items: flex-end;">
+                <div class="flex-col" style="flex: 2;">
+                    <label>Zapisz obecny układ jako:</label>
+                    <div style="display:flex; gap: 10px;">
+                        <input type="text" id="save-dash-name" placeholder="np. Salon">
+                        <button type="button" class="btn btn-dash-save" onclick="saveToBrowser()">ZAPISZ</button>
+                    </div>
+                </div>
+                <div class="flex-col" style="flex: 3;">
+                    <label>Twoje zapisane dashboardy:</label>
+                    <div id="saved-dash-list" class="dash-list">
+                        <!-- Generated via JS -->
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -253,6 +282,8 @@
                 <p style="font-size:0.85em; margin-bottom: 10px; color: #666;">Możesz przeciągać przyciski między wierszami oraz zmieniać ich kolejność w wierszu (Drag&Drop).</p>
                 <div class="preview-area" id="preview-container"></div>
                 <button type="button" class="btn btn-row" onclick="addRow()" data-i18n="btn_row">+ Dodaj Wiersz</button>
+                <!-- NEW TETRIS BUTTON -->
+                <button type="button" class="btn btn-row btn-tetris" onclick="autoCompact()">🪄 AUTO-TETRIS (UPAKUJ)</button>
             </div>
 
             <input type="hidden" name="layout_data_json" id="layout_json">
@@ -350,8 +381,8 @@
             'garage': { type: 'cover', size: '(2x1)', iconOn: 'mdi-garage-open', iconOff: 'mdi-garage' }, 
             'binary_sensor': { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-checkbox-marked-circle', iconOff: 'mdi-checkbox-blank-circle-outline' }, 
             'sensor': { type: 'sensor', size: '(2x1)', icon: 'mdi-eye' }, 
-            'media_player': { type: 'media_player', size: '(2x2)', icon: '' }, // ALWAYS 2x2
-            'climate': { type: 'climate', size: '(2x2)', icon: '' }, // ALWAYS 2x2
+            'media_player': { type: 'media_player', size: '(2x2)', icon: '' }, 
+            'climate': { type: 'climate', size: '(2x2)', icon: '' }, 
             'lock': { type: 'lock', size: '(2x1)', iconOn: 'mdi-lock-open', iconOff: 'mdi-lock' }, 
             'script': { type: 'script', size: '(2x1)', icon: 'mdi-script-text-outline' } 
         };
@@ -784,9 +815,11 @@
             let importedW = 2, importedH = 1;
             let foundCols = null;
             let foundRows = null;
+            let foundTitle = "JoanDashboard";
             
             lines.forEach(line => {
                 const t = line.trim();
+                if (t.startsWith('title:')) foundTitle = t.split(':')[1].trim();
                 if (t.startsWith('widget_size:')) {
                     const match = t.match(/\[\s*(\d+)\s*,\s*(\d+)\s*\]/);
                     if (match) {
@@ -805,6 +838,9 @@
                 if (t.startsWith('columns:')) foundCols = parseInt(t.split(':')[1]);
                 if (t.startsWith('rows:')) foundRows = parseInt(t.split(':')[1]);
             });
+
+            document.getElementById('dash-title').value = foundTitle;
+            syncTitle();
 
             let preset = '4x8'; 
 
@@ -872,6 +908,103 @@
             setTimeout(() => blockSmart = false, 1000);
         }
 
+        // --- NEW FEATURE: AUTO COMPACT (TETRIS) ---
+        function autoCompact() {
+            if(!confirm(currentLang === 'pl' ? "To usunie luki i ułoży widgety jeden po drugim. Kontynuować?" : "This will remove gaps and pack widgets. Continue?")) return;
+            
+            // 1. Zbierz wszystkie widgety (pomiń spacery, jeśli chcesz, tutaj usuwam spacery)
+            let allWidgets = [];
+            rows.forEach(row => {
+                row.forEach(w => {
+                    if(w.type !== 'spacer') allWidgets.push(w);
+                });
+            });
+
+            // 2. Przygotuj nowe wiersze
+            let newRows = [];
+            let currentRow = [];
+            let currentUsage = 0;
+            const limit = getMaxSlots();
+
+            // 3. Upakuj
+            allWidgets.forEach(w => {
+                let wSize = getSlots(w);
+                if(currentUsage + wSize <= limit) {
+                    currentRow.push(w);
+                    currentUsage += wSize;
+                } else {
+                    newRows.push(currentRow);
+                    currentRow = [w];
+                    currentUsage = wSize;
+                }
+            });
+            if(currentRow.length > 0) newRows.push(currentRow);
+
+            // 4. Zastosuj
+            rows = newRows;
+            renderPreview();
+        }
+
+        // --- NEW FEATURE: BROWSER DASHBOARD MANAGER ---
+        function saveToBrowser() {
+            const name = document.getElementById('save-dash-name').value.trim();
+            if(!name) { alert("Podaj nazwę!"); return; }
+            
+            const data = {
+                rows: rows,
+                title: document.getElementById('dash-title').value,
+                grid: document.getElementById('grid-preset').value,
+                defs: rawImportedDefs,
+                defSize: globalDefaultSize
+            };
+            
+            localStorage.setItem('joan_dash_' + name, JSON.stringify(data));
+            refreshSavedList();
+            alert("Zapisano dashboard: " + name);
+        }
+
+        function loadFromBrowser(name) {
+            if(!confirm("Niezapisane zmiany zostaną utracone. Wczytać " + name + "?")) return;
+            const raw = localStorage.getItem('joan_dash_' + name);
+            if(!raw) return;
+            
+            try {
+                const data = JSON.parse(raw);
+                rows = data.rows;
+                rawImportedDefs = data.defs || {};
+                document.getElementById('dash-title').value = data.title;
+                document.getElementById('grid-preset').value = data.grid;
+                globalDefaultSize = data.defSize || {w: 2, h: 1};
+                
+                syncTitle();
+                applyGrid();
+                renderPreview();
+            } catch(e) { console.error(e); alert("Błąd odczytu danych."); }
+        }
+
+        function deleteFromBrowser(name, e) {
+            e.stopPropagation();
+            if(confirm("Usunąć dashboard " + name + "?")) {
+                localStorage.removeItem('joan_dash_' + name);
+                refreshSavedList();
+            }
+        }
+
+        function refreshSavedList() {
+            const list = document.getElementById('saved-dash-list');
+            list.innerHTML = '';
+            Object.keys(localStorage).forEach(key => {
+                if(key.startsWith('joan_dash_')) {
+                    const name = key.replace('joan_dash_', '');
+                    const div = document.createElement('div');
+                    div.className = 'dash-item';
+                    div.innerHTML = `<span>${name}</span> <button onclick="deleteFromBrowser('${name}', event)">USUŃ</button>`;
+                    div.onclick = () => loadFromBrowser(name);
+                    list.appendChild(div);
+                }
+            });
+        }
+
         function setLang(lang) {
             currentLang = lang; document.getElementById('input-lang').value = lang;
             document.getElementById('btn-pl').className = lang === 'pl' ? 'active' : ''; document.getElementById('btn-en').className = lang === 'en' ? 'active' : '';
@@ -905,6 +1038,9 @@
             setLang('pl'); const savedTheme = localStorage.getItem('joan_theme') || 'light'; document.getElementById('btn-theme').innerText = savedTheme === 'dark' ? '☀️' : '🌙';
             updateTitleLimit();
             const dl = document.getElementById('icon-list'); POPULAR_ICONS.forEach(icon => { const opt = document.createElement('option'); opt.value = icon; dl.appendChild(opt); });
+            
+            refreshSavedList(); // Load browser dashboards
+            
             if(!rows.length || (rows.length===1 && !rows[0].length)) { } else { renderPreview(); }
         });
     </script>
