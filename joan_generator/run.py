@@ -65,22 +65,14 @@ def get_ha_entities():
 # -------------------------------------------------------------------------
 # 3. STYLE (E-INK OPTIMIZED)
 # -------------------------------------------------------------------------
-# Tytuł wyżej, żeby zrobić miejsce
 STYLE_TITLE = "color: #000000; font-size: 20px; font-weight: 700; text-align: center; padding-top: 5px; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif;"
-
 STYLE_WIDGET = "color: #000000 !important; background-color: #FFFFFF !important;"
 STYLE_TEXT = "color: #000000 !important; font-weight: 700 !important;"
-
-# Wartość (padding-top 45px), aby oddalić od tytułu
 STYLE_VALUE = "color: #000000 !important; font-size: 44px !important; font-weight: 700 !important; padding-top: 45px !important; line-height: 1.2 !important; display: inline-block !important;"
 STYLE_UNIT = "color: #000000 !important; padding-top: 45px !important; display: inline-block !important;"
-
 STYLE_ICON = "color: #000000 !important;"
 STYLE_STATE_TEXT = "color: #000000 !important; font-weight: 700 !important; font-size: 16px !important;"
 
-# -------------------------------------------------------------------------
-# 4. ROUTE GŁÓWNY
-# -------------------------------------------------------------------------
 @app.route('/', methods=['GET', 'POST'])
 def index():
     generated_yaml = ""
@@ -98,6 +90,12 @@ def index():
             rows = request.form.get('grid_rows', '8')
             lang = request.form.get('ui_language', 'pl')
             
+            # Odczyt domyślnego rozmiaru z formularza (przekazanego przez JS)
+            default_size_str = request.form.get('default_widget_size', '2, 1')
+            def_size_parts = default_size_str.split(',')
+            def_w = int(def_size_parts[0].strip())
+            def_h = int(def_size_parts[1].strip()) if len(def_size_parts) > 1 else 1
+
             TRANS = {
                 'pl': {'on': 'WŁĄCZONE', 'off': 'WYŁĄCZONE', 'open': 'OTWARTA', 'closed': 'ZAMKNIĘTA', 'opening': 'OTWIERANIE', 'closing': 'ZAMYKANIE', 'locked': 'ZAMKNIĘTE', 'unlocked': 'OTWARTE', 'home': 'W DOMU', 'not_home': 'POZA'},
                 'en': {'on': 'ON', 'off': 'OFF', 'open': 'OPEN', 'closed': 'CLOSED', 'opening': 'OPENING', 'closing': 'CLOSING', 'locked': 'LOCKED', 'unlocked': 'UNLOCKED', 'home': 'HOME', 'not_home': 'AWAY'}
@@ -108,7 +106,7 @@ def index():
 
             generated_yaml += f"title: {title}\n"
             generated_yaml += "widget_dimensions: [117, 117]\n"
-            generated_yaml += "widget_size: [2, 1]\n"
+            generated_yaml += f"widget_size: [{def_w}, {def_h}]\n"
             generated_yaml += "widget_margins: [8, 8]\n"
             generated_yaml += f"columns: {ad_columns}\n"
             generated_yaml += f"rows: {rows}\n"
@@ -140,11 +138,25 @@ def index():
                         if w['type'] == 'spacer':
                             row_parts.append("spacer")
                             continue
+                        
                         widget_id = w['id']
-                        size = w.get('size', '').strip()
-                        if size and size != "(2x1)":
-                            if not size.startswith('('): size = f"({size})"
-                            widget_id += size
+                        
+                        # Logika rozmiaru w YAML
+                        size_str = w.get('size', '')
+                        is_default = False
+                        
+                        # Jeśli rozmiar widgetu jest taki sam jak globalny, nie piszemy go
+                        if size_str == f"({def_w}x{def_h})":
+                            is_default = True
+                        elif size_str == "(2x1)" and def_w == 2 and def_h == 1:
+                            is_default = True
+                        elif size_str == "(1x1)" and def_w == 1 and def_h == 1:
+                            is_default = True
+                            
+                        if not is_default and size_str:
+                             if not size_str.startswith('('): size_str = f"({size_str})"
+                             widget_id += size_str
+                             
                         row_parts.append(widget_id)
                         processed_widgets.append(w)
                     generated_yaml += f"  - {', '.join(row_parts)}\n"
@@ -185,7 +197,6 @@ def index():
                         generated_yaml += f"  widget_type: sensor\n"
                         generated_yaml += f"  entity: {w_id}\n"
                         generated_yaml += f"  title: \"{w_name}\"\n"
-                        # SENSOR BEZ IKONY - TYLKO WARTOŚĆ
                         generated_yaml += f"  title_style: \"{STYLE_TITLE}\"\n"
                         generated_yaml += f"  text_style: \"{STYLE_TEXT}\"\n"
                         generated_yaml += f"  value_style: \"{STYLE_VALUE}\"\n"
