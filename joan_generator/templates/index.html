@@ -296,7 +296,7 @@
         let blockSmart = false; 
         let currentLang = 'pl';
         let rawImportedDefs = {}; 
-        let activeRowIndex = 0; // NOWOŚĆ: klikany/aktywny wiersz
+        let activeRowIndex = 0;
 
         const TRANSLATIONS = {
             pl: {
@@ -469,6 +469,71 @@
             document.getElementById('w-name').value = val.toUpperCase();
         }
 
+        // SMART FIT: próba dopasowania nowego widgetu do aktywnego wiersza
+        function smartFitRow(targetRowIdx, newCols, newWidgetType, newWidgetObj) {
+            const gridVal = document.getElementById('grid-preset').value;
+            let maxSlots = 3;
+            if (gridVal === '4x4') maxSlots = 4;
+            const maxUnits = maxSlots * 2;
+
+            const row = rows[targetRowIdx];
+            // Licz aktualną szerokość
+            let currentRowWidth = 0;
+            row.forEach(item => {
+                let c = 2;
+                if (item.size) c = parseInt(item.size.replace(/[()]/g, '').split('x')[0]) || 1;
+                currentRowWidth += c;
+            });
+
+            // 1) Jeśli nowy to sensor/binary_sensor, spróbuj jako 1x1
+            if (currentRowWidth + newCols > maxUnits) {
+                if ((newWidgetType === 'sensor' || newWidgetType === 'binary_sensor') && newCols > 1) {
+                    newWidgetObj.size = '(1x1)';
+                    newCols = 1;
+                }
+            }
+
+            // Przelicz ponownie
+            currentRowWidth = 0;
+            row.forEach(item => {
+                let c = 2;
+                if (item.size) c = parseInt(item.size.replace(/[()]/g, '').split('x')[0]) || 1;
+                currentRowWidth += c;
+            });
+
+            // 2) Jeśli dalej brak miejsca – spróbuj skompresować istniejące sensory 2x1 -> 1x1
+            if (currentRowWidth + newCols > maxUnits) {
+                let needed = (currentRowWidth + newCols) - maxUnits;
+                for (let i = 0; i < row.length && needed > 0; i++) {
+                    const itm = row[i];
+                    const type = itm.type;
+                    const parts = (itm.size || '(2x1)').replace(/[()]/g, '').split('x');
+                    const sizeW = parseInt(parts[0]) || 2;
+                    if ((type === 'sensor' || type === 'binary_sensor') && sizeW > 1) {
+                        // kompresuj
+                        row[i].size = '(1x1)';
+                        needed -= 1;
+                    }
+                }
+                // Przelicz po kompresji
+                currentRowWidth = 0;
+                row.forEach(item => {
+                    let c = 2;
+                    if (item.size) c = parseInt(item.size.replace(/[()]/g, '').split('x')[0]) || 1;
+                    currentRowWidth += c;
+                });
+            }
+
+            // 3) Jeśli po kompresji dalej brak miejsca – autooddanie do nowego wiersza
+            if (currentRowWidth + newCols > maxUnits) {
+                rows.splice(targetRowIdx + 1, 0, []); // wstaw nowy wiersz za bieżącym
+                activeRowIndex = targetRowIdx + 1;
+                return false; // sygnalizuj, że dodać w nowym wierszu
+            }
+
+            return true; // dopasowano w bieżącym wierszu
+        }
+
         function saveWidget() {
             const w = {
                 type: document.getElementById('w-type').value,
@@ -484,34 +549,31 @@
             if(w.type === 'navigate') w.id = 'navigate.' + w.dash;
             if(w.type === 'spacer') w.id = 'spacer';
 
-            // Docelowy wiersz to aktywny (po kliknięciu), lub ostatni jeśli nic nie wybrano
             let targetRowIdx = typeof activeRowIndex === 'number' ? activeRowIndex : (rows.length - 1);
-            if (!rows[targetRowIdx]) {
-                targetRowIdx = rows.length - 1;
+            if (!rows[targetRowIdx]) targetRowIdx = rows.length - 1;
+
+            // Jeśli edytujemy istniejący w tym wierszu, usuń go z kalkulacji
+            let simulatedRow = [...rows[targetRowIdx]];
+            if (editIdx && editIdx.r === targetRowIdx) {
+                simulatedRow.splice(editIdx.w, 1);
             }
-            let currentRow = [...rows[targetRowIdx]];
-            if (editIdx && editIdx.r === targetRowIdx) currentRow.splice(editIdx.w, 1); 
-            
+
             let newCols = 2;
             if (w.size) newCols = parseInt(w.size.replace(/[()]/g, '').split('x')[0]) || 1;
-            
-            const gridVal = document.getElementById('grid-preset').value;
-            let maxSlots = 3; 
-            if (gridVal === '4x4') maxSlots = 4; 
-            
-            let currentRowWidth = 0;
-            currentRow.forEach(item => {
-                let c = 2;
-                if (item.size) c = parseInt(item.size.replace(/[()]/g, '').split('x')[0]) || 1;
-                currentRowWidth += c;
-            });
 
-            const maxUnits = maxSlots * 2; 
-            if (currentRowWidth + newCols > maxUnits) {
-                alert(TRANSLATIONS[currentLang].alert_full);
+            // SMART FIT próbuje dopasować w tym wierszu
+            const canFitHere = smartFitRow(targetRowIdx, newCols, w.type, w);
+
+            if (!canFitHere) {
+                // Nie ma miejsca nawet po kompresji – dodajemy do nowego wiersza (już aktywny zmieniony)
+                rows[activeRowIndex].push(w);
+                clearForm();
+                blockSmart = false;
+                renderPreview();
                 return;
             }
 
+            // Zapis do bieżącego wiersza
             if(editIdx && editIdx.r === targetRowIdx) {
                 rows[editIdx.r][editIdx.w] = w;
                 cancelEdit();
@@ -556,7 +618,7 @@
         function editWidget(r, w) {
             blockSmart = true;
             editIdx = {r, w};
-            activeRowIndex = r; // Po kliknięciu edycji ustaw również aktywny wiersz
+            activeRowIndex = r;
             const data = rows[r][w];
             document.getElementById('editor-box').classList.add('editing');
             document.getElementById('btn-cancel').classList.remove('hidden');
@@ -615,7 +677,6 @@
                 rows.splice(r, 1);
                 if(rows.length === 0) rows.push([]);
                 if(editIdx && editIdx.r === r) cancelEdit();
-                // Przestaw aktywny wiersz na najbliższy
                 activeRowIndex = Math.max(0, Math.min(activeRowIndex, rows.length - 1));
                 renderPreview();
             }
@@ -623,7 +684,7 @@
 
         function addRow() {
             rows.push([]);
-            activeRowIndex = rows.length - 1; // Nowo dodany staje się aktywny
+            activeRowIndex = rows.length - 1;
             renderPreview();
         }
 
@@ -651,9 +712,7 @@
                 rowDiv.className = 'eink-row';
                 if(rI === activeRowIndex) rowDiv.classList.add('row-active');
 
-                // Kliknięcie całego wiersza – aktywacja
                 rowDiv.onclick = (ev) => {
-                    // ignoruj kliknięcia na wewnętrzne widgety (tam obsługa edycji)
                     if (ev.target.closest('.eink-widget')) return;
                     activeRowIndex = rI;
                     renderPreview();
@@ -786,7 +845,7 @@
 
             if(newRows.length > 0) {
                 rows = newRows;
-                activeRowIndex = 0; // Po imporcie ustaw pierwszy wiersz jako aktywny
+                activeRowIndex = 0;
                 renderPreview();
                 alert(currentLang === 'pl' ? "Pomyślnie zaimportowano układ." : "Import successful.");
             } else {
