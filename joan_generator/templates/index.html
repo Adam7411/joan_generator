@@ -128,7 +128,7 @@
                         <option value="4x6" data-i18n="grid_std">Standard (3 kolumny x 6 wierszy)</option>
                         <option value="4x4" data-i18n="grid_large">Duży (4 kolumny x 4 wiersze)</option>
                         <option value="4x6m" data-i18n="grid_med">Średni (4 kolumny x 6 wierszy)</option>
-                        <option value="6x9" data-i18n="grid_small">Mały (6 kolumn x 9 wierszy)</option>
+                        <option value="6x8" data-i18n="grid_small">Gęsty (6 kolumn x 8 wierszy)</option>
                     </select>
                 </div>
                 <input type="hidden" id="h-cols" value="4">
@@ -286,7 +286,7 @@
                 title_main: "Joan 6 E-Ink Generator (Final Monster Edition)",
                 sec_settings: "1. Ustawienia Dashboardu", lbl_dash_title: "Tytuł Dashboardu", lbl_grid: "Układ Siatki (Smart Grid)",
                 grid_std_plus: "Standard+ (3 kolumny x 8 wierszy) - DOMYŚLNY", grid_std: "Standard (3 kolumny x 6 wierszy)",
-                grid_large: "Duży (4 kolumny x 4 wiersze)", grid_med: "Średni (4 kolumny x 6 wierszy)", grid_small: "Mały (6 kolumn x 9 wierszy)",
+                grid_large: "Duży (4 kolumny x 4 wiersze)", grid_med: "Średni (4 kolumny x 6 wierszy)", grid_small: "Gęsty (6 kolumn x 8 wierszy)",
                 sec_import: "📂 Import / Eksport Kodu .DASH", btn_import: "Wczytaj Kod",
                 sec_add: "2. Dodaj Widget", sec_edit: "2. Edytuj Widget",
                 lbl_type: "Typ Widgetu", lbl_entity: "Encja (Wyszukaj po nazwie lub ID)", lbl_dash_name: "Nazwa Dashboardu (target)",
@@ -308,7 +308,7 @@
                 title_main: "Joan 6 E-Ink Generator (Final Monster Edition)",
                 sec_settings: "1. Dashboard Settings", lbl_dash_title: "Dashboard Title", lbl_grid: "Grid Layout (Smart Grid)",
                 grid_std_plus: "Standard+ (3 columns x 8 rows) - DEFAULT", grid_std: "Standard (3 columns x 6 rows)",
-                grid_large: "Large (4 columns x 4 rows)", grid_med: "Medium (4 columns x 6 rows)", grid_small: "Small (6 columns x 9 rows)",
+                grid_large: "Large (4 columns x 4 rows)", grid_med: "Medium (4 columns x 6 rows)", grid_small: "Dense (6 columns x 8 rows)",
                 sec_import: "📂 Import / Export .DASH Code", btn_import: "Load Code",
                 sec_add: "2. Add Widget", sec_edit: "2. Edit Widget",
                 lbl_type: "Widget Type", lbl_entity: "Entity (Search by name/ID)", lbl_dash_name: "Dashboard Name (target)",
@@ -417,7 +417,7 @@
             
             let slots = 3; 
             if (val === '4x4' || val === '4x6' || val === '4x6m') slots = 4;
-            if (val === '6x9') slots = 6;
+            if (val === '6x8' || val === '6x9') slots = 6; 
             if (val === '4x8') slots = 3;
             
             const px = (slots * 117) + ((slots - 1) * 8) + 40; 
@@ -444,7 +444,7 @@
             const gridVal = document.getElementById('grid-preset').value;
             let maxSlots = 3; 
             if (gridVal === '4x4' || gridVal === '4x6' || gridVal === '4x6m') maxSlots = 4; 
-            if (gridVal === '6x9') maxSlots = 6;
+            if (gridVal === '6x8' || gridVal === '6x9') maxSlots = 6;
             if (gridVal === '4x8') maxSlots = 3;
             return maxSlots * 2; 
         }
@@ -740,7 +740,6 @@
             const lines = text.split('\n'); const newRows = []; let inLayout = false; let rawDefs = {}; let currentDefKey = null; let currentDefLines = [];
             
             let importedW = 2, importedH = 1;
-            // --- NEW: AUTO GRID VARIABLES ---
             let foundCols = null;
             let foundRows = null;
             
@@ -755,25 +754,36 @@
                         document.getElementById('input-def-size').value = `${importedW}, ${importedH}`;
                     }
                 }
-                // --- FIX: PARSE COLUMNS/ROWS ---
                 if (t.startsWith('columns:')) foundCols = parseInt(t.split(':')[1]);
                 if (t.startsWith('rows:')) foundRows = parseInt(t.split(':')[1]);
             });
 
-            // --- FIX: AUTO-SELECT PRESET ---
+            // --- FIX: AUTO-SELECT PRESET (Poprawione dla 6x8) ---
             if (foundCols && foundRows) {
                 let preset = '4x8';
-                // Logic: Internal AppDaemon cols vs Dropdown Value
-                // AppDaemon cols = dropdown_cols * 2.
-                // So YAML cols 6 -> dropdown 3. YAML cols 8 -> dropdown 4. YAML cols 12 -> dropdown 6.
-                if (foundCols === 6 && foundRows === 8) preset = '4x8'; // "3 cols" in UI
-                else if (foundCols === 6 && foundRows === 6) preset = '4x6'; // "3 cols" in UI
-                else if (foundCols === 8 && foundRows === 4) preset = '4x4'; // "4 cols" in UI
-                else if (foundCols === 8 && foundRows === 6) preset = '4x6m'; // "4 cols" in UI
-                else if (foundCols === 12 && foundRows === 9) preset = '6x9'; // "6 cols" in UI
+                // Konwersja logiki AppDaemon na UI (AppDaemon cols = UI cols * 2)
+                // 6x8 (AppDaemon) = 3x8 (UI) -> Standard+ (4x8 value)
+                // 8x6 (AppDaemon) = 4x6 (UI) -> Standard (4x6 value)
+                // 12x8 (AppDaemon) = 6x8 (UI) -> Gęsty (6x8 value)
+                
+                if (foundCols === 6 && foundRows === 8) preset = '4x8'; 
+                else if (foundCols === 6 && foundRows === 6) preset = '4x6';
+                else if (foundCols === 8 && foundRows === 4) preset = '4x4';
+                else if (foundCols === 8 && foundRows === 6) preset = '4x6m';
+                else if (foundCols === 12 && foundRows === 8) preset = '6x8'; // 6x8 Gęsty
+                else if (foundCols === 12 && foundRows === 9) preset = '6x8'; // Fallback dla 6x9 na 6x8
                 
                 const sel = document.getElementById('grid-preset');
-                if(sel.querySelector(`option[value="${preset}"]`)) sel.value = preset;
+                // Jeśli wykryliśmy niestandardowy rozmiar (np. 6x8), a nie ma go na liście, dodajemy go dynamicznie?
+                // W tym przypadku po prostu wybieramy istniejący
+                if(sel.querySelector(`option[value="${preset}"]`)) {
+                    sel.value = preset;
+                } else {
+                    // Fallback: jeśli nie pasuje idealnie, zostaw domyślny lub najbliższy
+                    if(foundCols >= 12) sel.value = '6x8';
+                    else if (foundCols >= 8) sel.value = '4x6m';
+                    else sel.value = '4x8';
+                }
             }
 
             lines.forEach(line => {
