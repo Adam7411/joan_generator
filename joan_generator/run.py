@@ -99,6 +99,7 @@ def index():
             }
             dic = TRANS.get(lang, TRANS['pl'])
 
+            # FIX DLA APPDAEMON (columns * 2 dla widget_size [2,1])
             ad_columns = int(cols) * 2
 
             generated_yaml += f"title: {title}\n"
