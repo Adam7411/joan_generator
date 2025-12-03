@@ -36,13 +36,13 @@
         .header-top { width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         h1 { margin: 0; color: var(--accent); font-size: 28px; font-weight: 900; text-transform: uppercase; }
         
-        /* STATUS HEADER */
+        /* MODYFIKACJA: WIĘKSZY STATUS NAGŁÓWKA */
         #header-status { 
-            font-size: 1.2em; font-weight: bold; color: #009688; 
-            background: rgba(0, 150, 136, 0.1); padding: 8px 20px; border-radius: 20px; 
-            display: inline-block; margin-top: 5px;
+            font-size: 1.5em; font-weight: 900; color: #009688; 
+            background: rgba(0, 150, 136, 0.1); padding: 10px 30px; border-radius: 30px; 
+            display: inline-block; margin-top: 10px; border: 1px solid rgba(0, 150, 136, 0.2);
         }
-        #header-status span { color: var(--text-main); font-weight: normal; font-size: 0.8em; }
+        #header-status span { color: var(--text-main); font-weight: bold; }
 
         .controls button { padding: 8px 16px; border: 1px solid var(--border); background: var(--bg-section); color: var(--text-main); border-radius: 4px; cursor: pointer; font-weight: bold; margin-left: 5px; }
         .controls button.active { background: var(--accent); color: var(--btn-text); border-color: var(--accent); }
@@ -70,7 +70,6 @@
         .btn-cancel { background: #757575; }
         .btn-row { background: #2196f3; margin-top: 15px; }
         .btn-import { background: #ff9800; color: white; margin-top: 10px; }
-        .btn-tetris { background: #9c27b0; color: white; margin-left: 10px; }
         .btn-dash-save { background: #009688; color: white; width: auto; padding: 8px 15px; font-size: 13px; }
         
         .btn-tool { padding: 6px 12px; font-size: 14px; margin-left: 6px; border-radius: 4px; cursor: pointer; color: white; border: none; font-weight: bold; display: inline-block; text-align: center; }
@@ -129,7 +128,6 @@
         }
         .input-hint code { background: rgba(255,255,255,0.3); padding: 2px 4px; border-radius: 3px; font-weight: bold; }
         
-        /* --- MODYFIKACJA: WIĘKSZE IKONY DASHBOARDÓW --- */
         .dash-list { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 10px; }
         .dash-item { 
             background: var(--bg-input); border: 1px solid var(--border); 
@@ -162,9 +160,9 @@
                     <button type="button" onclick="setLang('en')" id="btn-en">EN</button>
                 </div>
             </div>
-            <!-- --- MODYFIKACJA: STATUS W NAGŁÓWKU --- -->
+            <!-- MODYFIKACJA: STATUS W NAGŁÓWKU (WIĘKSZY) -->
             <div id="header-status" class="hidden">
-                <span data-i18n="lbl_current_work">AKTUALNIE PRACUJESZ NA:</span> <span id="header-dash-name">---</span>
+                <span data-i18n="lbl_current_work">AKTUALNIE PRACUJESZ NA DASHBOARDZIE:</span> <span id="header-dash-name">---</span>
             </div>
         </div>
 
@@ -190,25 +188,6 @@
             </div>
         </div>
 
-        <!-- MULTI DASHBOARD MANAGER -->
-        <div class="section" style="border: 2px solid #009688; background: rgba(0, 150, 136, 0.05);">
-            <div class="section-title" style="border-bottom-color: #009688; color: #009688;">Multi-Dashboard Manager (Browser)</div>
-            <p style="font-size: 0.9em; margin-bottom: 10px;">Zapisz swoje układy w przeglądarce, aby łatwo się między nimi przełączać.</p>
-            <div class="flex-row" style="align-items: flex-end;">
-                <div class="flex-col" style="flex: 2;">
-                    <label>Zapisz obecny układ jako:</label>
-                    <div style="display:flex; gap: 10px;">
-                        <input type="text" id="save-dash-name" placeholder="np. Salon">
-                        <button type="button" class="btn btn-dash-save" onclick="saveToBrowser()">ZAPISZ</button>
-                    </div>
-                </div>
-                <div class="flex-col" style="flex: 3;">
-                    <label>Twoje zapisane dashboardy:</label>
-                    <div id="saved-dash-list" class="dash-list"></div>
-                </div>
-            </div>
-        </div>
-
         <div class="section" id="import-section">
             <details>
                 <summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;" data-i18n="sec_import">📂 Import / Eksport Kodu .DASH</summary>
@@ -230,7 +209,6 @@
             <div class="add-widget-box" id="editor-box">
                 <div class="section-title" id="editor-title" data-i18n="sec_add">2. Dodaj Widget</div>
                 
-                <!-- --- MODYFIKACJA: NOWA KOLEJNOŚĆ PÓL --- -->
                 <!-- RZĄD 1: ENCJA / NAWIGACJA -->
                 <div class="flex-row" style="margin-bottom: 20px;">
                     <div class="flex-col" id="grp-entity" style="flex: 100%;">
@@ -321,7 +299,29 @@
                 <p style="font-size:0.85em; margin-bottom: 10px; color: #666;">Możesz przeciągać przyciski między wierszami oraz zmieniać ich kolejność w wierszu (Drag&Drop).</p>
                 <div class="preview-area" id="preview-container"></div>
                 <button type="button" class="btn btn-row" onclick="addRow()" data-i18n="btn_row">+ Dodaj Wiersz</button>
-                <button type="button" class="btn btn-row btn-tetris" onclick="autoCompact()">🪄 AUTO-TETRIS (UPAKUJ)</button>
+                <!-- USUNIĘTY TETRIS -->
+            </div>
+
+            <!-- MODYFIKACJA: PRZENIESIONY MENADŻER -->
+            <div class="section" style="border: 2px solid #009688; background: rgba(0, 150, 136, 0.05);">
+                <div class="section-title" style="border-bottom-color: #009688; color: #009688;">Multi-Dashboard Manager (Browser)</div>
+                <p style="font-size: 0.9em; margin-bottom: 10px; font-weight:bold;">
+                    Zapisz swoje układy w przeglądarce, aby łatwo się między nimi przełączać. 
+                    Aby przełączać strony na samym urządzeniu Joan 6, użyj widgetu 'Przycisk Nawigacji' (Navigate).
+                </p>
+                <div class="flex-row" style="align-items: flex-end;">
+                    <div class="flex-col" style="flex: 2;">
+                        <label>Zapisz obecny układ jako:</label>
+                        <div style="display:flex; gap: 10px;">
+                            <input type="text" id="save-dash-name" placeholder="np. Salon">
+                            <button type="button" class="btn btn-dash-save" onclick="saveToBrowser()">ZAPISZ</button>
+                        </div>
+                    </div>
+                    <div class="flex-col" style="flex: 3;">
+                        <label>Twoje zapisane dashboardy:</label>
+                        <div id="saved-dash-list" class="dash-list"></div>
+                    </div>
+                </div>
             </div>
 
             <input type="hidden" name="layout_data_json" id="layout_json">
@@ -387,7 +387,7 @@
                 sec_result: "Wynikowy Kod YAML", lbl_save_path: "1. Zapisz kod w pliku:", lbl_open_link: "2. Uruchom ponownie AppDaemon i sprawdź:",
                 limit_15: "Maks 15 znaków", limit_20: "Maks 20 znaków", alert_full: "Brak miejsca w tym wierszu! Zmień siatkę lub dodaj nowy wiersz.",
                 hint_nav: "<b>Wskazówka:</b> Wpisz nazwę pliku <code>.dash</code> (bez rozszerzenia), który znajduje się w folderze <code>\\\\IP_HA\\addon_configs\\appdaemon\\dashboards\\</code>.<br>Służy do przełączania stron (np. wpisz <code>salon</code> aby przejść do dashboardu <code>salon.dash</code>).",
-                lbl_current_work: "AKTUALNIE PRACUJESZ NA:"
+                lbl_current_work: "AKTUALNIE PRACUJESZ NA DASHBOARDZIE:"
             },
             en: {
                 title_main: "Joan 6 E-Ink Generator (Final Monster Edition)",
@@ -411,7 +411,7 @@
                 sec_result: "Generated YAML Code", lbl_save_path: "1. Save code to file:", lbl_open_link: "2. Restart AppDaemon and check:",
                 limit_15: "Max 15 chars", limit_20: "Max 20 chars", alert_full: "No space in this row! Change grid or add new row.",
                 hint_nav: "<b>Hint:</b> Enter the <code>.dash</code> filename (without extension) located in <code>\\\\IP_HA\\addon_configs\\appdaemon\\dashboards\\</code>.<br>Used for page navigation (e.g. enter <code>livingroom</code> to go to dashboard <code>livingroom.dash</code>).",
-                lbl_current_work: "CURRENTLY WORKING ON:"
+                lbl_current_work: "CURRENTLY WORKING ON DASHBOARD:"
             }
         };
 
@@ -952,43 +952,6 @@
             if(newRows.length > 0) { rows = newRows; renderPreview(); alert(currentLang === 'pl' ? "Pomyślnie zaimportowano układ." : "Import successful."); } 
             else alert(currentLang === 'pl' ? "Błąd: Nie znaleziono layoutu." : "Error: Layout not found.");
             setTimeout(() => blockSmart = false, 1000);
-        }
-
-        function autoCompact() {
-            if(!confirm(currentLang === 'pl' ? "To usunie luki i ułoży widgety jeden po drugim zgodnie z wybraną siatką. Kontynuować?" : "This will pack widgets according to selected grid. Continue?")) return;
-            
-            let allWidgets = [];
-            rows.forEach(row => {
-                row.forEach(w => {
-                    if(w.type !== 'spacer') allWidgets.push(w);
-                });
-            });
-
-            let newRows = [];
-            let currentRow = [];
-            let currentUsage = 0;
-            
-            const gridVal = document.getElementById('grid-preset').value;
-            let limit = 6; 
-            if (gridVal === '6x8') limit = 12;
-            else if (gridVal === '4x4' || gridVal === '4x6m') limit = 8;
-            else limit = 6; 
-
-            allWidgets.forEach(w => {
-                let wSize = getSlots(w);
-                if(currentUsage + wSize <= limit) {
-                    currentRow.push(w);
-                    currentUsage += wSize;
-                } else {
-                    newRows.push(currentRow);
-                    currentRow = [w];
-                    currentUsage = wSize; 
-                }
-            });
-            if(currentRow.length > 0) newRows.push(currentRow);
-
-            rows = newRows;
-            renderPreview();
         }
 
         function saveToBrowser() {
