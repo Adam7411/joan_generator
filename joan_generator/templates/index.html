@@ -66,16 +66,20 @@
 
         .preview-area { background: var(--preview-bg); padding: 30px; border: 2px solid var(--border); border-radius: 8px; overflow-x: auto; min-height: 400px; transition: width 0.3s; }
         
+        /* ZMIANY CSS DLA WYGLĄDU WIERSZY */
         .eink-row { 
-            display: flex; gap: 8px; margin-bottom: 15px; padding: 15px; 
+            display: flex; gap: 8px; 
+            margin-bottom: 15px; 
+            margin-top: 30px; /* WIĘCEJ MIEJSCA U GÓRY DLA ETYKIET */
+            padding: 15px; 
             border: 2px dashed #999; border-radius: 6px; min-height: 140px; 
             align-items: flex-end; position: relative; 
             background-image: linear-gradient(to right, rgba(0,0,0,0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,0,0,0.05) 1px, transparent 1px); 
             background-size: 125px 125px; 
             transition: border-color 0.3s, box-shadow 0.3s, width 0.3s; 
             cursor: pointer; 
-            flex-wrap: nowrap; /* ZMIANA: WYMUSZENIE POZIOMU */
-            overflow-x: hidden; /* Ukryj nadmiar, szerokość kontrolowana przez JS */
+            flex-wrap: nowrap; /* Wymuszenie poziomu */
+            overflow-x: hidden;
         }
         
         .eink-row:hover { background-color: rgba(0,0,0,0.02); }
@@ -83,7 +87,12 @@
         .eink-row.row-active { border: 2px solid #ff9800; box-shadow: 0 0 10px rgba(255, 152, 0, 0.3); }
         .eink-row.drag-over { border: 2px dashed #4caf50; background: rgba(76, 175, 80, 0.1); }
 
-        .row-controls { position: absolute; top: -12px; left: 10px; display: flex; align-items: center; z-index: 50; }
+        .row-controls { 
+            position: absolute; 
+            top: -28px; /* PODNIESIONE WYŻEJ ABY NIE ZASŁANIAĆ RAMKI */
+            left: 0; 
+            display: flex; align-items: center; z-index: 50; 
+        }
         .row-label { font-size: 11px; background: var(--bg-body); padding: 2px 8px; color: var(--text-main); border: 1px solid var(--border); border-radius: 4px; font-weight: bold; }
         
         .widget-wrapper { display: flex; flex-direction: column; align-items: center; margin-right: 0; position: relative; flex-shrink: 0; cursor: grab; }
@@ -165,7 +174,7 @@
                             <option value="cover" data-i18n="opt_cover">Cover / Gate</option>
                             <option value="sensor" data-i18n="opt_sensor">Sensor</option>
                             <option value="binary_sensor" data-i18n="opt_binary">Binary Sensor</option>
-                            <option value="weather" data-i18n="opt_weather">Pogoda (Weather)</option>
+                            <!-- USUNIĘTA OPCJA POGODY -->
                             <option value="lock" data-i18n="opt_lock">Lock</option>
                             <option value="person" data-i18n="opt_person">Person / Tracker</option>
                             <option value="media_player" data-i18n="opt_media">Media Player</option>
@@ -295,7 +304,7 @@
                 opt_binary: "Sensor Binarny (On/Off)", opt_lock: "Zamek", opt_person: "Osoba / Tracker",
                 opt_media: "Media Player", opt_climate: "Termostat", opt_input_select: "Lista Wyboru",
                 opt_input_number: "Suwak", opt_script: "Skrypt", opt_navigate: "Przycisk Nawigacji",
-                opt_label: "Etykieta (Tekst)", opt_clock: "Zegar", opt_spacer: "Odstęp (Pusty)", opt_weather: "Pogoda",
+                opt_label: "Etykieta (Tekst)", opt_clock: "Zegar", opt_spacer: "Odstęp (Pusty)",
                 size_2x1: "2x1 (Szeroki Przycisk)", size_1x1: "1x1 (Mały)", size_2x2: "2x2 (Duży)",
                 size_3x1: "3x1 (Bardzo Szeroki)", size_1x2: "1x2 (Wysoki)", size_3x2: "3x2 (Ogromny)",
                 btn_add: "+ DODAJ WIDGET", btn_update: "ZAPISZ ZMIANY", btn_cancel: "ANULUJ",
@@ -317,7 +326,7 @@
                 opt_binary: "Binary Sensor", opt_lock: "Lock", opt_person: "Person / Tracker",
                 opt_media: "Media Player", opt_climate: "Climate", opt_input_select: "Input Select",
                 opt_input_number: "Input Number", opt_script: "Script", opt_navigate: "Navigation Button",
-                opt_label: "Label (Text)", opt_clock: "Clock", opt_spacer: "Spacer (Empty)", opt_weather: "Weather",
+                opt_label: "Label (Text)", opt_clock: "Clock", opt_spacer: "Spacer (Empty)",
                 size_2x1: "2x1 (Wide Button)", size_1x1: "1x1 (Small)", size_2x2: "2x2 (Large)",
                 size_3x1: "3x1 (Extra Wide)", size_1x2: "1x2 (Tall)", size_3x2: "3x2 (Huge)",
                 btn_add: "+ ADD WIDGET", btn_update: "SAVE CHANGES", btn_cancel: "CANCEL",
@@ -327,7 +336,7 @@
             }
         };
 
-        const SMART_MAP = { 'light': { type: 'switch', size: '(2x1)', iconOn: 'mdi-lightbulb-on', iconOff: 'mdi-lightbulb-outline' }, 'switch': { type: 'switch', size: '(2x1)', iconOn: 'mdi-toggle-switch', iconOff: 'mdi-toggle-switch-off' }, 'cover': { type: 'cover', size: '(2x1)', iconOn: 'mdi-window-shutter-open', iconOff: 'mdi-window-shutter' }, 'garage': { type: 'cover', size: '(2x1)', iconOn: 'mdi-garage-open', iconOff: 'mdi-garage' }, 'binary_sensor': { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-checkbox-marked-circle', iconOff: 'mdi-checkbox-blank-circle-outline' }, 'sensor': { type: 'sensor', size: '(2x1)', icon: 'mdi-eye' }, 'media_player': { type: 'media_player', size: '(2x2)', icon: '' }, 'climate': { type: 'climate', size: '(2x2)', icon: '' }, 'lock': { type: 'lock', size: '(2x1)', iconOn: 'mdi-lock-open', iconOff: 'mdi-lock' }, 'script': { type: 'script', size: '(2x1)', icon: 'mdi-script-text-outline' }, 'weather': { type: 'weather', size: '(2x2)', icon: 'mdi-weather-cloudy' } };
+        const SMART_MAP = { 'light': { type: 'switch', size: '(2x1)', iconOn: 'mdi-lightbulb-on', iconOff: 'mdi-lightbulb-outline' }, 'switch': { type: 'switch', size: '(2x1)', iconOn: 'mdi-toggle-switch', iconOff: 'mdi-toggle-switch-off' }, 'cover': { type: 'cover', size: '(2x1)', iconOn: 'mdi-window-shutter-open', iconOff: 'mdi-window-shutter' }, 'garage': { type: 'cover', size: '(2x1)', iconOn: 'mdi-garage-open', iconOff: 'mdi-garage' }, 'binary_sensor': { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-checkbox-marked-circle', iconOff: 'mdi-checkbox-blank-circle-outline' }, 'sensor': { type: 'sensor', size: '(2x1)', icon: 'mdi-eye' }, 'media_player': { type: 'media_player', size: '(2x2)', icon: '' }, 'climate': { type: 'climate', size: '(2x2)', icon: '' }, 'lock': { type: 'lock', size: '(2x1)', iconOn: 'mdi-lock-open', iconOff: 'mdi-lock' }, 'script': { type: 'script', size: '(2x1)', icon: 'mdi-script-text-outline' } };
 
         function normalizeString(str) { return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase(); }
 
@@ -376,8 +385,7 @@
             else if (check(['okno', 'window'])) conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-window-open-variant', iconOff: 'mdi-window-closed-variant' };
             else if (check(['temp', 'therm'])) conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-thermometer' };
             else if (check(['wilg', 'humid'])) conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-water-percent' };
-            else if (check(['pogoda', 'weather'])) conf = SMART_MAP['weather'];
-
+            
             const currentGrid = document.getElementById('grid-preset').value;
             if ((currentGrid === '4x8' || currentGrid === '4x6') && conf.size === '(1x1)' && conf.type !== 'binary_sensor') {
                 conf.size = '(2x1)';
@@ -415,13 +423,12 @@
             document.getElementById('form-cols').value = parts[0];
             document.getElementById('form-rows').value = parts[1];
             
-            // PRECYZYJNA SZEROKOŚĆ KONTENERA (Widget 117px + Gap 8px + Marginesy 30px)
             let slots = 3; 
             if (val === '4x4' || val === '4x6' || val === '4x6m') slots = 4;
             if (val === '6x9') slots = 6;
             if (val === '4x8') slots = 3;
             
-            const px = (slots * 117) + ((slots - 1) * 8) + 40; // +40px zapasu na padding
+            const px = (slots * 117) + ((slots - 1) * 8) + 40; 
             document.querySelectorAll('.eink-row').forEach(el => {
                 el.style.minWidth = px + 'px';
             });
