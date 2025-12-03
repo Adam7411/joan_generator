@@ -64,7 +64,7 @@
         .btn-del-row { background: #d32f2f; }
         .btn-move-row { background: #757575; }
 
-        .preview-area { background: var(--preview-bg); padding: 30px; border: 2px solid var(--border); border-radius: 8px; overflow-x: auto; min-height: 400px; transition: width 0.3s; } /* Transition for smooth resizing */
+        .preview-area { background: var(--preview-bg); padding: 30px; border: 2px solid var(--border); border-radius: 8px; overflow-x: auto; min-height: 400px; transition: width 0.3s; }
         
         .eink-row { 
             display: flex; gap: 8px; margin-bottom: 15px; padding: 15px; 
@@ -72,15 +72,16 @@
             align-items: flex-end; position: relative; 
             background-image: linear-gradient(to right, rgba(0,0,0,0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,0,0,0.05) 1px, transparent 1px); 
             background-size: 125px 125px; 
-            transition: border-color 0.3s, box-shadow 0.3s, width 0.3s; /* Animate width change */
+            transition: border-color 0.3s, box-shadow 0.3s, width 0.3s; 
             cursor: pointer; 
-            flex-wrap: wrap; /* Allow wrapping visually just in case, though we limit by validation */
+            flex-wrap: nowrap; /* ZMIANA: WYMUSZENIE POZIOMU */
+            overflow-x: hidden; /* Ukryj nadmiar, szerokość kontrolowana przez JS */
         }
         
         .eink-row:hover { background-color: rgba(0,0,0,0.02); }
         .eink-row.row-selected { border: 2px solid #2196f3; background-color: rgba(33, 150, 243, 0.1); }
         .eink-row.row-active { border: 2px solid #ff9800; box-shadow: 0 0 10px rgba(255, 152, 0, 0.3); }
-        .eink-row.drag-over { border: 2px dashed #4caf50; background: rgba(76, 175, 80, 0.1); } /* Drag highlight */
+        .eink-row.drag-over { border: 2px dashed #4caf50; background: rgba(76, 175, 80, 0.1); }
 
         .row-controls { position: absolute; top: -12px; left: 10px; display: flex; align-items: center; z-index: 50; }
         .row-label { font-size: 11px; background: var(--bg-body); padding: 2px 8px; color: var(--text-main); border: 1px solid var(--border); border-radius: 4px; font-weight: bold; }
@@ -275,7 +276,7 @@
         let manualIconOverride = false; 
         let currentLang = 'pl';
         let rawImportedDefs = {}; 
-        let dragSrc = null; // ZMIENNA DRAG & DROP
+        let dragSrc = null; 
 
         const POPULAR_ICONS = [ "mdi-home", "mdi-home-outline", "mdi-lightbulb", "mdi-lightbulb-on", "mdi-lightbulb-outline", "mdi-toggle-switch", "mdi-toggle-switch-off", "mdi-power", "mdi-window-shutter", "mdi-window-shutter-open", "mdi-garage", "mdi-garage-open", "mdi-door", "mdi-door-open", "mdi-lock", "mdi-lock-open", "mdi-thermometer", "mdi-water-percent", "mdi-battery", "mdi-weather-cloudy", "mdi-play", "mdi-pause", "mdi-wifi", "mdi-clock-outline", "mdi-calendar", "mdi-alert", "mdi-check", "mdi-close" ];
 
@@ -414,16 +415,15 @@
             document.getElementById('form-cols').value = parts[0];
             document.getElementById('form-rows').value = parts[1];
             
-            // WIZUALIZACJA SZEROKOŚCI PODGLĄDU
-            // 1 slot = ok. 125px (117+8)
-            let slots = 3; // Standard
+            // PRECYZYJNA SZEROKOŚĆ KONTENERA (Widget 117px + Gap 8px + Marginesy 30px)
+            let slots = 3; 
             if (val === '4x4' || val === '4x6' || val === '4x6m') slots = 4;
             if (val === '6x9') slots = 6;
-            if (val === '4x8') slots = 3; // Standard+ ma 3 fizyczne kolumny w Joan
+            if (val === '4x8') slots = 3;
             
-            const px = (slots * 125) + 30; // +padding
+            const px = (slots * 117) + ((slots - 1) * 8) + 40; // +40px zapasu na padding
             document.querySelectorAll('.eink-row').forEach(el => {
-                el.style.width = (slots * 125) + 'px';
+                el.style.minWidth = px + 'px';
             });
         }
 
@@ -443,7 +443,7 @@
             if (gridVal === '4x4' || gridVal === '4x6' || gridVal === '4x6m') maxSlots = 4; 
             if (gridVal === '6x9') maxSlots = 6;
             if (gridVal === '4x8') maxSlots = 3;
-            return maxSlots * 2; // AppDaemon units (1 slot = 2 units)
+            return maxSlots * 2; 
         }
 
         function getRowUsage(rowArr) {
@@ -581,7 +581,6 @@
             return w.icon || '';
         }
 
-        // --- DRAG AND DROP LOGIC ---
         function handleDragStart(e, r, w) {
             dragSrc = { r, w };
             e.dataTransfer.effectAllowed = 'move';
@@ -589,9 +588,8 @@
         }
 
         function handleDragOver(e) {
-            if (e.preventDefault) e.preventDefault(); // Necessary
+            if (e.preventDefault) e.preventDefault(); 
             e.dataTransfer.dropEffect = 'move';
-            // Podświetl wiersz nad którym jesteśmy
             const row = e.target.closest('.eink-row');
             if(row) row.classList.add('drag-over');
             return false;
@@ -603,35 +601,19 @@
         }
 
         function handleDrop(e, targetR) {
-            e.stopPropagation();
-            e.preventDefault();
+            e.stopPropagation(); e.preventDefault();
             const row = e.target.closest('.eink-row');
             if(row) row.classList.remove('drag-over');
-            
             if (dragSrc === null) return;
-            
-            // Jeśli to ten sam wiersz i to samo miejsce - nic nie rób
-            // Ale jeśli chcemy zmienić kolejność w wierszu?
-            
             const movedWidget = rows[dragSrc.r][dragSrc.w];
-            
-            // 1. Wyjmij ze źródła
             rows[dragSrc.r].splice(dragSrc.w, 1);
-            
-            // 2. Sprawdź czy mieści się w celu
             if (getRowUsage(rows[targetR]) + getSlots(movedWidget) > getMaxSlots()) {
-                // Nie mieści się - cofnij (włóż z powrotem)
                 rows[dragSrc.r].splice(dragSrc.w, 0, movedWidget);
                 alert(TRANSLATIONS[currentLang].alert_full);
-                renderPreview();
-                return;
+                renderPreview(); return;
             }
-            
-            // 3. Wstaw do celu (na koniec wiersza)
             rows[targetR].push(movedWidget);
-            
-            dragSrc = null;
-            renderPreview();
+            dragSrc = null; renderPreview();
         }
 
         function handleDragEnd(e) {
@@ -649,7 +631,6 @@
                 if (rI === selectedRowIdx) rowDiv.classList.add('row-selected');
                 if (editIdx && editIdx.r === rI) rowDiv.classList.add('row-active');
                 
-                // Drag & Drop Listeners na wierszu
                 rowDiv.ondragover = handleDragOver;
                 rowDiv.ondragleave = handleDragLeave;
                 rowDiv.ondrop = (e) => handleDrop(e, rI);
@@ -677,8 +658,6 @@
                 row.forEach((w, wI) => {
                     const wrapper = document.createElement('div');
                     wrapper.className = 'widget-wrapper';
-                    
-                    // Draggable Widget
                     wrapper.draggable = true;
                     wrapper.ondragstart = (e) => handleDragStart(e, rI, wI);
                     wrapper.ondragend = handleDragEnd;
@@ -707,8 +686,6 @@
                 });
                 container.appendChild(rowDiv);
             });
-            
-            // APLIKUJ SZEROKOŚĆ PO RENDERZE
             applyGrid();
         }
 
