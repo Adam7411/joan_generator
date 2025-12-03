@@ -47,7 +47,6 @@
 
         .add-widget-box { background: var(--highlight); padding: 25px; border-radius: 8px; border: 1px solid var(--accent); margin-bottom: 30px; }
         .add-widget-box.editing { border: 3px solid #ff9800; background: rgba(255, 152, 0, 0.15); }
-        /* WYRÓWNANIE PÓL: ALIGN-ITEMS CENTER */
         .flex-row { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 15px; align-items: center; }
         .flex-col { flex: 1; min-width: 160px; }
         label { display: block; font-weight: bold; font-size: 0.9em; margin-bottom: 8px; color: var(--text-main); }
@@ -65,19 +64,32 @@
         .btn-del-row { background: #d32f2f; }
         .btn-move-row { background: #757575; }
 
-        .preview-area { background: var(--preview-bg); padding: 30px; border: 2px solid var(--border); border-radius: 8px; overflow-x: auto; min-height: 400px; }
-        .eink-row { display: flex; gap: 8px; margin-bottom: 15px; padding: 15px; border: 2px dashed #999; border-radius: 6px; min-height: 140px; align-items: flex-end; position: relative; background-image: linear-gradient(to right, rgba(0,0,0,0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,0,0,0.05) 1px, transparent 1px); background-size: 125px 125px; transition: border-color 0.3s, box-shadow 0.3s; cursor: pointer; }
+        .preview-area { background: var(--preview-bg); padding: 30px; border: 2px solid var(--border); border-radius: 8px; overflow-x: auto; min-height: 400px; transition: width 0.3s; } /* Transition for smooth resizing */
+        
+        .eink-row { 
+            display: flex; gap: 8px; margin-bottom: 15px; padding: 15px; 
+            border: 2px dashed #999; border-radius: 6px; min-height: 140px; 
+            align-items: flex-end; position: relative; 
+            background-image: linear-gradient(to right, rgba(0,0,0,0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,0,0,0.05) 1px, transparent 1px); 
+            background-size: 125px 125px; 
+            transition: border-color 0.3s, box-shadow 0.3s, width 0.3s; /* Animate width change */
+            cursor: pointer; 
+            flex-wrap: wrap; /* Allow wrapping visually just in case, though we limit by validation */
+        }
+        
         .eink-row:hover { background-color: rgba(0,0,0,0.02); }
         .eink-row.row-selected { border: 2px solid #2196f3; background-color: rgba(33, 150, 243, 0.1); }
         .eink-row.row-active { border: 2px solid #ff9800; box-shadow: 0 0 10px rgba(255, 152, 0, 0.3); }
-        
+        .eink-row.drag-over { border: 2px dashed #4caf50; background: rgba(76, 175, 80, 0.1); } /* Drag highlight */
+
         .row-controls { position: absolute; top: -12px; left: 10px; display: flex; align-items: center; z-index: 50; }
         .row-label { font-size: 11px; background: var(--bg-body); padding: 2px 8px; color: var(--text-main); border: 1px solid var(--border); border-radius: 4px; font-weight: bold; }
         
-        .widget-wrapper { display: flex; flex-direction: column; align-items: center; margin-right: 0; position: relative; flex-shrink: 0; }
+        .widget-wrapper { display: flex; flex-direction: column; align-items: center; margin-right: 0; position: relative; flex-shrink: 0; cursor: grab; }
+        .widget-wrapper:active { cursor: grabbing; }
         .ew-type-label { font-size: 10px; text-transform: uppercase; color: var(--text-main); margin-bottom: 4px; font-weight: bold; opacity: 0.7; text-align: center; }
 
-        .eink-widget { background: #FFFFFF; border: 3px solid #000000; color: #000000; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 8px; box-sizing: border-box; cursor: pointer; position: relative; box-shadow: 4px 4px 0px rgba(0,0,0,0.25); transition: transform 0.1s; flex-shrink: 0; overflow: hidden; }
+        .eink-widget { background: #FFFFFF; border: 3px solid #000000; color: #000000; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 8px; box-sizing: border-box; position: relative; box-shadow: 4px 4px 0px rgba(0,0,0,0.25); transition: transform 0.1s; flex-shrink: 0; overflow: hidden; }
         .eink-widget:hover { transform: translateY(-3px); z-index: 10; border-color: var(--accent); }
         .eink-widget.editing { border: 4px solid #ff9800; transform: scale(1.05); z-index: 20; box-shadow: 0 0 15px rgba(255, 152, 0, 0.5); }
         .ew-title { font-weight: 900; font-size: 13px; text-align: center; width: 100%; line-height: 1.2; margin-top: 12px; margin-bottom: 2px; white-space: normal; text-transform: uppercase; pointer-events: none; }
@@ -104,7 +116,6 @@
             </div>
         </div>
 
-        <!-- 1. USTAWIENIA SIATKI -->
         <div class="section">
             <div class="section-title" data-i18n="sec_settings">1. Ustawienia Dashboardu</div>
             <div class="flex-row">
@@ -127,7 +138,6 @@
             </div>
         </div>
 
-        <!-- 2. IMPORT -->
         <div class="section" id="import-section">
             <details>
                 <summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;" data-i18n="sec_import">📂 Import / Eksport Kodu .DASH</summary>
@@ -144,10 +154,8 @@
             <input type="hidden" name="grid_columns" id="form-cols" value="4">
             <input type="hidden" name="grid_rows" id="form-rows" value="8">
             
-            <!-- 3. EDYTOR WIDGETU -->
             <div class="add-widget-box" id="editor-box">
                 <div class="section-title" id="editor-title" data-i18n="sec_add">2. Dodaj Widget</div>
-                
                 <div class="flex-row">
                     <div class="flex-col">
                         <label data-i18n="lbl_type">Typ Widgetu</label>
@@ -218,7 +226,6 @@
                     </div>
                 </div>
 
-                <!-- DATALISTA IKON -->
                 <datalist id="icon-list"></datalist>
 
                 <div class="flex-row" style="margin-top: 20px;">
@@ -227,10 +234,9 @@
                 </div>
             </div>
 
-            <!-- 4. PODGLĄD E-INK -->
             <div class="section">
                 <div class="section-title" data-i18n="sec_preview">3. Podgląd Dashboardu</div>
-                <p style="font-size:0.85em; margin-bottom: 10px; color: #666;">Kliknij wiersz, aby go zaznaczyć (dodawanie do wiersza). Kliknij przycisk, aby edytować.</p>
+                <p style="font-size:0.85em; margin-bottom: 10px; color: #666;">Możesz przeciągać przyciski między wierszami (Drag&Drop). Kliknij wiersz, aby dodać nowy element.</p>
                 <div class="preview-area" id="preview-container"></div>
                 <button type="button" class="btn btn-row" onclick="addRow()" data-i18n="btn_row">+ Dodaj Wiersz</button>
             </div>
@@ -240,7 +246,6 @@
             <button type="button" class="btn btn-gen" onclick="submitData()" data-i18n="btn_gen">GENERUJ KOD .DASH</button>
         </form>
 
-        <!-- 5. WYNIK YAML -->
         {% if generated_yaml %}
         <div class="section" style="margin-top:30px;">
             <div class="section-title" data-i18n="sec_result">Wynikowy Kod YAML</div>
@@ -261,30 +266,18 @@
         {% endif %}
     </div>
 
-    <!-- LOGIKA JS -->
     <script>
         const entitiesData = {{ entities | tojson | safe }};
         let rows = [[]]; 
         let editIdx = null; 
-        let selectedRowIdx = null; // WYBRANY WIERSZ
+        let selectedRowIdx = null; 
         let blockSmart = false; 
         let manualIconOverride = false; 
         let currentLang = 'pl';
         let rawImportedDefs = {}; 
+        let dragSrc = null; // ZMIENNA DRAG & DROP
 
-        const POPULAR_ICONS = [
-            "mdi-home", "mdi-home-outline", "mdi-lightbulb", "mdi-lightbulb-on", "mdi-lightbulb-outline",
-            "mdi-toggle-switch", "mdi-toggle-switch-off", "mdi-power", "mdi-power-cycle",
-            "mdi-window-shutter", "mdi-window-shutter-open", "mdi-garage", "mdi-garage-open", "mdi-door", "mdi-door-open",
-            "mdi-lock", "mdi-lock-open", "mdi-shield-check", "mdi-shield-home",
-            "mdi-thermometer", "mdi-thermometer-lines", "mdi-water-percent", "mdi-battery", "mdi-battery-50",
-            "mdi-weather-sunny", "mdi-weather-partly-cloudy", "mdi-weather-cloudy", "mdi-weather-rainy", "mdi-weather-snowy",
-            "mdi-play", "mdi-pause", "mdi-skip-next", "mdi-volume-high", "mdi-television", "mdi-speaker",
-            "mdi-wifi", "mdi-router-wireless", "mdi-lan", "mdi-server",
-            "mdi-alarm", "mdi-clock-outline", "mdi-calendar", "mdi-bell", "mdi-bell-off",
-            "mdi-alert", "mdi-check", "mdi-close", "mdi-arrow-right-circle", "mdi-arrow-left-circle",
-            "mdi-sofa", "mdi-bed", "mdi-shower", "mdi-silverware-fork-knife", "mdi-car", "mdi-flower"
-        ];
+        const POPULAR_ICONS = [ "mdi-home", "mdi-home-outline", "mdi-lightbulb", "mdi-lightbulb-on", "mdi-lightbulb-outline", "mdi-toggle-switch", "mdi-toggle-switch-off", "mdi-power", "mdi-window-shutter", "mdi-window-shutter-open", "mdi-garage", "mdi-garage-open", "mdi-door", "mdi-door-open", "mdi-lock", "mdi-lock-open", "mdi-thermometer", "mdi-water-percent", "mdi-battery", "mdi-weather-cloudy", "mdi-play", "mdi-pause", "mdi-wifi", "mdi-clock-outline", "mdi-calendar", "mdi-alert", "mdi-check", "mdi-close" ];
 
         const TRANSLATIONS = {
             pl: {
@@ -333,57 +326,34 @@
             }
         };
 
-        const SMART_MAP = {
-            'light': { type: 'switch', size: '(2x1)', iconOn: 'mdi-lightbulb-on', iconOff: 'mdi-lightbulb-outline' },
-            'switch': { type: 'switch', size: '(2x1)', iconOn: 'mdi-toggle-switch', iconOff: 'mdi-toggle-switch-off' },
-            'cover': { type: 'cover', size: '(2x1)', iconOn: 'mdi-window-shutter-open', iconOff: 'mdi-window-shutter' },
-            'garage': { type: 'cover', size: '(2x1)', iconOn: 'mdi-garage-open', iconOff: 'mdi-garage' },
-            'binary_sensor': { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-checkbox-marked-circle', iconOff: 'mdi-checkbox-blank-circle-outline' },
-            'sensor': { type: 'sensor', size: '(2x1)', icon: 'mdi-eye' }, 
-            'media_player': { type: 'media_player', size: '(2x2)', icon: '' },
-            'climate': { type: 'climate', size: '(2x2)', icon: '' },
-            'lock': { type: 'lock', size: '(2x1)', iconOn: 'mdi-lock-open', iconOff: 'mdi-lock' },
-            'script': { type: 'script', size: '(2x1)', icon: 'mdi-script-text-outline' },
-            'weather': { type: 'weather', size: '(2x2)', icon: 'mdi-weather-cloudy' }
-        };
+        const SMART_MAP = { 'light': { type: 'switch', size: '(2x1)', iconOn: 'mdi-lightbulb-on', iconOff: 'mdi-lightbulb-outline' }, 'switch': { type: 'switch', size: '(2x1)', iconOn: 'mdi-toggle-switch', iconOff: 'mdi-toggle-switch-off' }, 'cover': { type: 'cover', size: '(2x1)', iconOn: 'mdi-window-shutter-open', iconOff: 'mdi-window-shutter' }, 'garage': { type: 'cover', size: '(2x1)', iconOn: 'mdi-garage-open', iconOff: 'mdi-garage' }, 'binary_sensor': { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-checkbox-marked-circle', iconOff: 'mdi-checkbox-blank-circle-outline' }, 'sensor': { type: 'sensor', size: '(2x1)', icon: 'mdi-eye' }, 'media_player': { type: 'media_player', size: '(2x2)', icon: '' }, 'climate': { type: 'climate', size: '(2x2)', icon: '' }, 'lock': { type: 'lock', size: '(2x1)', iconOn: 'mdi-lock-open', iconOff: 'mdi-lock' }, 'script': { type: 'script', size: '(2x1)', icon: 'mdi-script-text-outline' }, 'weather': { type: 'weather', size: '(2x2)', icon: 'mdi-weather-cloudy' } };
 
-        function normalizeString(str) {
-            return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-        }
+        function normalizeString(str) { return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase(); }
 
         function searchEntities(val, forceSmartTitle = false) {
             if (!val && !forceSmartTitle) return;
             if (forceSmartTitle) { runSmartLogic(val, true); return; }
             runSmartLogic(val, false); 
-            const dl = document.getElementById('entity-list');
-            dl.innerHTML = '';
+            const dl = document.getElementById('entity-list'); dl.innerHTML = '';
             if (val.length < 2) return;
             const terms = normalizeString(val).split(" ").filter(t => t);
             let count = 0;
             for (const e in entitiesData) {
-                const obj = entitiesData[e];
-                if (count > 50) break;
+                const obj = entitiesData[e]; if (count > 50) break;
                 const searchStr = normalizeString(obj.id + " " + (obj.attributes.friendly_name || ""));
-                const match = terms.every(term => searchStr.includes(term));
-                if (match) {
-                    const opt = document.createElement('option');
-                    opt.value = obj.id;
+                if (terms.every(term => searchStr.includes(term))) {
+                    const opt = document.createElement('option'); opt.value = obj.id;
                     opt.label = obj.attributes.friendly_name ? `${obj.attributes.friendly_name} (${obj.id})` : obj.id;
-                    dl.appendChild(opt);
-                    count++;
+                    dl.appendChild(opt); count++;
                 }
             }
         }
 
         function runSmartLogic(val, isTitleSearch) {
             if (blockSmart) return;
-            
-            const input = val.toLowerCase();
-            const inputNorm = normalizeString(input);
+            const input = val.toLowerCase(); const inputNorm = normalizeString(input);
             if (input.length < 3) return;
-
             let conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-eye' };
-            
             if (!isTitleSearch) {
                 const ent = entitiesData.find(e => e.id === input) || { attributes: {} };
                 const dClass = (ent.attributes.device_class || '').toLowerCase();
@@ -394,9 +364,7 @@
                 if (dClass === 'battery') conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-battery' };
                 if (dClass === 'temperature') conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-thermometer' };
             }
-
             const check = (keywords) => keywords.some(k => inputNorm.includes(k));
-
             if (check(['glosnik', 'speaker', 'audio', 'tv', 'odtwarzacz', 'radio'])) conf = SMART_MAP['media_player'];
             else if (check(['swiatlo', 'lamp', 'kinkiet', 'led', 'zarowka'])) conf = SMART_MAP['light'];
             else if (check(['gniazdko', 'wtyczka', 'outlet', 'plug'])) conf = SMART_MAP['switch'];
@@ -419,29 +387,23 @@
                 if (conf.iconOn) document.getElementById('w-icon-on').value = conf.iconOn;
                 if (conf.iconOff) document.getElementById('w-icon-off').value = conf.iconOff;
                 if (conf.icon && !conf.iconOn) document.getElementById('w-icon').value = conf.icon;
-                updateIconPreview();
-                return;
+                updateIconPreview(); return;
             }
-
             document.getElementById('w-type').value = conf.type;
             document.getElementById('w-size').value = conf.size;
-            
             if (!isTitleSearch) {
                 let name = input.split('.').pop();
                 name = name.replace(/_[lvr]\d+$/i, '').replace(/_state$/i, '').replace(/_/g, ' ');
                 name = name.replace(/\b\w/g, l => l.toUpperCase());
                 document.getElementById('w-name').value = name;
             }
-
             if (!manualIconOverride) {
                 document.getElementById('w-icon').value = conf.icon || '';
                 document.getElementById('w-icon-on').value = conf.iconOn || '';
                 document.getElementById('w-icon-off').value = conf.iconOff || '';
                 updateIconPreview();
             }
-
-            toggleInputs();
-            updateTitleLimit();
+            toggleInputs(); updateTitleLimit();
         }
 
         function applyGrid() {
@@ -451,22 +413,43 @@
             document.getElementById('h-rows').value = parts[1];
             document.getElementById('form-cols').value = parts[0];
             document.getElementById('form-rows').value = parts[1];
+            
+            // WIZUALIZACJA SZEROKOŚCI PODGLĄDU
+            // 1 slot = ok. 125px (117+8)
+            let slots = 3; // Standard
+            if (val === '4x4' || val === '4x6' || val === '4x6m') slots = 4;
+            if (val === '6x9') slots = 6;
+            if (val === '4x8') slots = 3; // Standard+ ma 3 fizyczne kolumny w Joan
+            
+            const px = (slots * 125) + 30; // +padding
+            document.querySelectorAll('.eink-row').forEach(el => {
+                el.style.width = (slots * 125) + 'px';
+            });
         }
 
-        function syncTitle() {
-            document.getElementById('form-title').value = document.getElementById('dash-title').value;
+        function syncTitle() { document.getElementById('form-title').value = document.getElementById('dash-title').value; }
+        function autoNameNav() { if(blockSmart) return; document.getElementById('w-name').value = document.getElementById('w-dash').value.toUpperCase(); }
+        function selectRow(rI) { if (editIdx) cancelEdit(); selectedRowIdx = rI; renderPreview(); }
+
+        function getSlots(w) {
+            let c = 2;
+            if (w.size) c = parseInt(w.size.replace(/[()]/g, '').split('x')[0]) || 1;
+            return c;
         }
 
-        function autoNameNav() {
-            if(blockSmart) return;
-            const val = document.getElementById('w-dash').value;
-            document.getElementById('w-name').value = val.toUpperCase();
+        function getMaxSlots() {
+            const gridVal = document.getElementById('grid-preset').value;
+            let maxSlots = 3; 
+            if (gridVal === '4x4' || gridVal === '4x6' || gridVal === '4x6m') maxSlots = 4; 
+            if (gridVal === '6x9') maxSlots = 6;
+            if (gridVal === '4x8') maxSlots = 3;
+            return maxSlots * 2; // AppDaemon units (1 slot = 2 units)
         }
 
-        function selectRow(rI) {
-            if (editIdx) cancelEdit();
-            selectedRowIdx = rI;
-            renderPreview();
+        function getRowUsage(rowArr) {
+            let u = 0;
+            rowArr.forEach(item => u += getSlots(item));
+            return u;
         }
 
         function saveWidget() {
@@ -485,45 +468,18 @@
             if(w.type === 'spacer') w.id = 'spacer';
 
             let targetRowIdx = rows.length - 1;
-            if (editIdx) {
-                targetRowIdx = editIdx.r; 
-            } else if (selectedRowIdx !== null && selectedRowIdx < rows.length) {
-                targetRowIdx = selectedRowIdx; 
-            }
+            if (editIdx) targetRowIdx = editIdx.r;
+            else if (selectedRowIdx !== null && selectedRowIdx < rows.length) targetRowIdx = selectedRowIdx;
             
             let currentRow = [...rows[targetRowIdx]];
             if (editIdx) currentRow.splice(editIdx.w, 1); 
             
-            let newCols = 2;
-            if (w.size) newCols = parseInt(w.size.replace(/[()]/g, '').split('x')[0]) || 1;
-            
-            const gridVal = document.getElementById('grid-preset').value;
-            let maxSlots = 3; 
-            if (gridVal === '4x4' || gridVal === '4x6' || gridVal === '4x6m') maxSlots = 4; 
-            if (gridVal === '6x9') maxSlots = 6;
-            if (gridVal === '4x8') maxSlots = 3; 
-
-            let currentRowWidth = 0;
-            currentRow.forEach(item => {
-                let c = 2;
-                if (item.size) c = parseInt(item.size.replace(/[()]/g, '').split('x')[0]) || 1;
-                currentRowWidth += c;
-            });
-
-            const maxUnits = maxSlots * 2; 
-            if (currentRowWidth + newCols > maxUnits) {
-                alert(TRANSLATIONS[currentLang].alert_full);
-                return;
+            if (getRowUsage(currentRow) + getSlots(w) > getMaxSlots()) {
+                alert(TRANSLATIONS[currentLang].alert_full); return;
             }
 
-            if(editIdx) {
-                rows[editIdx.r][editIdx.w] = w;
-                cancelEdit();
-            } else {
-                rows[targetRowIdx].push(w);
-                clearForm();
-                blockSmart = false;
-            }
+            if(editIdx) { rows[editIdx.r][editIdx.w] = w; cancelEdit(); }
+            else { rows[targetRowIdx].push(w); clearForm(); blockSmart = false; }
             renderPreview();
         }
 
@@ -539,7 +495,6 @@
             const type = document.getElementById('w-type').value;
             const isNav = type === 'navigate';
             const hideEntity = ['clock', 'label', 'spacer'].includes(type);
-            
             document.getElementById('grp-entity').style.display = (isNav || hideEntity) ? 'none' : 'block';
             document.getElementById('grp-nav').style.display = isNav ? 'block' : 'none';
             document.getElementById('grp-nav').classList.toggle('hidden', !isNav);
@@ -559,110 +514,55 @@
         function checkTitleLimit() { updateTitleLimit(); }
 
         function editWidget(r, w) {
-            blockSmart = true;
-            editIdx = {r, w};
-            selectedRowIdx = r; 
-            
+            blockSmart = true; editIdx = {r, w}; selectedRowIdx = r; 
             const data = rows[r][w];
             document.getElementById('editor-box').classList.add('editing');
             document.getElementById('btn-cancel').classList.remove('hidden');
-            const t = TRANSLATIONS[currentLang];
-            document.getElementById('editor-title').innerText = t.sec_edit;
-            document.getElementById('btn-submit').innerText = t.btn_update;
-
+            document.getElementById('editor-title').innerText = TRANSLATIONS[currentLang].sec_edit;
+            document.getElementById('btn-submit').innerText = TRANSLATIONS[currentLang].btn_update;
             document.getElementById('w-type').value = data.type;
             toggleInputs();
-
             if(data.type === 'navigate') document.getElementById('w-dash').value = data.id.replace('navigate.', '');
             else document.getElementById('w-id').value = data.id;
-
             document.getElementById('w-name').value = data.name;
             document.getElementById('w-size').value = data.size || '(2x1)';
             document.getElementById('w-icon').value = data.icon || '';
             document.getElementById('w-icon-on').value = data.icon_on || '';
             document.getElementById('w-icon-off').value = data.icon_off || '';
-            
             manualIconOverride = true;
-
-            updateIconPreview();
-            updateTitleLimit();
-            setTimeout(() => blockSmart = false, 500);
-            renderPreview(); 
+            updateIconPreview(); updateTitleLimit();
+            setTimeout(() => blockSmart = false, 500); renderPreview(); 
         }
 
         function cancelEdit() {
-            editIdx = null;
-            blockSmart = false;
+            editIdx = null; blockSmart = false;
             document.getElementById('editor-box').classList.remove('editing');
             document.getElementById('btn-cancel').classList.add('hidden');
-            const t = TRANSLATIONS[currentLang];
-            document.getElementById('editor-title').innerText = t.sec_add;
-            document.getElementById('btn-submit').innerText = t.btn_add;
-            clearForm();
-            renderPreview(); 
+            document.getElementById('editor-title').innerText = TRANSLATIONS[currentLang].sec_add;
+            document.getElementById('btn-submit').innerText = TRANSLATIONS[currentLang].btn_add;
+            clearForm(); renderPreview(); 
         }
 
         function clearForm() {
-            document.getElementById('w-id').value = '';
-            document.getElementById('w-name').value = '';
-            document.getElementById('w-icon').value = '';
-            document.getElementById('w-icon-on').value = '';
-            document.getElementById('w-icon-off').value = '';
-            manualIconOverride = false; 
-            updateIconPreview();
-            updateTitleLimit();
+            document.getElementById('w-id').value = ''; document.getElementById('w-name').value = '';
+            document.getElementById('w-icon').value = ''; document.getElementById('w-icon-on').value = ''; document.getElementById('w-icon-off').value = '';
+            manualIconOverride = false; updateIconPreview(); updateTitleLimit();
         }
 
-        function deleteWidget(r, w, e) {
-            e.stopPropagation();
-            rows[r].splice(w, 1);
-            if(editIdx && editIdx.r === r && editIdx.w === w) cancelEdit();
-            renderPreview();
-        }
-
-        function deleteRow(r) {
-            if(confirm("Usunąć cały wiersz?")) {
-                rows.splice(r, 1);
-                if(rows.length === 0) rows.push([]);
-                if(editIdx && editIdx.r === r) cancelEdit();
-                if(selectedRowIdx === r) selectedRowIdx = null;
-                renderPreview();
-            }
-        }
-
+        function deleteWidget(r, w, e) { e.stopPropagation(); rows[r].splice(w, 1); if(editIdx && editIdx.r === r && editIdx.w === w) cancelEdit(); renderPreview(); }
+        function deleteRow(r) { if(confirm("Usunąć cały wiersz?")) { rows.splice(r, 1); if(rows.length === 0) rows.push([]); if(editIdx && editIdx.r === r) cancelEdit(); if(selectedRowIdx === r) selectedRowIdx = null; renderPreview(); } }
+        
         function moveRow(idx, direction) {
-            if (direction === -1 && idx > 0) {
-                [rows[idx], rows[idx - 1]] = [rows[idx - 1], rows[idx]];
-                if(editIdx) { 
-                   if(editIdx.r === idx) editIdx.r = idx - 1;
-                   else if(editIdx.r === idx - 1) editIdx.r = idx;
-                }
-                if(selectedRowIdx === idx) selectedRowIdx = idx - 1;
-                else if(selectedRowIdx === idx - 1) selectedRowIdx = idx;
-            } else if (direction === 1 && idx < rows.length - 1) {
-                [rows[idx], rows[idx + 1]] = [rows[idx + 1], rows[idx]];
-                 if(editIdx) { 
-                   if(editIdx.r === idx) editIdx.r = idx + 1;
-                   else if(editIdx.r === idx + 1) editIdx.r = idx;
-                }
-                if(selectedRowIdx === idx) selectedRowIdx = idx + 1;
-                else if(selectedRowIdx === idx + 1) selectedRowIdx = idx;
-            }
+            if (direction === -1 && idx > 0) { [rows[idx], rows[idx - 1]] = [rows[idx - 1], rows[idx]]; if(selectedRowIdx === idx) selectedRowIdx = idx - 1; } 
+            else if (direction === 1 && idx < rows.length - 1) { [rows[idx], rows[idx + 1]] = [rows[idx + 1], rows[idx]]; if(selectedRowIdx === idx) selectedRowIdx = idx + 1; }
             renderPreview();
         }
-
-        function addRow() {
-            rows.push([]);
-            renderPreview();
-        }
+        function addRow() { rows.push([]); renderPreview(); }
 
         function getRealState(w) {
-            const isPL = currentLang === 'pl';
-            const id = (w.id || '');
-            const ent = entitiesData.find(e => e.id === id);
+            const isPL = currentLang === 'pl'; const id = (w.id || ''); const ent = entitiesData.find(e => e.id === id);
             if (!ent) return "---";
-            const val = String(ent.state);
-            const unit = ent.unit || "";
+            const val = String(ent.state); const unit = ent.unit || "";
             if (val === 'on') return isPL ? "WŁĄCZONE" : "ON";
             if (val === 'off') return isPL ? "WYŁĄCZONE" : "OFF";
             if (val === 'open') return isPL ? "OTWARTE" : "OPEN";
@@ -671,30 +571,76 @@
             return val + " " + unit;
         }
 
-        // FIX: PUSTE IKONY NA PODGLĄDZIE
         function getRealIcon(w) {
-            const id = (w.id || '');
-            const ent = entitiesData.find(e => e.id === id);
-            
-            // Domyślnie zwróć pusty ciąg, nie ikonę pomocy
+            const id = (w.id || ''); const ent = entitiesData.find(e => e.id === id);
             let defaultIcon = w.icon || w.icon_on || '';
-            
             if (!ent) return defaultIcon;
-            
             const s = String(ent.state).toLowerCase();
-            if (['on', 'open', 'home', 'unlocked', 'playing'].includes(s)) {
-                return w.icon_on || w.icon || '';
-            }
-            if (['off', 'closed', 'not_home', 'away', 'locked', 'paused', 'idle'].includes(s)) {
-                return w.icon_off || w.icon || '';
-            }
+            if (['on', 'open', 'home', 'unlocked', 'playing'].includes(s)) return w.icon_on || w.icon || '';
+            if (['off', 'closed', 'not_home', 'away', 'locked', 'paused', 'idle'].includes(s)) return w.icon_off || w.icon || '';
             return w.icon || '';
         }
 
-        function renderPreview() {
-            const container = document.getElementById('preview-container');
-            container.innerHTML = '';
+        // --- DRAG AND DROP LOGIC ---
+        function handleDragStart(e, r, w) {
+            dragSrc = { r, w };
+            e.dataTransfer.effectAllowed = 'move';
+            e.target.style.opacity = '0.4';
+        }
+
+        function handleDragOver(e) {
+            if (e.preventDefault) e.preventDefault(); // Necessary
+            e.dataTransfer.dropEffect = 'move';
+            // Podświetl wiersz nad którym jesteśmy
+            const row = e.target.closest('.eink-row');
+            if(row) row.classList.add('drag-over');
+            return false;
+        }
+
+        function handleDragLeave(e) {
+            const row = e.target.closest('.eink-row');
+            if(row) row.classList.remove('drag-over');
+        }
+
+        function handleDrop(e, targetR) {
+            e.stopPropagation();
+            e.preventDefault();
+            const row = e.target.closest('.eink-row');
+            if(row) row.classList.remove('drag-over');
             
+            if (dragSrc === null) return;
+            
+            // Jeśli to ten sam wiersz i to samo miejsce - nic nie rób
+            // Ale jeśli chcemy zmienić kolejność w wierszu?
+            
+            const movedWidget = rows[dragSrc.r][dragSrc.w];
+            
+            // 1. Wyjmij ze źródła
+            rows[dragSrc.r].splice(dragSrc.w, 1);
+            
+            // 2. Sprawdź czy mieści się w celu
+            if (getRowUsage(rows[targetR]) + getSlots(movedWidget) > getMaxSlots()) {
+                // Nie mieści się - cofnij (włóż z powrotem)
+                rows[dragSrc.r].splice(dragSrc.w, 0, movedWidget);
+                alert(TRANSLATIONS[currentLang].alert_full);
+                renderPreview();
+                return;
+            }
+            
+            // 3. Wstaw do celu (na koniec wiersza)
+            rows[targetR].push(movedWidget);
+            
+            dragSrc = null;
+            renderPreview();
+        }
+
+        function handleDragEnd(e) {
+            e.target.style.opacity = '1';
+            document.querySelectorAll('.eink-row').forEach(r => r.classList.remove('drag-over'));
+        }
+
+        function renderPreview() {
+            const container = document.getElementById('preview-container'); container.innerHTML = '';
             const activeRowIndex = editIdx ? editIdx.r : selectedRowIdx;
 
             rows.forEach((row, rI) => {
@@ -703,179 +649,112 @@
                 if (rI === selectedRowIdx) rowDiv.classList.add('row-selected');
                 if (editIdx && editIdx.r === rI) rowDiv.classList.add('row-active');
                 
-                rowDiv.onclick = (e) => { 
-                    if(e.target === rowDiv || e.target.className === 'row-label') selectRow(rI); 
-                };
-
-                const controls = document.createElement('div');
-                controls.className = 'row-controls';
+                // Drag & Drop Listeners na wierszu
+                rowDiv.ondragover = handleDragOver;
+                rowDiv.ondragleave = handleDragLeave;
+                rowDiv.ondrop = (e) => handleDrop(e, rI);
                 
-                const label = document.createElement('span');
-                label.className = 'row-label';
-                const txt = currentLang === 'pl' ? 'WIERSZ ' : 'ROW ';
-                label.innerText = txt + (rI + 1);
+                rowDiv.onclick = (e) => { if(e.target === rowDiv || e.target.className === 'row-label') selectRow(rI); };
+
+                const controls = document.createElement('div'); controls.className = 'row-controls';
+                const label = document.createElement('span'); label.className = 'row-label';
+                label.innerText = (currentLang === 'pl' ? 'WIERSZ ' : 'ROW ') + (rI + 1);
                 controls.appendChild(label);
 
-                const upBtn = document.createElement('button');
-                upBtn.className = 'btn-tool btn-move-row';
-                upBtn.innerText = '▲';
+                const upBtn = document.createElement('button'); upBtn.className = 'btn-tool btn-move-row'; upBtn.innerText = '▲';
                 upBtn.onclick = (e) => { e.stopPropagation(); moveRow(rI, -1); };
-                if (rI === 0) upBtn.style.opacity = 0.3;
-                controls.appendChild(upBtn);
+                if (rI === 0) upBtn.style.opacity = 0.3; controls.appendChild(upBtn);
 
-                const downBtn = document.createElement('button');
-                downBtn.className = 'btn-tool btn-move-row';
-                downBtn.innerText = '▼';
+                const downBtn = document.createElement('button'); downBtn.className = 'btn-tool btn-move-row'; downBtn.innerText = '▼';
                 downBtn.onclick = (e) => { e.stopPropagation(); moveRow(rI, 1); };
-                if (rI === rows.length - 1) downBtn.style.opacity = 0.3;
-                controls.appendChild(downBtn);
+                if (rI === rows.length - 1) downBtn.style.opacity = 0.3; controls.appendChild(downBtn);
 
-                const delBtn = document.createElement('button');
-                delBtn.className = 'btn-tool btn-del-row';
-                delBtn.innerText = 'X';
-                delBtn.onclick = (e) => { e.stopPropagation(); deleteRow(rI); };
-                controls.appendChild(delBtn);
+                const delBtn = document.createElement('button'); delBtn.className = 'btn-tool btn-del-row'; delBtn.innerText = 'X';
+                delBtn.onclick = (e) => { e.stopPropagation(); deleteRow(rI); }; controls.appendChild(delBtn);
 
                 rowDiv.appendChild(controls);
 
                 row.forEach((w, wI) => {
                     const wrapper = document.createElement('div');
                     wrapper.className = 'widget-wrapper';
-                    const typeLabel = document.createElement('div');
-                    typeLabel.className = 'ew-type-label';
-                    typeLabel.innerText = w.type;
+                    
+                    // Draggable Widget
+                    wrapper.draggable = true;
+                    wrapper.ondragstart = (e) => handleDragStart(e, rI, wI);
+                    wrapper.ondragend = handleDragEnd;
+
+                    const typeLabel = document.createElement('div'); typeLabel.className = 'ew-type-label'; typeLabel.innerText = w.type;
                     wrapper.appendChild(typeLabel);
 
-                    const div = document.createElement('div');
-                    div.className = 'eink-widget';
+                    const div = document.createElement('div'); div.className = 'eink-widget';
                     if(editIdx && editIdx.r === rI && editIdx.w === wI) div.classList.add('editing');
 
                     let cols = 2, rw = 1;
-                    if(w.size) {
-                        const parts = w.size.replace(/[()]/g, '').split('x');
-                        cols = parseInt(parts[0]) || 1;
-                        rw = parseInt(parts[1]) || 1;
-                    }
-                    const width = (cols * 117) + ((cols - 1) * 8);
-                    const height = (rw * 117) + ((rw - 1) * 8);
-                    div.style.width = width + 'px';
-                    div.style.height = height + 'px';
+                    if(w.size) { const parts = w.size.replace(/[()]/g, '').split('x'); cols = parseInt(parts[0]) || 1; rw = parseInt(parts[1]) || 1; }
+                    const width = (cols * 117) + ((cols - 1) * 8); const height = (rw * 117) + ((rw - 1) * 8);
+                    div.style.width = width + 'px'; div.style.height = height + 'px';
 
                     if(w.type === 'spacer') {
                         div.style.border = '1px dashed #aaa'; div.style.boxShadow = 'none'; div.style.opacity = '0.5';
                         div.innerHTML = '<span style="font-size:10px; color:#999;">SPACER</span>';
                     } else {
-                        const icon = getRealIcon(w);
-                        const realState = getRealState(w);
-                        // FIX: Jeśli brak ikony, wstaw pusty div (zachowaj układ)
+                        const icon = getRealIcon(w); const realState = getRealState(w);
                         const iconHtml = icon ? `<i class="mdi ${icon} ew-icon"></i>` : `<div style="height:38px;"></div>`;
-                        
                         div.innerHTML = `<div class="ew-title">${w.name || w.id}</div>${iconHtml}<div class="ew-value">${realState}</div><div class="ew-del" onclick="deleteWidget(${rI}, ${wI}, event)">X</div>`;
                     }
                     div.onclick = (e) => { e.stopPropagation(); editWidget(rI, wI); };
-                    wrapper.appendChild(div);
-                    rowDiv.appendChild(wrapper);
+                    wrapper.appendChild(div); rowDiv.appendChild(wrapper);
                 });
                 container.appendChild(rowDiv);
             });
+            
+            // APLIKUJ SZEROKOŚĆ PO RENDERZE
+            applyGrid();
         }
 
-        function submitData() {
-            document.getElementById('layout_json').value = JSON.stringify(rows);
-            document.getElementById('custom_defs').value = JSON.stringify(rawImportedDefs);
-            document.getElementById('main-form').submit();
-        }
+        function submitData() { document.getElementById('layout_json').value = JSON.stringify(rows); document.getElementById('custom_defs').value = JSON.stringify(rawImportedDefs); document.getElementById('main-form').submit(); }
 
         function importYaml() {
-            const text = document.getElementById('import-code').value;
-            if(!text) return;
-            blockSmart = true;
-            const lines = text.split('\n');
-            const newRows = [];
-            let inLayout = false;
-            let rawDefs = {};
-            let currentDefKey = null;
-            let currentDefLines = [];
-
+            const text = document.getElementById('import-code').value; if(!text) return; blockSmart = true;
+            const lines = text.split('\n'); const newRows = []; let inLayout = false; let rawDefs = {}; let currentDefKey = null; let currentDefLines = [];
             lines.forEach(line => {
-                if (line.match(/^\S+:/) && !line.startsWith('layout:') && !line.startsWith('global_parameters:')) {
-                    if (currentDefKey) { rawDefs[currentDefKey] = currentDefLines.join('\n'); }
-                    currentDefKey = line.split(':')[0].trim();
-                    currentDefLines = [];
-                } else if (currentDefKey) {
-                    if (!line.startsWith('layout:') && !line.startsWith('#')) { currentDefLines.push(line); }
-                }
+                if (line.match(/^\S+:/) && !line.startsWith('layout:') && !line.startsWith('global_parameters:')) { if (currentDefKey) rawDefs[currentDefKey] = currentDefLines.join('\n'); currentDefKey = line.split(':')[0].trim(); currentDefLines = []; }
+                else if (currentDefKey) { if (!line.startsWith('layout:') && !line.startsWith('#')) currentDefLines.push(line); }
             });
-            if(currentDefKey) rawDefs[currentDefKey] = currentDefLines.join('\n');
-            rawImportedDefs = rawDefs;
-
+            if(currentDefKey) rawDefs[currentDefKey] = currentDefLines.join('\n'); rawImportedDefs = rawDefs;
             lines.forEach(line => {
                 const tr = line.trim();
                 if(tr.startsWith('layout:')) { inLayout = true; return; }
                 if(inLayout && tr.startsWith('-')) {
-                    const content = tr.substring(1).trim();
-                    const widgets = content.split(',').map(s => s.trim());
-                    const rowData = [];
+                    const content = tr.substring(1).trim(); const widgets = content.split(',').map(s => s.trim()); const rowData = [];
                     widgets.forEach(wStr => {
-                        let id = wStr;
-                        let size = '(2x1)'; 
-                        const sizeMatch = wStr.match(/\(\d+x\d+\)/);
+                        let id = wStr; let size = '(2x1)'; const sizeMatch = wStr.match(/\(\d+x\d+\)/);
                         if(sizeMatch) { size = sizeMatch[0]; id = wStr.replace(size, '').trim(); }
                         let type = 'switch'; let name = id; let icon = ''; let icon_on = ''; let icon_off = '';
-                        
                         if(rawDefs[id]) {
-                            const d = rawDefs[id];
-                            const tMatch = d.match(/widget_type:\s*(.*)/);
-                            if(tMatch) type = tMatch[1].trim();
-                            const nMatch = d.match(/title:\s*(.*)/);
-                            if(nMatch) name = nMatch[1].trim().replace(/['"]/g, '');
-                            const iMatch = d.match(/icon:\s*(.*)/);
-                            if(iMatch) icon = iMatch[1].trim();
-                            const ionMatch = d.match(/icon_on:\s*(.*)/);
-                            if(ionMatch) icon_on = ionMatch[1].trim();
-                            const ioffMatch = d.match(/icon_off:\s*(.*)/);
-                            if(ioffMatch) icon_off = ioffMatch[1].trim();
-                        } else {
-                            if(id === 'spacer') type = 'spacer';
-                            else if(id.startsWith('navigate.')) type = 'navigate';
-                            else if(id.startsWith('sensor.')) type = 'sensor';
-                        }
+                            const d = rawDefs[id]; const tMatch = d.match(/widget_type:\s*(.*)/); if(tMatch) type = tMatch[1].trim();
+                            const nMatch = d.match(/title:\s*(.*)/); if(nMatch) name = nMatch[1].trim().replace(/['"]/g, '');
+                            const iMatch = d.match(/icon:\s*(.*)/); if(iMatch) icon = iMatch[1].trim();
+                            const ionMatch = d.match(/icon_on:\s*(.*)/); if(ionMatch) icon_on = ionMatch[1].trim();
+                            const ioffMatch = d.match(/icon_off:\s*(.*)/); if(ioffMatch) icon_off = ioffMatch[1].trim();
+                        } else { if(id === 'spacer') type = 'spacer'; else if(id.startsWith('navigate.')) type = 'navigate'; else if(id.startsWith('sensor.')) type = 'sensor'; }
                         rowData.push({ id, type, size, name, icon, icon_on, icon_off, was_edited: false });
                     });
                     newRows.push(rowData);
                 }
-                if(inLayout && tr.length > 0 && !tr.startsWith('-') && !tr.startsWith(' ') && !tr.startsWith('layout:')) { inLayout = false; }
+                if(inLayout && tr.length > 0 && !tr.startsWith('-') && !tr.startsWith(' ') && !tr.startsWith('layout:')) inLayout = false;
             });
-
-            if(newRows.length > 0) {
-                rows = newRows;
-                renderPreview();
-                alert(currentLang === 'pl' ? "Pomyślnie zaimportowano układ." : "Import successful.");
-            } else {
-                alert(currentLang === 'pl' ? "Błąd: Nie znaleziono layoutu." : "Error: Layout not found.");
-            }
+            if(newRows.length > 0) { rows = newRows; renderPreview(); alert(currentLang === 'pl' ? "Pomyślnie zaimportowano układ." : "Import successful."); } else alert(currentLang === 'pl' ? "Błąd: Nie znaleziono layoutu." : "Error: Layout not found.");
             setTimeout(() => blockSmart = false, 1000);
         }
 
         function setLang(lang) {
-            currentLang = lang;
-            document.getElementById('input-lang').value = lang;
-            document.getElementById('btn-pl').className = lang === 'pl' ? 'active' : '';
-            document.getElementById('btn-en').className = lang === 'en' ? 'active' : '';
+            currentLang = lang; document.getElementById('input-lang').value = lang;
+            document.getElementById('btn-pl').className = lang === 'pl' ? 'active' : ''; document.getElementById('btn-en').className = lang === 'en' ? 'active' : '';
             const t = TRANSLATIONS[lang];
-            document.querySelectorAll('[data-i18n]').forEach(el => {
-                const key = el.getAttribute('data-i18n');
-                if (t[key]) {
-                    if (el.tagName === 'INPUT' && el.type === 'submit') el.value = t[key];
-                    else el.innerText = t[key];
-                }
-            });
-            document.querySelectorAll('option[data-i18n]').forEach(el => {
-                const key = el.getAttribute('data-i18n');
-                if (t[key]) el.text = t[key];
-            });
-            updateTitleLimit();
-            renderPreview();
+            document.querySelectorAll('[data-i18n]').forEach(el => { const key = el.getAttribute('data-i18n'); if (t[key]) { if (el.tagName === 'INPUT' && el.type === 'submit') el.value = t[key]; else el.innerText = t[key]; } });
+            document.querySelectorAll('option[data-i18n]').forEach(el => { const key = el.getAttribute('data-i18n'); if (t[key]) el.text = t[key]; });
+            updateTitleLimit(); renderPreview();
         }
 
         function toggleTheme() {
@@ -885,30 +764,12 @@
         }
 
         window.addEventListener('DOMContentLoaded', () => {
-            const host = window.location.hostname;
-            const pathEl = document.getElementById('path-code');
-            const linkEl = document.getElementById('dashboard-link');
+            const host = window.location.hostname; const pathEl = document.getElementById('path-code'); const linkEl = document.getElementById('dashboard-link');
             if(pathEl) pathEl.innerText = pathEl.innerText.replace('IP_HA', host);
-            if(linkEl) {
-                const rawHref = linkEl.getAttribute('href');
-                if (rawHref.includes('[HOST]')) {
-                    const newHref = rawHref.replace(/\[HOST\]/g, host);
-                    linkEl.setAttribute('href', newHref);
-                    linkEl.innerText = newHref;
-                }
-            }
-            setLang('pl');
-            const savedTheme = localStorage.getItem('joan_theme') || 'light';
-            document.getElementById('btn-theme').innerText = savedTheme === 'dark' ? '☀️' : '🌙';
+            if(linkEl) { const rawHref = linkEl.getAttribute('href'); if (rawHref.includes('[HOST]')) { const newHref = rawHref.replace(/\[HOST\]/g, host); linkEl.setAttribute('href', newHref); linkEl.innerText = newHref; } }
+            setLang('pl'); const savedTheme = localStorage.getItem('joan_theme') || 'light'; document.getElementById('btn-theme').innerText = savedTheme === 'dark' ? '☀️' : '🌙';
             updateTitleLimit();
-            
-            const dl = document.getElementById('icon-list');
-            POPULAR_ICONS.forEach(icon => {
-                const opt = document.createElement('option');
-                opt.value = icon;
-                dl.appendChild(opt);
-            });
-
+            const dl = document.getElementById('icon-list'); POPULAR_ICONS.forEach(icon => { const opt = document.createElement('option'); opt.value = icon; dl.appendChild(opt); });
             if(!rows.length || (rows.length===1 && !rows[0].length)) { } else { renderPreview(); }
         });
     </script>
