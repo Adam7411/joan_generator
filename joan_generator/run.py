@@ -150,7 +150,7 @@ def index():
                     if w_id in seen_ids: continue
                     seen_ids.add(w_id)
                     
-                    # Import: Jeśli widget nie był edytowany, użyj oryginalnego kodu
+                    # Import Protection
                     if w_id in custom_defs and not w.get('was_edited', False):
                         generated_yaml += f"{w_id}:\n"
                         for line in custom_defs[w_id].split('\n'):
@@ -191,7 +191,7 @@ def index():
                         else:
                             generated_yaml += "  precision: 1\n"
 
-                    elif w_type == 'weather': # --- PRZYWRÓCONO WEATHER ---
+                    elif w_type == 'weather':
                         generated_yaml += f"  widget_type: weather\n"
                         generated_yaml += f"  entity: {w_id}\n"
                         generated_yaml += f"  title: \"{w_name}\"\n"
@@ -258,7 +258,6 @@ def index():
                         
                         if ad_type in ['cover', 'binary_sensor', 'switch', 'light', 'lock']:
                             generated_yaml += "  state_map:\n"
-                            # Mapa dla najczęstszych
                             if ad_type == 'cover':
                                 for s in ['open','closed','opening','closing']: generated_yaml += f"    \"{s}\": \"{dic.get(s,s)}\"\n"
                             elif ad_type == 'binary_sensor':
