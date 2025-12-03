@@ -99,9 +99,6 @@ def index():
             }
             dic = TRANS.get(lang, TRANS['pl'])
 
-            # --- FIX DLA APPDAEMON ---
-            # Ponieważ domyślny widget_size to [2, 1], każda widoczna kolumna zajmuje 2 jednostki siatki.
-            # Jeśli użytkownik chce 4 przyciski w rzędzie, AppDaemon musi mieć columns: 8.
             ad_columns = int(cols) * 2
 
             generated_yaml += f"title: {title}\n"
