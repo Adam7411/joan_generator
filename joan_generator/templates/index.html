@@ -38,7 +38,6 @@
         .section { background: var(--bg-section); padding: 25px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 30px; }
         .section-title { font-size: 1.4em; font-weight: 900; border-bottom: 3px solid var(--accent); display: inline-block; margin-bottom: 20px; color: var(--text-main); }
         
-        /* Link Box */
         .file-path-info { background-color: var(--link-bg); color: var(--link-color); border: 1px solid var(--border); padding: 20px; margin-bottom: 20px; border-radius: 6px; font-family: monospace; }
         .file-info-block { margin-bottom: 15px; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 15px; }
         .file-path-info strong { display: block; margin-bottom: 5px; color: var(--text-main); }
@@ -65,7 +64,6 @@
         .btn-del-row { background: #d32f2f; }
         .btn-move-row { background: #757575; }
 
-        /* PODGLĄD */
         .preview-area { background: var(--preview-bg); padding: 30px; border: 2px solid var(--border); border-radius: 8px; overflow-x: auto; min-height: 400px; }
         .eink-row { display: flex; gap: 8px; margin-bottom: 15px; padding: 15px; border: 2px dashed #999; border-radius: 6px; min-height: 140px; align-items: flex-end; position: relative; background-image: linear-gradient(to right, rgba(0,0,0,0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,0,0,0.05) 1px, transparent 1px); background-size: 125px 125px; transition: border-color 0.3s, box-shadow 0.3s; }
         .eink-row.row-active { border: 2px solid #2196f3; box-shadow: 0 0 10px rgba(33, 150, 243, 0.3); background-color: rgba(33, 150, 243, 0.05); }
@@ -154,7 +152,7 @@
                             <option value="cover" data-i18n="opt_cover">Cover / Gate</option>
                             <option value="sensor" data-i18n="opt_sensor">Sensor</option>
                             <option value="binary_sensor" data-i18n="opt_binary">Binary Sensor</option>
-                            <option value="weather" data-i18n="opt_weather">Pogoda (Weather)</option> <!-- DODANO POGODĘ -->
+                            <option value="weather" data-i18n="opt_weather">Pogoda (Weather)</option>
                             <option value="lock" data-i18n="opt_lock">Lock</option>
                             <option value="person" data-i18n="opt_person">Person / Tracker</option>
                             <option value="media_player" data-i18n="opt_media">Media Player</option>
@@ -202,6 +200,7 @@
                             <i id="preview-icon" class="mdi mdi-help-circle-outline icon-preview"></i>
                         </div>
                     </div>
+                    <!-- POLA RĘCZNEJ EDYCJI IKON - ZGODNIE Z PROŚBĄ -->
                     <div class="flex-col">
                         <label data-i18n="lbl_icon">Ikona (Standard)</label>
                         <input type="text" id="w-icon" oninput="updateIconPreview()" placeholder="mdi-home">
@@ -322,7 +321,7 @@
             'climate': { type: 'climate', size: '(2x2)', icon: '' },
             'lock': { type: 'lock', size: '(2x1)', iconOn: 'mdi-lock-open', iconOff: 'mdi-lock' },
             'script': { type: 'script', size: '(2x1)', icon: 'mdi-script-text-outline' },
-            'weather': { type: 'weather', size: '(2x2)', icon: 'mdi-weather-cloudy' } // PRZYWROCONO
+            'weather': { type: 'weather', size: '(2x2)', icon: 'mdi-weather-cloudy' }
         };
 
         function normalizeString(str) {
@@ -498,7 +497,6 @@
         function toggleInputs() {
             const type = document.getElementById('w-type').value;
             const isNav = type === 'navigate';
-            // ZEGAR, LABEL, SPACER - nie potrzebują encji
             const hideEntity = ['clock', 'label', 'spacer'].includes(type);
             
             document.getElementById('grp-entity').style.display = (isNav || hideEntity) ? 'none' : 'block';
@@ -584,7 +582,6 @@
             }
         }
 
-        // --- FUNKCJE EDYCJI WIERSZY (UP/DOWN) ---
         function moveRow(idx, direction) {
             if (direction === -1 && idx > 0) {
                 [rows[idx], rows[idx - 1]] = [rows[idx - 1], rows[idx]];
@@ -622,6 +619,30 @@
             return val + " " + unit;
         }
 
+        // --- NOWA FUNKCJA: DYNAMICZNA IKONA W PODGLĄDZIE ---
+        function getRealIcon(w) {
+            const id = (w.id || '');
+            const ent = entitiesData.find(e => e.id === id);
+            
+            // Domyślna ikona, jeśli nie ma encji
+            let defaultIcon = w.icon || w.icon_on || 'mdi-help-circle-outline';
+            
+            if (!ent) return defaultIcon;
+            
+            const s = String(ent.state).toLowerCase();
+            // Jeśli stan to "on/open/home/unlocked" -> użyj icon_on
+            if (['on', 'open', 'home', 'unlocked'].includes(s)) {
+                return w.icon_on || w.icon || 'mdi-help-circle-outline';
+            }
+            // Jeśli stan to "off/closed/not_home/locked" -> użyj icon_off
+            if (['off', 'closed', 'not_home', 'away', 'locked'].includes(s)) {
+                return w.icon_off || w.icon || 'mdi-help-circle-outline';
+            }
+            
+            // Fallback
+            return w.icon || 'mdi-help-circle-outline';
+        }
+
         function renderPreview() {
             const container = document.getElementById('preview-container');
             container.innerHTML = '';
@@ -642,7 +663,6 @@
                 label.innerText = txt + (rI + 1);
                 controls.appendChild(label);
 
-                // PRZYCISKI EDYCJI WIERSZA
                 const upBtn = document.createElement('button');
                 upBtn.className = 'btn-tool btn-move-row';
                 upBtn.innerText = '▲';
@@ -692,7 +712,8 @@
                         div.style.border = '1px dashed #aaa'; div.style.boxShadow = 'none'; div.style.opacity = '0.5';
                         div.innerHTML = '<span style="font-size:10px; color:#999;">SPACER</span>';
                     } else {
-                        const icon = w.icon || w.icon_on || 'mdi-cube-outline';
+                        // UŻYCIE NOWEJ FUNKCJI DO DYNAMICZNYCH IKON
+                        const icon = getRealIcon(w);
                         const realState = getRealState(w);
                         div.innerHTML = `<div class="ew-title">${w.name || w.id}</div><i class="mdi ${icon} ew-icon"></i><div class="ew-value">${realState}</div><div class="ew-del" onclick="deleteWidget(${rI}, ${wI}, event)">X</div>`;
                     }
