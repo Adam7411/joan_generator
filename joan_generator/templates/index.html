@@ -200,20 +200,23 @@
                             <i id="preview-icon" class="mdi mdi-help-circle-outline icon-preview"></i>
                         </div>
                     </div>
-                    <!-- POLA RĘCZNEJ EDYCJI IKON - ZGODNIE Z PROŚBĄ -->
+                    <!-- POLA Z DATALISTĄ DO WYBORU IKON -->
                     <div class="flex-col">
                         <label data-i18n="lbl_icon">Ikona (Standard)</label>
-                        <input type="text" id="w-icon" oninput="updateIconPreview()" placeholder="mdi-home">
+                        <input type="text" id="w-icon" list="icon-list" oninput="updateIconPreview()" placeholder="mdi-home">
                     </div>
                     <div class="flex-col">
                         <label data-i18n="lbl_icon_on">Ikona ON</label>
-                        <input type="text" id="w-icon-on" oninput="updateIconPreview()" placeholder="mdi-lightbulb-on">
+                        <input type="text" id="w-icon-on" list="icon-list" oninput="updateIconPreview()" placeholder="mdi-lightbulb-on">
                     </div>
                     <div class="flex-col">
                         <label data-i18n="lbl_icon_off">Ikona OFF</label>
-                        <input type="text" id="w-icon-off" oninput="updateIconPreview()" placeholder="mdi-lightbulb-outline">
+                        <input type="text" id="w-icon-off" list="icon-list" oninput="updateIconPreview()" placeholder="mdi-lightbulb-outline">
                     </div>
                 </div>
+
+                <!-- DATALISTA Z IKONAMI -->
+                <datalist id="icon-list"></datalist>
 
                 <div class="flex-row" style="margin-top: 20px;">
                     <button type="button" class="btn btn-add" id="btn-submit" onclick="saveWidget()" data-i18n="btn_add">+ DODAJ WIDGET</button>
@@ -262,6 +265,21 @@
         let blockSmart = false; 
         let currentLang = 'pl';
         let rawImportedDefs = {}; 
+
+        // LISTA POPULARNYCH IKON MDI (Datalist)
+        const POPULAR_ICONS = [
+            "mdi-home", "mdi-home-outline", "mdi-lightbulb", "mdi-lightbulb-on", "mdi-lightbulb-outline",
+            "mdi-toggle-switch", "mdi-toggle-switch-off", "mdi-power", "mdi-power-cycle",
+            "mdi-window-shutter", "mdi-window-shutter-open", "mdi-garage", "mdi-garage-open", "mdi-door", "mdi-door-open",
+            "mdi-lock", "mdi-lock-open", "mdi-shield-check", "mdi-shield-home",
+            "mdi-thermometer", "mdi-thermometer-lines", "mdi-water-percent", "mdi-battery", "mdi-battery-50",
+            "mdi-weather-sunny", "mdi-weather-partly-cloudy", "mdi-weather-cloudy", "mdi-weather-rainy", "mdi-weather-snowy",
+            "mdi-play", "mdi-pause", "mdi-skip-next", "mdi-volume-high", "mdi-television", "mdi-speaker",
+            "mdi-wifi", "mdi-router-wireless", "mdi-lan", "mdi-server",
+            "mdi-alarm", "mdi-clock-outline", "mdi-calendar", "mdi-bell", "mdi-bell-off",
+            "mdi-alert", "mdi-check", "mdi-close", "mdi-arrow-right-circle", "mdi-arrow-left-circle",
+            "mdi-sofa", "mdi-bed", "mdi-shower", "mdi-silverware-fork-knife", "mdi-car", "mdi-flower"
+        ];
 
         const TRANSLATIONS = {
             pl: {
@@ -354,6 +372,7 @@
 
         function runSmartLogic(val, isTitleSearch) {
             if (blockSmart) return;
+            
             const input = val.toLowerCase();
             const inputNorm = normalizeString(input);
             if (input.length < 3) return;
@@ -538,6 +557,7 @@
             document.getElementById('w-icon').value = data.icon || '';
             document.getElementById('w-icon-on').value = data.icon_on || '';
             document.getElementById('w-icon-off').value = data.icon_off || '';
+            
             updateIconPreview();
             updateTitleLimit();
             setTimeout(() => blockSmart = false, 500);
@@ -619,27 +639,22 @@
             return val + " " + unit;
         }
 
-        // --- NOWA FUNKCJA: DYNAMICZNA IKONA W PODGLĄDZIE ---
+        // Dynamiczna ikona w podglądzie
         function getRealIcon(w) {
             const id = (w.id || '');
             const ent = entitiesData.find(e => e.id === id);
             
-            // Domyślna ikona, jeśli nie ma encji
             let defaultIcon = w.icon || w.icon_on || 'mdi-help-circle-outline';
             
             if (!ent) return defaultIcon;
             
             const s = String(ent.state).toLowerCase();
-            // Jeśli stan to "on/open/home/unlocked" -> użyj icon_on
-            if (['on', 'open', 'home', 'unlocked'].includes(s)) {
+            if (['on', 'open', 'home', 'unlocked', 'playing'].includes(s)) {
                 return w.icon_on || w.icon || 'mdi-help-circle-outline';
             }
-            // Jeśli stan to "off/closed/not_home/locked" -> użyj icon_off
-            if (['off', 'closed', 'not_home', 'away', 'locked'].includes(s)) {
+            if (['off', 'closed', 'not_home', 'away', 'locked', 'paused', 'idle'].includes(s)) {
                 return w.icon_off || w.icon || 'mdi-help-circle-outline';
             }
-            
-            // Fallback
             return w.icon || 'mdi-help-circle-outline';
         }
 
@@ -712,7 +727,6 @@
                         div.style.border = '1px dashed #aaa'; div.style.boxShadow = 'none'; div.style.opacity = '0.5';
                         div.innerHTML = '<span style="font-size:10px; color:#999;">SPACER</span>';
                     } else {
-                        // UŻYCIE NOWEJ FUNKCJI DO DYNAMICZNYCH IKON
                         const icon = getRealIcon(w);
                         const realState = getRealState(w);
                         div.innerHTML = `<div class="ew-title">${w.name || w.id}</div><i class="mdi ${icon} ew-icon"></i><div class="ew-value">${realState}</div><div class="ew-del" onclick="deleteWidget(${rI}, ${wI}, event)">X</div>`;
@@ -846,6 +860,15 @@
             const savedTheme = localStorage.getItem('joan_theme') || 'light';
             document.getElementById('btn-theme').innerText = savedTheme === 'dark' ? '☀️' : '🌙';
             updateTitleLimit();
+            
+            // GENEROWANIE DATALISTY IKON
+            const dl = document.getElementById('icon-list');
+            POPULAR_ICONS.forEach(icon => {
+                const opt = document.createElement('option');
+                opt.value = icon;
+                dl.appendChild(opt);
+            });
+
             if(!rows.length || (rows.length===1 && !rows[0].length)) { } else { renderPreview(); }
         });
     </script>
