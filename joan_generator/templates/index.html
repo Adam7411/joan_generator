@@ -31,8 +31,19 @@
         }
         body { font-family: 'Roboto', sans-serif; background-color: var(--bg-body); color: var(--text-main); padding: 20px; transition: background-color 0.3s; }
         .container { max-width: 1400px; margin: 0 auto; background: var(--bg-container); padding: 30px; border-radius: 10px; box-shadow: var(--shadow); }
-        .header-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--border); padding-bottom: 20px; margin-bottom: 25px; }
+        .header-row { display: flex; flex-direction: column; justify-content: center; align-items: center; border-bottom: 2px solid var(--border); padding-bottom: 20px; margin-bottom: 25px; text-align: center; }
+        
+        .header-top { width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         h1 { margin: 0; color: var(--accent); font-size: 28px; font-weight: 900; text-transform: uppercase; }
+        
+        /* STATUS HEADER */
+        #header-status { 
+            font-size: 1.2em; font-weight: bold; color: #009688; 
+            background: rgba(0, 150, 136, 0.1); padding: 8px 20px; border-radius: 20px; 
+            display: inline-block; margin-top: 5px;
+        }
+        #header-status span { color: var(--text-main); font-weight: normal; font-size: 0.8em; }
+
         .controls button { padding: 8px 16px; border: 1px solid var(--border); background: var(--bg-section); color: var(--text-main); border-radius: 4px; cursor: pointer; font-weight: bold; margin-left: 5px; }
         .controls button.active { background: var(--accent); color: var(--btn-text); border-color: var(--accent); }
         .section { background: var(--bg-section); padding: 25px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 30px; }
@@ -118,24 +129,42 @@
         }
         .input-hint code { background: rgba(255,255,255,0.3); padding: 2px 4px; border-radius: 3px; font-weight: bold; }
         
-        .dash-list { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 5px; }
-        .dash-item { background: var(--bg-input); border: 1px solid var(--border); padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 5px; transition: all 0.2s; }
-        .dash-item:hover { background: var(--highlight); transform: translateY(-1px); }
-        /* STYL DLA AKTYWNEGO */
+        /* --- MODYFIKACJA: WIĘKSZE IKONY DASHBOARDÓW --- */
+        .dash-list { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 10px; }
+        .dash-item { 
+            background: var(--bg-input); border: 1px solid var(--border); 
+            padding: 15px 20px; /* Większy padding */
+            border-radius: 6px; cursor: pointer; 
+            font-size: 16px; /* Większa czcionka */
+            display: flex; align-items: center; gap: 10px; 
+            transition: all 0.2s; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .dash-item:hover { background: var(--highlight); transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
         .dash-item.active { background: #4caf50; color: white; border-color: #388e3c; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
         .dash-item span { font-weight: bold; }
-        .dash-item button { font-size: 10px; padding: 2px 5px; margin-left: 5px; background: #d32f2f; color: white; border: none; border-radius: 3px; cursor: pointer; opacity: 0.8; }
+        .dash-item button { 
+            font-size: 12px; padding: 4px 8px; margin-left: 10px; 
+            background: #d32f2f; color: white; border: none; 
+            border-radius: 4px; cursor: pointer; opacity: 0.8; 
+        }
         .dash-item.active button { background: white; color: #d32f2f; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header-row">
-            <h1 data-i18n="title_main">Joan 6 E-Ink Generator (MONSTER EDITION)</h1>
-            <div class="controls">
-                <button type="button" onclick="toggleTheme()" id="btn-theme">🌙</button>
-                <button type="button" onclick="setLang('pl')" id="btn-pl" class="active">PL</button>
-                <button type="button" onclick="setLang('en')" id="btn-en">EN</button>
+            <div class="header-top">
+                <h1 data-i18n="title_main">Joan 6 E-Ink Generator (MONSTER EDITION)</h1>
+                <div class="controls">
+                    <button type="button" onclick="toggleTheme()" id="btn-theme">🌙</button>
+                    <button type="button" onclick="setLang('pl')" id="btn-pl" class="active">PL</button>
+                    <button type="button" onclick="setLang('en')" id="btn-en">EN</button>
+                </div>
+            </div>
+            <!-- --- MODYFIKACJA: STATUS W NAGŁÓWKU --- -->
+            <div id="header-status" class="hidden">
+                <span data-i18n="lbl_current_work">AKTUALNIE PRACUJESZ NA:</span> <span id="header-dash-name">---</span>
             </div>
         </div>
 
@@ -167,7 +196,7 @@
             <p style="font-size: 0.9em; margin-bottom: 10px;">Zapisz swoje układy w przeglądarce, aby łatwo się między nimi przełączać.</p>
             <div class="flex-row" style="align-items: flex-end;">
                 <div class="flex-col" style="flex: 2;">
-                    <label>Zapisz obecny układ jako: <span id="current-dash-label" style="color: #009688; font-weight: bold; margin-left: 10px; font-size: 0.9em;"></span></label>
+                    <label>Zapisz obecny układ jako:</label>
                     <div style="display:flex; gap: 10px;">
                         <input type="text" id="save-dash-name" placeholder="np. Salon">
                         <button type="button" class="btn btn-dash-save" onclick="saveToBrowser()">ZAPISZ</button>
@@ -200,7 +229,25 @@
             
             <div class="add-widget-box" id="editor-box">
                 <div class="section-title" id="editor-title" data-i18n="sec_add">2. Dodaj Widget</div>
-                <!-- NOWY UKŁAD: TYTUŁ I TYP W PIERWSZYM WIERSZU -->
+                
+                <!-- --- MODYFIKACJA: NOWA KOLEJNOŚĆ PÓL --- -->
+                <!-- RZĄD 1: ENCJA / NAWIGACJA -->
+                <div class="flex-row" style="margin-bottom: 20px;">
+                    <div class="flex-col" id="grp-entity" style="flex: 100%;">
+                        <label data-i18n="lbl_entity">Encja (Wyszukaj po nazwie lub ID)</label>
+                        <input list="entity-list" id="w-id" placeholder="np. głośnik kuchnia..." oninput="searchEntities(this.value)" autocomplete="off">
+                        <datalist id="entity-list"></datalist>
+                    </div>
+                    <div class="flex-col hidden" id="grp-nav" style="flex: 100%;">
+                        <label data-i18n="lbl_dash_name">Nazwa Dashboardu (target)</label>
+                        <!-- Używamy datalist dla podpowiedzi z zapisanych dashboardów -->
+                        <input type="text" id="w-dash" placeholder="np. main" list="nav-dash-suggestions" oninput="autoNameNav()">
+                        <datalist id="nav-dash-suggestions"></datalist>
+                        <small id="nav-hint" class="input-hint"></small>
+                    </div>
+                </div>
+
+                <!-- RZĄD 2: TYTUŁ i TYP -->
                 <div class="flex-row">
                     <div class="flex-col" style="flex: 2;">
                         <label data-i18n="lbl_name">Tytuł na ekranie</label>
@@ -226,19 +273,7 @@
                     </div>
                 </div>
 
-                <div class="flex-row">
-                    <div class="flex-col" id="grp-entity" style="flex: 100%;">
-                        <label data-i18n="lbl_entity">Encja (Wyszukaj po nazwie lub ID)</label>
-                        <input list="entity-list" id="w-id" placeholder="np. głośnik kuchnia..." oninput="searchEntities(this.value)" autocomplete="off">
-                        <datalist id="entity-list"></datalist>
-                    </div>
-                    <div class="flex-col hidden" id="grp-nav" style="flex: 100%;">
-                        <label data-i18n="lbl_dash_name">Nazwa Dashboardu (target)</label>
-                        <input type="text" id="w-dash" placeholder="np. main" oninput="autoNameNav()">
-                        <small id="nav-hint" class="input-hint"></small>
-                    </div>
-                </div>
-
+                <!-- RZĄD 3: ROZMIAR I IKONY -->
                 <div class="flex-row">
                     <div class="flex-col">
                         <label data-i18n="lbl_size">Rozmiar</label>
@@ -325,7 +360,7 @@
         let rawImportedDefs = {}; 
         let dragSrc = null; 
         let globalDefaultSize = {w: 2, h: 1}; 
-        let currentLoadedDashName = null; // NEW: Track loaded dashboard
+        let currentLoadedDashName = null;
 
         const POPULAR_ICONS = [ "mdi-home", "mdi-home-outline", "mdi-lightbulb", "mdi-lightbulb-on", "mdi-lightbulb-outline", "mdi-toggle-switch", "mdi-toggle-switch-off", "mdi-power", "mdi-window-shutter", "mdi-window-shutter-open", "mdi-garage", "mdi-garage-open", "mdi-door", "mdi-door-open", "mdi-lock", "mdi-lock-open", "mdi-thermometer", "mdi-water-percent", "mdi-battery", "mdi-weather-cloudy", "mdi-play", "mdi-pause", "mdi-wifi", "mdi-clock-outline", "mdi-calendar", "mdi-alert", "mdi-check", "mdi-close" ];
 
@@ -351,7 +386,8 @@
                 sec_preview: "3. Podgląd Dashboardu", btn_row: "+ Dodaj Wiersz", btn_gen: "GENERUJ KOD .DASH",
                 sec_result: "Wynikowy Kod YAML", lbl_save_path: "1. Zapisz kod w pliku:", lbl_open_link: "2. Uruchom ponownie AppDaemon i sprawdź:",
                 limit_15: "Maks 15 znaków", limit_20: "Maks 20 znaków", alert_full: "Brak miejsca w tym wierszu! Zmień siatkę lub dodaj nowy wiersz.",
-                hint_nav: "<b>Wskazówka:</b> Wpisz nazwę pliku <code>.dash</code> (bez rozszerzenia), który znajduje się w folderze <code>\\\\IP_HA\\addon_configs\\appdaemon\\dashboards\\</code>.<br>Służy do przełączania stron (np. wpisz <code>salon</code> aby przejść do dashboardu <code>salon.dash</code>)."
+                hint_nav: "<b>Wskazówka:</b> Wpisz nazwę pliku <code>.dash</code> (bez rozszerzenia), który znajduje się w folderze <code>\\\\IP_HA\\addon_configs\\appdaemon\\dashboards\\</code>.<br>Służy do przełączania stron (np. wpisz <code>salon</code> aby przejść do dashboardu <code>salon.dash</code>).",
+                lbl_current_work: "AKTUALNIE PRACUJESZ NA:"
             },
             en: {
                 title_main: "Joan 6 E-Ink Generator (Final Monster Edition)",
@@ -374,7 +410,8 @@
                 sec_preview: "3. Dashboard Preview", btn_row: "+ Add Row", btn_gen: "GENERATE .DASH CODE",
                 sec_result: "Generated YAML Code", lbl_save_path: "1. Save code to file:", lbl_open_link: "2. Restart AppDaemon and check:",
                 limit_15: "Max 15 chars", limit_20: "Max 20 chars", alert_full: "No space in this row! Change grid or add new row.",
-                hint_nav: "<b>Hint:</b> Enter the <code>.dash</code> filename (without extension) located in <code>\\\\IP_HA\\addon_configs\\appdaemon\\dashboards\\</code>.<br>Used for page navigation (e.g. enter <code>livingroom</code> to go to dashboard <code>livingroom.dash</code>)."
+                hint_nav: "<b>Hint:</b> Enter the <code>.dash</code> filename (without extension) located in <code>\\\\IP_HA\\addon_configs\\appdaemon\\dashboards\\</code>.<br>Used for page navigation (e.g. enter <code>livingroom</code> to go to dashboard <code>livingroom.dash</code>).",
+                lbl_current_work: "CURRENTLY WORKING ON:"
             }
         };
 
@@ -820,11 +857,10 @@
             let foundCols = null;
             let foundRows = null;
             let foundTitle = "JoanDashboard";
-            let titleSet = false; // Flag to prevent overwrite
+            let titleSet = false;
             
             lines.forEach(line => {
                 const t = line.trim();
-                // --- FIX: Only grab the first 'title:' as dashboard title ---
                 if (!titleSet && t.startsWith('title:')) {
                     foundTitle = t.split(':')[1].trim();
                     titleSet = true;
@@ -968,7 +1004,7 @@
             };
             
             localStorage.setItem('joan_dash_' + name, JSON.stringify(data));
-            currentLoadedDashName = name; // Set current
+            currentLoadedDashName = name;
             refreshSavedList();
             alert("Zapisano dashboard: " + name);
         }
@@ -986,7 +1022,7 @@
                 document.getElementById('grid-preset').value = data.grid;
                 globalDefaultSize = data.defSize || {w: 2, h: 1};
                 
-                currentLoadedDashName = name; // Set current
+                currentLoadedDashName = name;
                 refreshSavedList();
                 
                 syncTitle();
@@ -1008,28 +1044,37 @@
             const list = document.getElementById('saved-dash-list');
             list.innerHTML = '';
             
-            // Update label
-            const label = document.getElementById('current-dash-label');
+            // Update header status
+            const headerStatus = document.getElementById('header-status');
+            const headerName = document.getElementById('header-dash-name');
+            
             if(currentLoadedDashName) {
-                label.innerText = "Aktualnie pracujesz na: " + currentLoadedDashName;
+                headerStatus.classList.remove('hidden');
+                headerName.innerText = currentLoadedDashName;
             } else {
-                label.innerText = "";
+                headerStatus.classList.add('hidden');
             }
+
+            // Populate list
+            const dlSuggestions = document.getElementById('nav-dash-suggestions');
+            dlSuggestions.innerHTML = '';
 
             Object.keys(localStorage).forEach(key => {
                 if(key.startsWith('joan_dash_')) {
                     const name = key.replace('joan_dash_', '');
+                    
+                    // Add to UI List
                     const div = document.createElement('div');
                     div.className = 'dash-item';
-                    
-                    // --- FIX: Add active class ---
-                    if(name === currentLoadedDashName) {
-                        div.classList.add('active');
-                    }
-
+                    if(name === currentLoadedDashName) div.classList.add('active');
                     div.innerHTML = `<span>${name}</span> <button onclick="deleteFromBrowser('${name}', event)">USUŃ</button>`;
                     div.onclick = () => loadFromBrowser(name);
                     list.appendChild(div);
+
+                    // Add to Suggestions Datalist
+                    const opt = document.createElement('option');
+                    opt.value = name;
+                    dlSuggestions.appendChild(opt);
                 }
             });
         }
