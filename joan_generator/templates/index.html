@@ -38,11 +38,13 @@
         .section { background: var(--bg-section); padding: 25px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 30px; }
         .section-title { font-size: 1.4em; font-weight: 900; border-bottom: 3px solid var(--accent); display: inline-block; margin-bottom: 20px; color: var(--text-main); }
         
+        /* File Info i Link Box */
         .file-path-info { background-color: var(--link-bg); color: var(--link-color); border: 1px solid var(--border); padding: 20px; margin-bottom: 20px; border-radius: 6px; font-family: monospace; }
         .file-info-block { margin-bottom: 15px; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 15px; }
         .file-path-info strong { display: block; margin-bottom: 5px; color: var(--text-main); }
         .file-path-info code { display: block; background: rgba(255,255,255,0.4); padding: 8px; border-radius: 4px; font-weight: bold; }
-
+        
+        /* Ramka dla linku (widoczność w dark mode) */
         .link-box {
             background-color: #ffffff;
             border: 2px solid var(--accent);
@@ -72,6 +74,7 @@
         .btn-del-row { background: #d32f2f; padding: 4px 8px; font-size: 12px; margin-left: 10px; border-radius: 4px; cursor: pointer; color: white; border: none; }
         .btn-import { background: #ff9800; color: white; margin-top: 10px; }
 
+        /* PODGLĄD Z KRATOWNICĄ */
         .preview-area { 
             background: var(--preview-bg); 
             padding: 30px; 
@@ -87,9 +90,9 @@
             align-items: flex-end; position: relative; 
             background-image: linear-gradient(to right, rgba(0,0,0,0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,0,0,0.05) 1px, transparent 1px);
             background-size: 125px 125px;
-            transition: border-color 0.3s, box-shadow 0.3s, background-color 0.3s;
-            cursor: pointer;
+            transition: border-color 0.3s, box-shadow 0.3s;
         }
+        /* Podświetlenie aktywnego wiersza */
         .eink-row.row-active {
             border: 2px solid #2196f3;
             box-shadow: 0 0 10px rgba(33, 150, 243, 0.3);
@@ -109,6 +112,7 @@
             box-shadow: 4px 4px 0px rgba(0,0,0,0.25); transition: transform 0.1s; flex-shrink: 0; overflow: hidden;
         }
         .eink-widget:hover { transform: translateY(-3px); z-index: 10; border-color: var(--accent); }
+        /* Podświetlenie edytowanego widgetu */
         .eink-widget.editing { border: 4px solid #ff9800; transform: scale(1.05); z-index: 20; box-shadow: 0 0 15px rgba(255, 152, 0, 0.5); }
 
         .ew-title { font-weight: 900; font-size: 13px; text-align: center; width: 100%; line-height: 1.2; margin-top: 12px; margin-bottom: 2px; white-space: normal; text-transform: uppercase; pointer-events: none; }
@@ -135,6 +139,7 @@
             </div>
         </div>
 
+        <!-- 1. USTAWIENIA SIATKI -->
         <div class="section">
             <div class="section-title" data-i18n="sec_settings">1. Ustawienia Dashboardu</div>
             <div class="flex-row">
@@ -157,6 +162,7 @@
             </div>
         </div>
 
+        <!-- 2. IMPORT -->
         <div class="section" id="import-section">
             <details>
                 <summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;" data-i18n="sec_import">📂 Import / Eksport Kodu .DASH</summary>
@@ -173,6 +179,7 @@
             <input type="hidden" name="grid_columns" id="form-cols" value="4">
             <input type="hidden" name="grid_rows" id="form-rows" value="8">
             
+            <!-- 3. EDYTOR WIDGETU -->
             <div class="add-widget-box" id="editor-box">
                 <div class="section-title" id="editor-title" data-i18n="sec_add">2. Dodaj Widget</div>
                 
@@ -251,6 +258,7 @@
                 </div>
             </div>
 
+            <!-- 4. PODGLĄD E-INK -->
             <div class="section">
                 <div class="section-title" data-i18n="sec_preview">3. Podgląd Dashboardu</div>
                 <div class="preview-area" id="preview-container"></div>
@@ -262,6 +270,7 @@
             <button type="button" class="btn btn-gen" onclick="submitData()" data-i18n="btn_gen">GENERUJ KOD .DASH</button>
         </form>
 
+        <!-- 5. WYNIK YAML -->
         {% if generated_yaml %}
         <div class="section" style="margin-top:30px;">
             <div class="section-title" data-i18n="sec_result">Wynikowy Kod YAML</div>
@@ -282,6 +291,7 @@
         {% endif %}
     </div>
 
+    <!-- LOGIKA JS -->
     <script>
         const entitiesData = {{ entities | tojson | safe }};
         let rows = [[]]; 
@@ -289,7 +299,6 @@
         let blockSmart = false; 
         let currentLang = 'pl';
         let rawImportedDefs = {}; 
-        let activeRowIndex = 0;
 
         const TRANSLATIONS = {
             pl: {
@@ -344,7 +353,7 @@
             'cover': { type: 'cover', size: '(2x1)', iconOn: 'mdi-window-shutter-open', iconOff: 'mdi-window-shutter' },
             'garage': { type: 'cover', size: '(2x1)', iconOn: 'mdi-garage-open', iconOff: 'mdi-garage' },
             'binary_sensor': { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-checkbox-marked-circle', iconOff: 'mdi-checkbox-blank-circle-outline' },
-            'sensor': { type: 'sensor', size: '(2x1)', icon: 'mdi-eye' },
+            'sensor': { type: 'sensor', size: '(2x1)', icon: 'mdi-eye' }, // Smart Grid: 2x1 dla sensorów
             'media_player': { type: 'media_player', size: '(2x2)', icon: '' },
             'climate': { type: 'climate', size: '(2x2)', icon: '' },
             'lock': { type: 'lock', size: '(2x1)', iconOn: 'mdi-lock-open', iconOff: 'mdi-lock' },
@@ -353,12 +362,6 @@
 
         function normalizeString(str) {
             return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-        }
-
-        function formatSmartName(id) {
-            let name = id.split('.').pop();
-            name = name.replace(/_[lvr]\d+$/i, '').replace(/_state$/i, '').replace(/_/g, ' ');
-            return name.replace(/\b\w/g, l => l.toUpperCase());
         }
 
         function searchEntities(val, forceSmartTitle = false) {
@@ -388,11 +391,12 @@
             if (blockSmart) return;
             const input = val.toLowerCase();
             const inputNorm = normalizeString(input);
-            if (input.length < 3 && !isTitleSearch) return;
+            if (input.length < 3) return;
 
+            // Domyślnie 2x1 dla sensorów w Smart Logic
             let conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-eye' };
             
-            if (!isTitleSearch && input.includes('.')) {
+            if (!isTitleSearch) {
                 const ent = entitiesData.find(e => e.id === input) || { attributes: {} };
                 const dClass = (ent.attributes.device_class || '').toLowerCase();
                 const domain = input.split('.')[0];
@@ -404,18 +408,20 @@
             }
 
             const check = (keywords) => keywords.some(k => inputNorm.includes(k));
-            if (check(['glosnik','speaker','audio','tv','odtwarzacz','radio'])) conf = SMART_MAP['media_player'];
-            else if (check(['swiatlo','lamp','kinkiet','led','zarowka'])) conf = SMART_MAP['light'];
-            else if (check(['gniazdko','wtyczka','outlet','plug'])) conf = SMART_MAP['switch'];
-            else if (check(['brama','garaz','gate'])) conf = { type: 'cover', size: '(2x1)', iconOn: 'mdi-garage-open', iconOff: 'mdi-garage' };
-            else if (check(['rolet','blind','shutter','zaslon'])) conf = SMART_MAP['cover'];
-            else if (check(['zamek','lock','rygiel'])) conf = SMART_MAP['lock'];
-            else if (check(['drzwi','door','furtka'])) conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-door-open', iconOff: 'mdi-door-closed' };
-            else if (check(['okno','window'])) conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-window-open-variant', iconOff: 'mdi-window-closed-variant' };
-            else if (check(['temp','therm'])) conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-thermometer' };
-            else if (check(['wilg','humid'])) conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-water-percent' };
-            else if (check(['pogoda','weather'])) conf = { type: 'switch', size: '(2x1)', iconOn: 'mdi-weather-cloudy', iconOff: 'mdi-weather-cloudy' };
 
+            if (check(['glosnik', 'speaker', 'audio', 'tv', 'odtwarzacz', 'radio'])) conf = SMART_MAP['media_player'];
+            else if (check(['swiatlo', 'lamp', 'kinkiet', 'led', 'zarowka'])) conf = SMART_MAP['light'];
+            else if (check(['gniazdko', 'wtyczka', 'outlet', 'plug'])) conf = SMART_MAP['switch'];
+            else if (check(['brama', 'garaz', 'gate'])) conf = { type: 'cover', size: '(2x1)', iconOn: 'mdi-garage-open', iconOff: 'mdi-garage' };
+            else if (check(['rolet', 'blind', 'shutter', 'zaslon'])) conf = SMART_MAP['cover'];
+            else if (check(['zamek', 'lock', 'rygiel'])) conf = SMART_MAP['lock'];
+            else if (check(['drzwi', 'door', 'furtka'])) conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-door-open', iconOff: 'mdi-door-closed' };
+            else if (check(['okno', 'window'])) conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-window-open-variant', iconOff: 'mdi-window-closed-variant' };
+            else if (check(['temp', 'therm'])) conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-thermometer' };
+            else if (check(['wilg', 'humid'])) conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-water-percent' };
+            else if (check(['pogoda', 'weather'])) conf = { type: 'switch', size: '(2x1)', iconOn: 'mdi-weather-cloudy', iconOff: 'mdi-weather-cloudy' };
+
+            // WYMUSZENIE 2x1 dla Standardowych siatek (chyba że to binary_sensor 1x1)
             const currentGrid = document.getElementById('grid-preset').value;
             if ((currentGrid === '4x8' || currentGrid === '4x6') && conf.size === '(1x1)' && conf.type !== 'binary_sensor') {
                 conf.size = '(2x1)';
@@ -431,10 +437,18 @@
 
             document.getElementById('w-type').value = conf.type;
             document.getElementById('w-size').value = conf.size;
-            if (!isTitleSearch) document.getElementById('w-name').value = formatSmartName(input);
+            
+            if (!isTitleSearch) {
+                let name = input.split('.').pop();
+                name = name.replace(/_[lvr]\d+$/i, '').replace(/_state$/i, '').replace(/_/g, ' ');
+                name = name.replace(/\b\w/g, l => l.toUpperCase());
+                document.getElementById('w-name').value = name;
+            }
+
             document.getElementById('w-icon').value = conf.icon || '';
             document.getElementById('w-icon-on').value = conf.iconOn || '';
             document.getElementById('w-icon-off').value = conf.iconOff || '';
+
             toggleInputs();
             updateIconPreview();
             updateTitleLimit();
@@ -449,12 +463,74 @@
             document.getElementById('form-rows').value = parts[1];
         }
 
-        function syncTitle() { document.getElementById('form-title').value = document.getElementById('dash-title').value; }
+        function syncTitle() {
+            document.getElementById('form-title').value = document.getElementById('dash-title').value;
+        }
 
         function autoNameNav() {
             if(blockSmart) return;
             const val = document.getElementById('w-dash').value;
             document.getElementById('w-name').value = val.toUpperCase();
+        }
+
+        function saveWidget() {
+            const w = {
+                type: document.getElementById('w-type').value,
+                id: document.getElementById('w-id').value,
+                dash: document.getElementById('w-dash').value,
+                name: document.getElementById('w-name').value,
+                size: document.getElementById('w-size').value,
+                icon: document.getElementById('w-icon').value,
+                icon_on: document.getElementById('w-icon-on').value,
+                icon_off: document.getElementById('w-icon-off').value,
+                was_edited: true
+            };
+            if(w.type === 'navigate') w.id = 'navigate.' + w.dash;
+            if(w.type === 'spacer') w.id = 'spacer';
+
+            // Sztywna walidacja siatki (Grid Enforcement)
+            let targetRowIdx = editIdx ? editIdx.r : rows.length - 1;
+            let currentRow = [...rows[targetRowIdx]];
+            if (editIdx) currentRow.splice(editIdx.w, 1); 
+            
+            let newCols = 2;
+            if (w.size) newCols = parseInt(w.size.replace(/[()]/g, '').split('x')[0]) || 1;
+            
+            const gridVal = document.getElementById('grid-preset').value;
+            let maxSlots = 3; // Standard (3 kolumny Joan)
+            if (gridVal === '4x4') maxSlots = 4; // Duży
+            
+            let currentRowWidth = 0;
+            currentRow.forEach(item => {
+                let c = 2;
+                if (item.size) c = parseInt(item.size.replace(/[()]/g, '').split('x')[0]) || 1;
+                currentRowWidth += c;
+            });
+
+            // Przelicznik: 1 slot Joan = 2 jednostki szerokości w kodzie (dla Standard+)
+            const maxUnits = maxSlots * 2; 
+            if (currentRowWidth + newCols > maxUnits) {
+                alert(TRANSLATIONS[currentLang].alert_full);
+                return;
+            }
+
+            if(editIdx) {
+                rows[editIdx.r][editIdx.w] = w;
+                cancelEdit();
+            } else {
+                rows[rows.length-1].push(w);
+                clearForm();
+                blockSmart = false;
+            }
+            renderPreview();
+        }
+
+        function updateIconPreview() {
+            const i1 = document.getElementById('w-icon').value;
+            const i2 = document.getElementById('w-icon-on').value;
+            const i3 = document.getElementById('w-icon-off').value;
+            const final = i1 || i2 || i3 || 'mdi-help-circle-outline';
+            document.getElementById('preview-icon').className = `mdi ${final} icon-preview`;
         }
 
         function toggleInputs() {
@@ -479,103 +555,9 @@
         }
         function checkTitleLimit() { updateTitleLimit(); }
 
-        function smartFitRow(targetRowIdx, newCols, newWidgetType, newWidgetObj) {
-            const gridVal = document.getElementById('grid-preset').value;
-            let maxSlots = 3;
-            if (gridVal === '4x4') maxSlots = 4;
-            const maxUnits = maxSlots * 2;
-
-            const row = rows[targetRowIdx];
-            const calcWidth = () => row.reduce((acc, itm) => {
-                const p = (itm.size || '(2x1)').replace(/[()]/g, '').split('x');
-                const w = parseInt(p[0]) || 2;
-                return acc + w;
-            }, 0);
-
-            let currentRowWidth = calcWidth();
-
-            if (currentRowWidth + newCols > maxUnits) {
-                if ((newWidgetType === 'sensor' || newWidgetType === 'binary_sensor') && newCols > 1) {
-                    newWidgetObj.size = '(1x1)'; newCols = 1;
-                }
-            }
-            currentRowWidth = calcWidth();
-
-            if (currentRowWidth + newCols > maxUnits) {
-                let deficit = (currentRowWidth + newCols) - maxUnits;
-                for (let i = 0; i < row.length && deficit > 0; i++) {
-                    const itm = row[i];
-                    const parts = (itm.size || '(2x1)').replace(/[()]/g, '').split('x');
-                    const sizeW = parseInt(parts[0]) || 2;
-                    if ((itm.type === 'sensor' || itm.type === 'binary_sensor') && sizeW > 1) {
-                        row[i].size = '(1x1)'; deficit -= 1;
-                    }
-                }
-                currentRowWidth = calcWidth();
-            }
-
-            return (currentRowWidth + newCols) <= maxUnits;
-        }
-
-        function saveWidget() {
-            const w = {
-                type: document.getElementById('w-type').value,
-                id: document.getElementById('w-id').value,
-                dash: document.getElementById('w-dash').value,
-                name: document.getElementById('w-name').value,
-                size: document.getElementById('w-size').value,
-                icon: document.getElementById('w-icon').value,
-                icon_on: document.getElementById('w-icon-on').value,
-                icon_off: document.getElementById('w-icon-off').value,
-                was_edited: true
-            };
-            if(w.type === 'navigate') w.id = 'navigate.' + w.dash;
-            if(w.type === 'spacer') w.id = 'spacer';
-
-            let targetRowIdx = typeof activeRowIndex === 'number' ? activeRowIndex : (rows.length - 1);
-            if (!rows[targetRowIdx]) targetRowIdx = rows.length - 1;
-
-            let prevItem = null;
-            if (editIdx && editIdx.r === targetRowIdx) {
-                prevItem = rows[targetRowIdx][editIdx.w];
-                rows[targetRowIdx].splice(editIdx.w, 1);
-            }
-
-            let newCols = 2;
-            if (w.size) newCols = parseInt(w.size.replace(/[()]/g, '').split('x')[0]) || 1;
-
-            const fitsHere = smartFitRow(targetRowIdx, newCols, w.type, w);
-
-            if (fitsHere) {
-                if (prevItem) {
-                    rows[targetRowIdx].splice(editIdx.w, 0, w);
-                    cancelEdit();
-                } else {
-                    rows[targetRowIdx].push(w);
-                }
-                clearForm(); blockSmart = false;
-            } else {
-                rows.splice(targetRowIdx + 1, 0, []);
-                activeRowIndex = targetRowIdx + 1;
-                rows[activeRowIndex].push(w);
-                if (prevItem) cancelEdit();
-                clearForm(); blockSmart = false;
-            }
-            renderPreview();
-        }
-
-        function updateIconPreview() {
-            const i1 = document.getElementById('w-icon').value;
-            const i2 = document.getElementById('w-icon-on').value;
-            const i3 = document.getElementById('w-icon-off').value;
-            const final = i1 || i2 || i3 || 'mdi-help-circle-outline';
-            document.getElementById('preview-icon').className = `mdi ${final} icon-preview`;
-        }
-
         function editWidget(r, w) {
             blockSmart = true;
             editIdx = {r, w};
-            activeRowIndex = r;
             const data = rows[r][w];
             document.getElementById('editor-box').classList.add('editing');
             document.getElementById('btn-cancel').classList.remove('hidden');
@@ -597,7 +579,7 @@
             updateIconPreview();
             updateTitleLimit();
             setTimeout(() => blockSmart = false, 500);
-            renderPreview();
+            renderPreview(); // Odśwież podświetlenie wiersza
         }
 
         function cancelEdit() {
@@ -609,7 +591,7 @@
             document.getElementById('editor-title').innerText = t.sec_add;
             document.getElementById('btn-submit').innerText = t.btn_add;
             clearForm();
-            renderPreview();
+            renderPreview(); // Odśwież podświetlenie wiersza
         }
 
         function clearForm() {
@@ -630,18 +612,16 @@
         }
 
         function deleteRow(r) {
-            if(confirm(currentLang === 'pl' ? "Usunąć cały wiersz?" : "Delete entire row?")) {
+            if(confirm("Usunąć cały wiersz?")) {
                 rows.splice(r, 1);
                 if(rows.length === 0) rows.push([]);
                 if(editIdx && editIdx.r === r) cancelEdit();
-                activeRowIndex = Math.max(0, Math.min(activeRowIndex, rows.length - 1));
                 renderPreview();
             }
         }
 
         function addRow() {
             rows.push([]);
-            activeRowIndex = rows.length - 1;
             renderPreview();
         }
 
@@ -663,17 +643,14 @@
         function renderPreview() {
             const container = document.getElementById('preview-container');
             container.innerHTML = '';
+            
+            // Ustal, który wiersz jest "aktywny" (edytowany lub ostatni)
+            const activeRowIndex = editIdx ? editIdx.r : rows.length - 1;
 
             rows.forEach((row, rI) => {
                 const rowDiv = document.createElement('div');
                 rowDiv.className = 'eink-row';
                 if(rI === activeRowIndex) rowDiv.classList.add('row-active');
-
-                rowDiv.onclick = (ev) => {
-                    if (ev.target.closest('.eink-widget')) return;
-                    activeRowIndex = rI;
-                    renderPreview();
-                };
                 
                 const controls = document.createElement('div');
                 controls.className = 'row-controls';
@@ -684,10 +661,11 @@
                 label.innerText = txt + (rI + 1);
                 controls.appendChild(label);
 
+                // Przycisk usuwania wiersza
                 const delBtn = document.createElement('button');
                 delBtn.className = 'btn-del-row';
                 delBtn.innerText = 'X';
-                delBtn.onclick = (e) => { e.stopPropagation(); deleteRow(rI); };
+                delBtn.onclick = () => deleteRow(rI);
                 controls.appendChild(delBtn);
 
                 rowDiv.appendChild(controls);
@@ -723,7 +701,7 @@
                         const realState = getRealState(w);
                         div.innerHTML = `<div class="ew-title">${w.name || w.id}</div><i class="mdi ${icon} ew-icon"></i><div class="ew-value">${realState}</div><div class="ew-del" onclick="deleteWidget(${rI}, ${wI}, event)">X</div>`;
                     }
-                    div.onclick = (e) => { e.stopPropagation(); editWidget(rI, wI); };
+                    div.onclick = () => editWidget(rI, wI);
                     wrapper.appendChild(div);
                     rowDiv.appendChild(wrapper);
                 });
@@ -748,6 +726,7 @@
             let currentDefKey = null;
             let currentDefLines = [];
 
+            // Parsowanie definicji
             lines.forEach(line => {
                 if (line.match(/^\S+:/) && !line.startsWith('layout:') && !line.startsWith('global_parameters:')) {
                     if (currentDefKey) { rawDefs[currentDefKey] = currentDefLines.join('\n'); }
@@ -760,6 +739,7 @@
             if(currentDefKey) rawDefs[currentDefKey] = currentDefLines.join('\n');
             rawImportedDefs = rawDefs;
 
+            // Parsowanie layoutu
             lines.forEach(line => {
                 const tr = line.trim();
                 if(tr.startsWith('layout:')) { inLayout = true; return; }
@@ -792,7 +772,7 @@
                             else if(id.startsWith('sensor.')) type = 'sensor';
                         }
                         
-                        if(name === id && type !== 'spacer') name = formatSmartName(id);
+                        if(name === id && type !== 'spacer') name = formatSmartName(id, '');
                         rowData.push({ id, type, size, name, icon, icon_on, icon_off, was_edited: false });
                     });
                     newRows.push(rowData);
@@ -802,7 +782,6 @@
 
             if(newRows.length > 0) {
                 rows = newRows;
-                activeRowIndex = 0;
                 renderPreview();
                 alert(currentLang === 'pl' ? "Pomyślnie zaimportowano układ." : "Import successful.");
             } else {
@@ -817,7 +796,6 @@
             document.getElementById('btn-pl').className = lang === 'pl' ? 'active' : '';
             document.getElementById('btn-en').className = lang === 'en' ? 'active' : '';
             const t = TRANSLATIONS[lang];
-
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
                 if (t[key]) {
@@ -829,7 +807,6 @@
                 const key = el.getAttribute('data-i18n');
                 if (t[key]) el.text = t[key];
             });
-
             updateTitleLimit();
             renderPreview();
         }
@@ -857,8 +834,7 @@
             const savedTheme = localStorage.getItem('joan_theme') || 'light';
             document.getElementById('btn-theme').innerText = savedTheme === 'dark' ? '☀️' : '🌙';
             updateTitleLimit();
-            activeRowIndex = 0;
-            renderPreview();
+            if(!rows.length || (rows.length===1 && !rows[0].length)) { } else { renderPreview(); }
         });
     </script>
 </body>
