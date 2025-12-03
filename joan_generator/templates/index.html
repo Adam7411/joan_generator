@@ -47,8 +47,8 @@
 
         .add-widget-box { background: var(--highlight); padding: 25px; border-radius: 8px; border: 1px solid var(--accent); margin-bottom: 30px; }
         .add-widget-box.editing { border: 3px solid #ff9800; background: rgba(255, 152, 0, 0.15); }
-        /* WYRÓWNANIE PÓL FORMULARZA - USUNIĘTO align-items: flex-end */
-        .flex-row { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 15px; align-items: flex-start; }
+        /* WYRÓWNANIE PÓL: ALIGN-ITEMS CENTER */
+        .flex-row { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 15px; align-items: center; }
         .flex-col { flex: 1; min-width: 160px; }
         label { display: block; font-weight: bold; font-size: 0.9em; margin-bottom: 8px; color: var(--text-main); }
         input, select, textarea { width: 100%; padding: 12px; border: 1px solid var(--border); background: var(--bg-input); color: var(--text-main); border-radius: 4px; box-sizing: border-box; }
@@ -66,11 +66,10 @@
         .btn-move-row { background: #757575; }
 
         .preview-area { background: var(--preview-bg); padding: 30px; border: 2px solid var(--border); border-radius: 8px; overflow-x: auto; min-height: 400px; }
-        .eink-row { display: flex; gap: 8px; margin-bottom: 15px; padding: 15px; border: 2px dashed #999; border-radius: 6px; min-height: 140px; align-items: flex-end; position: relative; background-image: linear-gradient(to right, rgba(0,0,0,0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,0,0,0.05) 1px, transparent 1px); background-size: 125px 125px; transition: border-color 0.3s, box-shadow 0.3s; cursor: pointer; } /* Added cursor pointer for row */
+        .eink-row { display: flex; gap: 8px; margin-bottom: 15px; padding: 15px; border: 2px dashed #999; border-radius: 6px; min-height: 140px; align-items: flex-end; position: relative; background-image: linear-gradient(to right, rgba(0,0,0,0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,0,0,0.05) 1px, transparent 1px); background-size: 125px 125px; transition: border-color 0.3s, box-shadow 0.3s; cursor: pointer; }
         .eink-row:hover { background-color: rgba(0,0,0,0.02); }
-        
-        /* Styl wybranego wiersza (do dodawania) */
         .eink-row.row-selected { border: 2px solid #2196f3; background-color: rgba(33, 150, 243, 0.1); }
+        .eink-row.row-active { border: 2px solid #ff9800; box-shadow: 0 0 10px rgba(255, 152, 0, 0.3); }
         
         .row-controls { position: absolute; top: -12px; left: 10px; display: flex; align-items: center; z-index: 50; }
         .row-label { font-size: 11px; background: var(--bg-body); padding: 2px 8px; color: var(--text-main); border: 1px solid var(--border); border-radius: 4px; font-weight: bold; }
@@ -267,7 +266,7 @@
         const entitiesData = {{ entities | tojson | safe }};
         let rows = [[]]; 
         let editIdx = null; 
-        let selectedRowIdx = null; // ZMIENNA DO WYBORU WIERSZA
+        let selectedRowIdx = null; // WYBRANY WIERSZ
         let blockSmart = false; 
         let manualIconOverride = false; 
         let currentLang = 'pl';
@@ -465,7 +464,6 @@
         }
 
         function selectRow(rI) {
-            // Jeśli jesteśmy w trakcie edycji widgetu, kliknięcie w tło innego wiersza powinno wyjść z edycji
             if (editIdx) cancelEdit();
             selectedRowIdx = rI;
             renderPreview();
@@ -486,26 +484,24 @@
             if(w.type === 'navigate') w.id = 'navigate.' + w.dash;
             if(w.type === 'spacer') w.id = 'spacer';
 
-            // Logika wyboru wiersza
             let targetRowIdx = rows.length - 1;
             if (editIdx) {
-                targetRowIdx = editIdx.r; // Edytujemy istniejący
+                targetRowIdx = editIdx.r; 
             } else if (selectedRowIdx !== null && selectedRowIdx < rows.length) {
-                targetRowIdx = selectedRowIdx; // Dodajemy do zaznaczonego
+                targetRowIdx = selectedRowIdx; 
             }
             
             let currentRow = [...rows[targetRowIdx]];
-            if (editIdx) currentRow.splice(editIdx.w, 1); // Jeśli edycja, usuń stary na chwilę do obliczeń
+            if (editIdx) currentRow.splice(editIdx.w, 1); 
             
             let newCols = 2;
             if (w.size) newCols = parseInt(w.size.replace(/[()]/g, '').split('x')[0]) || 1;
             
             const gridVal = document.getElementById('grid-preset').value;
-            // LOGIKA GRID DYNAMICZNA:
             let maxSlots = 3; 
             if (gridVal === '4x4' || gridVal === '4x6' || gridVal === '4x6m') maxSlots = 4; 
             if (gridVal === '6x9') maxSlots = 6;
-            if (gridVal === '4x8') maxSlots = 3; // Standard+ ma 3 fizyczne kolumny
+            if (gridVal === '4x8') maxSlots = 3; 
 
             let currentRowWidth = 0;
             currentRow.forEach(item => {
@@ -565,7 +561,7 @@
         function editWidget(r, w) {
             blockSmart = true;
             editIdx = {r, w};
-            selectedRowIdx = r; // Zaznacz też wiersz przy edycji
+            selectedRowIdx = r; 
             
             const data = rows[r][w];
             document.getElementById('editor-box').classList.add('editing');
@@ -675,11 +671,12 @@
             return val + " " + unit;
         }
 
+        // FIX: PUSTE IKONY NA PODGLĄDZIE
         function getRealIcon(w) {
             const id = (w.id || '');
             const ent = entitiesData.find(e => e.id === id);
             
-            // ZMIANA: Jeśli nie ma ikony, zwróć pusty string (nie default)
+            // Domyślnie zwróć pusty ciąg, nie ikonę pomocy
             let defaultIcon = w.icon || w.icon_on || '';
             
             if (!ent) return defaultIcon;
@@ -698,19 +695,15 @@
             const container = document.getElementById('preview-container');
             container.innerHTML = '';
             
-            // Aktywny wiersz to ten edytowany LUB wybrany
             const activeRowIndex = editIdx ? editIdx.r : selectedRowIdx;
 
             rows.forEach((row, rI) => {
                 const rowDiv = document.createElement('div');
                 rowDiv.className = 'eink-row';
-                // Zaznaczenie wiersza
                 if (rI === selectedRowIdx) rowDiv.classList.add('row-selected');
                 if (editIdx && editIdx.r === rI) rowDiv.classList.add('row-active');
                 
-                // Obsługa kliknięcia w wiersz (wybór)
                 rowDiv.onclick = (e) => { 
-                    // Jeśli kliknięto w wiersz, a nie w przyciski sterowania/widgety
                     if(e.target === rowDiv || e.target.className === 'row-label') selectRow(rI); 
                 };
 
@@ -774,7 +767,7 @@
                     } else {
                         const icon = getRealIcon(w);
                         const realState = getRealState(w);
-                        // JEŚLI BRAK IKONY, NIE RENDERUJ TAGU I
+                        // FIX: Jeśli brak ikony, wstaw pusty div (zachowaj układ)
                         const iconHtml = icon ? `<i class="mdi ${icon} ew-icon"></i>` : `<div style="height:38px;"></div>`;
                         
                         div.innerHTML = `<div class="ew-title">${w.name || w.id}</div>${iconHtml}<div class="ew-value">${realState}</div><div class="ew-del" onclick="deleteWidget(${rI}, ${wI}, event)">X</div>`;
