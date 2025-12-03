@@ -63,13 +63,14 @@ def get_ha_entities():
     return []
 
 # -------------------------------------------------------------------------
-# 3. STYLE (E-INK OPTIMIZED)
+# 3. STYLE (E-INK OPTIMIZED & TWEAKED)
 # -------------------------------------------------------------------------
+# Zmiana: VALUE style ma teraz font 54px (większy) i padding-top 60px (niżej o ok 3mm względem poprzedniego)
 STYLE_TITLE = "color: #000000; font-size: 20px; font-weight: 700; text-align: center; padding-top: 5px; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif;"
 STYLE_WIDGET = "color: #000000 !important; background-color: #FFFFFF !important;"
 STYLE_TEXT = "color: #000000 !important; font-weight: 700 !important;"
-STYLE_VALUE = "color: #000000 !important; font-size: 44px !important; font-weight: 700 !important; padding-top: 45px !important; line-height: 1.2 !important; display: inline-block !important;"
-STYLE_UNIT = "color: #000000 !important; padding-top: 45px !important; display: inline-block !important;"
+STYLE_VALUE = "color: #000000 !important; font-size: 54px !important; font-weight: 700 !important; padding-top: 60px !important; line-height: 1.1 !important; display: inline-block !important;"
+STYLE_UNIT = "color: #000000 !important; padding-top: 60px !important; display: inline-block !important;"
 STYLE_ICON = "color: #000000 !important;"
 STYLE_STATE_TEXT = "color: #000000 !important; font-weight: 700 !important; font-size: 16px !important;"
 
