@@ -60,17 +60,17 @@
         .btn-row { background: #2196f3; margin-top: 15px; }
         .btn-import { background: #ff9800; color: white; margin-top: 10px; }
         
-        .btn-tool { padding: 4px 8px; font-size: 12px; margin-left: 6px; border-radius: 4px; cursor: pointer; color: white; border: none; font-weight: bold; display: inline-block; width: 25px; text-align: center; }
+        .btn-tool { padding: 6px 12px; font-size: 14px; margin-left: 6px; border-radius: 4px; cursor: pointer; color: white; border: none; font-weight: bold; display: inline-block; text-align: center; }
         .btn-del-row { background: #d32f2f; }
         .btn-move-row { background: #757575; }
 
         .preview-area { background: var(--preview-bg); padding: 30px; border: 2px solid var(--border); border-radius: 8px; overflow-x: auto; min-height: 400px; transition: width 0.3s; }
         
-        /* ZMIANY CSS DLA WYGLĄDU WIERSZY */
+        /* --- KLUCZOWE ZMIANY CSS DLA NAPRAWY KONTROLEK --- */
         .eink-row { 
             display: flex; gap: 8px; 
             margin-bottom: 15px; 
-            margin-top: 30px; /* WIĘCEJ MIEJSCA U GÓRY DLA ETYKIET */
+            margin-top: 50px; /* DUŻY MARGINES GÓRNY ŻEBY ZMIEŚCIĆ PRZYCISKI */
             padding: 15px; 
             border: 2px dashed #999; border-radius: 6px; min-height: 140px; 
             align-items: flex-end; position: relative; 
@@ -78,8 +78,9 @@
             background-size: 125px 125px; 
             transition: border-color 0.3s, box-shadow 0.3s, width 0.3s; 
             cursor: pointer; 
-            flex-wrap: nowrap; /* Wymuszenie poziomu */
-            overflow-x: hidden;
+            flex-wrap: nowrap; 
+            overflow-x: hidden; 
+            overflow: visible !important; /* NIE UCINAJ ELEMENTÓW WYSTAJĄCYCH */
         }
         
         .eink-row:hover { background-color: rgba(0,0,0,0.02); }
@@ -89,11 +90,12 @@
 
         .row-controls { 
             position: absolute; 
-            top: -28px; /* PODNIESIONE WYŻEJ ABY NIE ZASŁANIAĆ RAMKI */
+            top: -40px; /* WYRAŹNIE NAD RAMKĄ */
             left: 0; 
-            display: flex; align-items: center; z-index: 50; 
+            display: flex; align-items: center; z-index: 100; 
+            white-space: nowrap;
         }
-        .row-label { font-size: 11px; background: var(--bg-body); padding: 2px 8px; color: var(--text-main); border: 1px solid var(--border); border-radius: 4px; font-weight: bold; }
+        .row-label { font-size: 13px; background: var(--bg-body); padding: 4px 10px; color: var(--text-main); border: 1px solid var(--border); border-radius: 4px; font-weight: bold; margin-right: 10px; }
         
         .widget-wrapper { display: flex; flex-direction: column; align-items: center; margin-right: 0; position: relative; flex-shrink: 0; cursor: grab; }
         .widget-wrapper:active { cursor: grabbing; }
@@ -174,7 +176,6 @@
                             <option value="cover" data-i18n="opt_cover">Cover / Gate</option>
                             <option value="sensor" data-i18n="opt_sensor">Sensor</option>
                             <option value="binary_sensor" data-i18n="opt_binary">Binary Sensor</option>
-                            <!-- USUNIĘTA OPCJA POGODY -->
                             <option value="lock" data-i18n="opt_lock">Lock</option>
                             <option value="person" data-i18n="opt_person">Person / Tracker</option>
                             <option value="media_player" data-i18n="opt_media">Media Player</option>
@@ -246,7 +247,7 @@
 
             <div class="section">
                 <div class="section-title" data-i18n="sec_preview">3. Podgląd Dashboardu</div>
-                <p style="font-size:0.85em; margin-bottom: 10px; color: #666;">Możesz przeciągać przyciski między wierszami (Drag&Drop). Kliknij wiersz, aby dodać nowy element.</p>
+                <p style="font-size:0.85em; margin-bottom: 10px; color: #666;">Możesz przeciągać przyciski między wierszami oraz zmieniać ich kolejność w wierszu (Drag&Drop).</p>
                 <div class="preview-area" id="preview-container"></div>
                 <button type="button" class="btn btn-row" onclick="addRow()" data-i18n="btn_row">+ Dodaj Wiersz</button>
             </div>
@@ -607,19 +608,56 @@
             if(row) row.classList.remove('drag-over');
         }
 
-        function handleDrop(e, targetR) {
+        function handleRowDrop(e, targetR) {
             e.stopPropagation(); e.preventDefault();
             const row = e.target.closest('.eink-row');
             if(row) row.classList.remove('drag-over');
+            
             if (dragSrc === null) return;
             const movedWidget = rows[dragSrc.r][dragSrc.w];
+            
+            // Remove from source
             rows[dragSrc.r].splice(dragSrc.w, 1);
+            
+            // Check Capacity
             if (getRowUsage(rows[targetR]) + getSlots(movedWidget) > getMaxSlots()) {
                 rows[dragSrc.r].splice(dragSrc.w, 0, movedWidget);
                 alert(TRANSLATIONS[currentLang].alert_full);
                 renderPreview(); return;
             }
+            
+            // Push to end of target row
             rows[targetR].push(movedWidget);
+            dragSrc = null; renderPreview();
+        }
+
+        // NEW: Handle drop specifically on a widget to insert before it
+        function handleWidgetDrop(e, targetR, targetW) {
+            e.stopPropagation(); e.preventDefault();
+            if (dragSrc === null) return;
+            
+            const movedWidget = rows[dragSrc.r][dragSrc.w];
+            
+            // 1. Remove from source
+            rows[dragSrc.r].splice(dragSrc.w, 1);
+            
+            // 2. Adjust target index if we are in the same row and moved from left to right
+            // Because removing the element shifted indices
+            let adjustedTargetW = targetW;
+            if (dragSrc.r === targetR && dragSrc.w < targetW) {
+                adjustedTargetW--; 
+            }
+
+            // 3. Check Capacity
+            if (getRowUsage(rows[targetR]) + getSlots(movedWidget) > getMaxSlots()) {
+                rows[dragSrc.r].splice(dragSrc.w, 0, movedWidget);
+                alert(TRANSLATIONS[currentLang].alert_full);
+                renderPreview(); return;
+            }
+
+            // 4. Insert at specific index
+            rows[targetR].splice(adjustedTargetW, 0, movedWidget);
+            
             dragSrc = null; renderPreview();
         }
 
@@ -638,9 +676,10 @@
                 if (rI === selectedRowIdx) rowDiv.classList.add('row-selected');
                 if (editIdx && editIdx.r === rI) rowDiv.classList.add('row-active');
                 
+                // Drop on ROW (appends to end)
                 rowDiv.ondragover = handleDragOver;
                 rowDiv.ondragleave = handleDragLeave;
-                rowDiv.ondrop = (e) => handleDrop(e, rI);
+                rowDiv.ondrop = (e) => handleRowDrop(e, rI);
                 
                 rowDiv.onclick = (e) => { if(e.target === rowDiv || e.target.className === 'row-label') selectRow(rI); };
 
@@ -668,6 +707,9 @@
                     wrapper.draggable = true;
                     wrapper.ondragstart = (e) => handleDragStart(e, rI, wI);
                     wrapper.ondragend = handleDragEnd;
+                    
+                    // Drop on WIDGET (inserts before)
+                    wrapper.ondrop = (e) => handleWidgetDrop(e, rI, wI);
 
                     const typeLabel = document.createElement('div'); typeLabel.className = 'ew-type-label'; typeLabel.innerText = w.type;
                     wrapper.appendChild(typeLabel);
