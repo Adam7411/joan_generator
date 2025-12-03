@@ -99,7 +99,6 @@ def index():
             }
             dic = TRANS.get(lang, TRANS['pl'])
 
-            # FIX DLA APPDAEMON (columns * 2 dla widget_size [2,1])
             ad_columns = int(cols) * 2
 
             generated_yaml += f"title: {title}\n"
@@ -194,17 +193,8 @@ def index():
                         else:
                             generated_yaml += "  precision: 1\n"
 
-                    elif w_type == 'weather':
-                        generated_yaml += f"  widget_type: weather\n"
-                        generated_yaml += f"  entity: {w_id}\n"
-                        generated_yaml += f"  title: \"{w_name}\"\n"
-                        generated_yaml += f"  prefer_icons: 1\n"
-                        generated_yaml += f"  show_forecast: 1\n"
-                        generated_yaml += f"  forecast_rows: 3\n"
-                        generated_yaml += f"  title_style: \"{STYLE_TITLE}\"\n"
-                        generated_yaml += f"  widget_style: \"{STYLE_WIDGET}\"\n"
-                        generated_yaml += f"  text_style: \"{STYLE_TEXT}\"\n"
-
+                    # USUNIĘTO GENEROWANIE POGODY (chyba że import wymusi)
+                    
                     elif w_type == 'media_player':
                         generated_yaml += f"  widget_type: media_player\n"
                         generated_yaml += f"  entity: {w_id}\n"
