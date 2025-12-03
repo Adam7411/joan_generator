@@ -209,17 +209,20 @@
                             <i id="preview-icon" class="mdi mdi-help-circle-outline icon-preview"></i>
                         </div>
                     </div>
-                    <div class="flex-col">
-                        <label data-i18n="lbl_icon">Ikona (Standard)</label>
-                        <input type="text" id="w-icon" list="icon-list" oninput="manualIconOverride = true; updateIconPreview()" placeholder="mdi-home">
-                    </div>
-                    <div class="flex-col">
-                        <label data-i18n="lbl_icon_on">Ikona ON</label>
-                        <input type="text" id="w-icon-on" list="icon-list" oninput="manualIconOverride = true; updateIconPreview()" placeholder="mdi-lightbulb-on">
-                    </div>
-                    <div class="flex-col">
-                        <label data-i18n="lbl_icon_off">Ikona OFF</label>
-                        <input type="text" id="w-icon-off" list="icon-list" oninput="manualIconOverride = true; updateIconPreview()" placeholder="mdi-lightbulb-outline">
+                    <!-- GRUPA IKON, UKRYWANA DLA SENSORA -->
+                    <div id="grp-icons" style="display:contents;">
+                        <div class="flex-col">
+                            <label data-i18n="lbl_icon">Ikona (Standard)</label>
+                            <input type="text" id="w-icon" list="icon-list" oninput="manualIconOverride = true; updateIconPreview()" placeholder="mdi-home">
+                        </div>
+                        <div class="flex-col">
+                            <label data-i18n="lbl_icon_on">Ikona ON</label>
+                            <input type="text" id="w-icon-on" list="icon-list" oninput="manualIconOverride = true; updateIconPreview()" placeholder="mdi-lightbulb-on">
+                        </div>
+                        <div class="flex-col">
+                            <label data-i18n="lbl_icon_off">Ikona OFF</label>
+                            <input type="text" id="w-icon-off" list="icon-list" oninput="manualIconOverride = true; updateIconPreview()" placeholder="mdi-lightbulb-outline">
+                        </div>
                     </div>
                 </div>
 
@@ -489,9 +492,14 @@
             const type = document.getElementById('w-type').value;
             const isNav = type === 'navigate';
             const hideEntity = ['clock', 'label', 'spacer'].includes(type);
+            
             document.getElementById('grp-entity').style.display = (isNav || hideEntity) ? 'none' : 'block';
             document.getElementById('grp-nav').style.display = isNav ? 'block' : 'none';
             document.getElementById('grp-nav').classList.toggle('hidden', !isNav);
+            
+            // ZMIANA: Ukrywanie ikon dla sensora
+            const hideIcons = (type === 'sensor' || type === 'clock' || type === 'spacer');
+            document.getElementById('grp-icons').style.display = hideIcons ? 'none' : 'contents';
         }
 
         function updateTitleLimit() {
@@ -699,7 +707,10 @@
                         div.innerHTML = '<span style="font-size:10px; color:#999;">SPACER</span>';
                     } else {
                         const icon = getRealIcon(w); const realState = getRealState(w);
-                        const iconHtml = icon ? `<i class="mdi ${icon} ew-icon"></i>` : `<div style="height:38px;"></div>`;
+                        // Wyświetlamy ikonę tylko w podglądzie, ale w kodzie wynikowym dla sensora jej nie będzie
+                        const showIcon = (w.type !== 'sensor') && icon;
+                        const iconHtml = showIcon ? `<i class="mdi ${icon} ew-icon"></i>` : `<div style="height:38px;"></div>`;
+                        
                         div.innerHTML = `<div class="ew-title">${w.name || w.id}</div>${iconHtml}<div class="ew-value">${realState}</div><div class="ew-del" onclick="deleteWidget(${rI}, ${wI}, event)">X</div>`;
                     }
                     div.onclick = (e) => { e.stopPropagation(); editWidget(rI, wI); };
