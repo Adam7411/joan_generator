@@ -96,6 +96,12 @@
         .ew-del { position: absolute; top: -8px; right: -8px; background: red; color: white; width: 20px; height: 20px; border-radius: 50%; text-align: center; line-height: 20px; font-weight: bold; display: none; box-shadow: 1px 1px 3px rgba(0,0,0,0.5); z-index: 30; }
         .eink-widget:hover .ew-del { display: block; }
         
+        /* --- ZMIANA: STYL DLA MAŁYCH WIDGETÓW 1x1 --- */
+        .eink-widget.is-small { padding: 4px; }
+        .eink-widget.is-small .ew-title { font-size: 11px; margin-top: 4px; margin-bottom: 0; }
+        .eink-widget.is-small .ew-icon { font-size: 28px; margin: 2px 0; }
+        .eink-widget.is-small .ew-value { font-size: 12px; padding-top: 2px; margin-bottom: 2px; }
+
         .icon-preview { font-size: 32px; display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-input); }
         .hidden { display: none !important; }
         textarea.output { width: 100%; height: 500px; font-family: 'Consolas', 'Monaco', monospace; background: #263238; color: #eceff1; border: none; padding: 20px; border-radius: 8px; font-size: 14px; line-height: 1.5; }
@@ -328,7 +334,6 @@
             }
         };
 
-        // --- FIX: HARDCODED 2x2 FOR MEDIA/CLIMATE (OVERRIDE 1x1 GLOBAL) ---
         const SMART_MAP = { 
             'light': { type: 'switch', size: '(2x1)', iconOn: 'mdi-lightbulb-on', iconOff: 'mdi-lightbulb-outline' }, 
             'switch': { type: 'switch', size: '(2x1)', iconOn: 'mdi-toggle-switch', iconOff: 'mdi-toggle-switch-off' }, 
@@ -368,10 +373,8 @@
             const input = val.toLowerCase(); const inputNorm = normalizeString(input);
             if (input.length < 3) return;
             
-            // DEFAULT behavior depends on global size, but specific types override
             let conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-eye' };
             
-            // Adjust default size suggestion based on global setting if not overridden
             if (globalDefaultSize.w === 1 && globalDefaultSize.h === 1) {
                 conf.size = '(1x1)';
             }
@@ -387,7 +390,6 @@
                 if (dClass === 'temperature') conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-thermometer' };
             }
             
-            // ... keyword checks ...
             const check = (keywords) => keywords.some(k => inputNorm.includes(k));
             if (check(['glosnik', 'speaker', 'audio', 'tv', 'odtwarzacz', 'radio'])) conf = SMART_MAP['media_player'];
             else if (check(['swiatlo', 'lamp', 'kinkiet', 'led', 'zarowka'])) conf = SMART_MAP['light'];
@@ -400,14 +402,11 @@
             else if (check(['temp', 'therm'])) conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-thermometer' };
             else if (check(['wilg', 'humid'])) conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-water-percent' };
             
-            // Adjust based on grid for small items, but NEVER shrink media/climate
             const currentGrid = document.getElementById('grid-preset').value;
             if ((currentGrid === '4x8' || currentGrid === '4x6') && conf.size === '(1x1)' && conf.type !== 'binary_sensor') {
-                // If standard grid, prefer wide buttons unless it's a binary sensor
                 conf.size = '(2x1)';
             }
             
-            // Force 2x2 for Media/Climate even if grid suggests otherwise
             if (conf.type === 'media_player' || conf.type === 'climate') {
                 conf.size = '(2x2)';
             }
@@ -744,6 +743,11 @@
                     const width = (cols * 117) + ((cols - 1) * 8); const height = (rw * 117) + ((rw - 1) * 8);
                     div.style.width = width + 'px'; div.style.height = height + 'px';
 
+                    // --- FIX: APPLY SMALL CLASS ---
+                    if (cols === 1 && rw === 1) {
+                        div.classList.add('is-small');
+                    }
+
                     if(w.type === 'spacer') {
                         div.style.border = '1px dashed #aaa'; div.style.boxShadow = 'none'; div.style.opacity = '0.5';
                         div.innerHTML = '<span style="font-size:10px; color:#999;">SPACER</span>';
@@ -781,26 +785,30 @@
                         importedH = parseInt(match[2]);
                         globalDefaultSize = { w: importedW, h: importedH };
                         document.getElementById('input-def-size').value = `${importedW}, ${importedH}`;
+                        
+                        // --- FIX: AUTO UPDATE DROPDOWN ---
+                        if (importedW === 1 && importedH === 1) {
+                            document.getElementById('w-size').value = '(1x1)';
+                        } else {
+                            document.getElementById('w-size').value = '(2x1)';
+                        }
                     }
                 }
                 if (t.startsWith('columns:')) foundCols = parseInt(t.split(':')[1]);
                 if (t.startsWith('rows:')) foundRows = parseInt(t.split(':')[1]);
             });
 
-            // --- FIX: AUTO-SELECT PRESET (Zaktualizowane dla 6x8) ---
-            let preset = '4x8'; // Domyślny fallback
+            let preset = '4x8'; 
 
-            // LOGIKA 1: Jeśli widget_size = [1, 1], to znaczy, że user chce "Gęsty" (6 kolumn)
             if (importedW === 1 && importedH === 1) {
                 preset = '6x8'; 
             } 
-            // LOGIKA 2: Standardowe [2, 1] - analiza columns/rows
             else if (foundCols && foundRows) {
                 if (foundCols === 6 && foundRows === 8) preset = '4x8'; 
                 else if (foundCols === 6 && foundRows === 6) preset = '4x6';
                 else if (foundCols === 8 && foundRows === 4) preset = '4x4';
                 else if (foundCols === 8 && foundRows === 6) preset = '4x6m';
-                else if (foundCols >= 12) preset = '6x8'; // Fallback dla bardzo szerokich siatek
+                else if (foundCols >= 12) preset = '6x8'; 
             }
 
             const sel = document.getElementById('grid-preset');
