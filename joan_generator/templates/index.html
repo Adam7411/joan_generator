@@ -5,11 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Joan 6 E-Ink Generator (Final Monster Edition)</title>
     
-    <!-- 1. BIBLIOTEKI ZEWNĘTRZNE -->
     <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap" rel="stylesheet">
     
-    <!-- 2. INICJALIZACJA MOTYWU -->
     <script>
         (function() {
             try {
@@ -40,11 +38,24 @@
         .section { background: var(--bg-section); padding: 25px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 30px; }
         .section-title { font-size: 1.4em; font-weight: 900; border-bottom: 3px solid var(--accent); display: inline-block; margin-bottom: 20px; color: var(--text-main); }
         
+        /* File Info i Link Box */
         .file-path-info { background-color: var(--link-bg); color: var(--link-color); border: 1px solid var(--border); padding: 20px; margin-bottom: 20px; border-radius: 6px; font-family: monospace; }
         .file-info-block { margin-bottom: 15px; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 15px; }
-        .file-info-block:last-child { border: none; padding-bottom: 0; margin-bottom: 0; }
         .file-path-info strong { display: block; margin-bottom: 5px; color: var(--text-main); }
         .file-path-info code { display: block; background: rgba(255,255,255,0.4); padding: 8px; border-radius: 4px; font-weight: bold; }
+        
+        /* Ramka dla linku (widoczność w dark mode) */
+        .link-box {
+            background-color: #ffffff;
+            border: 2px solid var(--accent);
+            padding: 10px;
+            border-radius: 4px;
+            display: inline-block;
+            color: #000000;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        .link-box a { color: #0277bd; text-decoration: underline; font-size: 16px; }
 
         .add-widget-box { background: var(--highlight); padding: 25px; border-radius: 8px; border: 1px solid var(--accent); margin-bottom: 30px; }
         .add-widget-box.editing { border: 3px solid #ff9800; background: rgba(255, 152, 0, 0.15); }
@@ -60,9 +71,10 @@
         .btn-gen { background: var(--accent); width: 100%; font-size: 20px; padding: 15px; margin-top: 20px; }
         .btn-cancel { background: #757575; }
         .btn-row { background: #2196f3; margin-top: 15px; }
+        .btn-del-row { background: #d32f2f; padding: 4px 8px; font-size: 12px; margin-left: 10px; border-radius: 4px; cursor: pointer; color: white; border: none; }
         .btn-import { background: #ff9800; color: white; margin-top: 10px; }
 
-        /* PODGLĄD E-INK Z KRATOWNICĄ */
+        /* PODGLĄD Z KRATOWNICĄ */
         .preview-area { 
             background: var(--preview-bg); 
             padding: 30px; 
@@ -73,21 +85,22 @@
         }
         
         .eink-row { 
-            display: flex; 
-            gap: 8px; 
-            margin-bottom: 15px; 
-            padding: 15px; 
-            border: 2px dashed #999; 
-            border-radius: 6px; 
-            min-height: 140px; 
-            align-items: flex-end; 
-            position: relative; 
-            /* KRATOWNICA TŁA */
+            display: flex; gap: 8px; margin-bottom: 15px; padding: 15px; 
+            border: 2px dashed #999; border-radius: 6px; min-height: 140px; 
+            align-items: flex-end; position: relative; 
             background-image: linear-gradient(to right, rgba(0,0,0,0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,0,0,0.05) 1px, transparent 1px);
-            background-size: 125px 125px; /* ~117px widget + gap */
+            background-size: 125px 125px;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        /* Podświetlenie aktywnego wiersza */
+        .eink-row.row-active {
+            border: 2px solid #2196f3;
+            box-shadow: 0 0 10px rgba(33, 150, 243, 0.3);
+            background-color: rgba(33, 150, 243, 0.05);
         }
         
-        .row-label { position: absolute; top: -10px; left: 10px; font-size: 11px; background: var(--bg-body); padding: 2px 8px; color: var(--text-main); border: 1px solid var(--border); border-radius: 4px; font-weight: bold; }
+        .row-controls { position: absolute; top: -12px; left: 10px; display: flex; align-items: center; }
+        .row-label { font-size: 11px; background: var(--bg-body); padding: 2px 8px; color: var(--text-main); border: 1px solid var(--border); border-radius: 4px; font-weight: bold; }
         
         .widget-wrapper { display: flex; flex-direction: column; align-items: center; margin-right: 0; position: relative; flex-shrink: 0; }
         .ew-type-label { font-size: 10px; text-transform: uppercase; color: var(--text-main); margin-bottom: 4px; font-weight: bold; opacity: 0.7; text-align: center; }
@@ -99,7 +112,8 @@
             box-shadow: 4px 4px 0px rgba(0,0,0,0.25); transition: transform 0.1s; flex-shrink: 0; overflow: hidden;
         }
         .eink-widget:hover { transform: translateY(-3px); z-index: 10; border-color: var(--accent); }
-        .eink-widget.editing { border: 3px dashed #ff9800; transform: scale(1.03); z-index: 20; }
+        /* Podświetlenie edytowanego widgetu */
+        .eink-widget.editing { border: 4px solid #ff9800; transform: scale(1.05); z-index: 20; box-shadow: 0 0 15px rgba(255, 152, 0, 0.5); }
 
         .ew-title { font-weight: 900; font-size: 13px; text-align: center; width: 100%; line-height: 1.2; margin-top: 12px; margin-bottom: 2px; white-space: normal; text-transform: uppercase; pointer-events: none; }
         .ew-icon { font-size: 38px; display: block; margin: 2px 0; pointer-events: none; }
@@ -136,7 +150,7 @@
                 <div class="flex-col">
                     <label data-i18n="lbl_grid">Układ Siatki (Smart Grid)</label>
                     <select id="grid-preset" onchange="applyGrid()">
-                        <option value="4x8" data-i18n="grid_std_plus" selected>Standard+ (3 kolumny x 8 wierszy)</option>
+                        <option value="4x8" data-i18n="grid_std_plus" selected>Standard+ (3 kolumny x 8 wierszy) - DOMYŚLNY</option>
                         <option value="4x6" data-i18n="grid_std">Standard (3 kolumny x 6 wierszy)</option>
                         <option value="4x4" data-i18n="grid_large">Duży (4 kolumny x 4 wiersze)</option>
                         <option value="4x6m" data-i18n="grid_med">Średni (4 kolumny x 6 wierszy)</option>
@@ -267,7 +281,9 @@
                 </div>
                 <div class="file-info-block">
                     <strong data-i18n="lbl_open_link">2. Uruchom ponownie AppDaemon i sprawdź:</strong>
-                    <a href="http://[HOST]:5050/{{ dash_name }}" id="dashboard-link" target="_blank">http://[HOST]:5050/{{ dash_name }}</a>
+                    <div class="link-box">
+                        <a href="http://[HOST]:5050/{{ dash_name }}" id="dashboard-link" target="_blank">http://[HOST]:5050/{{ dash_name }}</a>
+                    </div>
                 </div>
             </div>
             <textarea class="output" readonly>{{ generated_yaml }}</textarea>
@@ -275,7 +291,7 @@
         {% endif %}
     </div>
 
-    <!-- LOGIKA -->
+    <!-- LOGIKA JS -->
     <script>
         const entitiesData = {{ entities | tojson | safe }};
         let rows = [[]]; 
@@ -331,13 +347,13 @@
             }
         };
 
-        // Mapa Smart Logic - Słowa kluczowe i ikony
         const SMART_MAP = {
             'light': { type: 'switch', size: '(2x1)', iconOn: 'mdi-lightbulb-on', iconOff: 'mdi-lightbulb-outline' },
             'switch': { type: 'switch', size: '(2x1)', iconOn: 'mdi-toggle-switch', iconOff: 'mdi-toggle-switch-off' },
             'cover': { type: 'cover', size: '(2x1)', iconOn: 'mdi-window-shutter-open', iconOff: 'mdi-window-shutter' },
+            'garage': { type: 'cover', size: '(2x1)', iconOn: 'mdi-garage-open', iconOff: 'mdi-garage' },
             'binary_sensor': { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-checkbox-marked-circle', iconOff: 'mdi-checkbox-blank-circle-outline' },
-            'sensor': { type: 'sensor', size: '(1x1)', icon: 'mdi-eye' },
+            'sensor': { type: 'sensor', size: '(2x1)', icon: 'mdi-eye' }, // Smart Grid: 2x1 dla sensorów
             'media_player': { type: 'media_player', size: '(2x2)', icon: '' },
             'climate': { type: 'climate', size: '(2x2)', icon: '' },
             'lock': { type: 'lock', size: '(2x1)', iconOn: 'mdi-lock-open', iconOff: 'mdi-lock' },
@@ -348,16 +364,10 @@
             return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
         }
 
-        // Zmodyfikowane SearchEntities - teraz reaguje też na wpisywanie Tytułu (forceSmartTitle)
         function searchEntities(val, forceSmartTitle = false) {
             if (!val && !forceSmartTitle) return;
-            
-            if (forceSmartTitle) {
-                runSmartLogic(val, true); // Analiza po tytule
-                return;
-            }
-
-            runSmartLogic(val, false); // Analiza po ID
+            if (forceSmartTitle) { runSmartLogic(val, true); return; }
+            runSmartLogic(val, false); 
             const dl = document.getElementById('entity-list');
             dl.innerHTML = '';
             if (val.length < 2) return;
@@ -383,9 +393,9 @@
             const inputNorm = normalizeString(input);
             if (input.length < 3) return;
 
-            let conf = { type: 'sensor', size: '(1x1)', icon: 'mdi-eye' };
+            // Domyślnie 2x1 dla sensorów w Smart Logic
+            let conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-eye' };
             
-            // Jeśli szukamy po ID encji (nie po tytule), sprawdź metadane
             if (!isTitleSearch) {
                 const ent = entitiesData.find(e => e.id === input) || { attributes: {} };
                 const dClass = (ent.attributes.device_class || '').toLowerCase();
@@ -393,11 +403,10 @@
                 if (SMART_MAP[domain]) conf = { ...SMART_MAP[domain] };
                 if (dClass === 'garage') conf = { type: 'cover', size: '(2x1)', iconOn: 'mdi-garage-open', iconOff: 'mdi-garage' };
                 if (dClass === 'door') conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-door-open', iconOff: 'mdi-door-closed' };
-                if (dClass === 'battery') conf = { type: 'sensor', size: '(1x1)', icon: 'mdi-battery' };
-                if (dClass === 'temperature') conf = { type: 'sensor', size: '(1x1)', icon: 'mdi-thermometer' };
+                if (dClass === 'battery') conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-battery' };
+                if (dClass === 'temperature') conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-thermometer' };
             }
 
-            // Analiza słów kluczowych (działa dla ID i Tytułu)
             const check = (keywords) => keywords.some(k => inputNorm.includes(k));
 
             if (check(['glosnik', 'speaker', 'audio', 'tv', 'odtwarzacz', 'radio'])) conf = SMART_MAP['media_player'];
@@ -408,20 +417,16 @@
             else if (check(['zamek', 'lock', 'rygiel'])) conf = SMART_MAP['lock'];
             else if (check(['drzwi', 'door', 'furtka'])) conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-door-open', iconOff: 'mdi-door-closed' };
             else if (check(['okno', 'window'])) conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-window-open-variant', iconOff: 'mdi-window-closed-variant' };
-            else if (check(['temp', 'therm'])) conf = { type: 'sensor', size: '(1x1)', icon: 'mdi-thermometer' };
-            else if (check(['wilg', 'humid'])) conf = { type: 'sensor', size: '(1x1)', icon: 'mdi-water-percent' };
+            else if (check(['temp', 'therm'])) conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-thermometer' };
+            else if (check(['wilg', 'humid'])) conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-water-percent' };
             else if (check(['pogoda', 'weather'])) conf = { type: 'switch', size: '(2x1)', iconOn: 'mdi-weather-cloudy', iconOff: 'mdi-weather-cloudy' };
 
-            // Aplikowanie logiki - tylko jeśli typy się zgadzają lub pole jest puste
-            const currentType = document.getElementById('w-type').value;
-            
-            // Wymuszenie 2x1 dla układów Standard
+            // WYMUSZENIE 2x1 dla Standardowych siatek (chyba że to binary_sensor 1x1)
             const currentGrid = document.getElementById('grid-preset').value;
-            if ((currentGrid === '4x8' || currentGrid === '4x6') && conf.size === '(1x1)' && conf.type !== 'binary_sensor' && conf.type !== 'sensor') {
+            if ((currentGrid === '4x8' || currentGrid === '4x6') && conf.size === '(1x1)' && conf.type !== 'binary_sensor') {
                 conf.size = '(2x1)';
             }
 
-            // Jeśli to wyszukiwanie po tytule, aktualizuj tylko ikony
             if (isTitleSearch) {
                 if (conf.iconOn) document.getElementById('w-icon-on').value = conf.iconOn;
                 if (conf.iconOff) document.getElementById('w-icon-off').value = conf.iconOff;
@@ -430,11 +435,9 @@
                 return;
             }
 
-            // Jeśli to wyszukiwanie po ID - aktualizuj wszystko
             document.getElementById('w-type').value = conf.type;
             document.getElementById('w-size').value = conf.size;
             
-            // Formatowanie nazwy z ID
             if (!isTitleSearch) {
                 let name = input.split('.').pop();
                 name = name.replace(/_[lvr]\d+$/i, '').replace(/_state$/i, '').replace(/_/g, ' ');
@@ -453,7 +456,7 @@
 
         function applyGrid() {
             const val = document.getElementById('grid-preset').value;
-            const parts = val.replace('m','').split('x'); // 'm' from 4x6m
+            const parts = val.replace('m','').split('x');
             document.getElementById('h-cols').value = parts[0];
             document.getElementById('h-rows').value = parts[1];
             document.getElementById('form-cols').value = parts[0];
@@ -470,27 +473,6 @@
             document.getElementById('w-name').value = val.toUpperCase();
         }
 
-        function calculateRowWidth(row) {
-            let width = 0;
-            row.forEach(w => {
-                let cols = 2; // Default 2x1
-                if (w.size) {
-                    const parts = w.size.replace(/[()]/g, '').split('x');
-                    cols = parseInt(parts[0]) || 1;
-                }
-                // W układzie 4x8/4x6, widget 2x1 zajmuje tak naprawdę 2 sloty z 4 wirtualnych, 
-                // ale wizualnie to 3 kolumny Joan. 
-                // Wymóg użytkownika: "sztywno jak wybiorę 3x8 to nie zrobię 4x6".
-                // W Joan6 layout logiczny:
-                // 3x8 (Standard+) -> W kodzie columns: 4. 
-                // Wiersz ma max width 6 (3 * 2x1). 
-                // Jeśli w wierszu są 3 widgety 2x1 -> width = 6. 
-                // Jeśli są 2 widgety 2x1 + 2 widgety 1x1 -> width = 6.
-                width += cols;
-            });
-            return width;
-        }
-
         function saveWidget() {
             const w = {
                 type: document.getElementById('w-type').value,
@@ -501,32 +483,23 @@
                 icon: document.getElementById('w-icon').value,
                 icon_on: document.getElementById('w-icon-on').value,
                 icon_off: document.getElementById('w-icon-off').value,
-                was_edited: true // Flaga edycji dla ochrony importu
+                was_edited: true
             };
             if(w.type === 'navigate') w.id = 'navigate.' + w.dash;
             if(w.type === 'spacer') w.id = 'spacer';
 
-            // WALIDACJA MIEJSCA W WIERSZU
+            // Sztywna walidacja siatki (Grid Enforcement)
             let targetRowIdx = editIdx ? editIdx.r : rows.length - 1;
             let currentRow = [...rows[targetRowIdx]];
-            if (editIdx) currentRow.splice(editIdx.w, 1); // Usuń stary przy edycji
+            if (editIdx) currentRow.splice(editIdx.w, 1); 
             
-            // Oblicz szerokość nowego
             let newCols = 2;
             if (w.size) newCols = parseInt(w.size.replace(/[()]/g, '').split('x')[0]) || 1;
             
-            // Oblicz zajętość wiersza
-            // Dla Standard (4x..) max szerokość to wirtualnie 6 (bo 3 kolumny x szerokość 2).
-            // Ale w pliku joan columns: 4. 
-            // W rzeczywistości wiersz w YAML to lista ID. AppDaemon układa je.
-            // Jeśli mamy 3 kolumny fizyczne, to limit to 3 elementy (jeśli 2x1) lub 6 elementów (jeśli 1x1).
-            // Uproszczenie: Limit to 3 "duże" sloty.
-            
             const gridVal = document.getElementById('grid-preset').value;
-            let maxSlots = 3; // Domyślne 3 kolumny Joan
+            let maxSlots = 3; // Standard (3 kolumny Joan)
             if (gridVal === '4x4') maxSlots = 4; // Duży
             
-            // Przeliczamy na "połówki" (1x1 to 1, 2x1 to 2). Max szerokość Joan to ~6 jednostek 1x1.
             let currentRowWidth = 0;
             currentRow.forEach(item => {
                 let c = 2;
@@ -534,7 +507,8 @@
                 currentRowWidth += c;
             });
 
-            const maxUnits = maxSlots * 2; // 3 kolumny * 2 = 6 jednostek
+            // Przelicznik: 1 slot Joan = 2 jednostki szerokości w kodzie (dla Standard+)
+            const maxUnits = maxSlots * 2; 
             if (currentRowWidth + newCols > maxUnits) {
                 alert(TRANSLATIONS[currentLang].alert_full);
                 return;
@@ -605,6 +579,7 @@
             updateIconPreview();
             updateTitleLimit();
             setTimeout(() => blockSmart = false, 500);
+            renderPreview(); // Odśwież podświetlenie wiersza
         }
 
         function cancelEdit() {
@@ -616,6 +591,7 @@
             document.getElementById('editor-title').innerText = t.sec_add;
             document.getElementById('btn-submit').innerText = t.btn_add;
             clearForm();
+            renderPreview(); // Odśwież podświetlenie wiersza
         }
 
         function clearForm() {
@@ -633,6 +609,15 @@
             rows[r].splice(w, 1);
             if(editIdx && editIdx.r === r && editIdx.w === w) cancelEdit();
             renderPreview();
+        }
+
+        function deleteRow(r) {
+            if(confirm("Usunąć cały wiersz?")) {
+                rows.splice(r, 1);
+                if(rows.length === 0) rows.push([]);
+                if(editIdx && editIdx.r === r) cancelEdit();
+                renderPreview();
+            }
         }
 
         function addRow() {
@@ -658,15 +643,32 @@
         function renderPreview() {
             const container = document.getElementById('preview-container');
             container.innerHTML = '';
+            
+            // Ustal, który wiersz jest "aktywny" (edytowany lub ostatni)
+            const activeRowIndex = editIdx ? editIdx.r : rows.length - 1;
+
             rows.forEach((row, rI) => {
                 const rowDiv = document.createElement('div');
                 rowDiv.className = 'eink-row';
+                if(rI === activeRowIndex) rowDiv.classList.add('row-active');
                 
-                const label = document.createElement('div');
+                const controls = document.createElement('div');
+                controls.className = 'row-controls';
+                
+                const label = document.createElement('span');
                 label.className = 'row-label';
                 const txt = currentLang === 'pl' ? 'WIERSZ ' : 'ROW ';
                 label.innerText = txt + (rI + 1);
-                rowDiv.appendChild(label);
+                controls.appendChild(label);
+
+                // Przycisk usuwania wiersza
+                const delBtn = document.createElement('button');
+                delBtn.className = 'btn-del-row';
+                delBtn.innerText = 'X';
+                delBtn.onclick = () => deleteRow(rI);
+                controls.appendChild(delBtn);
+
+                rowDiv.appendChild(controls);
 
                 row.forEach((w, wI) => {
                     const wrapper = document.createElement('div');
@@ -724,23 +726,18 @@
             let currentDefKey = null;
             let currentDefLines = [];
 
-            // Parsowanie definicji (zachowanie surowego tekstu dla ochrony)
+            // Parsowanie definicji
             lines.forEach(line => {
-                const tr = line.trim();
                 if (line.match(/^\S+:/) && !line.startsWith('layout:') && !line.startsWith('global_parameters:')) {
-                    if (currentDefKey) {
-                        rawDefs[currentDefKey] = currentDefLines.join('\n');
-                    }
+                    if (currentDefKey) { rawDefs[currentDefKey] = currentDefLines.join('\n'); }
                     currentDefKey = line.split(':')[0].trim();
                     currentDefLines = [];
                 } else if (currentDefKey) {
-                    if (!line.startsWith('layout:') && !line.startsWith('#')) {
-                        currentDefLines.push(line);
-                    }
+                    if (!line.startsWith('layout:') && !line.startsWith('#')) { currentDefLines.push(line); }
                 }
             });
             if(currentDefKey) rawDefs[currentDefKey] = currentDefLines.join('\n');
-            rawImportedDefs = rawDefs; // Zapisz do globalnej zmiennej
+            rawImportedDefs = rawDefs;
 
             // Parsowanie layoutu
             lines.forEach(line => {
@@ -754,15 +751,9 @@
                         let id = wStr;
                         let size = '(2x1)'; 
                         const sizeMatch = wStr.match(/\(\d+x\d+\)/);
-                        if(sizeMatch) {
-                            size = sizeMatch[0];
-                            id = wStr.replace(size, '').trim();
-                        }
-                        let type = 'switch';
-                        let name = id;
-                        let icon = ''; let icon_on = ''; let icon_off = '';
+                        if(sizeMatch) { size = sizeMatch[0]; id = wStr.replace(size, '').trim(); }
+                        let type = 'switch'; let name = id; let icon = ''; let icon_on = ''; let icon_off = '';
                         
-                        // Próbujemy wyciągnąć dane z surowej definicji dla podglądu
                         if(rawDefs[id]) {
                             const d = rawDefs[id];
                             const tMatch = d.match(/widget_type:\s*(.*)/);
@@ -786,9 +777,7 @@
                     });
                     newRows.push(rowData);
                 }
-                if(inLayout && tr.length > 0 && !tr.startsWith('-') && !tr.startsWith(' ') && !tr.startsWith('layout:')) {
-                    inLayout = false;
-                }
+                if(inLayout && tr.length > 0 && !tr.startsWith('-') && !tr.startsWith(' ') && !tr.startsWith('layout:')) { inLayout = false; }
             });
 
             if(newRows.length > 0) {
