@@ -497,7 +497,6 @@
             document.getElementById('grp-nav').style.display = isNav ? 'block' : 'none';
             document.getElementById('grp-nav').classList.toggle('hidden', !isNav);
             
-            // ZMIANA: Ukrywanie ikon dla sensora
             const hideIcons = (type === 'sensor' || type === 'clock' || type === 'spacer');
             document.getElementById('grp-icons').style.display = hideIcons ? 'none' : 'contents';
         }
@@ -707,7 +706,6 @@
                         div.innerHTML = '<span style="font-size:10px; color:#999;">SPACER</span>';
                     } else {
                         const icon = getRealIcon(w); const realState = getRealState(w);
-                        // Wyświetlamy ikonę tylko w podglądzie, ale w kodzie wynikowym dla sensora jej nie będzie
                         const showIcon = (w.type !== 'sensor') && icon;
                         const iconHtml = showIcon ? `<i class="mdi ${icon} ew-icon"></i>` : `<div style="height:38px;"></div>`;
                         
@@ -726,34 +724,50 @@
         function importYaml() {
             const text = document.getElementById('import-code').value; if(!text) return; blockSmart = true;
             const lines = text.split('\n'); const newRows = []; let inLayout = false; let rawDefs = {}; let currentDefKey = null; let currentDefLines = [];
+            
             lines.forEach(line => {
                 if (line.match(/^\S+:/) && !line.startsWith('layout:') && !line.startsWith('global_parameters:')) { if (currentDefKey) rawDefs[currentDefKey] = currentDefLines.join('\n'); currentDefKey = line.split(':')[0].trim(); currentDefLines = []; }
                 else if (currentDefKey) { if (!line.startsWith('layout:') && !line.startsWith('#')) currentDefLines.push(line); }
             });
             if(currentDefKey) rawDefs[currentDefKey] = currentDefLines.join('\n'); rawImportedDefs = rawDefs;
+
             lines.forEach(line => {
                 const tr = line.trim();
-                if(tr.startsWith('layout:')) { inLayout = true; return; }
-                if(inLayout && tr.startsWith('-')) {
-                    const content = tr.substring(1).trim(); const widgets = content.split(',').map(s => s.trim()); const rowData = [];
-                    widgets.forEach(wStr => {
-                        let id = wStr; let size = '(2x1)'; const sizeMatch = wStr.match(/\(\d+x\d+\)/);
-                        if(sizeMatch) { size = sizeMatch[0]; id = wStr.replace(size, '').trim(); }
-                        let type = 'switch'; let name = id; let icon = ''; let icon_on = ''; let icon_off = '';
-                        if(rawDefs[id]) {
-                            const d = rawDefs[id]; const tMatch = d.match(/widget_type:\s*(.*)/); if(tMatch) type = tMatch[1].trim();
-                            const nMatch = d.match(/title:\s*(.*)/); if(nMatch) name = nMatch[1].trim().replace(/['"]/g, '');
-                            const iMatch = d.match(/icon:\s*(.*)/); if(iMatch) icon = iMatch[1].trim();
-                            const ionMatch = d.match(/icon_on:\s*(.*)/); if(ionMatch) icon_on = ionMatch[1].trim();
-                            const ioffMatch = d.match(/icon_off:\s*(.*)/); if(ioffMatch) icon_off = ioffMatch[1].trim();
-                        } else { if(id === 'spacer') type = 'spacer'; else if(id.startsWith('navigate.')) type = 'navigate'; else if(id.startsWith('sensor.')) type = 'sensor'; }
-                        rowData.push({ id, type, size, name, icon, icon_on, icon_off, was_edited: false });
-                    });
-                    newRows.push(rowData);
+                
+                // --- FIX: IGNOROWANIE KOMENTARZY ---
+                if (!tr || tr.startsWith('#')) return; 
+
+                if (tr.startsWith('layout:')) { 
+                    inLayout = true; 
+                    return; 
                 }
-                if(inLayout && tr.length > 0 && !tr.startsWith('-') && !tr.startsWith(' ') && !tr.startsWith('layout:')) inLayout = false;
+
+                if (inLayout) {
+                    if (tr.startsWith('-')) {
+                        const content = tr.substring(1).trim(); const widgets = content.split(',').map(s => s.trim()); const rowData = [];
+                        widgets.forEach(wStr => {
+                            let id = wStr; let size = '(2x1)'; const sizeMatch = wStr.match(/\(\d+x\d+\)/);
+                            if(sizeMatch) { size = sizeMatch[0]; id = wStr.replace(size, '').trim(); }
+                            let type = 'switch'; let name = id; let icon = ''; let icon_on = ''; let icon_off = '';
+                            if(rawDefs[id]) {
+                                const d = rawDefs[id]; const tMatch = d.match(/widget_type:\s*(.*)/); if(tMatch) type = tMatch[1].trim();
+                                const nMatch = d.match(/title:\s*(.*)/); if(nMatch) name = nMatch[1].trim().replace(/['"]/g, '');
+                                const iMatch = d.match(/icon:\s*(.*)/); if(iMatch) icon = iMatch[1].trim();
+                                const ionMatch = d.match(/icon_on:\s*(.*)/); if(ionMatch) icon_on = ionMatch[1].trim();
+                                const ioffMatch = d.match(/icon_off:\s*(.*)/); if(ioffMatch) icon_off = ioffMatch[1].trim();
+                            } else { if(id === 'spacer') type = 'spacer'; else if(id.startsWith('navigate.')) type = 'navigate'; else if(id.startsWith('sensor.')) type = 'sensor'; }
+                            rowData.push({ id, type, size, name, icon, icon_on, icon_off, was_edited: false });
+                        });
+                        newRows.push(rowData);
+                    } else if (tr.match(/^[a-z0-9_]+:/i)) {
+                        // Jeśli linia wygląda jak klucz (np. "global_parameters:"), wychodzimy z layoutu
+                        inLayout = false;
+                    }
+                }
             });
-            if(newRows.length > 0) { rows = newRows; renderPreview(); alert(currentLang === 'pl' ? "Pomyślnie zaimportowano układ." : "Import successful."); } else alert(currentLang === 'pl' ? "Błąd: Nie znaleziono layoutu." : "Error: Layout not found.");
+            
+            if(newRows.length > 0) { rows = newRows; renderPreview(); alert(currentLang === 'pl' ? "Pomyślnie zaimportowano układ." : "Import successful."); } 
+            else alert(currentLang === 'pl' ? "Błąd: Nie znaleziono layoutu." : "Error: Layout not found.");
             setTimeout(() => blockSmart = false, 1000);
         }
 
