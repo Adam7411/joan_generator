@@ -90,7 +90,6 @@ def index():
             rows = request.form.get('grid_rows', '8')
             lang = request.form.get('ui_language', 'pl')
             
-            # Odczyt domyślnego rozmiaru z formularza (przekazanego przez JS)
             default_size_str = request.form.get('default_widget_size', '2, 1')
             def_size_parts = default_size_str.split(',')
             def_w = int(def_size_parts[0].strip())
@@ -140,18 +139,12 @@ def index():
                             continue
                         
                         widget_id = w['id']
-                        
-                        # Logika rozmiaru w YAML
                         size_str = w.get('size', '')
                         is_default = False
                         
-                        # Jeśli rozmiar widgetu jest taki sam jak globalny, nie piszemy go
-                        if size_str == f"({def_w}x{def_h})":
-                            is_default = True
-                        elif size_str == "(2x1)" and def_w == 2 and def_h == 1:
-                            is_default = True
-                        elif size_str == "(1x1)" and def_w == 1 and def_h == 1:
-                            is_default = True
+                        if size_str == f"({def_w}x{def_h})": is_default = True
+                        elif size_str == "(2x1)" and def_w == 2 and def_h == 1: is_default = True
+                        elif size_str == "(1x1)" and def_w == 1 and def_h == 1: is_default = True
                             
                         if not is_default and size_str:
                              if not size_str.startswith('('): size_str = f"({size_str})"
