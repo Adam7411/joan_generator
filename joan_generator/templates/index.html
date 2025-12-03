@@ -38,13 +38,11 @@
         .section { background: var(--bg-section); padding: 25px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 30px; }
         .section-title { font-size: 1.4em; font-weight: 900; border-bottom: 3px solid var(--accent); display: inline-block; margin-bottom: 20px; color: var(--text-main); }
         
-        /* File Info i Link Box */
         .file-path-info { background-color: var(--link-bg); color: var(--link-color); border: 1px solid var(--border); padding: 20px; margin-bottom: 20px; border-radius: 6px; font-family: monospace; }
         .file-info-block { margin-bottom: 15px; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 15px; }
         .file-path-info strong { display: block; margin-bottom: 5px; color: var(--text-main); }
         .file-path-info code { display: block; background: rgba(255,255,255,0.4); padding: 8px; border-radius: 4px; font-weight: bold; }
-        
-        /* Ramka dla linku (widoczność w dark mode) */
+
         .link-box {
             background-color: #ffffff;
             border: 2px solid var(--accent);
@@ -90,9 +88,9 @@
             align-items: flex-end; position: relative; 
             background-image: linear-gradient(to right, rgba(0,0,0,0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,0,0,0.05) 1px, transparent 1px);
             background-size: 125px 125px;
-            transition: border-color 0.3s, box-shadow 0.3s;
+            transition: border-color 0.3s, box-shadow 0.3s, background-color 0.3s;
+            cursor: pointer; /* Klikalny wiersz */
         }
-        /* Podświetlenie aktywnego wiersza */
         .eink-row.row-active {
             border: 2px solid #2196f3;
             box-shadow: 0 0 10px rgba(33, 150, 243, 0.3);
@@ -112,7 +110,6 @@
             box-shadow: 4px 4px 0px rgba(0,0,0,0.25); transition: transform 0.1s; flex-shrink: 0; overflow: hidden;
         }
         .eink-widget:hover { transform: translateY(-3px); z-index: 10; border-color: var(--accent); }
-        /* Podświetlenie edytowanego widgetu */
         .eink-widget.editing { border: 4px solid #ff9800; transform: scale(1.05); z-index: 20; box-shadow: 0 0 15px rgba(255, 152, 0, 0.5); }
 
         .ew-title { font-weight: 900; font-size: 13px; text-align: center; width: 100%; line-height: 1.2; margin-top: 12px; margin-bottom: 2px; white-space: normal; text-transform: uppercase; pointer-events: none; }
@@ -299,6 +296,7 @@
         let blockSmart = false; 
         let currentLang = 'pl';
         let rawImportedDefs = {}; 
+        let activeRowIndex = 0; // NOWOŚĆ: klikany/aktywny wiersz
 
         const TRANSLATIONS = {
             pl: {
@@ -353,7 +351,7 @@
             'cover': { type: 'cover', size: '(2x1)', iconOn: 'mdi-window-shutter-open', iconOff: 'mdi-window-shutter' },
             'garage': { type: 'cover', size: '(2x1)', iconOn: 'mdi-garage-open', iconOff: 'mdi-garage' },
             'binary_sensor': { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-checkbox-marked-circle', iconOff: 'mdi-checkbox-blank-circle-outline' },
-            'sensor': { type: 'sensor', size: '(2x1)', icon: 'mdi-eye' }, // Smart Grid: 2x1 dla sensorów
+            'sensor': { type: 'sensor', size: '(2x1)', icon: 'mdi-eye' },
             'media_player': { type: 'media_player', size: '(2x2)', icon: '' },
             'climate': { type: 'climate', size: '(2x2)', icon: '' },
             'lock': { type: 'lock', size: '(2x1)', iconOn: 'mdi-lock-open', iconOff: 'mdi-lock' },
@@ -393,7 +391,6 @@
             const inputNorm = normalizeString(input);
             if (input.length < 3) return;
 
-            // Domyślnie 2x1 dla sensorów w Smart Logic
             let conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-eye' };
             
             if (!isTitleSearch) {
@@ -421,7 +418,6 @@
             else if (check(['wilg', 'humid'])) conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-water-percent' };
             else if (check(['pogoda', 'weather'])) conf = { type: 'switch', size: '(2x1)', iconOn: 'mdi-weather-cloudy', iconOff: 'mdi-weather-cloudy' };
 
-            // WYMUSZENIE 2x1 dla Standardowych siatek (chyba że to binary_sensor 1x1)
             const currentGrid = document.getElementById('grid-preset').value;
             if ((currentGrid === '4x8' || currentGrid === '4x6') && conf.size === '(1x1)' && conf.type !== 'binary_sensor') {
                 conf.size = '(2x1)';
@@ -488,17 +484,20 @@
             if(w.type === 'navigate') w.id = 'navigate.' + w.dash;
             if(w.type === 'spacer') w.id = 'spacer';
 
-            // Sztywna walidacja siatki (Grid Enforcement)
-            let targetRowIdx = editIdx ? editIdx.r : rows.length - 1;
+            // Docelowy wiersz to aktywny (po kliknięciu), lub ostatni jeśli nic nie wybrano
+            let targetRowIdx = typeof activeRowIndex === 'number' ? activeRowIndex : (rows.length - 1);
+            if (!rows[targetRowIdx]) {
+                targetRowIdx = rows.length - 1;
+            }
             let currentRow = [...rows[targetRowIdx]];
-            if (editIdx) currentRow.splice(editIdx.w, 1); 
+            if (editIdx && editIdx.r === targetRowIdx) currentRow.splice(editIdx.w, 1); 
             
             let newCols = 2;
             if (w.size) newCols = parseInt(w.size.replace(/[()]/g, '').split('x')[0]) || 1;
             
             const gridVal = document.getElementById('grid-preset').value;
-            let maxSlots = 3; // Standard (3 kolumny Joan)
-            if (gridVal === '4x4') maxSlots = 4; // Duży
+            let maxSlots = 3; 
+            if (gridVal === '4x4') maxSlots = 4; 
             
             let currentRowWidth = 0;
             currentRow.forEach(item => {
@@ -507,18 +506,17 @@
                 currentRowWidth += c;
             });
 
-            // Przelicznik: 1 slot Joan = 2 jednostki szerokości w kodzie (dla Standard+)
             const maxUnits = maxSlots * 2; 
             if (currentRowWidth + newCols > maxUnits) {
                 alert(TRANSLATIONS[currentLang].alert_full);
                 return;
             }
 
-            if(editIdx) {
+            if(editIdx && editIdx.r === targetRowIdx) {
                 rows[editIdx.r][editIdx.w] = w;
                 cancelEdit();
             } else {
-                rows[rows.length-1].push(w);
+                rows[targetRowIdx].push(w);
                 clearForm();
                 blockSmart = false;
             }
@@ -558,6 +556,7 @@
         function editWidget(r, w) {
             blockSmart = true;
             editIdx = {r, w};
+            activeRowIndex = r; // Po kliknięciu edycji ustaw również aktywny wiersz
             const data = rows[r][w];
             document.getElementById('editor-box').classList.add('editing');
             document.getElementById('btn-cancel').classList.remove('hidden');
@@ -579,7 +578,7 @@
             updateIconPreview();
             updateTitleLimit();
             setTimeout(() => blockSmart = false, 500);
-            renderPreview(); // Odśwież podświetlenie wiersza
+            renderPreview();
         }
 
         function cancelEdit() {
@@ -591,7 +590,7 @@
             document.getElementById('editor-title').innerText = t.sec_add;
             document.getElementById('btn-submit').innerText = t.btn_add;
             clearForm();
-            renderPreview(); // Odśwież podświetlenie wiersza
+            renderPreview();
         }
 
         function clearForm() {
@@ -612,16 +611,19 @@
         }
 
         function deleteRow(r) {
-            if(confirm("Usunąć cały wiersz?")) {
+            if(confirm(currentLang === 'pl' ? "Usunąć cały wiersz?" : "Delete entire row?")) {
                 rows.splice(r, 1);
                 if(rows.length === 0) rows.push([]);
                 if(editIdx && editIdx.r === r) cancelEdit();
+                // Przestaw aktywny wiersz na najbliższy
+                activeRowIndex = Math.max(0, Math.min(activeRowIndex, rows.length - 1));
                 renderPreview();
             }
         }
 
         function addRow() {
             rows.push([]);
+            activeRowIndex = rows.length - 1; // Nowo dodany staje się aktywny
             renderPreview();
         }
 
@@ -643,14 +645,19 @@
         function renderPreview() {
             const container = document.getElementById('preview-container');
             container.innerHTML = '';
-            
-            // Ustal, który wiersz jest "aktywny" (edytowany lub ostatni)
-            const activeRowIndex = editIdx ? editIdx.r : rows.length - 1;
 
             rows.forEach((row, rI) => {
                 const rowDiv = document.createElement('div');
                 rowDiv.className = 'eink-row';
                 if(rI === activeRowIndex) rowDiv.classList.add('row-active');
+
+                // Kliknięcie całego wiersza – aktywacja
+                rowDiv.onclick = (ev) => {
+                    // ignoruj kliknięcia na wewnętrzne widgety (tam obsługa edycji)
+                    if (ev.target.closest('.eink-widget')) return;
+                    activeRowIndex = rI;
+                    renderPreview();
+                };
                 
                 const controls = document.createElement('div');
                 controls.className = 'row-controls';
@@ -661,11 +668,10 @@
                 label.innerText = txt + (rI + 1);
                 controls.appendChild(label);
 
-                // Przycisk usuwania wiersza
                 const delBtn = document.createElement('button');
                 delBtn.className = 'btn-del-row';
                 delBtn.innerText = 'X';
-                delBtn.onclick = () => deleteRow(rI);
+                delBtn.onclick = (e) => { e.stopPropagation(); deleteRow(rI); };
                 controls.appendChild(delBtn);
 
                 rowDiv.appendChild(controls);
@@ -701,7 +707,7 @@
                         const realState = getRealState(w);
                         div.innerHTML = `<div class="ew-title">${w.name || w.id}</div><i class="mdi ${icon} ew-icon"></i><div class="ew-value">${realState}</div><div class="ew-del" onclick="deleteWidget(${rI}, ${wI}, event)">X</div>`;
                     }
-                    div.onclick = () => editWidget(rI, wI);
+                    div.onclick = (e) => { e.stopPropagation(); editWidget(rI, wI); };
                     wrapper.appendChild(div);
                     rowDiv.appendChild(wrapper);
                 });
@@ -726,7 +732,6 @@
             let currentDefKey = null;
             let currentDefLines = [];
 
-            // Parsowanie definicji
             lines.forEach(line => {
                 if (line.match(/^\S+:/) && !line.startsWith('layout:') && !line.startsWith('global_parameters:')) {
                     if (currentDefKey) { rawDefs[currentDefKey] = currentDefLines.join('\n'); }
@@ -739,7 +744,6 @@
             if(currentDefKey) rawDefs[currentDefKey] = currentDefLines.join('\n');
             rawImportedDefs = rawDefs;
 
-            // Parsowanie layoutu
             lines.forEach(line => {
                 const tr = line.trim();
                 if(tr.startsWith('layout:')) { inLayout = true; return; }
@@ -782,6 +786,7 @@
 
             if(newRows.length > 0) {
                 rows = newRows;
+                activeRowIndex = 0; // Po imporcie ustaw pierwszy wiersz jako aktywny
                 renderPreview();
                 alert(currentLang === 'pl' ? "Pomyślnie zaimportowano układ." : "Import successful.");
             } else {
@@ -834,7 +839,8 @@
             const savedTheme = localStorage.getItem('joan_theme') || 'light';
             document.getElementById('btn-theme').innerText = savedTheme === 'dark' ? '☀️' : '🌙';
             updateTitleLimit();
-            if(!rows.length || (rows.length===1 && !rows[0].length)) { } else { renderPreview(); }
+            activeRowIndex = 0;
+            renderPreview();
         });
     </script>
 </body>
