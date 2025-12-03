@@ -61,7 +61,6 @@
         .btn-import { background: #ff9800; color: white; margin-top: 10px; }
         .btn-tetris { background: #9c27b0; color: white; margin-left: 10px; }
         .btn-dash-save { background: #009688; color: white; width: auto; padding: 8px 15px; font-size: 13px; }
-        .btn-dash-load { background: #607d8b; color: white; width: auto; padding: 8px 15px; font-size: 13px; margin-right: 5px; }
         
         .btn-tool { padding: 6px 12px; font-size: 14px; margin-left: 6px; border-radius: 4px; cursor: pointer; color: white; border: none; font-weight: bold; display: inline-block; text-align: center; }
         .btn-del-row { background: #d32f2f; }
@@ -120,10 +119,13 @@
         .input-hint code { background: rgba(255,255,255,0.3); padding: 2px 4px; border-radius: 3px; font-weight: bold; }
         
         .dash-list { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 5px; }
-        .dash-item { background: var(--bg-input); border: 1px solid var(--border); padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 5px; }
-        .dash-item:hover { background: var(--highlight); }
+        .dash-item { background: var(--bg-input); border: 1px solid var(--border); padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 5px; transition: all 0.2s; }
+        .dash-item:hover { background: var(--highlight); transform: translateY(-1px); }
+        /* STYL DLA AKTYWNEGO */
+        .dash-item.active { background: #4caf50; color: white; border-color: #388e3c; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
         .dash-item span { font-weight: bold; }
-        .dash-item button { font-size: 10px; padding: 2px 5px; margin-left: 5px; background: #d32f2f; color: white; border: none; border-radius: 3px; cursor: pointer; }
+        .dash-item button { font-size: 10px; padding: 2px 5px; margin-left: 5px; background: #d32f2f; color: white; border: none; border-radius: 3px; cursor: pointer; opacity: 0.8; }
+        .dash-item.active button { background: white; color: #d32f2f; }
     </style>
 </head>
 <body>
@@ -159,13 +161,13 @@
             </div>
         </div>
 
-        <!-- NEW: MULTI DASHBOARD MANAGER -->
+        <!-- MULTI DASHBOARD MANAGER -->
         <div class="section" style="border: 2px solid #009688; background: rgba(0, 150, 136, 0.05);">
             <div class="section-title" style="border-bottom-color: #009688; color: #009688;">Multi-Dashboard Manager (Browser)</div>
             <p style="font-size: 0.9em; margin-bottom: 10px;">Zapisz swoje układy w przeglądarce, aby łatwo się między nimi przełączać.</p>
             <div class="flex-row" style="align-items: flex-end;">
                 <div class="flex-col" style="flex: 2;">
-                    <label>Zapisz obecny układ jako:</label>
+                    <label>Zapisz obecny układ jako: <span id="current-dash-label" style="color: #009688; font-weight: bold; margin-left: 10px; font-size: 0.9em;"></span></label>
                     <div style="display:flex; gap: 10px;">
                         <input type="text" id="save-dash-name" placeholder="np. Salon">
                         <button type="button" class="btn btn-dash-save" onclick="saveToBrowser()">ZAPISZ</button>
@@ -173,9 +175,7 @@
                 </div>
                 <div class="flex-col" style="flex: 3;">
                     <label>Twoje zapisane dashboardy:</label>
-                    <div id="saved-dash-list" class="dash-list">
-                        <!-- Generated via JS -->
-                    </div>
+                    <div id="saved-dash-list" class="dash-list"></div>
                 </div>
             </div>
         </div>
@@ -200,8 +200,14 @@
             
             <div class="add-widget-box" id="editor-box">
                 <div class="section-title" id="editor-title" data-i18n="sec_add">2. Dodaj Widget</div>
+                <!-- NOWY UKŁAD: TYTUŁ I TYP W PIERWSZYM WIERSZU -->
                 <div class="flex-row">
-                    <div class="flex-col">
+                    <div class="flex-col" style="flex: 2;">
+                        <label data-i18n="lbl_name">Tytuł na ekranie</label>
+                        <input type="text" id="w-name" placeholder="np. Salon" oninput="checkTitleLimit(); searchEntities(this.value, true)">
+                        <div id="char-count" class="char-counter">0/20</div>
+                    </div>
+                    <div class="flex-col" style="flex: 1;">
                         <label data-i18n="lbl_type">Typ Widgetu</label>
                         <select id="w-type" onchange="toggleInputs()">
                             <option value="switch" data-i18n="opt_switch">Switch / Light</option>
@@ -218,20 +224,18 @@
                             <option value="navigate" data-i18n="opt_navigate">Navigate / Button</option>
                         </select>
                     </div>
-                    <div class="flex-col" id="grp-entity">
+                </div>
+
+                <div class="flex-row">
+                    <div class="flex-col" id="grp-entity" style="flex: 100%;">
                         <label data-i18n="lbl_entity">Encja (Wyszukaj po nazwie lub ID)</label>
                         <input list="entity-list" id="w-id" placeholder="np. głośnik kuchnia..." oninput="searchEntities(this.value)" autocomplete="off">
                         <datalist id="entity-list"></datalist>
                     </div>
-                    <div class="flex-col hidden" id="grp-nav">
+                    <div class="flex-col hidden" id="grp-nav" style="flex: 100%;">
                         <label data-i18n="lbl_dash_name">Nazwa Dashboardu (target)</label>
                         <input type="text" id="w-dash" placeholder="np. main" oninput="autoNameNav()">
                         <small id="nav-hint" class="input-hint"></small>
-                    </div>
-                    <div class="flex-col">
-                        <label data-i18n="lbl_name">Tytuł na ekranie</label>
-                        <input type="text" id="w-name" placeholder="np. Salon" oninput="checkTitleLimit(); searchEntities(this.value, true)">
-                        <div id="char-count" class="char-counter">0/20</div>
                     </div>
                 </div>
 
@@ -282,7 +286,6 @@
                 <p style="font-size:0.85em; margin-bottom: 10px; color: #666;">Możesz przeciągać przyciski między wierszami oraz zmieniać ich kolejność w wierszu (Drag&Drop).</p>
                 <div class="preview-area" id="preview-container"></div>
                 <button type="button" class="btn btn-row" onclick="addRow()" data-i18n="btn_row">+ Dodaj Wiersz</button>
-                <!-- NEW TETRIS BUTTON -->
                 <button type="button" class="btn btn-row btn-tetris" onclick="autoCompact()">🪄 AUTO-TETRIS (UPAKUJ)</button>
             </div>
 
@@ -322,6 +325,7 @@
         let rawImportedDefs = {}; 
         let dragSrc = null; 
         let globalDefaultSize = {w: 2, h: 1}; 
+        let currentLoadedDashName = null; // NEW: Track loaded dashboard
 
         const POPULAR_ICONS = [ "mdi-home", "mdi-home-outline", "mdi-lightbulb", "mdi-lightbulb-on", "mdi-lightbulb-outline", "mdi-toggle-switch", "mdi-toggle-switch-off", "mdi-power", "mdi-window-shutter", "mdi-window-shutter-open", "mdi-garage", "mdi-garage-open", "mdi-door", "mdi-door-open", "mdi-lock", "mdi-lock-open", "mdi-thermometer", "mdi-water-percent", "mdi-battery", "mdi-weather-cloudy", "mdi-play", "mdi-pause", "mdi-wifi", "mdi-clock-outline", "mdi-calendar", "mdi-alert", "mdi-check", "mdi-close" ];
 
@@ -503,7 +507,7 @@
             if (w.size) {
                 c = parseInt(w.size.replace(/[()]/g, '').split('x')[0]) || 1;
             } else {
-                c = globalDefaultSize.w;
+                c = globalDefaultSize.w || 2;
             }
             return c;
         }
@@ -816,10 +820,16 @@
             let foundCols = null;
             let foundRows = null;
             let foundTitle = "JoanDashboard";
+            let titleSet = false; // Flag to prevent overwrite
             
             lines.forEach(line => {
                 const t = line.trim();
-                if (t.startsWith('title:')) foundTitle = t.split(':')[1].trim();
+                // --- FIX: Only grab the first 'title:' as dashboard title ---
+                if (!titleSet && t.startsWith('title:')) {
+                    foundTitle = t.split(':')[1].trim();
+                    titleSet = true;
+                }
+                
                 if (t.startsWith('widget_size:')) {
                     const match = t.match(/\[\s*(\d+)\s*,\s*(\d+)\s*\]/);
                     if (match) {
@@ -908,11 +918,9 @@
             setTimeout(() => blockSmart = false, 1000);
         }
 
-        // --- NEW FEATURE: AUTO COMPACT (TETRIS) ---
         function autoCompact() {
-            if(!confirm(currentLang === 'pl' ? "To usunie luki i ułoży widgety jeden po drugim. Kontynuować?" : "This will remove gaps and pack widgets. Continue?")) return;
+            if(!confirm(currentLang === 'pl' ? "To usunie luki i ułoży widgety jeden po drugim zgodnie z wybraną siatką. Kontynuować?" : "This will pack widgets according to selected grid. Continue?")) return;
             
-            // 1. Zbierz wszystkie widgety (pomiń spacery, jeśli chcesz, tutaj usuwam spacery)
             let allWidgets = [];
             rows.forEach(row => {
                 row.forEach(w => {
@@ -920,13 +928,16 @@
                 });
             });
 
-            // 2. Przygotuj nowe wiersze
             let newRows = [];
             let currentRow = [];
             let currentUsage = 0;
-            const limit = getMaxSlots();
+            
+            const gridVal = document.getElementById('grid-preset').value;
+            let limit = 6; 
+            if (gridVal === '6x8') limit = 12;
+            else if (gridVal === '4x4' || gridVal === '4x6m') limit = 8;
+            else limit = 6; 
 
-            // 3. Upakuj
             allWidgets.forEach(w => {
                 let wSize = getSlots(w);
                 if(currentUsage + wSize <= limit) {
@@ -935,17 +946,15 @@
                 } else {
                     newRows.push(currentRow);
                     currentRow = [w];
-                    currentUsage = wSize;
+                    currentUsage = wSize; 
                 }
             });
             if(currentRow.length > 0) newRows.push(currentRow);
 
-            // 4. Zastosuj
             rows = newRows;
             renderPreview();
         }
 
-        // --- NEW FEATURE: BROWSER DASHBOARD MANAGER ---
         function saveToBrowser() {
             const name = document.getElementById('save-dash-name').value.trim();
             if(!name) { alert("Podaj nazwę!"); return; }
@@ -959,6 +968,7 @@
             };
             
             localStorage.setItem('joan_dash_' + name, JSON.stringify(data));
+            currentLoadedDashName = name; // Set current
             refreshSavedList();
             alert("Zapisano dashboard: " + name);
         }
@@ -976,6 +986,9 @@
                 document.getElementById('grid-preset').value = data.grid;
                 globalDefaultSize = data.defSize || {w: 2, h: 1};
                 
+                currentLoadedDashName = name; // Set current
+                refreshSavedList();
+                
                 syncTitle();
                 applyGrid();
                 renderPreview();
@@ -986,6 +999,7 @@
             e.stopPropagation();
             if(confirm("Usunąć dashboard " + name + "?")) {
                 localStorage.removeItem('joan_dash_' + name);
+                if(currentLoadedDashName === name) currentLoadedDashName = null;
                 refreshSavedList();
             }
         }
@@ -993,11 +1007,26 @@
         function refreshSavedList() {
             const list = document.getElementById('saved-dash-list');
             list.innerHTML = '';
+            
+            // Update label
+            const label = document.getElementById('current-dash-label');
+            if(currentLoadedDashName) {
+                label.innerText = "Aktualnie pracujesz na: " + currentLoadedDashName;
+            } else {
+                label.innerText = "";
+            }
+
             Object.keys(localStorage).forEach(key => {
                 if(key.startsWith('joan_dash_')) {
                     const name = key.replace('joan_dash_', '');
                     const div = document.createElement('div');
                     div.className = 'dash-item';
+                    
+                    // --- FIX: Add active class ---
+                    if(name === currentLoadedDashName) {
+                        div.classList.add('active');
+                    }
+
                     div.innerHTML = `<span>${name}</span> <button onclick="deleteFromBrowser('${name}', event)">USUŃ</button>`;
                     div.onclick = () => loadFromBrowser(name);
                     list.appendChild(div);
@@ -1010,14 +1039,11 @@
             document.getElementById('btn-pl').className = lang === 'pl' ? 'active' : ''; document.getElementById('btn-en').className = lang === 'en' ? 'active' : '';
             const t = TRANSLATIONS[lang];
             
-            // Standard translations
             document.querySelectorAll('[data-i18n]').forEach(el => { const key = el.getAttribute('data-i18n'); if (t[key]) { if (el.tagName === 'INPUT' && el.type === 'submit') el.value = t[key]; else el.innerText = t[key]; } });
             document.querySelectorAll('option[data-i18n]').forEach(el => { const key = el.getAttribute('data-i18n'); if (t[key]) el.text = t[key]; });
             
-            // Special case for hint (HTML content + Dynamic IP)
             if (t.hint_nav) {
                 let hintHtml = t.hint_nav;
-                // Replace IP placeholder with real hostname
                 hintHtml = hintHtml.replace(/IP_HA/g, window.location.hostname);
                 document.getElementById('nav-hint').innerHTML = hintHtml;
             }
@@ -1039,7 +1065,7 @@
             updateTitleLimit();
             const dl = document.getElementById('icon-list'); POPULAR_ICONS.forEach(icon => { const opt = document.createElement('option'); opt.value = icon; dl.appendChild(opt); });
             
-            refreshSavedList(); // Load browser dashboards
+            refreshSavedList(); 
             
             if(!rows.length || (rows.length===1 && !rows[0].length)) { } else { renderPreview(); }
         });
