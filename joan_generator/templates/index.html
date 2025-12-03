@@ -209,7 +209,7 @@
             
             <div class="add-widget-box" id="editor-box">
                 <div class="section-title">
-                    <span data-i18n="sec_add">2. Dodaj Widget</span>
+                    <span id="lbl-add-widget" data-i18n="sec_add">2. Dodaj Widget</span>
                     <!-- STATUS 2 -->
                     <span id="status-sec-2" class="small-status"></span>
                 </div>
@@ -637,7 +637,6 @@
             if (type === 'navigate') {
                 // Show Standard, Hide ON/OFF
                 document.getElementById('div-icon-std').style.display = 'block';
-                // Optional: Rename label
                 document.querySelector('#div-icon-std label').innerText = currentLang === 'pl' ? 'Ikona' : 'Icon';
                 
                 document.getElementById('div-icon-on').style.display = 'none';
@@ -674,7 +673,10 @@
             const data = rows[r][w];
             document.getElementById('editor-box').classList.add('editing');
             document.getElementById('btn-cancel').classList.remove('hidden');
-            document.getElementById('editor-title').innerHTML = `<span data-i18n="sec_edit">${TRANSLATIONS[currentLang].sec_edit}</span>`;
+            
+            // --- FIX: Update TEXT ONLY, preserve STATUS SPAN ---
+            document.getElementById('lbl-add-widget').innerText = TRANSLATIONS[currentLang].sec_edit;
+            
             document.getElementById('btn-submit').innerText = TRANSLATIONS[currentLang].btn_update;
             document.getElementById('w-type').value = data.type;
             toggleInputs();
@@ -694,7 +696,10 @@
             editIdx = null; blockSmart = false;
             document.getElementById('editor-box').classList.remove('editing');
             document.getElementById('btn-cancel').classList.add('hidden');
-            document.getElementById('editor-title').innerHTML = `<span data-i18n="sec_add">${TRANSLATIONS[currentLang].sec_add}</span><span id="status-sec-2" class="small-status">${document.getElementById('status-sec-2').innerText}</span>`;
+            
+            // --- FIX: Update TEXT ONLY, preserve STATUS SPAN ---
+            document.getElementById('lbl-add-widget').innerText = TRANSLATIONS[currentLang].sec_add;
+            
             document.getElementById('btn-submit').innerText = TRANSLATIONS[currentLang].btn_add;
             clearForm(); renderPreview(); 
         }
@@ -885,6 +890,113 @@
                 container.appendChild(rowDiv);
             });
             applyGrid();
+        }
+
+        function submitData() { document.getElementById('layout_json').value = JSON.stringify(rows); document.getElementById('custom_defs').value = JSON.stringify(rawImportedDefs); document.getElementById('main-form').submit(); }
+
+        function importYaml() {
+            const text = document.getElementById('import-code').value; if(!text) return; blockSmart = true;
+            const lines = text.split('\n'); const newRows = []; let inLayout = false; let rawDefs = {}; let currentDefKey = null; let currentDefLines = [];
+            
+            let importedW = 2, importedH = 1;
+            let foundCols = null;
+            let foundRows = null;
+            let foundTitle = "JoanDashboard";
+            let titleSet = false;
+            
+            lines.forEach(line => {
+                const t = line.trim();
+                if (!titleSet && t.startsWith('title:')) {
+                    foundTitle = t.split(':')[1].trim();
+                    titleSet = true;
+                }
+                
+                if (t.startsWith('widget_size:')) {
+                    const match = t.match(/\[\s*(\d+)\s*,\s*(\d+)\s*\]/);
+                    if (match) {
+                        importedW = parseInt(match[1]);
+                        importedH = parseInt(match[2]);
+                        globalDefaultSize = { w: importedW, h: importedH };
+                        document.getElementById('input-def-size').value = `${importedW}, ${importedH}`;
+                        
+                        if (importedW === 1 && importedH === 1) {
+                            document.getElementById('w-size').value = '(1x1)';
+                        } else {
+                            document.getElementById('w-size').value = '(2x1)';
+                        }
+                    }
+                }
+                if (t.startsWith('columns:')) foundCols = parseInt(t.split(':')[1]);
+                if (t.startsWith('rows:')) foundRows = parseInt(t.split(':')[1]);
+            });
+
+            document.getElementById('dash-title').value = foundTitle;
+            syncTitle();
+
+            let preset = '4x8'; 
+
+            if (importedW === 1 && importedH === 1) {
+                preset = '6x8'; 
+            } 
+            else if (foundCols && foundRows) {
+                if (foundCols === 6 && foundRows === 8) preset = '4x8'; 
+                else if (foundCols === 6 && foundRows === 6) preset = '4x6';
+                else if (foundCols === 8 && foundRows === 4) preset = '4x4';
+                else if (foundCols === 8 && foundRows === 6) preset = '4x6m';
+                else if (foundCols >= 12) preset = '6x8'; 
+            }
+
+            const sel = document.getElementById('grid-preset');
+            if(sel.querySelector(`option[value="${preset}"]`)) sel.value = preset;
+
+            lines.forEach(line => {
+                if (line.match(/^\S+:/) && !line.startsWith('layout:') && !line.startsWith('global_parameters:')) { if (currentDefKey) rawDefs[currentDefKey] = currentDefLines.join('\n'); currentDefKey = line.split(':')[0].trim(); currentDefLines = []; }
+                else if (currentDefKey) { if (!line.startsWith('layout:') && !line.startsWith('#')) currentDefLines.push(line); }
+            });
+            if(currentDefKey) rawDefs[currentDefKey] = currentDefLines.join('\n'); rawImportedDefs = rawDefs;
+
+            lines.forEach(line => {
+                const tr = line.trim();
+                if (!tr || tr.startsWith('#')) return; 
+
+                if (tr.startsWith('layout:')) { 
+                    inLayout = true; 
+                    return; 
+                }
+
+                if (inLayout) {
+                    if (tr.startsWith('-')) {
+                        const content = tr.substring(1).trim(); const widgets = content.split(',').map(s => s.trim()); const rowData = [];
+                        widgets.forEach(wStr => {
+                            let id = wStr; 
+                            let size = ''; 
+                            const sizeMatch = wStr.match(/\(\d+x\d+\)/);
+                            if(sizeMatch) { 
+                                size = sizeMatch[0]; 
+                                id = wStr.replace(size, '').trim(); 
+                            } 
+                            
+                            let type = 'switch'; let name = id; let icon = ''; let icon_on = ''; let icon_off = '';
+                            if(rawDefs[id]) {
+                                const d = rawDefs[id]; const tMatch = d.match(/widget_type:\s*(.*)/); if(tMatch) type = tMatch[1].trim();
+                                const nMatch = d.match(/title:\s*(.*)/); if(nMatch) name = nMatch[1].trim().replace(/['"]/g, '');
+                                const iMatch = d.match(/icon:\s*(.*)/); if(iMatch) icon = iMatch[1].trim();
+                                const ionMatch = d.match(/icon_on:\s*(.*)/); if(ionMatch) icon_on = ionMatch[1].trim();
+                                const ioffMatch = d.match(/icon_off:\s*(.*)/); if(ioffMatch) icon_off = ioffMatch[1].trim();
+                            } else { if(id === 'spacer') type = 'spacer'; else if(id.startsWith('navigate.')) type = 'navigate'; else if(id.startsWith('sensor.')) type = 'sensor'; }
+                            
+                            rowData.push({ id, type, size, name, icon, icon_on, icon_off, was_edited: false });
+                        });
+                        newRows.push(rowData);
+                    } else if (tr.match(/^[a-z0-9_]+:/i)) {
+                        inLayout = false;
+                    }
+                }
+            });
+            
+            if(newRows.length > 0) { rows = newRows; renderPreview(); alert(currentLang === 'pl' ? "Pomyślnie zaimportowano układ." : "Import successful."); } 
+            else alert(currentLang === 'pl' ? "Błąd: Nie znaleziono layoutu." : "Error: Layout not found.");
+            setTimeout(() => blockSmart = false, 1000);
         }
 
         function saveToBrowser() {
