@@ -96,7 +96,6 @@
         .ew-del { position: absolute; top: -8px; right: -8px; background: red; color: white; width: 20px; height: 20px; border-radius: 50%; text-align: center; line-height: 20px; font-weight: bold; display: none; box-shadow: 1px 1px 3px rgba(0,0,0,0.5); z-index: 30; }
         .eink-widget:hover .ew-del { display: block; }
         
-        /* --- ZMIANA: STYL DLA MAŁYCH WIDGETÓW 1x1 --- */
         .eink-widget.is-small { padding: 4px; }
         .eink-widget.is-small .ew-title { font-size: 11px; margin-top: 4px; margin-bottom: 0; }
         .eink-widget.is-small .ew-icon { font-size: 28px; margin: 2px 0; }
@@ -178,9 +177,7 @@
                             <option value="input_number" data-i18n="opt_input_number">Input Number</option>
                             <option value="script" data-i18n="opt_script">Script</option>
                             <option value="navigate" data-i18n="opt_navigate">Navigate / Button</option>
-                            <option value="label" data-i18n="opt_label">Label (Text)</option>
-                            <option value="clock" data-i18n="opt_clock">Clock</option>
-                            <option value="spacer" data-i18n="opt_spacer">Spacer (Empty)</option>
+                            <!-- USUNIĘTO: Label, Clock, Spacer zgodnie z życzeniem -->
                         </select>
                     </div>
                     <div class="flex-col" id="grp-entity">
@@ -191,6 +188,11 @@
                     <div class="flex-col hidden" id="grp-nav">
                         <label data-i18n="lbl_dash_name">Nazwa Dashboardu (target)</label>
                         <input type="text" id="w-dash" placeholder="np. main" oninput="autoNameNav()">
+                        <small style="display:block; font-size:0.75em; color:#555; margin-top:4px; line-height:1.3; background:rgba(0,0,0,0.05); padding:5px; border-radius:4px;">
+                            <b>Wskazówka:</b> Wpisz nazwę pliku <code>.dash</code> (bez rozszerzenia), który znajduje się w folderze 
+                            <code>\\IP_HA\addon_configs\appdaemon\dashboards\</code>.<br>
+                            Służy do przełączania stron (np. wpisz <code>salon</code> aby przejść do <code>salon.dash</code>).
+                        </small>
                     </div>
                     <div class="flex-col">
                         <label data-i18n="lbl_name">Tytuł na ekranie</label>
@@ -341,8 +343,8 @@
             'garage': { type: 'cover', size: '(2x1)', iconOn: 'mdi-garage-open', iconOff: 'mdi-garage' }, 
             'binary_sensor': { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-checkbox-marked-circle', iconOff: 'mdi-checkbox-blank-circle-outline' }, 
             'sensor': { type: 'sensor', size: '(2x1)', icon: 'mdi-eye' }, 
-            'media_player': { type: 'media_player', size: '(2x2)', icon: '' }, // ALWAYS 2x2
-            'climate': { type: 'climate', size: '(2x2)', icon: '' }, // ALWAYS 2x2
+            'media_player': { type: 'media_player', size: '(2x2)', icon: '' }, 
+            'climate': { type: 'climate', size: '(2x2)', icon: '' }, 
             'lock': { type: 'lock', size: '(2x1)', iconOn: 'mdi-lock-open', iconOff: 'mdi-lock' }, 
             'script': { type: 'script', size: '(2x1)', icon: 'mdi-script-text-outline' } 
         };
@@ -786,7 +788,6 @@
                         globalDefaultSize = { w: importedW, h: importedH };
                         document.getElementById('input-def-size').value = `${importedW}, ${importedH}`;
                         
-                        // --- FIX: AUTO UPDATE DROPDOWN ---
                         if (importedW === 1 && importedH === 1) {
                             document.getElementById('w-size').value = '(1x1)';
                         } else {
