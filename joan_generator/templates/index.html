@@ -47,7 +47,8 @@
 
         .add-widget-box { background: var(--highlight); padding: 25px; border-radius: 8px; border: 1px solid var(--accent); margin-bottom: 30px; }
         .add-widget-box.editing { border: 3px solid #ff9800; background: rgba(255, 152, 0, 0.15); }
-        .flex-row { display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 15px; }
+        /* WYRÓWNANIE PÓL FORMULARZA - USUNIĘTO align-items: flex-end */
+        .flex-row { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 15px; align-items: flex-start; }
         .flex-col { flex: 1; min-width: 160px; }
         label { display: block; font-weight: bold; font-size: 0.9em; margin-bottom: 8px; color: var(--text-main); }
         input, select, textarea { width: 100%; padding: 12px; border: 1px solid var(--border); background: var(--bg-input); color: var(--text-main); border-radius: 4px; box-sizing: border-box; }
@@ -65,8 +66,12 @@
         .btn-move-row { background: #757575; }
 
         .preview-area { background: var(--preview-bg); padding: 30px; border: 2px solid var(--border); border-radius: 8px; overflow-x: auto; min-height: 400px; }
-        .eink-row { display: flex; gap: 8px; margin-bottom: 15px; padding: 15px; border: 2px dashed #999; border-radius: 6px; min-height: 140px; align-items: flex-end; position: relative; background-image: linear-gradient(to right, rgba(0,0,0,0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,0,0,0.05) 1px, transparent 1px); background-size: 125px 125px; transition: border-color 0.3s, box-shadow 0.3s; }
-        .eink-row.row-active { border: 2px solid #2196f3; box-shadow: 0 0 10px rgba(33, 150, 243, 0.3); background-color: rgba(33, 150, 243, 0.05); }
+        .eink-row { display: flex; gap: 8px; margin-bottom: 15px; padding: 15px; border: 2px dashed #999; border-radius: 6px; min-height: 140px; align-items: flex-end; position: relative; background-image: linear-gradient(to right, rgba(0,0,0,0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,0,0,0.05) 1px, transparent 1px); background-size: 125px 125px; transition: border-color 0.3s, box-shadow 0.3s; cursor: pointer; } /* Added cursor pointer for row */
+        .eink-row:hover { background-color: rgba(0,0,0,0.02); }
+        
+        /* Styl wybranego wiersza (do dodawania) */
+        .eink-row.row-selected { border: 2px solid #2196f3; background-color: rgba(33, 150, 243, 0.1); }
+        
         .row-controls { position: absolute; top: -12px; left: 10px; display: flex; align-items: center; z-index: 50; }
         .row-label { font-size: 11px; background: var(--bg-body); padding: 2px 8px; color: var(--text-main); border: 1px solid var(--border); border-radius: 4px; font-weight: bold; }
         
@@ -200,22 +205,21 @@
                             <i id="preview-icon" class="mdi mdi-help-circle-outline icon-preview"></i>
                         </div>
                     </div>
-                    <!-- POLA Z DATALISTĄ DO WYBORU IKON -->
                     <div class="flex-col">
                         <label data-i18n="lbl_icon">Ikona (Standard)</label>
-                        <input type="text" id="w-icon" list="icon-list" oninput="updateIconPreview()" placeholder="mdi-home">
+                        <input type="text" id="w-icon" list="icon-list" oninput="manualIconOverride = true; updateIconPreview()" placeholder="mdi-home">
                     </div>
                     <div class="flex-col">
                         <label data-i18n="lbl_icon_on">Ikona ON</label>
-                        <input type="text" id="w-icon-on" list="icon-list" oninput="updateIconPreview()" placeholder="mdi-lightbulb-on">
+                        <input type="text" id="w-icon-on" list="icon-list" oninput="manualIconOverride = true; updateIconPreview()" placeholder="mdi-lightbulb-on">
                     </div>
                     <div class="flex-col">
                         <label data-i18n="lbl_icon_off">Ikona OFF</label>
-                        <input type="text" id="w-icon-off" list="icon-list" oninput="updateIconPreview()" placeholder="mdi-lightbulb-outline">
+                        <input type="text" id="w-icon-off" list="icon-list" oninput="manualIconOverride = true; updateIconPreview()" placeholder="mdi-lightbulb-outline">
                     </div>
                 </div>
 
-                <!-- DATALISTA Z IKONAMI -->
+                <!-- DATALISTA IKON -->
                 <datalist id="icon-list"></datalist>
 
                 <div class="flex-row" style="margin-top: 20px;">
@@ -227,6 +231,7 @@
             <!-- 4. PODGLĄD E-INK -->
             <div class="section">
                 <div class="section-title" data-i18n="sec_preview">3. Podgląd Dashboardu</div>
+                <p style="font-size:0.85em; margin-bottom: 10px; color: #666;">Kliknij wiersz, aby go zaznaczyć (dodawanie do wiersza). Kliknij przycisk, aby edytować.</p>
                 <div class="preview-area" id="preview-container"></div>
                 <button type="button" class="btn btn-row" onclick="addRow()" data-i18n="btn_row">+ Dodaj Wiersz</button>
             </div>
@@ -262,11 +267,12 @@
         const entitiesData = {{ entities | tojson | safe }};
         let rows = [[]]; 
         let editIdx = null; 
+        let selectedRowIdx = null; // ZMIENNA DO WYBORU WIERSZA
         let blockSmart = false; 
+        let manualIconOverride = false; 
         let currentLang = 'pl';
         let rawImportedDefs = {}; 
 
-        // LISTA POPULARNYCH IKON MDI (Datalist)
         const POPULAR_ICONS = [
             "mdi-home", "mdi-home-outline", "mdi-lightbulb", "mdi-lightbulb-on", "mdi-lightbulb-outline",
             "mdi-toggle-switch", "mdi-toggle-switch-off", "mdi-power", "mdi-power-cycle",
@@ -302,7 +308,7 @@
                 btn_add: "+ DODAJ WIDGET", btn_update: "ZAPISZ ZMIANY", btn_cancel: "ANULUJ",
                 sec_preview: "3. Podgląd Dashboardu", btn_row: "+ Dodaj Wiersz", btn_gen: "GENERUJ KOD .DASH",
                 sec_result: "Wynikowy Kod YAML", lbl_save_path: "1. Zapisz kod w pliku:", lbl_open_link: "2. Uruchom ponownie AppDaemon i sprawdź:",
-                limit_15: "Maks 15 znaków", limit_20: "Maks 20 znaków", alert_full: "Brak miejsca w tym wierszu! Dodaj nowy wiersz."
+                limit_15: "Maks 15 znaków", limit_20: "Maks 20 znaków", alert_full: "Brak miejsca w tym wierszu! Zmień siatkę lub dodaj nowy wiersz."
             },
             en: {
                 title_main: "Joan 6 E-Ink Generator (Final Monster Edition)",
@@ -324,7 +330,7 @@
                 btn_add: "+ ADD WIDGET", btn_update: "SAVE CHANGES", btn_cancel: "CANCEL",
                 sec_preview: "3. Dashboard Preview", btn_row: "+ Add Row", btn_gen: "GENERATE .DASH CODE",
                 sec_result: "Generated YAML Code", lbl_save_path: "1. Save code to file:", lbl_open_link: "2. Restart AppDaemon and check:",
-                limit_15: "Max 15 chars", limit_20: "Max 20 chars", alert_full: "No space in this row! Add a new row."
+                limit_15: "Max 15 chars", limit_20: "Max 20 chars", alert_full: "No space in this row! Change grid or add new row."
             }
         };
 
@@ -410,6 +416,7 @@
             }
 
             if (isTitleSearch) {
+                if (manualIconOverride) return;
                 if (conf.iconOn) document.getElementById('w-icon-on').value = conf.iconOn;
                 if (conf.iconOff) document.getElementById('w-icon-off').value = conf.iconOff;
                 if (conf.icon && !conf.iconOn) document.getElementById('w-icon').value = conf.icon;
@@ -427,12 +434,14 @@
                 document.getElementById('w-name').value = name;
             }
 
-            document.getElementById('w-icon').value = conf.icon || '';
-            document.getElementById('w-icon-on').value = conf.iconOn || '';
-            document.getElementById('w-icon-off').value = conf.iconOff || '';
+            if (!manualIconOverride) {
+                document.getElementById('w-icon').value = conf.icon || '';
+                document.getElementById('w-icon-on').value = conf.iconOn || '';
+                document.getElementById('w-icon-off').value = conf.iconOff || '';
+                updateIconPreview();
+            }
 
             toggleInputs();
-            updateIconPreview();
             updateTitleLimit();
         }
 
@@ -455,6 +464,13 @@
             document.getElementById('w-name').value = val.toUpperCase();
         }
 
+        function selectRow(rI) {
+            // Jeśli jesteśmy w trakcie edycji widgetu, kliknięcie w tło innego wiersza powinno wyjść z edycji
+            if (editIdx) cancelEdit();
+            selectedRowIdx = rI;
+            renderPreview();
+        }
+
         function saveWidget() {
             const w = {
                 type: document.getElementById('w-type').value,
@@ -470,17 +486,27 @@
             if(w.type === 'navigate') w.id = 'navigate.' + w.dash;
             if(w.type === 'spacer') w.id = 'spacer';
 
-            let targetRowIdx = editIdx ? editIdx.r : rows.length - 1;
+            // Logika wyboru wiersza
+            let targetRowIdx = rows.length - 1;
+            if (editIdx) {
+                targetRowIdx = editIdx.r; // Edytujemy istniejący
+            } else if (selectedRowIdx !== null && selectedRowIdx < rows.length) {
+                targetRowIdx = selectedRowIdx; // Dodajemy do zaznaczonego
+            }
+            
             let currentRow = [...rows[targetRowIdx]];
-            if (editIdx) currentRow.splice(editIdx.w, 1); 
+            if (editIdx) currentRow.splice(editIdx.w, 1); // Jeśli edycja, usuń stary na chwilę do obliczeń
             
             let newCols = 2;
             if (w.size) newCols = parseInt(w.size.replace(/[()]/g, '').split('x')[0]) || 1;
             
             const gridVal = document.getElementById('grid-preset').value;
+            // LOGIKA GRID DYNAMICZNA:
             let maxSlots = 3; 
-            if (gridVal === '4x4') maxSlots = 4; 
-            
+            if (gridVal === '4x4' || gridVal === '4x6' || gridVal === '4x6m') maxSlots = 4; 
+            if (gridVal === '6x9') maxSlots = 6;
+            if (gridVal === '4x8') maxSlots = 3; // Standard+ ma 3 fizyczne kolumny
+
             let currentRowWidth = 0;
             currentRow.forEach(item => {
                 let c = 2;
@@ -498,7 +524,7 @@
                 rows[editIdx.r][editIdx.w] = w;
                 cancelEdit();
             } else {
-                rows[rows.length-1].push(w);
+                rows[targetRowIdx].push(w);
                 clearForm();
                 blockSmart = false;
             }
@@ -539,6 +565,8 @@
         function editWidget(r, w) {
             blockSmart = true;
             editIdx = {r, w};
+            selectedRowIdx = r; // Zaznacz też wiersz przy edycji
+            
             const data = rows[r][w];
             document.getElementById('editor-box').classList.add('editing');
             document.getElementById('btn-cancel').classList.remove('hidden');
@@ -558,6 +586,8 @@
             document.getElementById('w-icon-on').value = data.icon_on || '';
             document.getElementById('w-icon-off').value = data.icon_off || '';
             
+            manualIconOverride = true;
+
             updateIconPreview();
             updateTitleLimit();
             setTimeout(() => blockSmart = false, 500);
@@ -582,6 +612,7 @@
             document.getElementById('w-icon').value = '';
             document.getElementById('w-icon-on').value = '';
             document.getElementById('w-icon-off').value = '';
+            manualIconOverride = false; 
             updateIconPreview();
             updateTitleLimit();
         }
@@ -598,6 +629,7 @@
                 rows.splice(r, 1);
                 if(rows.length === 0) rows.push([]);
                 if(editIdx && editIdx.r === r) cancelEdit();
+                if(selectedRowIdx === r) selectedRowIdx = null;
                 renderPreview();
             }
         }
@@ -609,12 +641,16 @@
                    if(editIdx.r === idx) editIdx.r = idx - 1;
                    else if(editIdx.r === idx - 1) editIdx.r = idx;
                 }
+                if(selectedRowIdx === idx) selectedRowIdx = idx - 1;
+                else if(selectedRowIdx === idx - 1) selectedRowIdx = idx;
             } else if (direction === 1 && idx < rows.length - 1) {
                 [rows[idx], rows[idx + 1]] = [rows[idx + 1], rows[idx]];
                  if(editIdx) { 
                    if(editIdx.r === idx) editIdx.r = idx + 1;
                    else if(editIdx.r === idx + 1) editIdx.r = idx;
                 }
+                if(selectedRowIdx === idx) selectedRowIdx = idx + 1;
+                else if(selectedRowIdx === idx + 1) selectedRowIdx = idx;
             }
             renderPreview();
         }
@@ -639,36 +675,45 @@
             return val + " " + unit;
         }
 
-        // Dynamiczna ikona w podglądzie
         function getRealIcon(w) {
             const id = (w.id || '');
             const ent = entitiesData.find(e => e.id === id);
             
-            let defaultIcon = w.icon || w.icon_on || 'mdi-help-circle-outline';
+            // ZMIANA: Jeśli nie ma ikony, zwróć pusty string (nie default)
+            let defaultIcon = w.icon || w.icon_on || '';
             
             if (!ent) return defaultIcon;
             
             const s = String(ent.state).toLowerCase();
             if (['on', 'open', 'home', 'unlocked', 'playing'].includes(s)) {
-                return w.icon_on || w.icon || 'mdi-help-circle-outline';
+                return w.icon_on || w.icon || '';
             }
             if (['off', 'closed', 'not_home', 'away', 'locked', 'paused', 'idle'].includes(s)) {
-                return w.icon_off || w.icon || 'mdi-help-circle-outline';
+                return w.icon_off || w.icon || '';
             }
-            return w.icon || 'mdi-help-circle-outline';
+            return w.icon || '';
         }
 
         function renderPreview() {
             const container = document.getElementById('preview-container');
             container.innerHTML = '';
             
-            const activeRowIndex = editIdx ? editIdx.r : rows.length - 1;
+            // Aktywny wiersz to ten edytowany LUB wybrany
+            const activeRowIndex = editIdx ? editIdx.r : selectedRowIdx;
 
             rows.forEach((row, rI) => {
                 const rowDiv = document.createElement('div');
                 rowDiv.className = 'eink-row';
-                if(rI === activeRowIndex) rowDiv.classList.add('row-active');
+                // Zaznaczenie wiersza
+                if (rI === selectedRowIdx) rowDiv.classList.add('row-selected');
+                if (editIdx && editIdx.r === rI) rowDiv.classList.add('row-active');
                 
+                // Obsługa kliknięcia w wiersz (wybór)
+                rowDiv.onclick = (e) => { 
+                    // Jeśli kliknięto w wiersz, a nie w przyciski sterowania/widgety
+                    if(e.target === rowDiv || e.target.className === 'row-label') selectRow(rI); 
+                };
+
                 const controls = document.createElement('div');
                 controls.className = 'row-controls';
                 
@@ -681,21 +726,21 @@
                 const upBtn = document.createElement('button');
                 upBtn.className = 'btn-tool btn-move-row';
                 upBtn.innerText = '▲';
-                upBtn.onclick = () => moveRow(rI, -1);
+                upBtn.onclick = (e) => { e.stopPropagation(); moveRow(rI, -1); };
                 if (rI === 0) upBtn.style.opacity = 0.3;
                 controls.appendChild(upBtn);
 
                 const downBtn = document.createElement('button');
                 downBtn.className = 'btn-tool btn-move-row';
                 downBtn.innerText = '▼';
-                downBtn.onclick = () => moveRow(rI, 1);
+                downBtn.onclick = (e) => { e.stopPropagation(); moveRow(rI, 1); };
                 if (rI === rows.length - 1) downBtn.style.opacity = 0.3;
                 controls.appendChild(downBtn);
 
                 const delBtn = document.createElement('button');
                 delBtn.className = 'btn-tool btn-del-row';
                 delBtn.innerText = 'X';
-                delBtn.onclick = () => deleteRow(rI);
+                delBtn.onclick = (e) => { e.stopPropagation(); deleteRow(rI); };
                 controls.appendChild(delBtn);
 
                 rowDiv.appendChild(controls);
@@ -729,9 +774,12 @@
                     } else {
                         const icon = getRealIcon(w);
                         const realState = getRealState(w);
-                        div.innerHTML = `<div class="ew-title">${w.name || w.id}</div><i class="mdi ${icon} ew-icon"></i><div class="ew-value">${realState}</div><div class="ew-del" onclick="deleteWidget(${rI}, ${wI}, event)">X</div>`;
+                        // JEŚLI BRAK IKONY, NIE RENDERUJ TAGU I
+                        const iconHtml = icon ? `<i class="mdi ${icon} ew-icon"></i>` : `<div style="height:38px;"></div>`;
+                        
+                        div.innerHTML = `<div class="ew-title">${w.name || w.id}</div>${iconHtml}<div class="ew-value">${realState}</div><div class="ew-del" onclick="deleteWidget(${rI}, ${wI}, event)">X</div>`;
                     }
-                    div.onclick = () => editWidget(rI, wI);
+                    div.onclick = (e) => { e.stopPropagation(); editWidget(rI, wI); };
                     wrapper.appendChild(div);
                     rowDiv.appendChild(wrapper);
                 });
@@ -861,7 +909,6 @@
             document.getElementById('btn-theme').innerText = savedTheme === 'dark' ? '☀️' : '🌙';
             updateTitleLimit();
             
-            // GENEROWANIE DATALISTY IKON
             const dl = document.getElementById('icon-list');
             POPULAR_ICONS.forEach(icon => {
                 const opt = document.createElement('option');
