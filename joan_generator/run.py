@@ -101,8 +101,6 @@ def index():
             }
             dic = TRANS.get(lang, TRANS['pl'])
 
-            # Jeśli widget_size = [1, 1], to columns w AppDaemon = cols (z formularza)
-            # Jeśli widget_size = [2, 1], to columns w AppDaemon = cols * 2
             if def_w == 1:
                 ad_columns = int(cols)
             else:
@@ -147,9 +145,7 @@ def index():
                         size_str = w.get('size', '')
                         is_default = False
                         
-                        # Sprawdzanie czy rozmiar jest domyślny dla danego ustawienia pliku
                         if size_str == f"({def_w}x{def_h})": is_default = True
-                        # Specyficzne checki dla 2x1 i 1x1
                         elif size_str == "(2x1)" and def_w == 2 and def_h == 1: is_default = True
                         elif size_str == "(1x1)" and def_w == 1 and def_h == 1: is_default = True
                             
