@@ -72,7 +72,6 @@
         .btn-del-row { background: #d32f2f; padding: 4px 8px; font-size: 12px; margin-left: 10px; border-radius: 4px; cursor: pointer; color: white; border: none; }
         .btn-import { background: #ff9800; color: white; margin-top: 10px; }
 
-        /* PODGLĄD Z KRATOWNICĄ */
         .preview-area { 
             background: var(--preview-bg); 
             padding: 30px; 
@@ -136,7 +135,6 @@
             </div>
         </div>
 
-        <!-- 1. USTAWIENIA SIATKI -->
         <div class="section">
             <div class="section-title" data-i18n="sec_settings">1. Ustawienia Dashboardu</div>
             <div class="flex-row">
@@ -159,7 +157,6 @@
             </div>
         </div>
 
-        <!-- 2. IMPORT -->
         <div class="section" id="import-section">
             <details>
                 <summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;" data-i18n="sec_import">📂 Import / Eksport Kodu .DASH</summary>
@@ -176,7 +173,6 @@
             <input type="hidden" name="grid_columns" id="form-cols" value="4">
             <input type="hidden" name="grid_rows" id="form-rows" value="8">
             
-            <!-- 3. EDYTOR WIDGETU -->
             <div class="add-widget-box" id="editor-box">
                 <div class="section-title" id="editor-title" data-i18n="sec_add">2. Dodaj Widget</div>
                 
@@ -255,7 +251,6 @@
                 </div>
             </div>
 
-            <!-- 4. PODGLĄD E-INK -->
             <div class="section">
                 <div class="section-title" data-i18n="sec_preview">3. Podgląd Dashboardu</div>
                 <div class="preview-area" id="preview-container"></div>
@@ -267,7 +262,6 @@
             <button type="button" class="btn btn-gen" onclick="submitData()" data-i18n="btn_gen">GENERUJ KOD .DASH</button>
         </form>
 
-        <!-- 5. WYNIK YAML -->
         {% if generated_yaml %}
         <div class="section" style="margin-top:30px;">
             <div class="section-title" data-i18n="sec_result">Wynikowy Kod YAML</div>
@@ -288,7 +282,6 @@
         {% endif %}
     </div>
 
-    <!-- LOGIKA JS -->
     <script>
         const entitiesData = {{ entities | tojson | safe }};
         let rows = [[]]; 
@@ -298,14 +291,154 @@
         let rawImportedDefs = {}; 
         let activeRowIndex = 0;
 
-        const TRANSLATIONS = { /* jak wcześniej, bez zmian */ };
-        const SMART_MAP = { /* jak wcześniej, bez zmian */ };
+        const TRANSLATIONS = {
+            pl: {
+                title_main: "Joan 6 E-Ink Generator (Final Monster Edition)",
+                sec_settings: "1. Ustawienia Dashboardu", lbl_dash_title: "Tytuł Dashboardu", lbl_grid: "Układ Siatki (Smart Grid)",
+                grid_std_plus: "Standard+ (3 kolumny x 8 wierszy) - DOMYŚLNY", grid_std: "Standard (3 kolumny x 6 wierszy)",
+                grid_large: "Duży (4 kolumny x 4 wiersze)", grid_med: "Średni (4 kolumny x 6 wierszy)", grid_small: "Mały (6 kolumn x 9 wierszy)",
+                sec_import: "📂 Import / Eksport Kodu .DASH", btn_import: "Wczytaj Kod",
+                sec_add: "2. Dodaj Widget", sec_edit: "2. Edytuj Widget",
+                lbl_type: "Typ Widgetu", lbl_entity: "Encja (Wyszukaj po nazwie lub ID)", lbl_dash_name: "Nazwa Dashboardu (target)",
+                lbl_name: "Tytuł na ekranie", lbl_size: "Rozmiar", lbl_preview: "Podgląd",
+                lbl_icon: "Ikona (Standard)", lbl_icon_on: "Ikona ON", lbl_icon_off: "Ikona OFF",
+                opt_switch: "Przełącznik / Światło", opt_cover: "Roleta / Brama", opt_sensor: "Sensor",
+                opt_binary: "Sensor Binarny (On/Off)", opt_lock: "Zamek", opt_person: "Osoba / Tracker",
+                opt_media: "Media Player", opt_climate: "Termostat", opt_input_select: "Lista Wyboru",
+                opt_input_number: "Suwak", opt_script: "Skrypt", opt_navigate: "Przycisk Nawigacji",
+                opt_label: "Etykieta (Tekst)", opt_clock: "Zegar", opt_spacer: "Odstęp (Pusty)",
+                size_2x1: "2x1 (Szeroki Przycisk)", size_1x1: "1x1 (Mały)", size_2x2: "2x2 (Duży)",
+                size_3x1: "3x1 (Bardzo Szeroki)", size_1x2: "1x2 (Wysoki)", size_3x2: "3x2 (Ogromny)",
+                btn_add: "+ DODAJ WIDGET", btn_update: "ZAPISZ ZMIANY", btn_cancel: "ANULUJ",
+                sec_preview: "3. Podgląd Dashboardu", btn_row: "+ Dodaj Wiersz", btn_gen: "GENERUJ KOD .DASH",
+                sec_result: "Wynikowy Kod YAML", lbl_save_path: "1. Zapisz kod w pliku:", lbl_open_link: "2. Uruchom ponownie AppDaemon i sprawdź:",
+                limit_15: "Maks 15 znaków", limit_20: "Maks 20 znaków", alert_full: "Brak miejsca w tym wierszu! Dodaj nowy wiersz."
+            },
+            en: {
+                title_main: "Joan 6 E-Ink Generator (Final Monster Edition)",
+                sec_settings: "1. Dashboard Settings", lbl_dash_title: "Dashboard Title", lbl_grid: "Grid Layout (Smart Grid)",
+                grid_std_plus: "Standard+ (3 columns x 8 rows) - DEFAULT", grid_std: "Standard (3 columns x 6 rows)",
+                grid_large: "Large (4 columns x 4 rows)", grid_med: "Medium (4 columns x 6 rows)", grid_small: "Small (6 columns x 9 rows)",
+                sec_import: "📂 Import / Export .DASH Code", btn_import: "Load Code",
+                sec_add: "2. Add Widget", sec_edit: "2. Edit Widget",
+                lbl_type: "Widget Type", lbl_entity: "Entity (Search by name/ID)", lbl_dash_name: "Dashboard Name (target)",
+                lbl_name: "Title on Screen", lbl_size: "Size", lbl_preview: "Preview",
+                lbl_icon: "Icon (Standard)", lbl_icon_on: "Icon ON", lbl_icon_off: "Icon OFF",
+                opt_switch: "Switch / Light", opt_cover: "Cover / Gate", opt_sensor: "Sensor",
+                opt_binary: "Binary Sensor", opt_lock: "Lock", opt_person: "Person / Tracker",
+                opt_media: "Media Player", opt_climate: "Climate", opt_input_select: "Input Select",
+                opt_input_number: "Input Number", opt_script: "Script", opt_navigate: "Navigation Button",
+                opt_label: "Label (Text)", opt_clock: "Clock", opt_spacer: "Spacer (Empty)",
+                size_2x1: "2x1 (Wide Button)", size_1x1: "1x1 (Small)", size_2x2: "2x2 (Large)",
+                size_3x1: "3x1 (Extra Wide)", size_1x2: "1x2 (Tall)", size_3x2: "3x2 (Huge)",
+                btn_add: "+ ADD WIDGET", btn_update: "SAVE CHANGES", btn_cancel: "CANCEL",
+                sec_preview: "3. Dashboard Preview", btn_row: "+ Add Row", btn_gen: "GENERATE .DASH CODE",
+                sec_result: "Generated YAML Code", lbl_save_path: "1. Save code to file:", lbl_open_link: "2. Restart AppDaemon and check:",
+                limit_15: "Max 15 chars", limit_20: "Max 20 chars", alert_full: "No space in this row! Add a new row."
+            }
+        };
 
-        function normalizeString(str) { return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase(); }
+        const SMART_MAP = {
+            'light': { type: 'switch', size: '(2x1)', iconOn: 'mdi-lightbulb-on', iconOff: 'mdi-lightbulb-outline' },
+            'switch': { type: 'switch', size: '(2x1)', iconOn: 'mdi-toggle-switch', iconOff: 'mdi-toggle-switch-off' },
+            'cover': { type: 'cover', size: '(2x1)', iconOn: 'mdi-window-shutter-open', iconOff: 'mdi-window-shutter' },
+            'garage': { type: 'cover', size: '(2x1)', iconOn: 'mdi-garage-open', iconOff: 'mdi-garage' },
+            'binary_sensor': { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-checkbox-marked-circle', iconOff: 'mdi-checkbox-blank-circle-outline' },
+            'sensor': { type: 'sensor', size: '(2x1)', icon: 'mdi-eye' },
+            'media_player': { type: 'media_player', size: '(2x2)', icon: '' },
+            'climate': { type: 'climate', size: '(2x2)', icon: '' },
+            'lock': { type: 'lock', size: '(2x1)', iconOn: 'mdi-lock-open', iconOff: 'mdi-lock' },
+            'script': { type: 'script', size: '(2x1)', icon: 'mdi-script-text-outline' }
+        };
 
-        function searchEntities(val, forceSmartTitle = false) { /* jak wcześniej, bez zmian */ }
+        function normalizeString(str) {
+            return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+        }
 
-        function runSmartLogic(val, isTitleSearch) { /* jak wcześniej, bez zmian */ }
+        function formatSmartName(id) {
+            let name = id.split('.').pop();
+            name = name.replace(/_[lvr]\d+$/i, '').replace(/_state$/i, '').replace(/_/g, ' ');
+            return name.replace(/\b\w/g, l => l.toUpperCase());
+        }
+
+        function searchEntities(val, forceSmartTitle = false) {
+            if (!val && !forceSmartTitle) return;
+            if (forceSmartTitle) { runSmartLogic(val, true); return; }
+            runSmartLogic(val, false); 
+            const dl = document.getElementById('entity-list');
+            dl.innerHTML = '';
+            if (val.length < 2) return;
+            const terms = normalizeString(val).split(" ").filter(t => t);
+            let count = 0;
+            for (const e of entitiesData) {
+                if (count > 50) break;
+                const searchStr = normalizeString(e.id + " " + (e.attributes.friendly_name || ""));
+                const match = terms.every(term => searchStr.includes(term));
+                if (match) {
+                    const opt = document.createElement('option');
+                    opt.value = e.id;
+                    opt.label = e.attributes.friendly_name ? `${e.attributes.friendly_name} (${e.id})` : e.id;
+                    dl.appendChild(opt);
+                    count++;
+                }
+            }
+        }
+
+        function runSmartLogic(val, isTitleSearch) {
+            if (blockSmart) return;
+            const input = val.toLowerCase();
+            const inputNorm = normalizeString(input);
+            if (input.length < 3 && !isTitleSearch) return;
+
+            let conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-eye' };
+            
+            if (!isTitleSearch && input.includes('.')) {
+                const ent = entitiesData.find(e => e.id === input) || { attributes: {} };
+                const dClass = (ent.attributes.device_class || '').toLowerCase();
+                const domain = input.split('.')[0];
+                if (SMART_MAP[domain]) conf = { ...SMART_MAP[domain] };
+                if (dClass === 'garage') conf = { type: 'cover', size: '(2x1)', iconOn: 'mdi-garage-open', iconOff: 'mdi-garage' };
+                if (dClass === 'door') conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-door-open', iconOff: 'mdi-door-closed' };
+                if (dClass === 'battery') conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-battery' };
+                if (dClass === 'temperature') conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-thermometer' };
+            }
+
+            const check = (keywords) => keywords.some(k => inputNorm.includes(k));
+            if (check(['glosnik','speaker','audio','tv','odtwarzacz','radio'])) conf = SMART_MAP['media_player'];
+            else if (check(['swiatlo','lamp','kinkiet','led','zarowka'])) conf = SMART_MAP['light'];
+            else if (check(['gniazdko','wtyczka','outlet','plug'])) conf = SMART_MAP['switch'];
+            else if (check(['brama','garaz','gate'])) conf = { type: 'cover', size: '(2x1)', iconOn: 'mdi-garage-open', iconOff: 'mdi-garage' };
+            else if (check(['rolet','blind','shutter','zaslon'])) conf = SMART_MAP['cover'];
+            else if (check(['zamek','lock','rygiel'])) conf = SMART_MAP['lock'];
+            else if (check(['drzwi','door','furtka'])) conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-door-open', iconOff: 'mdi-door-closed' };
+            else if (check(['okno','window'])) conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-window-open-variant', iconOff: 'mdi-window-closed-variant' };
+            else if (check(['temp','therm'])) conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-thermometer' };
+            else if (check(['wilg','humid'])) conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-water-percent' };
+            else if (check(['pogoda','weather'])) conf = { type: 'switch', size: '(2x1)', iconOn: 'mdi-weather-cloudy', iconOff: 'mdi-weather-cloudy' };
+
+            const currentGrid = document.getElementById('grid-preset').value;
+            if ((currentGrid === '4x8' || currentGrid === '4x6') && conf.size === '(1x1)' && conf.type !== 'binary_sensor') {
+                conf.size = '(2x1)';
+            }
+
+            if (isTitleSearch) {
+                if (conf.iconOn) document.getElementById('w-icon-on').value = conf.iconOn;
+                if (conf.iconOff) document.getElementById('w-icon-off').value = conf.iconOff;
+                if (conf.icon && !conf.iconOn) document.getElementById('w-icon').value = conf.icon;
+                updateIconPreview();
+                return;
+            }
+
+            document.getElementById('w-type').value = conf.type;
+            document.getElementById('w-size').value = conf.size;
+            if (!isTitleSearch) document.getElementById('w-name').value = formatSmartName(input);
+            document.getElementById('w-icon').value = conf.icon || '';
+            document.getElementById('w-icon-on').value = conf.iconOn || '';
+            document.getElementById('w-icon-off').value = conf.iconOff || '';
+            toggleInputs();
+            updateIconPreview();
+            updateTitleLimit();
+        }
 
         function applyGrid() {
             const val = document.getElementById('grid-preset').value;
@@ -317,113 +450,11 @@
         }
 
         function syncTitle() { document.getElementById('form-title').value = document.getElementById('dash-title').value; }
-        function autoNameNav() { if(blockSmart) return; const val = document.getElementById('w-dash').value; document.getElementById('w-name').value = val.toUpperCase(); }
 
-        // Smart Fit – dopasuj w aktualnym wierszu; NIE twórz nowego wiersza jeśli da się dopasować
-        function smartFitRow(targetRowIdx, newCols, newWidgetType, newWidgetObj) {
-            const gridVal = document.getElementById('grid-preset').value;
-            let maxSlots = 3;
-            if (gridVal === '4x4') maxSlots = 4;
-            const maxUnits = maxSlots * 2;
-
-            const row = rows[targetRowIdx];
-            const calcWidth = () => row.reduce((acc, itm) => {
-                const p = (itm.size || '(2x1)').replace(/[()]/g, '').split('x');
-                const w = parseInt(p[0]) || 2;
-                return acc + w;
-            }, 0);
-
-            let currentRowWidth = calcWidth();
-
-            // 1) Jeśli nowy to sensor/binary_sensor: ustaw 1x1 jeśli brakuje miejsca
-            if (currentRowWidth + newCols > maxUnits) {
-                if ((newWidgetType === 'sensor' || newWidgetType === 'binary_sensor') && newCols > 1) {
-                    newWidgetObj.size = '(1x1)';
-                    newCols = 1;
-                }
-            }
-            currentRowWidth = calcWidth();
-
-            // 2) KOMPRESJA istniejących sensorów/binary z 2x1 -> 1x1 tylko tyle ile potrzeba
-            if (currentRowWidth + newCols > maxUnits) {
-                let deficit = (currentRowWidth + newCols) - maxUnits;
-                for (let i = 0; i < row.length && deficit > 0; i++) {
-                    const itm = row[i];
-                    const parts = (itm.size || '(2x1)').replace(/[()]/g, '').split('x');
-                    const sizeW = parseInt(parts[0]) || 2;
-                    if ((itm.type === 'sensor' || itm.type === 'binary_sensor') && sizeW > 1) {
-                        row[i].size = '(1x1)';
-                        deficit -= 1;
-                    }
-                }
-                currentRowWidth = calcWidth();
-            }
-
-            // Po wszystkich próbach – true jeśli zmieści się, false jeśli nie
-            return (currentRowWidth + newCols) <= maxUnits;
-        }
-
-        function saveWidget() {
-            const w = {
-                type: document.getElementById('w-type').value,
-                id: document.getElementById('w-id').value,
-                dash: document.getElementById('w-dash').value,
-                name: document.getElementById('w-name').value,
-                size: document.getElementById('w-size').value,
-                icon: document.getElementById('w-icon').value,
-                icon_on: document.getElementById('w-icon-on').value,
-                icon_off: document.getElementById('w-icon-off').value,
-                was_edited: true
-            };
-            if(w.type === 'navigate') w.id = 'navigate.' + w.dash;
-            if(w.type === 'spacer') w.id = 'spacer';
-
-            let targetRowIdx = typeof activeRowIndex === 'number' ? activeRowIndex : (rows.length - 1);
-            if (!rows[targetRowIdx]) targetRowIdx = rows.length - 1;
-
-            // Jeśli edytujemy w tym wierszu, tymczasowo usuń stary element z kalkulacji
-            let prevItem = null;
-            if (editIdx && editIdx.r === targetRowIdx) {
-                prevItem = rows[targetRowIdx][editIdx.w];
-                rows[targetRowIdx].splice(editIdx.w, 1);
-            }
-
-            let newCols = 2;
-            if (w.size) newCols = parseInt(w.size.replace(/[()]/g, '').split('x')[0]) || 1;
-
-            // Spróbuj dopasować w tym wierszu
-            const fitsHere = smartFitRow(targetRowIdx, newCols, w.type, w);
-
-            if (fitsHere) {
-                // Wstaw z powrotem edytowany stary element jeśli był (ale zamieniamy na nowy w miejscu)
-                if (prevItem) {
-                    rows[targetRowIdx].splice(editIdx.w, 0, w);
-                    cancelEdit();
-                } else {
-                    rows[targetRowIdx].push(w);
-                }
-                clearForm();
-                blockSmart = false;
-            } else {
-                // Jeśli nie da się dopasować – dopiero teraz utwórz nowy wiersz
-                rows.splice(targetRowIdx + 1, 0, []);
-                activeRowIndex = targetRowIdx + 1;
-                rows[activeRowIndex].push(w);
-                // jeśli był edytowany element – nie przywracamy go (został zastąpiony)
-                if (prevItem) cancelEdit();
-                clearForm();
-                blockSmart = false;
-            }
-
-            renderPreview();
-        }
-
-        function updateIconPreview() {
-            const i1 = document.getElementById('w-icon').value;
-            const i2 = document.getElementById('w-icon-on').value;
-            const i3 = document.getElementById('w-icon-off').value;
-            const final = i1 || i2 || i3 || 'mdi-help-circle-outline';
-            document.getElementById('preview-icon').className = `mdi ${final} icon-preview`;
+        function autoNameNav() {
+            if(blockSmart) return;
+            const val = document.getElementById('w-dash').value;
+            document.getElementById('w-name').value = val.toUpperCase();
         }
 
         function toggleInputs() {
@@ -447,6 +478,99 @@
             if(input.value.length >= max) counter.classList.add('limit'); else counter.classList.remove('limit');
         }
         function checkTitleLimit() { updateTitleLimit(); }
+
+        function smartFitRow(targetRowIdx, newCols, newWidgetType, newWidgetObj) {
+            const gridVal = document.getElementById('grid-preset').value;
+            let maxSlots = 3;
+            if (gridVal === '4x4') maxSlots = 4;
+            const maxUnits = maxSlots * 2;
+
+            const row = rows[targetRowIdx];
+            const calcWidth = () => row.reduce((acc, itm) => {
+                const p = (itm.size || '(2x1)').replace(/[()]/g, '').split('x');
+                const w = parseInt(p[0]) || 2;
+                return acc + w;
+            }, 0);
+
+            let currentRowWidth = calcWidth();
+
+            if (currentRowWidth + newCols > maxUnits) {
+                if ((newWidgetType === 'sensor' || newWidgetType === 'binary_sensor') && newCols > 1) {
+                    newWidgetObj.size = '(1x1)'; newCols = 1;
+                }
+            }
+            currentRowWidth = calcWidth();
+
+            if (currentRowWidth + newCols > maxUnits) {
+                let deficit = (currentRowWidth + newCols) - maxUnits;
+                for (let i = 0; i < row.length && deficit > 0; i++) {
+                    const itm = row[i];
+                    const parts = (itm.size || '(2x1)').replace(/[()]/g, '').split('x');
+                    const sizeW = parseInt(parts[0]) || 2;
+                    if ((itm.type === 'sensor' || itm.type === 'binary_sensor') && sizeW > 1) {
+                        row[i].size = '(1x1)'; deficit -= 1;
+                    }
+                }
+                currentRowWidth = calcWidth();
+            }
+
+            return (currentRowWidth + newCols) <= maxUnits;
+        }
+
+        function saveWidget() {
+            const w = {
+                type: document.getElementById('w-type').value,
+                id: document.getElementById('w-id').value,
+                dash: document.getElementById('w-dash').value,
+                name: document.getElementById('w-name').value,
+                size: document.getElementById('w-size').value,
+                icon: document.getElementById('w-icon').value,
+                icon_on: document.getElementById('w-icon-on').value,
+                icon_off: document.getElementById('w-icon-off').value,
+                was_edited: true
+            };
+            if(w.type === 'navigate') w.id = 'navigate.' + w.dash;
+            if(w.type === 'spacer') w.id = 'spacer';
+
+            let targetRowIdx = typeof activeRowIndex === 'number' ? activeRowIndex : (rows.length - 1);
+            if (!rows[targetRowIdx]) targetRowIdx = rows.length - 1;
+
+            let prevItem = null;
+            if (editIdx && editIdx.r === targetRowIdx) {
+                prevItem = rows[targetRowIdx][editIdx.w];
+                rows[targetRowIdx].splice(editIdx.w, 1);
+            }
+
+            let newCols = 2;
+            if (w.size) newCols = parseInt(w.size.replace(/[()]/g, '').split('x')[0]) || 1;
+
+            const fitsHere = smartFitRow(targetRowIdx, newCols, w.type, w);
+
+            if (fitsHere) {
+                if (prevItem) {
+                    rows[targetRowIdx].splice(editIdx.w, 0, w);
+                    cancelEdit();
+                } else {
+                    rows[targetRowIdx].push(w);
+                }
+                clearForm(); blockSmart = false;
+            } else {
+                rows.splice(targetRowIdx + 1, 0, []);
+                activeRowIndex = targetRowIdx + 1;
+                rows[activeRowIndex].push(w);
+                if (prevItem) cancelEdit();
+                clearForm(); blockSmart = false;
+            }
+            renderPreview();
+        }
+
+        function updateIconPreview() {
+            const i1 = document.getElementById('w-icon').value;
+            const i2 = document.getElementById('w-icon-on').value;
+            const i3 = document.getElementById('w-icon-off').value;
+            const final = i1 || i2 || i3 || 'mdi-help-circle-outline';
+            document.getElementById('preview-icon').className = `mdi ${final} icon-preview`;
+        }
 
         function editWidget(r, w) {
             blockSmart = true;
@@ -668,7 +792,7 @@
                             else if(id.startsWith('sensor.')) type = 'sensor';
                         }
                         
-                        if(name === id && type !== 'spacer') name = formatSmartName(id, '');
+                        if(name === id && type !== 'spacer') name = formatSmartName(id);
                         rowData.push({ id, type, size, name, icon, icon_on, icon_off, was_edited: false });
                     });
                     newRows.push(rowData);
@@ -693,6 +817,7 @@
             document.getElementById('btn-pl').className = lang === 'pl' ? 'active' : '';
             document.getElementById('btn-en').className = lang === 'en' ? 'active' : '';
             const t = TRANSLATIONS[lang];
+
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
                 if (t[key]) {
@@ -704,6 +829,7 @@
                 const key = el.getAttribute('data-i18n');
                 if (t[key]) el.text = t[key];
             });
+
             updateTitleLimit();
             renderPreview();
         }
