@@ -71,7 +71,7 @@ STYLE_TITLE = "color: #000000; font-size: 20px; font-weight: 700; text-align: ce
 STYLE_WIDGET = "color: #000000 !important; background-color: #FFFFFF !important;"
 STYLE_TEXT = "color: #000000 !important; font-weight: 700 !important;"
 
-# ZMIANA: Obniżona wartość (padding-top zwiększony z 33px na 45px), aby oddalić od tytułu
+# Wartość (padding-top 45px), aby oddalić od tytułu
 STYLE_VALUE = "color: #000000 !important; font-size: 44px !important; font-weight: 700 !important; padding-top: 45px !important; line-height: 1.2 !important; display: inline-block !important;"
 STYLE_UNIT = "color: #000000 !important; padding-top: 45px !important; display: inline-block !important;"
 
@@ -185,7 +185,7 @@ def index():
                         generated_yaml += f"  widget_type: sensor\n"
                         generated_yaml += f"  entity: {w_id}\n"
                         generated_yaml += f"  title: \"{w_name}\"\n"
-                        # USUNIĘTO GENEROWANIE IKONY DLA SENSORA - TYLKO WARTOŚĆ
+                        # SENSOR BEZ IKONY - TYLKO WARTOŚĆ
                         generated_yaml += f"  title_style: \"{STYLE_TITLE}\"\n"
                         generated_yaml += f"  text_style: \"{STYLE_TEXT}\"\n"
                         generated_yaml += f"  value_style: \"{STYLE_VALUE}\"\n"
