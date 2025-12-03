@@ -152,7 +152,6 @@ def index():
                     if w_id in seen_ids: continue
                     seen_ids.add(w_id)
                     
-                    # Import Protection
                     if w_id in custom_defs and not w.get('was_edited', False):
                         generated_yaml += f"{w_id}:\n"
                         for line in custom_defs[w_id].split('\n'):
@@ -168,7 +167,6 @@ def index():
                     
                     generated_yaml += f"{w_id}:\n"
                     
-                    # --- SPECYFICZNE WIDGETY ---
                     if w_type == 'navigate':
                         dash_target = w_id.replace('navigate.', '')
                         generated_yaml += f"  widget_type: navigate\n"
@@ -193,8 +191,6 @@ def index():
                         else:
                             generated_yaml += "  precision: 1\n"
 
-                    # USUNIĘTO GENEROWANIE POGODY (chyba że import wymusi)
-                    
                     elif w_type == 'media_player':
                         generated_yaml += f"  widget_type: media_player\n"
                         generated_yaml += f"  entity: {w_id}\n"
@@ -220,7 +216,6 @@ def index():
                          generated_yaml += f"  text_style: \"{STYLE_TITLE}\"\n"
                     
                     else:
-                        # --- GENERYCZNE ---
                         ad_type = w_type
                         if w_type == 'binary_sensor': ad_type = 'binary_sensor'
                         if w_type == 'input_boolean': ad_type = 'switch'
