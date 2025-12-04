@@ -8,7 +8,7 @@
 
 ![Version](https://img.shields.io/badge/version-1.1.5-blue) ![E-Ink](https://img.shields.io/badge/Optimized%20for-E--Ink-black) ![Home Assistant](https://img.shields.io/badge/Home%20Assistant-Add--on-41bdf5)
 
-**Generator profesjonalnych dashboardów dla tabletów Visionect Joan 6, działający w oparciu o AppDaemon.**
+**Generator dashboardów dla tabletów Visionect Joan 6, działający w oparciu o AppDaemon.**
 
 Ten dodatek to wizualny kreator (GUI), który pozwala "wyklikać" układ ekranu dla Twojego urządzenia Joan, a następnie generuje gotowy, zoptymalizowany kod YAML dla AppDaemon.
 
