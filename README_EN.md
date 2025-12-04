@@ -9,7 +9,7 @@
 
 ![Version](https://img.shields.io/badge/version-1.1.5-blue) ![E-Ink](https://img.shields.io/badge/Optimized%20for-E--Ink-black) ![Home Assistant](https://img.shields.io/badge/Home%20Assistant-Add--on-41bdf5)
 
-**A professional dashboard generator for Visionect Joan 6 tablets, powered by AppDaemon.**
+**Dashboard generator for Visionect Joan 6 tablets, powered by AppDaemon.**
 
 This add-on provides a graphical user interface (GUI) that allows you to easily design screen layouts for your Joan device and generates optimized YAML code for AppDaemon.
 
