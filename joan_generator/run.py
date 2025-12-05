@@ -3,12 +3,11 @@ import json
 import requests
 from flask import Flask, render_template, request
 
-# Inicjalizacja aplikacji
 print("📦 1. Inicjalizacja aplikacji Joan 6 Generator...")
 app = Flask(__name__)
 
 # -------------------------------------------------------------------------
-# 1. KONFIGURACJA API I TOKENU
+# 1. KONFIGURACJA API I TOKENU (HOME ASSISTANT)
 # -------------------------------------------------------------------------
 TOKEN = os.environ.get('SUPERVISOR_TOKEN')
 API_URL = "http://supervisor/core/api" 
@@ -30,6 +29,8 @@ except Exception as e:
 
 if not TOKEN:
     print("❌ OSTRZEŻENIE: Brak tokena autoryzacji! Lista encji będzie pusta.")
+else:
+    print(f"🔑 Źródło tokena: {TOKEN_SOURCE}")
 
 # -------------------------------------------------------------------------
 # 2. POBIERANIE DANYCH Z HOME ASSISTANT
@@ -59,17 +60,18 @@ def get_ha_entities():
             entities.sort(key=lambda x: x['id'])
             return entities
     except Exception as e:
-        print(f"❌ Wyjątek: {e}")
+        print(f"❌ Wyjątek podczas pobierania encji: {e}")
     return []
 
 # -------------------------------------------------------------------------
-# 3. STYLE (E-INK OPTIMIZED)
+# 3. DEFINICJE STYLÓW (ZGODNE Z JOAN3.TXT)
 # -------------------------------------------------------------------------
-STYLE_TITLE = "color: #000000; font-size: 20px; font-weight: 700; text-align: center; padding-top: 5px; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif;"
+STYLE_TITLE = "color: #000000; font-size: 20px; font-weight: 700; text-align: center; padding-top: 3px; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif;"
 STYLE_WIDGET = "color: #000000 !important; background-color: #FFFFFF !important;"
 STYLE_TEXT = "color: #000000 !important; font-weight: 700 !important;"
-STYLE_VALUE = "color: #000000 !important; font-size: 44px !important; font-weight: 700 !important; padding-top: 45px !important; line-height: 1.2 !important; display: inline-block !important;"
-STYLE_UNIT = "color: #000000 !important; padding-top: 45px !important; display: inline-block !important;"
+# Obniżone wartości (padding-top: 15px)
+STYLE_VALUE = "color: #000000 !important; font-size: 44px !important; font-weight: 700 !important; padding-top: 15px !important; line-height: 1.2 !important;"
+STYLE_UNIT = "color: #000000 !important;"
 STYLE_ICON = "color: #000000 !important;"
 STYLE_STATE_TEXT = "color: #000000 !important; font-weight: 700 !important; font-size: 16px !important;"
 
@@ -77,40 +79,32 @@ STYLE_STATE_TEXT = "color: #000000 !important; font-weight: 700 !important; font
 def index():
     generated_yaml = ""
     ha_entities = get_ha_entities()
-    dashboard_filename = "joandashboard.dash"
-    dashboard_slug = "joandashboard"
+    dashboard_filename = "joan3.dash"
+    dashboard_slug = "joan3"
     
     if request.method == 'POST':
         try:
-            title = request.form.get('title', 'JoanDashboard')
+            title = request.form.get('title', 'Joan3')
             dashboard_slug = title.lower().replace(" ", "_")
             dashboard_filename = dashboard_slug + ".dash"
             
-            cols = request.form.get('grid_columns', '4')
+            # Domyślnie z formularza (dla Joan3 to 6 kolumn, 8 wierszy)
+            cols = request.form.get('grid_columns', '6')
             rows = request.form.get('grid_rows', '8')
             lang = request.form.get('ui_language', 'pl')
             
-            default_size_str = request.form.get('default_widget_size', '2, 1')
-            def_size_parts = default_size_str.split(',')
-            def_w = int(def_size_parts[0].strip())
-            def_h = int(def_size_parts[1].strip()) if len(def_size_parts) > 1 else 1
-
             TRANS = {
                 'pl': {'on': 'WŁĄCZONE', 'off': 'WYŁĄCZONE', 'open': 'OTWARTA', 'closed': 'ZAMKNIĘTA', 'opening': 'OTWIERANIE', 'closing': 'ZAMYKANIE', 'locked': 'ZAMKNIĘTE', 'unlocked': 'OTWARTE', 'home': 'W DOMU', 'not_home': 'POZA'},
                 'en': {'on': 'ON', 'off': 'OFF', 'open': 'OPEN', 'closed': 'CLOSED', 'opening': 'OPENING', 'closing': 'CLOSING', 'locked': 'LOCKED', 'unlocked': 'UNLOCKED', 'home': 'HOME', 'not_home': 'AWAY'}
             }
             dic = TRANS.get(lang, TRANS['pl'])
 
-            if def_w == 1:
-                ad_columns = int(cols)
-            else:
-                ad_columns = int(cols) * 2
-
+            # Nagłówek zgodny z Joan3.txt
             generated_yaml += f"title: {title}\n"
             generated_yaml += "widget_dimensions: [117, 117]\n"
-            generated_yaml += f"widget_size: [{def_w}, {def_h}]\n"
+            generated_yaml += "widget_size: [1, 1]\n" # Domyślnie 1x1 w Joan3, ale Smart ustawi 2x1 dla switchy
             generated_yaml += "widget_margins: [8, 8]\n"
-            generated_yaml += f"columns: {ad_columns}\n"
+            generated_yaml += f"columns: {cols}\n"
             generated_yaml += f"rows: {rows}\n"
             generated_yaml += "global_parameters:\n"
             generated_yaml += "  use_comma: 0\n"
@@ -141,19 +135,16 @@ def index():
                             row_parts.append("spacer")
                             continue
                         
-                        widget_id = w['id']
-                        size_str = w.get('size', '')
-                        is_default = False
-                        
-                        if size_str == f"({def_w}x{def_h})": is_default = True
-                        elif size_str == "(2x1)" and def_w == 2 and def_h == 1: is_default = True
-                        elif size_str == "(1x1)" and def_w == 1 and def_h == 1: is_default = True
-                            
-                        if not is_default and size_str:
-                             if not size_str.startswith('('): size_str = f"({size_str})"
-                             widget_id += size_str
+                        widget_str = w['id']
+                        size = w.get('size', '').strip()
+                        # W Joan3 domyślny to 1x1, więc wszystko inne musi mieć (WxH)
+                        if size and size != "(1x1)":
+                             if not size.startswith('('): size = f"({size})"
+                             widget_str += size
+                        elif size == "(1x1)":
+                             pass # Nie dodajemy (1x1) bo to domyślne
                              
-                        row_parts.append(widget_id)
+                        row_parts.append(widget_str)
                         processed_widgets.append(w)
                     generated_yaml += f"  - {', '.join(row_parts)}\n"
                 
@@ -187,17 +178,19 @@ def index():
                         generated_yaml += f"  dashboard: {dash_target}\n"
                         generated_yaml += f"  icon_inactive: {w_icon or 'mdi-arrow-right-circle'}\n"
                         generated_yaml += f"  title_style: \"{STYLE_TITLE}\"\n"
-                        generated_yaml += f"  widget_style: \"{STYLE_WIDGET}\"\n"
+                        generated_yaml += f"  widget_style: \"background-color: #FFFFFF !important; border-radius: 8px !important; padding: 10px !important; color: #000000 !important;\"\n"
 
                     elif w_type == 'sensor':
                         generated_yaml += f"  widget_type: sensor\n"
                         generated_yaml += f"  entity: {w_id}\n"
                         generated_yaml += f"  title: \"{w_name}\"\n"
+                        if w_icon: generated_yaml += f"  icon: {w_icon}\n"
                         generated_yaml += f"  title_style: \"{STYLE_TITLE}\"\n"
                         generated_yaml += f"  text_style: \"{STYLE_TEXT}\"\n"
                         generated_yaml += f"  value_style: \"{STYLE_VALUE}\"\n"
                         generated_yaml += f"  unit_style: \"{STYLE_UNIT}\"\n"
                         generated_yaml += f"  widget_style: \"{STYLE_WIDGET}\"\n"
+                        generated_yaml += f"  icon_style: \"{STYLE_ICON}\"\n"
                         if any(k in w_id for k in ['battery', 'bateria', 'level']):
                             generated_yaml += "  precision: 0\n"
                         else:
