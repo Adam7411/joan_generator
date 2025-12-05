@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Joan 6 E-Ink Generator (ABSOLUTE EDITION)</title>
+    <title>Joan 6 E-Ink Generator (GOD MODE)</title>
     
     <!-- 1. BIBLIOTEKI ZEWNĘTRZNE -->
     <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap" rel="stylesheet">
     
-    <!-- 2. SKRYPT INICJUJĄCY MOTYW (W HEAD) -->
+    <!-- 2. INICJALIZACJA MOTYWU (ANTI-FLICKER) -->
     <script>
         (function() {
             try {
@@ -97,7 +97,7 @@
             letter-spacing: 1px;
         }
         
-        /* KONTROLKI */
+        /* KONTROLKI MOTYWU I JĘZYKA */
         .controls button { 
             padding: 8px 16px; 
             border: 1px solid var(--border); 
@@ -138,7 +138,7 @@
             color: var(--text-main); 
         }
 
-        /* INFO O PLIKU */
+        /* INFO O PLIKU (NA DOLE) */
         .file-path-info { 
             background-color: var(--link-bg); 
             color: var(--link-color); 
@@ -296,7 +296,7 @@
         .eink-row { 
             display: flex; 
             gap: 8px; /* Margines z Joan.txt */
-            margin-bottom: 25px; 
+            margin-bottom: 15px; 
             padding: 15px; 
             border: 2px dashed #999; 
             border-radius: 6px; 
@@ -349,7 +349,7 @@
             display: flex; 
             flex-direction: column; 
             align-items: center; 
-            justify-content: space-between; /* Rozciągnij treść */
+            justify-content: space-between; /* Rozciągnij treść góra-dół */
             padding: 8px; 
             box-sizing: border-box; 
             cursor: pointer; 
@@ -375,11 +375,11 @@
         /* Tytuł - Mniejszy aby nie zasłaniał */
         .ew-title { 
             font-weight: 900; 
-            font-size: 12px; /* Mała czcionka */
+            font-size: 13px; 
             text-align: center; 
             width: 100%; 
             line-height: 1.2; 
-            margin-top: 8px; 
+            margin-top: 12px; 
             margin-bottom: 2px; 
             white-space: normal; 
             font-family: 'Roboto', 'Arial Black', sans-serif; 
@@ -389,7 +389,7 @@
         
         /* Ikona - Zmniejszona, aby zrobić miejsce */
         .ew-icon { 
-            font-size: 38px; /* Zmniejszona */
+            font-size: 38px; /* Zmniejszona z 50px */
             display: block; 
             margin: 2px 0; 
             pointer-events: none;
@@ -464,7 +464,7 @@
 <body>
     <div class="container">
         <div class="header-row">
-            <h1>Joan 6 E-Ink Generator (ABSOLUTE)</h1>
+            <h1>Joan 6 E-Ink Generator (GOD MODE)</h1>
             <div class="controls">
                 <button type="button" onclick="toggleTheme()" id="btn-theme">🌙</button>
                 <button type="button" onclick="setLang('pl')" id="btn-pl" class="active">PL</button>
@@ -508,6 +508,7 @@
             </div>
         </div>
 
+        <!-- 2. IMPORT -->
         <div class="section" id="import-section">
             <details>
                 <summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">📂 Import / Eksport Kodu .DASH</summary>
@@ -524,7 +525,7 @@
             <input type="hidden" name="grid_columns" id="form-cols" value="6">
             <input type="hidden" name="grid_rows" id="form-rows" value="8">
             
-            <!-- 2. EDYTOR WIDGETU -->
+            <!-- 3. EDYTOR WIDGETU -->
             <div class="add-widget-box" id="editor-box">
                 <div class="section-title" id="editor-title" data-i18n="sec_add">2. Dodaj Widget</div>
                 
@@ -603,7 +604,7 @@
                 </div>
             </div>
 
-            <!-- 3. PODGLĄD E-INK -->
+            <!-- 4. PODGLĄD E-INK -->
             <div class="section">
                 <div class="section-title" data-i18n="sec_preview">3. Podgląd Dashboardu (Kliknij by edytować)</div>
                 <div class="preview-area" id="preview-container"></div>
@@ -632,8 +633,11 @@
         {% endif %}
     </div>
 
+    <!-- ------------------------------------------------------------------ -->
+    <!-- LOGIKA JAVASCRIPT -->
+    <!-- ------------------------------------------------------------------ -->
     <script>
-        // --- ZMIENNE ---
+        // --- DANE I ZMIENNE ---
         const entitiesData = {{ entities | tojson | safe }};
         let rows = [[]]; 
         let editIdx = null; 
@@ -641,7 +645,7 @@
         let currentLang = 'pl';
         let importedDefsMap = {}; 
         
-        // Stan poprzedniej siatki (do anulowania zmian)
+        // Przechowuje poprzedni stan siatki, aby móc cofnąć zmianę
         let previousGridState = "6x8";
 
         const TRANSLATIONS = {
@@ -652,14 +656,14 @@
                 btn_add: "+ DODAJ WIDGET", btn_update: "ZAPISZ ZMIANY", btn_cancel: "ANULUJ", 
                 btn_row: "+ Dodaj Wiersz", btn_gen: "GENERUJ KOD .DASH",
                 opt_switch: "Przełącznik / Światło", opt_cover: "Roleta / Brama", opt_sensor: "Sensor (Info)",
-                opt_binary: "Sensor Binarny (On/Off)", opt_lock: "Zamek", opt_person: "Osoba",
+                opt_binary: "Sensor Binarny (On/Off)", opt_lock: "Zamek", opt_person: "Osoba / Tracker",
                 opt_media: "Media Player", opt_climate: "Termostat", opt_input_select: "Lista Wyboru",
                 opt_input_number: "Suwak", opt_script: "Skrypt", opt_navigate: "Przycisk Nawigacji",
                 opt_label: "Etykieta (Tekst)", opt_clock: "Zegar", opt_spacer: "Odstęp (Pusty)",
                 size_1x1: "1x1 (Mały)", size_2x1: "2x1 (Szeroki)", size_2x2: "2x2 (Duży)",
                 size_3x1: "3x1 (Bardzo Szeroki)", size_1x2: "1x2 (Wysoki)", size_3x2: "3x2 (Ogromny)",
                 limit_15: "Maks 15 znaków", limit_20: "Maks 20 znaków",
-                warning_rows: "UWAGA: Wybrany układ ma mniej wierszy ({0}) niż aktualnie używasz ({1}). Część widgetów może zostać ucięta. Kontynuować?"
+                warning_grid_rows: "UWAGA: Nowy układ ma mniej wierszy ({0}) niż aktualnie używasz ({1}). Nadmiarowe wiersze zostaną USUNIĘTE. Kontynuować?"
             },
             en: {
                 sec_add: "2. Add Widget", sec_edit: "2. Edit Widget", sec_preview: "3. Dashboard Preview",
@@ -675,7 +679,7 @@
                 size_1x1: "1x1 (Small)", size_2x1: "2x1 (Wide)", size_2x2: "2x2 (Large)",
                 size_3x1: "3x1 (X-Wide)", size_1x2: "1x2 (Tall)", size_3x2: "3x2 (Huge)",
                 limit_15: "Max 15 chars", limit_20: "Max 20 chars",
-                warning_rows: "WARNING: The selected layout has fewer rows ({0}) than currently used ({1}). Widgets may be lost. Continue?"
+                warning_grid_rows: "WARNING: The new layout has fewer rows ({0}) than currently used ({1}). Excess rows will be REMOVED. Continue?"
             }
         };
 
@@ -692,7 +696,7 @@
             'script': { type: 'script', size: '(2x1)', icon: 'mdi-script-text-outline' }
         };
 
-        // --- FUNKCJE POMOCNICZE ---
+        // --- HELPERY ---
         function normalizeString(str) {
             return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
         }
@@ -712,6 +716,8 @@
                     const opt = document.createElement('option');
                     opt.value = e.id;
                     opt.label = e.attributes.friendly_name ? `${e.attributes.friendly_name} (${e.id})` : e.id;
+                    opt.setAttribute('data-dclass', e.attributes.device_class || '');
+                    opt.setAttribute('data-friendly', e.attributes.friendly_name || '');
                     dl.appendChild(opt);
                     count++;
                 }
@@ -785,6 +791,7 @@
             let conf = SMART_MAP[domain] || { type: 'sensor', size: '(1x1)', icon: 'mdi-eye' };
 
             const check = (keywords) => keywords.some(k => idNorm.includes(k) || fNameNorm.includes(k));
+
             if (check(['glosnik', 'speaker', 'audio', 'tv', 'odtwarzacz'])) conf = SMART_MAP['media_player'];
             else if (check(['swiatlo', 'lamp', 'kinkiet', 'led', 'zarowka'])) conf = SMART_MAP['light'];
             else if (check(['gniazdko', 'wtyczka', 'outlet', 'plug'])) conf = SMART_MAP['switch'];
@@ -805,8 +812,8 @@
             if (domain === 'input_boolean') conf = SMART_MAP['switch'];
             if (domain === 'script') conf = SMART_MAP['script'];
 
+            // SMART GRID LOGIC: Wymuś 2x1 na dużych siatkach
             const currentGrid = document.getElementById('grid-preset').value;
-            // Smart Size dla 6 kolumn: Wymuś 2x1 dla switchy, chyba że to sensor
             if ((currentGrid === '6x8' || currentGrid === '6x6' || currentGrid === 'custom') && conf.size === '(1x1)' && conf.type !== 'binary_sensor') {
                 conf.size = '(2x1)';
             }
@@ -824,7 +831,7 @@
             updateTitleLimit();
         }
 
-        // --- OBSŁUGA ZMIANY SIATKI ---
+        // --- KLUCZOWA POPRAWKA: FIZYCZNE USUWANIE WIERSZY ---
         function handleGridChange(selectObj) {
             const newVal = selectObj.value;
             
@@ -842,11 +849,17 @@
             if(newVal === '4x4') targetRows = 4;
             if(newVal === '6x9') targetRows = 9;
 
-            // SPRAWDZENIE CZY NIE UCIENIE
             const currentUsed = rows.length;
+            
+            // JEŚLI NOWA SIATKA MA MNIEJ WIERSZY NIŻ AKTUALNA
             if (currentUsed > targetRows) {
-                const msg = TRANSLATIONS[currentLang].warning_rows.replace('{0}', targetRows).replace('{1}', currentUsed);
-                if (!confirm(msg)) {
+                const msg = TRANSLATIONS[currentLang].warning_grid_rows.replace('{0}', targetRows).replace('{1}', currentUsed);
+                if (confirm(msg)) {
+                    // UŻYTKOWNIK ZATWIERDZIŁ -> FIZYCZNIE USUŃ WIERSZE
+                    rows = rows.slice(0, targetRows);
+                    renderPreview(); // ODŚWIEŻ PODGLĄD
+                } else {
+                    // UŻYTKOWNIK ANULOWAŁ -> PRZYWRÓĆ POPRZEDNI WYBÓR
                     selectObj.value = previousGridState;
                     if(previousGridState === 'custom') document.getElementById('custom-grid-inputs').style.display = 'flex';
                     return;
@@ -972,11 +985,20 @@
 
         function addRow() {
             // Ochrona przed dodawaniem za dużo wierszy
-            const maxRows = parseInt(document.getElementById('h-rows').value) || 20;
-            if(rows.length >= maxRows) {
+            let maxRows = 8;
+            const gridVal = document.getElementById('grid-preset').value;
+            
+            if (gridVal === 'custom') {
+                maxRows = parseInt(document.getElementById('custom-rows').value) || 20;
+            } else {
+                maxRows = parseInt(gridVal.split('x')[1]);
+            }
+            
+            if (rows.length >= maxRows) {
                 alert("Limit wierszy dla tego układu to: " + maxRows);
                 return;
             }
+            
             rows.push([]);
             renderPreview();
         }
@@ -1026,7 +1048,7 @@
                     div.className = 'eink-widget';
                     if(editIdx && editIdx.r === rI && editIdx.w === wI) div.classList.add('editing');
 
-                    let cols = 2, rw = 1;
+                    let cols = 2, rw = 1; 
                     if(w.size) {
                         const parts = w.size.replace(/[()]/g, '').split('x');
                         cols = parseInt(parts[0]) || 1;
@@ -1075,14 +1097,8 @@
             let rawDefs = {};
             let currentDefKey = null;
 
-            let foundCols = 6;
-            let foundRows = 8;
-
             lines.forEach(line => {
                 const tr = line.trim();
-                if(tr.startsWith('columns:')) foundCols = parseInt(tr.split(':')[1]);
-                if(tr.startsWith('rows:')) foundRows = parseInt(tr.split(':')[1]);
-
                 if(!tr || tr.startsWith('#')) return;
                 if (line.match(/^\S+:/) && !line.startsWith('layout:') && !line.startsWith('global_parameters:')) {
                     currentDefKey = line.split(':')[0].trim();
@@ -1098,23 +1114,6 @@
                     currentDefKey = null;
                 }
             });
-            
-            // Automatyczne ustawienie siatki
-            const presetVal = `${foundCols}x${foundRows}`;
-            const sel = document.getElementById('grid-preset');
-            let matched = false;
-            for(let i=0; i<sel.options.length; i++) {
-                if(sel.options[i].value === presetVal) { sel.value = presetVal; matched = true; break; }
-            }
-            if(!matched) {
-                sel.value = 'custom';
-                document.getElementById('custom-grid-inputs').style.display = 'flex';
-                document.getElementById('custom-cols').value = foundCols;
-                document.getElementById('custom-rows').value = foundRows;
-            }
-            previousGridState = sel.value;
-            applyGrid();
-
             importedDefsMap = rawDefs;
 
             lines.forEach(line => {
