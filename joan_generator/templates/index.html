@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Joan 6 E-Ink Generator (JOAN3 EDITION)</title>
+    <title>Joan 6 E-Ink Generator (Final Monster Edition)</title>
     
     <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap" rel="stylesheet">
@@ -32,24 +32,37 @@
         body { font-family: 'Roboto', sans-serif; background-color: var(--bg-body); color: var(--text-main); padding: 20px; transition: background-color 0.3s; }
         .container { max-width: 1400px; margin: 0 auto; background: var(--bg-container); padding: 30px; border-radius: 10px; box-shadow: var(--shadow); }
         .header-row { display: flex; flex-direction: column; justify-content: center; align-items: center; border-bottom: 2px solid var(--border); padding-bottom: 20px; margin-bottom: 25px; text-align: center; }
+        
         .header-top { width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         h1 { margin: 0; color: var(--accent); font-size: 28px; font-weight: 900; text-transform: uppercase; }
+        
+        /* STATUS STYLES */
+        .small-status { 
+            font-size: 0.6em; color: #009688; font-weight: normal; 
+            margin-left: 10px; text-transform: none; 
+            display: inline-block; vertical-align: middle;
+        }
+
         .controls button { padding: 8px 16px; border: 1px solid var(--border); background: var(--bg-section); color: var(--text-main); border-radius: 4px; cursor: pointer; font-weight: bold; margin-left: 5px; }
         .controls button.active { background: var(--accent); color: var(--btn-text); border-color: var(--accent); }
         .section { background: var(--bg-section); padding: 25px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 30px; }
+        
         .section-title { font-size: 1.4em; font-weight: 900; border-bottom: 3px solid var(--accent); display: inline-block; margin-bottom: 20px; color: var(--text-main); }
+        
         .file-path-info { background-color: var(--link-bg); color: var(--link-color); border: 1px solid var(--border); padding: 20px; margin-bottom: 20px; border-radius: 6px; font-family: monospace; }
         .file-info-block { margin-bottom: 15px; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 15px; }
         .file-path-info strong { display: block; margin-bottom: 5px; color: var(--text-main); }
         .file-path-info code { display: block; background: rgba(255,255,255,0.4); padding: 8px; border-radius: 4px; font-weight: bold; }
         .link-box { background-color: #ffffff; border: 2px solid var(--accent); padding: 10px; border-radius: 4px; display: inline-block; color: #000000; font-weight: bold; margin-top: 5px; }
         .link-box a { color: #0277bd; text-decoration: underline; font-size: 16px; }
+
         .add-widget-box { background: var(--highlight); padding: 25px; border-radius: 8px; border: 1px solid var(--accent); margin-bottom: 30px; }
         .add-widget-box.editing { border: 3px solid #ff9800; background: rgba(255, 152, 0, 0.15); }
         .flex-row { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 15px; align-items: center; }
         .flex-col { flex: 1; min-width: 160px; }
         label { display: block; font-weight: bold; font-size: 0.9em; margin-bottom: 8px; color: var(--text-main); }
         input, select, textarea { width: 100%; padding: 12px; border: 1px solid var(--border); background: var(--bg-input); color: var(--text-main); border-radius: 4px; box-sizing: border-box; }
+        
         .btn { padding: 12px 24px; border: none; cursor: pointer; border-radius: 4px; font-weight: bold; text-transform: uppercase; color: var(--btn-text); font-size: 14px; }
         .btn:hover { opacity: 0.9; transform: translateY(-1px); }
         .btn-add { background: #4caf50; width: 100%; }
@@ -57,56 +70,91 @@
         .btn-cancel { background: #757575; }
         .btn-row { background: #2196f3; margin-top: 15px; }
         .btn-import { background: #ff9800; color: white; margin-top: 10px; }
+        .btn-tetris { background: #9c27b0; color: white; margin-left: 10px; }
         .btn-dash-save { background: #009688; color: white; width: auto; padding: 8px 15px; font-size: 13px; }
+        
         .btn-tool { padding: 6px 12px; font-size: 14px; margin-left: 6px; border-radius: 4px; cursor: pointer; color: white; border: none; font-weight: bold; display: inline-block; text-align: center; }
         .btn-del-row { background: #d32f2f; }
         .btn-move-row { background: #757575; }
+
         .preview-area { background: var(--preview-bg); padding: 30px; border: 2px solid var(--border); border-radius: 8px; overflow-x: auto; min-height: 400px; transition: width 0.3s; }
-        .eink-row { display: flex; gap: 8px; margin-bottom: 15px; margin-top: 50px; padding: 15px; border: 2px dashed #999; border-radius: 6px; min-height: 140px; align-items: flex-end; position: relative; background-image: linear-gradient(to right, rgba(0,0,0,0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,0,0,0.05) 1px, transparent 1px); background-size: 125px 125px; transition: border-color 0.3s, box-shadow 0.3s, width 0.3s; cursor: pointer; flex-wrap: nowrap; overflow-x: hidden; overflow: visible !important; }
+        
+        .eink-row { 
+            display: flex; gap: 8px; margin-bottom: 15px; margin-top: 50px; padding: 15px; 
+            border: 2px dashed #999; border-radius: 6px; min-height: 140px; 
+            align-items: flex-end; position: relative; 
+            background-image: linear-gradient(to right, rgba(0,0,0,0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,0,0,0.05) 1px, transparent 1px); 
+            background-size: 125px 125px; 
+            transition: border-color 0.3s, box-shadow 0.3s, width 0.3s; 
+            cursor: pointer; flex-wrap: nowrap; overflow-x: hidden; overflow: visible !important; 
+        }
         .eink-row:hover { background-color: rgba(0,0,0,0.02); }
         .eink-row.row-selected { border: 2px solid #2196f3; background-color: rgba(33, 150, 243, 0.1); }
         .eink-row.row-active { border: 2px solid #ff9800; box-shadow: 0 0 10px rgba(255, 152, 0, 0.3); }
         .eink-row.drag-over { border: 2px dashed #4caf50; background: rgba(76, 175, 80, 0.1); }
+
         .row-controls { position: absolute; top: -40px; left: 0; display: flex; align-items: center; z-index: 100; white-space: nowrap; }
         .row-label { font-size: 13px; background: var(--bg-body); padding: 4px 10px; color: var(--text-main); border: 1px solid var(--border); border-radius: 4px; font-weight: bold; margin-right: 10px; }
+        
         .widget-wrapper { display: flex; flex-direction: column; align-items: center; margin-right: 0; position: relative; flex-shrink: 0; cursor: grab; }
         .widget-wrapper:active { cursor: grabbing; }
-        .ew-type-label { font-size: 10px; text-transform: uppercase; color: var(--text-main); margin-bottom: 4px; font-weight: bold; opacity: 0.7; text-align: center; width: 100%; }
+        .ew-type-label { font-size: 10px; text-transform: uppercase; color: var(--text-main); margin-bottom: 4px; font-weight: bold; opacity: 0.7; text-align: center; }
+
         .eink-widget { background: #FFFFFF; border: 3px solid #000000; color: #000000; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 8px; box-sizing: border-box; position: relative; box-shadow: 4px 4px 0px rgba(0,0,0,0.25); transition: transform 0.1s; flex-shrink: 0; overflow: hidden; }
         .eink-widget:hover { transform: translateY(-3px); z-index: 10; border-color: var(--accent); }
         .eink-widget.editing { border: 4px solid #ff9800; transform: scale(1.05); z-index: 20; box-shadow: 0 0 15px rgba(255, 152, 0, 0.5); }
-        .ew-title { font-weight: 900; font-size: 12px; text-align: center; width: 100%; line-height: 1.2; margin-top: 12px; margin-bottom: 2px; white-space: normal; text-transform: uppercase; pointer-events: none; }
+        .ew-title { font-weight: 900; font-size: 13px; text-align: center; width: 100%; line-height: 1.2; margin-top: 12px; margin-bottom: 2px; white-space: normal; text-transform: uppercase; pointer-events: none; }
         .ew-icon { font-size: 38px; display: block; margin: 2px 0; pointer-events: none; }
         .ew-value { font-weight: 900; font-size: 15px; text-transform: uppercase; margin-bottom: 5px; text-align: center; border-top: 2px solid #000; width: 90%; padding-top: 3px; margin-top: auto; pointer-events: none; }
         .ew-del { position: absolute; top: -8px; right: -8px; background: red; color: white; width: 20px; height: 20px; border-radius: 50%; text-align: center; line-height: 20px; font-weight: bold; display: none; box-shadow: 1px 1px 3px rgba(0,0,0,0.5); z-index: 30; }
         .eink-widget:hover .ew-del { display: block; }
+        
         .eink-widget.is-small { padding: 4px; }
         .eink-widget.is-small .ew-title { font-size: 11px; margin-top: 4px; margin-bottom: 0; }
         .eink-widget.is-small .ew-icon { font-size: 28px; margin: 2px 0; }
         .eink-widget.is-small .ew-value { font-size: 12px; padding-top: 2px; margin-bottom: 2px; }
+
         .icon-preview { font-size: 32px; display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-input); }
         .hidden { display: none !important; }
         textarea.output { width: 100%; height: 500px; font-family: 'Consolas', 'Monaco', monospace; background: #263238; color: #eceff1; border: none; padding: 20px; border-radius: 8px; font-size: 14px; line-height: 1.5; }
         .char-counter { font-size: 11px; text-align: right; margin-top: 4px; color: #666; font-weight: bold; }
         .char-counter.limit { color: red; }
-        .input-hint { display: block; font-size: 0.75em; margin-top: 4px; line-height: 1.3; padding: 6px; border-radius: 4px; background-color: var(--link-bg); color: var(--text-main); border: 1px solid var(--border); }
+
+        .input-hint {
+            display: block; font-size: 0.75em; margin-top: 4px; line-height: 1.3;
+            padding: 6px; border-radius: 4px;
+            background-color: var(--link-bg); 
+            color: var(--text-main);
+            border: 1px solid var(--border);
+        }
         .input-hint code { background: rgba(255,255,255,0.3); padding: 2px 4px; border-radius: 3px; font-weight: bold; }
+        
         .dash-list { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 10px; }
-        .dash-item { background: var(--bg-input); border: 1px solid var(--border); padding: 15px 20px; border-radius: 6px; cursor: pointer; font-size: 16px; display: flex; align-items: center; gap: 10px; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .dash-item { 
+            background: var(--bg-input); border: 1px solid var(--border); 
+            padding: 15px 20px; /* Większy padding */
+            border-radius: 6px; cursor: pointer; 
+            font-size: 16px; /* Większa czcionka */
+            display: flex; align-items: center; gap: 10px; 
+            transition: all 0.2s; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
         .dash-item:hover { background: var(--highlight); transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
         .dash-item.active { background: #4caf50; color: white; border-color: #388e3c; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
         .dash-item span { font-weight: bold; }
-        .dash-item button { font-size: 12px; padding: 4px 8px; margin-left: 10px; background: #d32f2f; color: white; border: none; border-radius: 4px; cursor: pointer; opacity: 0.8; }
+        .dash-item button { 
+            font-size: 12px; padding: 4px 8px; margin-left: 10px; 
+            background: #d32f2f; color: white; border: none; 
+            border-radius: 4px; cursor: pointer; opacity: 0.8; 
+        }
         .dash-item.active button { background: white; color: #d32f2f; }
-        #custom-grid-inputs { display: none; gap: 10px; margin-top: 10px; align-items: center; border-top: 1px dashed var(--border); padding-top: 10px; }
-        .custom-num-input { width: 80px !important; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header-row">
             <div class="header-top">
-                <h1 data-i18n="title_main">Joan 6 E-Ink Generator (JOAN3 EDITION)</h1>
+                <h1 data-i18n="title_main">Joan 6 E-Ink Generator (MONSTER EDITION)</h1>
                 <div class="controls">
                     <button type="button" onclick="toggleTheme()" id="btn-theme">🌙</button>
                     <button type="button" onclick="setLang('pl')" id="btn-pl" class="active">PL</button>
@@ -118,28 +166,25 @@
         <div class="section">
             <div class="section-title">
                 <span data-i18n="sec_settings">1. Ustawienia Dashboardu</span>
+                <!-- STATUS 1 -->
+                <span id="status-sec-1" class="small-status"></span>
             </div>
             <div class="flex-row">
                 <div class="flex-col">
                     <label data-i18n="lbl_dash_title">Tytuł Dashboardu</label>
-                    <input type="text" id="dash-title" oninput="syncTitle()" value="Joan3">
+                    <input type="text" id="dash-title" oninput="syncTitle()" value="JoanDashboard">
                 </div>
                 <div class="flex-col">
                     <label data-i18n="lbl_grid">Układ Siatki (Smart Grid)</label>
-                    <select id="grid-preset" onchange="handleGridChange(this)">
-                        <option value="6x8" data-i18n="grid_std_plus" selected>Standard+ (3 kolumny x 8 wierszy) - DOMYŚLNY</option>
-                        <option value="6x6" data-i18n="grid_std">Standard (3 kolumny x 6 wierszy)</option>
-                        <option value="4x4" data-i18n="grid_large">Duży (2 kolumny x 4 wiersze)</option>
-                        <option value="4x6" data-i18n="grid_med">Średni (2 kolumny x 6 wierszy)</option>
-                        <option value="6x9" data-i18n="grid_small">Gęsty (3 kolumny x 9 wierszy)</option>
-                        <option value="custom" data-i18n="grid_custom">-- Układ Własny (Custom) --</option>
+                    <select id="grid-preset" onchange="applyGrid()">
+                        <option value="4x8" data-i18n="grid_std_plus" selected>Standard+ (3 kolumny x 8 wierszy) - DOMYŚLNY</option>
+                        <option value="4x6" data-i18n="grid_std">Standard (3 kolumny x 6 wierszy)</option>
+                        <option value="4x4" data-i18n="grid_large">Duży (4 kolumny x 4 wiersze)</option>
+                        <option value="4x6m" data-i18n="grid_med">Średni (4 kolumny x 6 wierszy)</option>
+                        <option value="6x8" data-i18n="grid_small">Gęsty (6 kolumn x 8 wierszy)</option>
                     </select>
-                    <div id="custom-grid-inputs" class="flex-row">
-                        <div><label style="font-size:10px">Kolumny:</label><input type="number" id="custom-cols" class="custom-num-input" value="6" min="1" max="20" onchange="updateCustomGrid()"></div>
-                        <div><label style="font-size:10px">Wiersze:</label><input type="number" id="custom-rows" class="custom-num-input" value="8" min="1" max="20" onchange="updateCustomGrid()"></div>
-                    </div>
                 </div>
-                <input type="hidden" id="h-cols" value="6">
+                <input type="hidden" id="h-cols" value="4">
                 <input type="hidden" id="h-rows" value="8">
             </div>
         </div>
@@ -155,15 +200,21 @@
         </div>
 
         <form method="POST" id="main-form">
-            <input type="hidden" name="title" id="form-title" value="Joan3">
+            <input type="hidden" name="title" id="form-title" value="JoanDashboard">
             <input type="hidden" name="ui_language" id="input-lang" value="pl">
-            <input type="hidden" name="grid_columns" id="form-cols" value="6">
+            <input type="hidden" name="grid_columns" id="form-cols" value="4">
             <input type="hidden" name="grid_rows" id="form-rows" value="8">
+            
+            <input type="hidden" name="default_widget_size" id="input-def-size" value="2, 1">
             
             <div class="add-widget-box" id="editor-box">
                 <div class="section-title">
                     <span id="lbl-add-widget" data-i18n="sec_add">2. Dodaj Widget</span>
+                    <!-- STATUS 2 -->
+                    <span id="status-sec-2" class="small-status"></span>
                 </div>
+                
+                <!-- RZĄD 1: ENCJA / NAWIGACJA -->
                 <div class="flex-row" style="margin-bottom: 20px;">
                     <div class="flex-col" id="grp-entity" style="flex: 100%;">
                         <label data-i18n="lbl_entity">Encja (Wyszukaj po nazwie lub ID)</label>
@@ -174,9 +225,11 @@
                         <label data-i18n="lbl_dash_name">Nazwa Dashboardu (target)</label>
                         <input type="text" id="w-dash" placeholder="np. main" list="nav-dash-suggestions" oninput="autoNameNav()">
                         <datalist id="nav-dash-suggestions"></datalist>
+                        <small id="nav-hint" class="input-hint"></small>
                     </div>
                 </div>
 
+                <!-- RZĄD 2: TYTUŁ i TYP -->
                 <div class="flex-row">
                     <div class="flex-col" style="flex: 2;">
                         <label data-i18n="lbl_name">Tytuł na ekranie</label>
@@ -198,18 +251,16 @@
                             <option value="input_number" data-i18n="opt_input_number">Input Number</option>
                             <option value="script" data-i18n="opt_script">Script</option>
                             <option value="navigate" data-i18n="opt_navigate">Navigate / Button</option>
-                            <option value="label" data-i18n="opt_label">Label (Text)</option>
-                            <option value="clock" data-i18n="opt_clock">Clock</option>
-                            <option value="spacer" data-i18n="opt_spacer">Spacer (Empty)</option>
                         </select>
                     </div>
                 </div>
 
+                <!-- RZĄD 3: ROZMIAR I IKONY -->
                 <div class="flex-row">
                     <div class="flex-col">
                         <label data-i18n="lbl_size">Rozmiar</label>
                         <select id="w-size" onchange="updateTitleLimit()">
-                            <option value="(2x1)" data-i18n="size_2x1" selected>2x1 (Szeroki Przycisk)</option>
+                            <option value="(2x1)" data-i18n="size_2x1">2x1 (Szeroki Przycisk)</option>
                             <option value="(1x1)" data-i18n="size_1x1">1x1 (Mały)</option>
                             <option value="(2x2)" data-i18n="size_2x2">2x2 (Duży)</option>
                             <option value="(3x1)" data-i18n="size_3x1">3x1 (Bardzo Szeroki)</option>
@@ -238,7 +289,9 @@
                         </div>
                     </div>
                 </div>
+
                 <datalist id="icon-list"></datalist>
+
                 <div class="flex-row" style="margin-top: 20px;">
                     <button type="button" class="btn btn-add" id="btn-submit" onclick="saveWidget()" data-i18n="btn_add">+ DODAJ WIDGET</button>
                     <button type="button" class="btn btn-cancel hidden" id="btn-cancel" onclick="cancelEdit()" data-i18n="btn_cancel">ANULUJ</button>
@@ -248,16 +301,26 @@
             <div class="section">
                 <div class="section-title">
                     <span data-i18n="sec_preview">3. Podgląd Dashboardu</span>
+                    <!-- STATUS 3 -->
+                    <span id="status-sec-3" class="small-status"></span>
                 </div>
-                <p style="font-size:0.85em; margin-bottom: 10px; color: #666;">Możesz przeciągać przyciski między wierszami oraz zmieniać ich kolejność (Drag&Drop).</p>
+                <p style="font-size:0.85em; margin-bottom: 10px; color: #666;">Możesz przeciągać przyciski między wierszami oraz zmieniać ich kolejność w wierszu (Drag&Drop).</p>
                 <div class="preview-area" id="preview-container"></div>
                 <button type="button" class="btn btn-row" onclick="addRow()" data-i18n="btn_row">+ Dodaj Wiersz</button>
             </div>
 
+            <!-- MENADŻER -->
             <div class="section" style="border: 2px solid #009688; background: rgba(0, 150, 136, 0.05);">
                 <div class="section-title" style="border-bottom-color: #009688; color: #009688;">
-                    <span data-i18n="sec_manager">Multi-Dashboard Manager</span>
+                    <span data-i18n="sec_manager">Multi-Dashboard Manager (Browser)</span>
+                    <!-- STATUS MANAGER -->
+                    <span id="status-manager" class="small-status"></span>
                 </div>
+
+                <p style="font-size: 0.9em; margin-bottom: 10px; font-weight:bold;">
+                    Zapisz swoje układy w przeglądarce, aby łatwo się między nimi przełączać. 
+                    Aby przełączać strony na samym urządzeniu Joan 6, użyj widgetu 'Przycisk Nawigacji' (Navigate).
+                </p>
                 <div class="flex-row" style="align-items: flex-end;">
                     <div class="flex-col" style="flex: 2;">
                         <label>Zapisz obecny układ jako:</label>
@@ -310,7 +373,6 @@
         let dragSrc = null; 
         let globalDefaultSize = {w: 2, h: 1}; 
         let currentLoadedDashName = null;
-        let previousGridState = "6x8";
 
         const POPULAR_ICONS = [ "mdi-home", "mdi-home-outline", "mdi-lightbulb", "mdi-lightbulb-on", "mdi-lightbulb-outline", "mdi-toggle-switch", "mdi-toggle-switch-off", "mdi-power", "mdi-window-shutter", "mdi-window-shutter-open", "mdi-garage", "mdi-garage-open", "mdi-door", "mdi-door-open", "mdi-lock", "mdi-lock-open", "mdi-thermometer", "mdi-water-percent", "mdi-battery", "mdi-weather-cloudy", "mdi-play", "mdi-pause", "mdi-wifi", "mdi-clock-outline", "mdi-calendar", "mdi-alert", "mdi-check", "mdi-close" ];
 
@@ -319,7 +381,7 @@
                 title_main: "Joan 6 E-Ink Generator (Final Monster Edition)",
                 sec_settings: "1. Ustawienia Dashboardu", lbl_dash_title: "Tytuł Dashboardu", lbl_grid: "Układ Siatki (Smart Grid)",
                 grid_std_plus: "Standard+ (3 kolumny x 8 wierszy) - DOMYŚLNY", grid_std: "Standard (3 kolumny x 6 wierszy)",
-                grid_large: "Duży (4 kolumny x 4 wiersze)", grid_med: "Średni (4 kolumny x 6 wierszy)", grid_small: "Gęsty (6 kolumn x 8 wierszy)", grid_custom: "-- Układ Własny (Custom) --",
+                grid_large: "Duży (4 kolumny x 4 wiersze)", grid_med: "Średni (4 kolumny x 6 wierszy)", grid_small: "Gęsty (6 kolumn x 8 wierszy)",
                 sec_import: "📂 Import / Eksport Kodu .DASH", btn_import: "Wczytaj Kod",
                 sec_add: "2. Dodaj Widget", sec_edit: "2. Edytuj Widget",
                 lbl_type: "Typ Widgetu", lbl_entity: "Encja (Wyszukaj po nazwie lub ID)", lbl_dash_name: "Nazwa Dashboardu (target)",
@@ -335,15 +397,18 @@
                 btn_add: "+ DODAJ WIDGET", btn_update: "ZAPISZ ZMIANY", btn_cancel: "ANULUJ",
                 sec_preview: "3. Podgląd Dashboardu", btn_row: "+ Dodaj Wiersz", btn_gen: "GENERUJ KOD .DASH",
                 sec_result: "Wynikowy Kod YAML", lbl_save_path: "1. Zapisz kod w pliku:", lbl_open_link: "2. Uruchom ponownie AppDaemon i sprawdź:",
-                limit_15: "Maks 15 znaków", limit_20: "Maks 20 znaków",
-                warning_grid_rows: "UWAGA: Nowy układ ma mniej wierszy ({0}) niż aktualnie używasz ({1}). Nadmiarowe wiersze zostaną USUNIĘTE. Kontynuować?",
+                limit_15: "Maks 15 znaków", limit_20: "Maks 20 znaków", alert_full: "Brak miejsca w tym wierszu! Zmień siatkę lub dodaj nowy wiersz.",
+                
+                hint_nav: "<b>Wskazówka:</b> Wpisz nazwę pliku <code>.dash</code> (bez rozszerzenia), który znajduje się w folderze <code>\\\\100.117.192.46\\addon_configs\\appdaemon\\dashboards\\</code>.<br>Służy to do przełączania dasbordów (np. wpisz <code>salon</code> aby przejść do dashboardu <code>salon.dash</code>).<br>Jeśli masz zapisany dasboard w Joan 6 E-Ink Generator wybież go z listy.",
+                
+                lbl_current_small: "(AKTUALNIE PRACUJESZ NA DASHBOARDZIE: {0})",
                 sec_manager: "Multi-Dashboard Manager (Przeglądarka)"
             },
             en: {
                 title_main: "Joan 6 E-Ink Generator (Final Monster Edition)",
                 sec_settings: "1. Dashboard Settings", lbl_dash_title: "Dashboard Title", lbl_grid: "Grid Layout (Smart Grid)",
                 grid_std_plus: "Standard+ (3 columns x 8 rows) - DEFAULT", grid_std: "Standard (3 columns x 6 rows)",
-                grid_large: "Large (4 columns x 4 rows)", grid_med: "Medium (4 columns x 6 rows)", grid_small: "Dense (6 columns x 8 rows)", grid_custom: "-- Custom Grid --",
+                grid_large: "Large (4 columns x 4 rows)", grid_med: "Medium (4 columns x 6 rows)", grid_small: "Dense (6 columns x 8 rows)",
                 sec_import: "📂 Import / Export .DASH Code", btn_import: "Load Code",
                 sec_add: "2. Add Widget", sec_edit: "2. Edit Widget",
                 lbl_type: "Widget Type", lbl_entity: "Entity (Search by name/ID)", lbl_dash_name: "Dashboard Name (target)",
@@ -359,8 +424,11 @@
                 btn_add: "+ ADD WIDGET", btn_update: "SAVE CHANGES", btn_cancel: "CANCEL",
                 sec_preview: "3. Dashboard Preview", btn_row: "+ Add Row", btn_gen: "GENERATE .DASH CODE",
                 sec_result: "Generated YAML Code", lbl_save_path: "1. Save code to file:", lbl_open_link: "2. Restart AppDaemon and check:",
-                limit_15: "Max 15 chars", limit_20: "Max 20 chars", 
-                warning_grid_rows: "WARNING: The new layout has fewer rows ({0}) than currently used ({1}). Excess rows will be REMOVED. Continue?",
+                limit_15: "Max 15 chars", limit_20: "Max 20 chars", alert_full: "No space in this row! Change grid or add new row.",
+                
+                hint_nav: "<b>Hint:</b> Enter the <code>.dash</code> filename (without extension) located in <code>\\\\100.117.192.46\\addon_configs\\appdaemon\\dashboards\\</code>.<br>Used for dashboard switching (e.g. enter <code>salon</code> to go to <code>salon.dash</code>).<br>If you have a saved dashboard in Joan 6 E-Ink Generator, select it from the list.",
+                
+                lbl_current_small: "(CURRENTLY WORKING ON DASHBOARD: {0})",
                 sec_manager: "Multi-Dashboard Manager (Browser)"
             }
         };
@@ -406,10 +474,8 @@
             
             let conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-eye' };
             
-            // Domyślny rozmiar zależy od pliku joan.txt
-            // Tam jest 1x1 jako baza, ale dla switchy chcemy 2x1
             if (globalDefaultSize.w === 1 && globalDefaultSize.h === 1) {
-                conf.size = '(2x1)';
+                conf.size = '(1x1)';
             }
 
             if (!isTitleSearch) {
@@ -436,7 +502,6 @@
             else if (check(['wilg', 'humid'])) conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-water-percent' };
             
             const currentGrid = document.getElementById('grid-preset').value;
-            // Jeśli siatka jest gęsta (6x9), pozwalamy na 1x1 dla sensorów
             if ((currentGrid === '4x8' || currentGrid === '4x6') && conf.size === '(1x1)' && conf.type !== 'binary_sensor') {
                 conf.size = '(2x1)';
             }
@@ -469,64 +534,18 @@
             toggleInputs(); updateTitleLimit();
         }
 
-        function handleGridChange(selectObj) {
-            const newVal = selectObj.value;
-            
-            if (newVal === 'custom') {
-                document.getElementById('custom-grid-inputs').style.display = 'flex';
-                updateCustomGrid();
-                return;
-            } else {
-                document.getElementById('custom-grid-inputs').style.display = 'none';
-            }
-
-            let targetRows = 8;
-            if(newVal === '6x6' || newVal === '4x6') targetRows = 6;
-            if(newVal === '4x4') targetRows = 4;
-            if(newVal === '6x9') targetRows = 9;
-
-            const currentUsed = rows.length;
-            // OCHRONA PRZED UCIĘCIEM
-            if (currentUsed > targetRows) {
-                const msg = TRANSLATIONS[currentLang].warning_grid_rows.replace('{0}', targetRows).replace('{1}', currentUsed);
-                if (confirm(msg)) {
-                    rows = rows.slice(0, targetRows); // FIZYCZNE USUWANIE
-                    renderPreview();
-                } else {
-                    selectObj.value = previousGridState;
-                    if(previousGridState === 'custom') document.getElementById('custom-grid-inputs').style.display = 'flex';
-                    return;
-                }
-            }
-            
-            previousGridState = newVal;
-            applyGrid();
-        }
-
-        function updateCustomGrid() {
-            const c = document.getElementById('custom-cols').value;
-            const r = document.getElementById('custom-rows').value;
-            document.getElementById('h-cols').value = c;
-            document.getElementById('h-rows').value = r;
-            document.getElementById('form-cols').value = c;
-            document.getElementById('form-rows').value = r;
-        }
-
         function applyGrid() {
             const val = document.getElementById('grid-preset').value;
-            if(val === 'custom') { updateCustomGrid(); return; }
-            
             const parts = val.replace('m','').split('x');
             document.getElementById('h-cols').value = parts[0];
             document.getElementById('h-rows').value = parts[1];
             document.getElementById('form-cols').value = parts[0];
             document.getElementById('form-rows').value = parts[1];
             
-            // Dynamiczna szerokość podglądu w zależności od kolumn
             let slots = 3; 
             if (val === '4x4' || val === '4x6' || val === '4x6m') slots = 4;
             if (val === '6x8' || val === '6x9') slots = 6; 
-            if (val === '4x8') slots = 3; // Bo 4x8 to tak naprawdę 6 kolumn technicznych, ale 3 przyciski 2x1
+            if (val === '4x8') slots = 3;
             
             const px = (slots * 117) + ((slots - 1) * 8) + 40; 
             document.querySelectorAll('.eink-row').forEach(el => {
@@ -550,10 +569,10 @@
 
         function getMaxSlots() {
             const gridVal = document.getElementById('grid-preset').value;
-            let maxSlots = 3; // Domyślnie dla 6x8 (3 przyciski 2x1)
+            let maxSlots = 3; 
             if (gridVal === '4x4' || gridVal === '4x6' || gridVal === '4x6m') maxSlots = 4; 
-            if (gridVal === '6x8' || gridVal === '6x9') maxSlots = 6; // Ale uwaga, 6 kolumn to 3 sloty 2x1
-            // Tutaj logika jest trochę umowna dla Joan 6, bo ona ma gęstą siatkę 117px
+            if (gridVal === '6x8' || gridVal === '6x9') maxSlots = 6;
+            if (gridVal === '4x8') maxSlots = 3;
             return maxSlots * 2; 
         }
 
@@ -614,17 +633,22 @@
             const hideIcons = (type === 'sensor' || type === 'clock' || type === 'spacer');
             document.getElementById('grp-icons').style.display = hideIcons ? 'none' : 'contents';
 
+            // --- MODYFIKACJA: ICONS LOGIC FOR NAVIGATE ---
             if (type === 'navigate') {
+                // Show Standard, Hide ON/OFF
                 document.getElementById('div-icon-std').style.display = 'block';
                 document.querySelector('#div-icon-std label').innerText = currentLang === 'pl' ? 'Ikona' : 'Icon';
+                
                 document.getElementById('div-icon-on').style.display = 'none';
                 document.getElementById('div-icon-off').style.display = 'none';
             } else if (!hideIcons) {
+                // Restore all for switches/etc
                 document.getElementById('div-icon-std').style.display = 'block';
                 document.querySelector('#div-icon-std label').innerText = TRANSLATIONS[currentLang].lbl_icon || 'Ikona (Standard)';
                 document.getElementById('div-icon-on').style.display = 'block';
                 document.getElementById('div-icon-off').style.display = 'block';
             } else {
+                // Hide all
                 document.getElementById('div-icon-std').style.display = 'none';
                 document.getElementById('div-icon-on').style.display = 'none';
                 document.getElementById('div-icon-off').style.display = 'none';
@@ -650,6 +674,7 @@
             document.getElementById('editor-box').classList.add('editing');
             document.getElementById('btn-cancel').classList.remove('hidden');
             
+            // --- FIX: Update TEXT ONLY, preserve STATUS SPAN ---
             document.getElementById('lbl-add-widget').innerText = TRANSLATIONS[currentLang].sec_edit;
             
             document.getElementById('btn-submit').innerText = TRANSLATIONS[currentLang].btn_update;
@@ -672,6 +697,7 @@
             document.getElementById('editor-box').classList.remove('editing');
             document.getElementById('btn-cancel').classList.add('hidden');
             
+            // --- FIX: Update TEXT ONLY, preserve STATUS SPAN ---
             document.getElementById('lbl-add-widget').innerText = TRANSLATIONS[currentLang].sec_add;
             
             document.getElementById('btn-submit').innerText = TRANSLATIONS[currentLang].btn_add;
@@ -692,14 +718,7 @@
             else if (direction === 1 && idx < rows.length - 1) { [rows[idx], rows[idx + 1]] = [rows[idx + 1], rows[idx]]; if(selectedRowIdx === idx) selectedRowIdx = idx + 1; }
             renderPreview();
         }
-        function addRow() {
-            const maxRows = parseInt(document.getElementById('h-rows').value) || 20;
-            if(rows.length >= maxRows) {
-                alert(TRANSLATIONS[currentLang].limit_row + ` (${limit})`);
-                return;
-            } 
-            rows.push([]); renderPreview(); 
-        }
+        function addRow() { rows.push([]); renderPreview(); }
 
         function getRealState(w) {
             const isPL = currentLang === 'pl'; const id = (w.id || ''); const ent = entitiesData.find(e => e.id === id);
