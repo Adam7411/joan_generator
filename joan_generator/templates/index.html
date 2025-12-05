@@ -3,464 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Joan 6 E-Ink Generator (ULTIMATE MASTER)</title>
-    
-    <!-- 1. BIBLIOTEKI IKON I CZCIONEK -->
+    <title>Joan 6 E-Ink Generator (GOD MODE)</title>
     <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap" rel="stylesheet">
     
-    <!-- 2. SKRYPT INICJUJĄCY MOTYW -->
     <script>
         (function() {
             try {
                 const savedTheme = localStorage.getItem('joan_theme') || 'light';
-                if (savedTheme === 'dark') {
-                    document.documentElement.classList.add('dark-mode');
-                }
-            } catch(e) {
-                console.error("Błąd ładowania motywu:", e);
-            }
+                if (savedTheme === 'dark') document.documentElement.classList.add('dark-mode');
+            } catch(e) {}
         })();
     </script>
 
     <style>
-        /* ---------------------------------------------------------- */
-        /* 3. ZMIENNE KOLORYSTYCZNE (CSS VARIABLES) */
-        /* ---------------------------------------------------------- */
         :root {
-            --bg-body: #e0e0e0;
-            --bg-container: #ffffff;
-            --bg-section: #fafafa;
-            --bg-input: #ffffff;
-            --text-main: #333333;
-            --border: #cccccc;
-            --accent: #d32f2f; /* Czerwony Joan */
-            --highlight: #e3f2fd;
-            --preview-bg: #f0f0f0;
-            --link-bg: #e1f5fe;
-            --link-color: #0277bd;
-            --shadow: 0 4px 15px rgba(0,0,0,0.1);
-            --btn-text: #ffffff;
+            --bg-body: #e0e0e0; --bg-container: #ffffff; --bg-section: #fafafa; --bg-input: #ffffff;
+            --text-main: #333333; --border: #cccccc; --accent: #d32f2f; --highlight: #e3f2fd;
+            --preview-bg: #f0f0f0; --link-bg: #e1f5fe; --link-color: #0277bd;
         }
-        
         html.dark-mode {
-            --bg-body: #121212;
-            --bg-container: #1e1e1e;
-            --bg-section: #252525;
-            --bg-input: #2c2c2c;
-            --text-main: #e0e0e0;
-            --border: #444444;
-            --accent: #ff5252;
-            --highlight: #0d47a1;
-            --preview-bg: #000000;
-            --link-bg: #013655;
-            --link-color: #81d4fa;
-            --shadow: 0 4px 15px rgba(0,0,0,0.5);
+            --bg-body: #121212; --bg-container: #1e1e1e; --bg-section: #252525; --bg-input: #2c2c2c;
+            --text-main: #e0e0e0; --border: #444444; --accent: #ff5252; --highlight: #0d47a1;
+            --preview-bg: #000000; --link-bg: #013655; --link-color: #81d4fa;
         }
 
-        /* ---------------------------------------------------------- */
-        /* 4. STYLE GŁÓWNE */
-        /* ---------------------------------------------------------- */
-        body { 
-            font-family: 'Roboto', sans-serif; 
-            background-color: var(--bg-body); 
-            color: var(--text-main); 
-            padding: 20px; 
-            transition: background-color 0.3s, color 0.3s; 
-        }
-
-        .container { 
-            max-width: 1400px; 
-            margin: 0 auto; 
-            background: var(--bg-container); 
-            padding: 30px; 
-            border-radius: 10px; 
-            box-shadow: var(--shadow); 
-        }
+        body { font-family: 'Roboto', sans-serif; background-color: var(--bg-body); color: var(--text-main); padding: 20px; transition: background 0.3s; }
+        .container { max-width: 1400px; margin: 0 auto; background: var(--bg-container); padding: 30px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
         
-        /* NAGŁÓWEK */
-        .header-row { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            border-bottom: 2px solid var(--border); 
-            padding-bottom: 20px; 
-            margin-bottom: 25px; 
-        }
-
-        h1 { 
-            margin: 0; 
-            color: var(--accent); 
-            font-size: 28px; 
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
+        .header-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--border); padding-bottom: 20px; margin-bottom: 25px; }
+        h1 { margin: 0; color: var(--accent); font-size: 28px; font-weight: 900; text-transform: uppercase; }
         
-        /* KONTROLKI */
-        .controls button { 
-            padding: 8px 16px; 
-            border: 1px solid var(--border); 
-            background: var(--bg-section); 
-            color: var(--text-main); 
-            border-radius: 4px; 
-            cursor: pointer; 
-            font-weight: bold; 
-            margin-left: 5px;
-            transition: all 0.2s;
-        }
-        
-        .controls button:hover {
-            filter: brightness(0.9);
-        }
+        .controls button { padding: 8px 16px; border: 1px solid var(--border); background: var(--bg-section); color: var(--text-main); border-radius: 4px; cursor: pointer; font-weight: bold; margin-left: 5px; }
+        .controls button.active { background: var(--accent); color: white; border-color: var(--accent); }
 
-        .controls button.active { 
-            background: var(--accent); 
-            color: var(--btn-text); 
-            border-color: var(--accent); 
-        }
+        .section { background: var(--bg-section); padding: 25px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 30px; }
+        .section-title { font-size: 1.4em; font-weight: 900; border-bottom: 3px solid var(--accent); display: inline-block; margin-bottom: 20px; color: var(--text-main); }
 
-        /* SEKCJE */
-        .section { 
-            background: var(--bg-section); 
-            padding: 25px; 
-            border-radius: 8px; 
-            border: 1px solid var(--border); 
-            margin-bottom: 30px; 
-        }
+        .file-path-info { background-color: var(--link-bg); color: var(--link-color); border: 1px solid var(--border); padding: 20px; margin-bottom: 20px; border-radius: 6px; font-family: monospace; font-size: 15px; line-height: 1.6; }
+        .file-path-info strong { display: block; margin-bottom: 5px; color: var(--text-main); font-size: 1.1em; }
+        .file-path-info a { color: var(--accent); font-weight: bold; font-size: 16px; text-decoration: underline; }
 
-        .section-title { 
-            font-size: 1.4em; 
-            font-weight: 900; 
-            border-bottom: 3px solid var(--accent); 
-            display: inline-block; 
-            margin-bottom: 20px; 
-            color: var(--text-main); 
-        }
+        .add-widget-box { background: var(--highlight); padding: 25px; border-radius: 8px; border: 1px solid var(--accent); transition: all 0.3s; margin-bottom: 30px; }
+        .add-widget-box.editing { border: 3px solid #ff9800; background: rgba(255, 152, 0, 0.1); }
 
-        /* INFO O PLIKU (NA DOLE) */
-        .file-path-info { 
-            background-color: var(--link-bg); 
-            color: var(--link-color); 
-            border: 1px solid var(--border); 
-            padding: 20px; 
-            margin-bottom: 20px; 
-            border-radius: 6px; 
-            font-family: monospace; 
-            font-size: 15px; 
-            line-height: 1.6; 
-            word-break: break-all; 
-        }
-        
-        .file-info-block {
-            display: block;
-            margin-bottom: 15px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid rgba(0,0,0,0.1);
-        }
-        .file-info-block:last-child {
-            margin-bottom: 0;
-            padding-bottom: 0;
-            border-bottom: none;
-        }
+        .flex-row { display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 15px; }
+        .flex-col { flex: 1; min-width: 160px; }
+        label { display: block; font-weight: bold; font-size: 0.9em; margin-bottom: 8px; color: var(--text-main); }
+        input, select, textarea { width: 100%; padding: 12px; border: 1px solid var(--border); background: var(--bg-input); color: var(--text-main); border-radius: 4px; box-sizing: border-box; font-size: 14px; }
+        #w-id { border: 2px solid var(--accent); background-color: var(--bg-input); font-weight: bold; }
 
-        .file-path-info strong { 
-            display: block; 
-            margin-bottom: 5px; 
-            color: var(--text-main); 
-            font-size: 1.1em; 
-        }
-
-        .file-path-info a { 
-            color: var(--accent); 
-            font-weight: bold; 
-            font-size: 16px; 
-            text-decoration: underline; 
-        }
-        
-        .file-path-info code {
-            display: block;
-            background: rgba(255,255,255,0.4);
-            padding: 8px;
-            border-radius: 4px;
-            font-weight: bold;
-        }
-
-        /* ------------------------------------------------------------------ */
-        /* FORMULARZE */
-        /* ------------------------------------------------------------------ */
-        .add-widget-box { 
-            background: var(--highlight); 
-            padding: 25px; 
-            border-radius: 8px; 
-            border: 1px solid var(--accent); 
-            transition: all 0.3s; 
-            margin-bottom: 30px; 
-        }
-
-        .add-widget-box.editing { 
-            border: 3px solid #ff9800; 
-            background: rgba(255, 152, 0, 0.15); 
-        }
-
-        .flex-row { 
-            display: flex; 
-            gap: 20px; 
-            flex-wrap: wrap; 
-            align-items: flex-end; 
-            margin-bottom: 15px; 
-        }
-
-        .flex-col { 
-            flex: 1; 
-            min-width: 160px; 
-        }
-        
-        label { 
-            display: block; 
-            font-weight: bold; 
-            font-size: 0.9em; 
-            margin-bottom: 8px; 
-            color: var(--text-main); 
-        }
-
-        input, select, textarea { 
-            width: 100%; 
-            padding: 12px; 
-            border: 1px solid var(--border); 
-            background: var(--bg-input); 
-            color: var(--text-main); 
-            border-radius: 4px; 
-            box-sizing: border-box; 
-            font-size: 14px; 
-        }
-        
-        /* WYSZUKIWARKA ENCJI - WYRÓŻNIENIE */
-        #w-id { 
-            border: 2px solid var(--accent); 
-            background-color: var(--bg-input); 
-            font-weight: bold; 
-        }
-        
-        /* LICZNIK ZNAKÓW */
-        .char-counter {
-            font-size: 11px;
-            text-align: right;
-            margin-top: 4px;
-            color: #666;
-            font-weight: bold;
-        }
-        .char-counter.limit {
-            color: red;
-        }
-
-        /* PRZYCISKI AKCJI */
-        .btn { 
-            padding: 12px 24px; 
-            border: none; 
-            cursor: pointer; 
-            border-radius: 4px; 
-            font-weight: bold; 
-            text-transform: uppercase; 
-            color: var(--btn-text); 
-            font-size: 14px; 
-            transition: opacity 0.2s, transform 0.1s; 
-        }
-        .btn:hover { 
-            opacity: 0.9; 
-            transform: translateY(-1px); 
-        }
-        .btn:active {
-            transform: translateY(0);
-        }
-
+        .btn { padding: 12px 24px; border: none; cursor: pointer; border-radius: 4px; font-weight: bold; text-transform: uppercase; color: white; font-size: 14px; transition: opacity 0.2s; }
+        .btn:hover { opacity: 0.9; }
         .btn-add { background: #4caf50; width: 100%; }
-        .btn-gen { background: var(--accent); width: 100%; font-size: 20px; padding: 15px; margin-top: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .btn-gen { background: var(--accent); width: 100%; font-size: 20px; padding: 15px; margin-top: 20px; }
         .btn-cancel { background: #757575; }
         .btn-row { background: #2196f3; margin-top: 15px; }
         .btn-import { background: #ff9800; color: white; width: auto; margin-top: 10px; }
 
-        /* ------------------------------------------------------------------ */
-        /* PODGLĄD E-INK (PIXEL PERFECT JOAN 6 STYLE) */
-        /* ------------------------------------------------------------------ */
-        .preview-area { 
-            background: var(--preview-bg); 
-            padding: 30px; 
-            border: 2px solid var(--border); 
-            border-radius: 8px; 
-            overflow-x: auto; 
-            min-height: 400px; 
-        }
-        
-        /* Wiersz - Bardzo wysoki, żeby przyciski miały oddech */
-        .eink-row { 
-            display: flex; 
-            gap: 8px; /* Margines z Joan.txt */
-            margin-bottom: 15px; 
-            padding: 15px; 
-            border: 2px dashed #999; 
-            border-radius: 6px; 
-            min-height: 180px; /* Zwiększona wysokość */
-            align-items: flex-end; /* Wyrównaj do dołu */
-            position: relative; 
-        }
-        
-        .row-label { 
-            position: absolute; 
-            top: -10px; 
-            left: 10px; 
-            font-size: 11px; 
-            background: var(--bg-body); 
-            padding: 2px 8px; 
-            color: var(--text-main); 
-            border: 1px solid var(--border); 
-            border-radius: 4px; 
-            font-weight: bold; 
-        }
-        
-        /* Wrapper dla etykiety nad przyciskiem */
-        .widget-wrapper {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-right: 0;
-            position: relative;
-            flex-shrink: 0;
-        }
-        
-        /* Etykieta Typu (SWITCH, SENSOR) - NAD Przyciskiem */
-        .ew-type-label {
-            font-size: 10px;
-            text-transform: uppercase;
-            color: var(--text-main);
-            margin-bottom: 4px;
-            font-weight: bold;
-            letter-spacing: 1px;
-            opacity: 0.7;
-            text-align: center;
-            width: 100%;
-        }
+        /* PODGLĄD */
+        .preview-area { background: var(--preview-bg); padding: 30px; border: 2px solid var(--border); border-radius: 8px; overflow-x: auto; min-height: 400px; }
+        .eink-row { display: flex; gap: 8px; margin-bottom: 15px; padding: 15px; border: 2px dashed #999; border-radius: 6px; min-height: 180px; align-items: flex-end; position: relative; }
+        .row-label { position: absolute; top: -10px; left: 10px; font-size: 11px; background: var(--bg-body); padding: 2px 8px; color: var(--text-main); border: 1px solid var(--border); border-radius: 4px; font-weight: bold; }
 
-        /* GŁÓWNY KAFELEK (WYGLĄD E-INK) */
-        .eink-widget {
-            background: #FFFFFF; 
-            border: 3px solid #000000; 
-            color: #000000;
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: space-between; /* Rozciągnij treść góra-dół */
-            padding: 8px; 
-            box-sizing: border-box; 
-            cursor: pointer; 
-            position: relative;
-            box-shadow: 4px 4px 0px rgba(0,0,0,0.25); 
-            transition: transform 0.1s; 
-            flex-shrink: 0; 
-            overflow: hidden;
-        }
+        .widget-wrapper { display: flex; flex-direction: column; align-items: center; margin-right: 0; position: relative; flex-shrink: 0; }
+        .ew-type-label { font-size: 10px; text-transform: uppercase; color: var(--text-main); margin-bottom: 4px; font-weight: bold; opacity: 0.7; text-align: center; width: 100%; }
 
-        .eink-widget:hover { 
-            transform: translateY(-3px); 
-            z-index: 10; 
-            border-color: var(--accent); 
-        }
+        .eink-widget { background: #FFFFFF; border: 3px solid #000000; color: #000000; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 8px; box-sizing: border-box; cursor: pointer; position: relative; box-shadow: 4px 4px 0px rgba(0,0,0,0.25); transition: transform 0.1s; flex-shrink: 0; overflow: hidden; }
+        .eink-widget:hover { transform: translateY(-3px); z-index: 10; border-color: var(--accent); }
+        .eink-widget.editing { border: 3px dashed #ff9800; transform: scale(1.03); z-index: 20; }
 
-        .eink-widget.editing { 
-            border: 3px dashed #ff9800; 
-            transform: scale(1.03); 
-            z-index: 20; 
-        }
-
-        /* Tytuł - Mniejszy aby nie zasłaniał */
-        .ew-title { 
-            font-weight: 900; 
-            font-size: 12px; /* Mała czcionka */
-            text-align: center; 
-            width: 100%; 
-            line-height: 1.2; 
-            margin-top: 8px; 
-            margin-bottom: 2px; 
-            white-space: normal; 
-            font-family: 'Roboto', 'Arial Black', sans-serif; 
-            text-transform: uppercase;
-            pointer-events: none;
-        }
-        
-        /* Ikona - Zmniejszona, aby zrobić miejsce */
-        .ew-icon { 
-            font-size: 38px; /* Zmniejszona z 50px */
-            display: block; 
-            margin: 2px 0; 
-            pointer-events: none;
-        }
-        
-        /* STAN (WARTOŚĆ) - Wyraźny na dole */
-        .ew-value { 
-            font-weight: 900; 
-            font-size: 15px; 
-            text-transform: uppercase; 
-            margin-bottom: 5px; 
-            text-align: center; 
-            border-top: 2px solid #000; 
-            width: 90%; 
-            padding-top: 3px;
-            margin-top: auto; /* Dopycha do dołu */
-            pointer-events: none;
-        }
-        
-        /* Przycisk usuwania */
-        .ew-del { 
-            position: absolute; 
-            top: -8px; 
-            right: -8px; 
-            background: red; 
-            color: white; 
-            width: 20px; 
-            height: 20px; 
-            border-radius: 50%; 
-            text-align: center; 
-            line-height: 20px; 
-            font-weight: bold; 
-            display: none; 
-            box-shadow: 1px 1px 3px rgba(0,0,0,0.5); 
-            z-index: 30; 
-        }
+        .ew-title { font-weight: 900; font-size: 12px; text-align: center; width: 100%; line-height: 1.2; margin-top: 12px; margin-bottom: 2px; white-space: normal; font-family: 'Roboto', 'Arial Black', sans-serif; text-transform: uppercase; pointer-events: none; }
+        .ew-icon { font-size: 38px; display: block; margin: 2px 0; pointer-events: none; }
+        .ew-value { font-weight: 900; font-size: 15px; text-transform: uppercase; margin-bottom: 5px; text-align: center; border-top: 2px solid #000; width: 90%; padding-top: 3px; margin-top: auto; pointer-events: none; }
+        .ew-del { position: absolute; top: -8px; right: -8px; background: red; color: white; width: 20px; height: 20px; border-radius: 50%; text-align: center; line-height: 20px; font-weight: bold; display: none; box-shadow: 1px 1px 3px rgba(0,0,0,0.5); z-index: 30; }
         .eink-widget:hover .ew-del { display: block; }
-
-        /* Podgląd ikony w formularzu */
-        .icon-preview { 
-            font-size: 32px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            width: 48px; 
-            height: 48px; 
-            border: 1px solid var(--border); 
-            border-radius: 4px; 
-            background: var(--bg-input); 
-        }
         
+        .char-counter { font-size: 11px; color: #666; text-align: right; margin-top: 4px; font-weight: bold; }
+        .char-counter.limit { color: red; }
+        .icon-preview { font-size: 32px; display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-input); }
         .hidden { display: none !important; }
-        
-        textarea.output { 
-            width: 100%; 
-            height: 500px; 
-            font-family: 'Consolas', 'Monaco', monospace; 
-            background: #263238; 
-            color: #eceff1; 
-            border: none; 
-            padding: 20px; 
-            border-radius: 8px; 
-            font-size: 14px; 
-            line-height: 1.5; 
-        }
+        textarea.output { width: 100%; height: 500px; font-family: 'Consolas', 'Monaco', monospace; background: #263238; color: #eceff1; border: none; padding: 20px; border-radius: 8px; font-size: 14px; line-height: 1.5; }
+
+        /* Styl dla pól Custom Grid */
+        #custom-grid-inputs { display: none; gap: 10px; margin-top: 10px; align-items: center; border-top: 1px dashed var(--border); padding-top: 10px; }
+        .custom-num-input { width: 80px !important; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header-row">
-            <h1>Joan 6 E-Ink Generator (Ultimate Master)</h1>
+            <h1>Joan 6 E-Ink Generator (GOD MODE)</h1>
             <div class="controls">
                 <button type="button" onclick="toggleTheme()" id="btn-theme">🌙</button>
                 <button type="button" onclick="setLang('pl')" id="btn-pl" class="active">PL</button>
@@ -468,7 +101,6 @@
             </div>
         </div>
 
-        <!-- 1. USTAWIENIA SIATKI (SMART GRID) -->
         <div class="section">
             <div class="section-title">1. Ustawienia Dashboardu</div>
             <div class="flex-row">
@@ -478,20 +110,32 @@
                 </div>
                 <div class="flex-col">
                     <label>Układ Siatki (Smart Grid)</label>
-                    <select id="grid-preset" onchange="applyGrid()">
-                        <option value="6x8" selected>Standard+ (3 kolumny / 8 wierszy) - DOMYŚLNY</option>
-                        <option value="6x6">Standard (3 kolumny / 6 wierszy)</option>
-                        <option value="4x4">Duży (2 kolumny / 4 wiersze)</option>
-                        <option value="4x6">Średni (2 kolumny / 6 wierszy)</option>
-                        <option value="6x9">Mały (3 kolumny / 9 wierszy)</option>
+                    <select id="grid-preset" onchange="handleGridChange(this)">
+                        <option value="6x8" selected>Standard+ (6 kolumn x 8 wierszy) - DOMYŚLNY</option>
+                        <option value="6x6">Standard (6 kolumn x 6 wierszy)</option>
+                        <option value="4x4">Duży (4 kolumny x 4 wiersze)</option>
+                        <option value="6x9">Mały (6 kolumn x 9 wierszy)</option>
+                        <option value="custom">-- Układ Własny (Custom) --</option>
                     </select>
+                    
+                    <!-- UKŁAD WŁASNY -->
+                    <div id="custom-grid-inputs" class="flex-row">
+                        <div>
+                            <label style="font-size:10px">Kolumny:</label>
+                            <input type="number" id="custom-cols" class="custom-num-input" value="6" min="1" max="20" onchange="updateCustomGrid()">
+                        </div>
+                        <div>
+                            <label style="font-size:10px">Wiersze:</label>
+                            <input type="number" id="custom-rows" class="custom-num-input" value="8" min="1" max="20" onchange="updateCustomGrid()">
+                        </div>
+                    </div>
                 </div>
+                <!-- Pola dla formularza wysyłanego do Pythona -->
                 <input type="hidden" id="h-cols" value="6">
                 <input type="hidden" id="h-rows" value="8">
             </div>
         </div>
 
-        <!-- 2. IMPORT -->
         <div class="section" id="import-section">
             <details>
                 <summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">📂 Import / Eksport Kodu .DASH</summary>
@@ -508,7 +152,6 @@
             <input type="hidden" name="grid_columns" id="form-cols" value="6">
             <input type="hidden" name="grid_rows" id="form-rows" value="8">
             
-            <!-- 3. EDYTOR WIDGETU -->
             <div class="add-widget-box" id="editor-box">
                 <div class="section-title" id="editor-title" data-i18n="sec_add">2. Dodaj Widget</div>
                 
@@ -587,7 +230,6 @@
                 </div>
             </div>
 
-            <!-- 4. PODGLĄD E-INK -->
             <div class="section">
                 <div class="section-title" data-i18n="sec_preview">3. Podgląd Dashboardu (Kliknij by edytować)</div>
                 <div class="preview-area" id="preview-container"></div>
@@ -598,7 +240,6 @@
             <button type="button" class="btn btn-gen" onclick="submitData()" data-i18n="btn_gen">GENERUJ KOD .DASH</button>
         </form>
 
-        <!-- 5. WYNIK YAML -->
         {% if generated_yaml %}
         <div class="section" style="margin-top:30px;">
             <div class="section-title">Wynikowy Kod YAML</div>
@@ -617,19 +258,17 @@
         {% endif %}
     </div>
 
-    <!-- ------------------------------------------------------------------ -->
-    <!-- LOGIKA JAVASCRIPT -->
-    <!-- ------------------------------------------------------------------ -->
     <script>
-        // --- DANE I ZMIENNE ---
         const entitiesData = {{ entities | tojson | safe }};
         let rows = [[]]; 
         let editIdx = null; 
         let blockSmart = false; 
         let currentLang = 'pl';
         let importedDefsMap = {}; 
+        
+        // Przechowuje poprzedni stan siatki, aby móc cofnąć zmianę
+        let previousGridState = "6x8";
 
-        // --- TŁUMACZENIA ---
         const TRANSLATIONS = {
             pl: {
                 sec_add: "2. Dodaj Widget", sec_edit: "2. Edytuj Widget", sec_preview: "3. Podgląd Dashboardu",
@@ -637,35 +276,22 @@
                 lbl_icon: "Ikona", lbl_dash: "Nazwa Dashboardu", lbl_preview: "Podgląd",
                 btn_add: "+ DODAJ WIDGET", btn_update: "ZAPISZ ZMIANY", btn_cancel: "ANULUJ", 
                 btn_row: "+ Dodaj Wiersz", btn_gen: "GENERUJ KOD .DASH",
-                opt_switch: "Przełącznik / Światło", opt_cover: "Roleta / Brama", opt_sensor: "Sensor (Info)",
-                opt_binary: "Sensor Binarny (On/Off)", opt_lock: "Zamek", opt_person: "Osoba / Tracker",
-                opt_media: "Media Player", opt_climate: "Termostat", opt_input_select: "Lista Wyboru",
-                opt_input_number: "Suwak", opt_script: "Skrypt", opt_navigate: "Przycisk Nawigacji",
-                opt_label: "Etykieta (Tekst)", opt_clock: "Zegar", opt_spacer: "Odstęp (Pusty)",
-                size_1x1: "1x1 (Mały)", size_2x1: "2x1 (Szeroki)", size_2x2: "2x2 (Duży)",
-                size_3x1: "3x1 (Bardzo Szeroki)", size_1x2: "1x2 (Wysoki)", size_3x2: "3x2 (Ogromny)",
                 limit_15: "Maks 15 znaków", limit_20: "Maks 20 znaków",
-                limit_row: "Osiągnięto limit wierszy dla tego układu!"
+                warning_grid_rows: "Uwaga! Nowy układ ma mniej wierszy ({0}) niż aktualnie używasz ({1}). Część widgetów może zostać ucięta. Czy na pewno chcesz zmienić?",
+                warning_grid_cols: "Uwaga! Zmniejszasz liczbę kolumn. Niektóre widgety mogą się nie zmieścić."
             },
             en: {
                 sec_add: "2. Add Widget", sec_edit: "2. Edit Widget", sec_preview: "3. Dashboard Preview",
-                lbl_type: "Widget Type", lbl_entity: "Entity", lbl_name: "Title", lbl_size: "Size", 
+                lbl_type: "Widget Type", lbl_entity: "Entity (Type Name or ID)", lbl_name: "Title on Screen", lbl_size: "Size", 
                 lbl_icon: "Icon", lbl_dash: "Dashboard Name", lbl_preview: "Icon",
                 btn_add: "+ ADD WIDGET", btn_update: "SAVE CHANGES", btn_cancel: "CANCEL", 
                 btn_row: "+ Add Row", btn_gen: "GENERATE .DASH CODE",
-                opt_switch: "Switch / Light", opt_cover: "Cover / Gate", opt_sensor: "Sensor", 
-                opt_binary: "Binary Sensor", opt_lock: "Lock", opt_person: "Person",
-                opt_media: "Media Player", opt_climate: "Climate", opt_input_select: "Input Select",
-                opt_input_number: "Input Number", opt_script: "Script", opt_navigate: "Navigation",
-                opt_label: "Label", opt_clock: "Clock", opt_spacer: "Spacer",
-                size_1x1: "1x1 (Small)", size_2x1: "2x1 (Wide)", size_2x2: "2x2 (Large)",
-                size_3x1: "3x1 (X-Wide)", size_1x2: "1x2 (Tall)", size_3x2: "3x2 (Huge)",
                 limit_15: "Max 15 chars", limit_20: "Max 20 chars",
-                limit_row: "Row limit reached for this layout!"
+                warning_grid_rows: "Warning! The new layout has fewer rows ({0}) than you are currently using ({1}). Some widgets may be cut off. Are you sure?",
+                warning_grid_cols: "Warning! You are reducing the number of columns."
             }
         };
 
-        // --- MAPY SMART LOGIC ---
         const SMART_MAP = {
             'light': { type: 'switch', size: '(2x1)', iconOn: 'mdi-lightbulb-on', iconOff: 'mdi-lightbulb-outline' },
             'switch': { type: 'switch', size: '(2x1)', iconOn: 'mdi-toggle-switch', iconOff: 'mdi-toggle-switch-off' },
@@ -678,15 +304,6 @@
             'lock': { type: 'lock', size: '(2x1)', iconOn: 'mdi-lock-open', iconOff: 'mdi-lock' },
             'script': { type: 'script', size: '(2x1)', icon: 'mdi-script-text-outline' }
         };
-
-        // --- HELPERY ---
-
-        function getMaxRowsFromPreset() {
-            const val = document.getElementById('grid-preset').value;
-            // np. "6x8" -> 8
-            const parts = val.split('x');
-            return parseInt(parts[1]);
-        }
 
         function normalizeString(str) {
             return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
@@ -707,6 +324,8 @@
                     const opt = document.createElement('option');
                     opt.value = e.id;
                     opt.label = e.attributes.friendly_name ? `${e.attributes.friendly_name} (${e.id})` : e.id;
+                    opt.setAttribute('data-dclass', e.attributes.device_class || '');
+                    opt.setAttribute('data-friendly', e.attributes.friendly_name || '');
                     dl.appendChild(opt);
                     count++;
                 }
@@ -763,7 +382,6 @@
             counter.innerText = `${current}/${max} (${txt})`;
             if(current >= max) counter.classList.add('limit'); else counter.classList.remove('limit');
         }
-        
         function checkTitleLimit() { updateTitleLimit(); }
 
         function runSmartLogic(val) {
@@ -802,9 +420,8 @@
             if (domain === 'input_boolean') conf = SMART_MAP['switch'];
             if (domain === 'script') conf = SMART_MAP['script'];
 
-            // SMART GRID: Wymuś 2x1 dla układów Standard/Standard+
-            const currentGrid = document.getElementById('grid-preset').value;
-            if ((currentGrid === '6x8' || currentGrid === '6x6') && conf.size === '(1x1)' && conf.type !== 'binary_sensor') {
+            const gridVal = document.getElementById('grid-preset').value;
+            if (gridVal !== '6x9' && conf.size === '(1x1)' && conf.type !== 'binary_sensor') {
                 conf.size = '(2x1)';
             }
 
@@ -821,8 +438,56 @@
             updateTitleLimit();
         }
 
+        // --- ZAAWANSOWANA OBSŁUGA SIATKI (SMART GRID PROTECTION) ---
+        function handleGridChange(selectObj) {
+            const newVal = selectObj.value;
+            
+            if (newVal === 'custom') {
+                document.getElementById('custom-grid-inputs').style.display = 'flex';
+                return;
+            } else {
+                document.getElementById('custom-grid-inputs').style.display = 'none';
+            }
+
+            // Parsowanie nowego układu
+            let newRows = 8;
+            if (newVal === '6x6' || newVal === '4x6') newRows = 6;
+            if (newVal === '4x4') newRows = 4;
+            if (newVal === '6x9') newRows = 9;
+
+            // Sprawdzenie czy mamy za dużo wierszy
+            const currentUsedRows = rows.length;
+            if (currentUsedRows > newRows) {
+                const msg = TRANSLATIONS[currentLang].warning_grid_rows.replace('{0}', newRows).replace('{1}', currentUsedRows);
+                if (!confirm(msg)) {
+                    // Anuluj zmianę
+                    selectObj.value = previousGridState;
+                    if(previousGridState === 'custom') document.getElementById('custom-grid-inputs').style.display = 'flex';
+                    return;
+                }
+            }
+            
+            previousGridState = newVal;
+            applyGrid();
+        }
+
+        function updateCustomGrid() {
+            const c = document.getElementById('custom-cols').value;
+            const r = document.getElementById('custom-rows').value;
+            document.getElementById('h-cols').value = c;
+            document.getElementById('h-rows').value = r;
+            document.getElementById('form-cols').value = c;
+            document.getElementById('form-rows').value = r;
+        }
+
         function applyGrid() {
             const val = document.getElementById('grid-preset').value;
+            
+            if (val === 'custom') {
+                updateCustomGrid();
+                return;
+            }
+            
             const parts = val.split('x');
             document.getElementById('h-cols').value = parts[0];
             document.getElementById('h-rows').value = parts[1];
@@ -920,12 +585,22 @@
         }
 
         function addRow() {
-            // LIMIT WIERSZY
-            const limit = getMaxRowsFromPreset();
-            if (rows.length >= limit) {
-                alert(TRANSLATIONS[currentLang].limit_row + ` (${limit})`);
+            // SPRAWDZENIE LIMITU WIERSZY
+            const gridVal = document.getElementById('grid-preset').value;
+            let maxRows = 8;
+            
+            if (gridVal === 'custom') {
+                maxRows = parseInt(document.getElementById('custom-rows').value) || 20;
+            } else {
+                // Parsowanie np. "6x8"
+                maxRows = parseInt(gridVal.split('x')[1]);
+            }
+            
+            if (rows.length >= maxRows) {
+                alert(`Limit wierszy dla tego układu to ${maxRows}. Nie można dodać więcej.`);
                 return;
             }
+            
             rows.push([]);
             renderPreview();
         }
@@ -1023,15 +698,22 @@
             let inLayout = false;
             let rawDefs = {};
             let currentDefKey = null;
+            
+            // Wykrywanie układu z pliku (columns/rows)
+            let fileCols = 6;
+            let fileRows = 8;
 
             lines.forEach(line => {
-                const tr = line.trim();
-                if(!tr || tr.startsWith('#')) return;
+                const t = line.trim();
+                if (t.startsWith('columns:')) fileCols = parseInt(t.split(':')[1]);
+                if (t.startsWith('rows:')) fileRows = parseInt(t.split(':')[1]);
+                
+                if(!t || t.startsWith('#')) return;
                 if (line.match(/^\S+:/) && !line.startsWith('layout:') && !line.startsWith('global_parameters:')) {
                     currentDefKey = line.split(':')[0].trim();
                     rawDefs[currentDefKey] = {};
                 } else if (currentDefKey && (line.startsWith('  ') || line.startsWith('\t'))) {
-                    const parts = tr.split(':');
+                    const parts = t.split(':');
                     if(parts.length >= 2) {
                         const key = parts[0].trim();
                         let val = parts.slice(1).join(':').trim().replace(/['"]/g, '');
@@ -1042,6 +724,27 @@
                 }
             });
             importedDefsMap = rawDefs;
+            
+            // Automatyczne ustawienie siatki na podstawie importu
+            // Sprawdź czy pasuje do presetu, jak nie - ustaw custom
+            const presetVal = `${fileCols}x${fileRows}`;
+            const sel = document.getElementById('grid-preset');
+            let matched = false;
+            for(let i=0; i<sel.options.length; i++) {
+                if(sel.options[i].value === presetVal) {
+                    sel.value = presetVal;
+                    matched = true;
+                    break;
+                }
+            }
+            if(!matched) {
+                sel.value = 'custom';
+                document.getElementById('custom-grid-inputs').style.display = 'flex';
+                document.getElementById('custom-cols').value = fileCols;
+                document.getElementById('custom-rows').value = fileRows;
+            }
+            previousGridState = sel.value;
+            applyGrid();
 
             lines.forEach(line => {
                 const tr = line.trim();
