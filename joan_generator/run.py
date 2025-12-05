@@ -56,7 +56,6 @@ def get_ha_entities():
     
     try:
         # Wykonujemy zapytanie do API Home Assistant
-        # Endpoint /api/states zwraca stan wszystkich encji
         response = requests.get(f"{API_URL}/states", headers=headers, timeout=10)
         
         if response.status_code == 200:
@@ -65,7 +64,6 @@ def get_ha_entities():
             
             for state in data:
                 # Pobieramy atrybuty, aby przekazać je do JavaScript
-                # Atrybuty zawierają m.in. friendly_name, device_class, unit_of_measurement
                 attributes = state.get('attributes', {})
                 unit = attributes.get('unit_of_measurement', '')
                 
@@ -99,12 +97,11 @@ def get_ha_entities():
 # -------------------------------------------------------------------------
 # 3. DEFINICJE STYLÓW (ZGODNE Z JOAN.TXT)
 # -------------------------------------------------------------------------
-# Te stałe są używane do generowania kodu YAML, aby zachować spójność stylu.
-# Zmieniono VALUE_STYLE, aby obniżyć tekst (padding-top: 15px)
+# Te stałe są używane do generowania kodu YAML.
+# UWAGA: STYLE_VALUE ma padding-top: 15px, aby obniżyć tekst o ok. 3mm
 STYLE_TITLE = "color: #000000; font-size: 20px; font-weight: 700; text-align: center; padding-top: 3px; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif;"
 STYLE_WIDGET = "color: #000000 !important; background-color: #FFFFFF !important;"
 STYLE_TEXT = "color: #000000 !important; font-weight: 700 !important;"
-# padding-top: 15px przesuwa wartość w dół (ok. 3mm na ekranie e-ink)
 STYLE_VALUE = "color: #000000 !important; font-size: 44px !important; font-weight: 700 !important; padding-top: 15px !important; line-height: 1.2 !important;"
 STYLE_UNIT = "color: #000000 !important;"
 STYLE_ICON = "color: #000000 !important;"
@@ -146,7 +143,7 @@ def index():
             dashboard_slug = title.lower().replace(" ", "_")
             dashboard_filename = dashboard_slug + ".dash"
             
-            # Parametry siatki (Smart Grid)
+            # Parametry siatki (Smart Grid) - pobierane dynamicznie z pól formularza
             cols = request.form.get('grid_columns', '6')
             rows = request.form.get('grid_rows', '8')
             
@@ -177,7 +174,7 @@ def index():
             # -------------------------------------------------
             generated_yaml += f"title: {title}\n"
             generated_yaml += "widget_dimensions: [117, 117]\n"
-            generated_yaml += "widget_size: [2, 1]\n" # Domyślny rozmiar bazowy
+            generated_yaml += "widget_size: [2, 1]\n" # Domyślny rozmiar bazowy (Szeroki)
             generated_yaml += "widget_margins: [8, 8]\n"
             generated_yaml += f"columns: {cols}\n"
             generated_yaml += f"rows: {rows}\n"
@@ -216,13 +213,14 @@ def index():
                         size = w.get('size', '').strip()
                         
                         # Jeśli rozmiar różni się od domyślnego (2x1), dodaj go
+                        # W pliku joan.txt widget_size to [2, 1], więc 2x1 jest domyślne.
                         if size and size != "(2x1)":
                             if not size.startswith('('): size = f"({size})"
                             widget_str += size
                         row_parts.append(widget_str)
+                        processed_widgets.append(w) # Zapisz do późniejszego definiowania
                     
                     generated_yaml += f"  - {', '.join(row_parts)}\n"
-                    processed_widgets.extend(row)
                 
                 generated_yaml += "\n# -------------------\n# DEFINICJE WIDŻETÓW\n# -------------------\n\n"
                 
@@ -231,13 +229,15 @@ def index():
                 # -------------------------------------------------
                 seen_ids = set()
                 for w in processed_widgets:
+                    if w['type'] == 'spacer': continue
                     w_id = w['id']
-                    if w_id in seen_ids: continue # Unikaj duplikatów definicji
+                    if w_id in seen_ids: continue
                     seen_ids.add(w_id)
                     
                     w_type = w['type']
                     w_name = w['name']
                     w_icon = w['icon']
+                    # Ikony z JSON (Smart lub Manual)
                     i_on = w.get('icon_on')
                     i_off = w.get('icon_off')
                     
@@ -250,7 +250,7 @@ def index():
                         generated_yaml += f"  title: \"{w_name}\"\n"
                         generated_yaml += f"  dashboard: {dash_target}\n"
                         generated_yaml += f"  icon_inactive: {w_icon or 'mdi-arrow-right-circle'}\n"
-                        generated_yaml += f"  title_style: \"color: #000000; font-size: 24px; font-weight: 700; text-align: center; padding-top: 5px; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif;\"\n"
+                        generated_yaml += f"  title_style: \"{STYLE_TITLE}\"\n"
                         generated_yaml += f"  widget_style: \"background-color: #FFFFFF !important; border-radius: 8px !important; padding: 10px !important; color: #000000 !important;\"\n"
                     
                     # 2. SENSOR (UŻYWA OBNIŻONEGO VALUE_STYLE)
@@ -261,10 +261,11 @@ def index():
                         if w_icon: generated_yaml += f"  icon: {w_icon}\n"
                         generated_yaml += f"  title_style: \"{STYLE_TITLE}\"\n"
                         generated_yaml += f"  text_style: \"{STYLE_TEXT}\"\n"
-                        generated_yaml += f"  value_style: \"{STYLE_VALUE}\"\n"
+                        generated_yaml += f"  value_style: \"{STYLE_VALUE}\"\n" # Tu jest padding-top
                         generated_yaml += f"  unit_style: \"{STYLE_UNIT}\"\n"
                         generated_yaml += f"  widget_style: \"{STYLE_WIDGET}\"\n"
-                        if 'bateria' in w_id or 'battery' in w_id:
+                        # Precyzja dla baterii
+                        if 'bateria' in w_id or 'battery' in w_id or 'wymiana' in w_id:
                             generated_yaml += "  precision: 0\n"
                         else:
                             generated_yaml += "  precision: 1\n"
@@ -278,8 +279,8 @@ def index():
                         generated_yaml += f"  title_style: \"{STYLE_TITLE}\"\n"
                         generated_yaml += f"  widget_style: \"{STYLE_WIDGET}\"\n"
                         generated_yaml += f"  icon_style: \"{STYLE_ICON}\"\n"
-                        generated_yaml += "  truncate_name: 20\n"
-                        generated_yaml += "  step: 5\n"
+                        generated_yaml += f"  truncate_name: 20\n"
+                        generated_yaml += f"  step: 5\n"
 
                     # 4. CLIMATE
                     elif w_type == 'climate':
@@ -294,6 +295,7 @@ def index():
                         generated_yaml += f"  widget_style: \"{STYLE_WIDGET}\"\n"
                         generated_yaml += f"  icon_style_active: \"{STYLE_ICON}\"\n"
                         generated_yaml += f"  icon_style_inactive: \"{STYLE_ICON}\"\n"
+                        # Mapowanie stanów klimatyzacji
                         generated_yaml += "  state_map:\n"
                         generated_yaml += "    \"off\": \"WYŁĄCZONA\"\n"
                         generated_yaml += "    \"auto\": \"AUTO\"\n"
@@ -334,6 +336,11 @@ def index():
                         
                         if i_on: generated_yaml += f"  icon_on: {i_on}\n"
                         if i_off: generated_yaml += f"  icon_off: {i_off}\n"
+                        # Zamek ma specyficzne pola
+                        if ad_type == 'lock':
+                            if i_off: generated_yaml += f"  icon_locked: {i_off}\n"
+                            if i_on: generated_yaml += f"  icon_unlocked: {i_on}\n"
+                        # Zwykła ikona
                         if w_icon and not i_on: generated_yaml += f"  icon: {w_icon}\n"
                         
                         generated_yaml += f"  state_text: 1\n"
@@ -343,6 +350,7 @@ def index():
                         generated_yaml += f"  icon_style_active: \"{STYLE_ICON}\"\n"
                         generated_yaml += f"  icon_style_inactive: \"{STYLE_ICON}\"\n"
                         
+                        # Mapowanie stanów
                         if ad_type == 'cover':
                             generated_yaml += "  state_map:\n"
                             generated_yaml += f"    \"open\": \"{dic['open']}\"\n"
@@ -351,7 +359,7 @@ def index():
                             generated_yaml += f"    \"closing\": \"{dic['closing']}\"\n"
                         elif ad_type == 'binary_sensor':
                             generated_yaml += "  state_map:\n"
-                            generated_yaml += f"    \"on\": \"{dic['open']}\"\n"
+                            generated_yaml += f"    \"on\": \"{dic['open']}\"\n" 
                             generated_yaml += f"    \"off\": \"{dic['closed']}\"\n"
                         elif ad_type in ['switch', 'light', 'input_boolean']:
                             generated_yaml += "  state_map:\n"
