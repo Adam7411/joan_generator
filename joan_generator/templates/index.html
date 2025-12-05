@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Joan 6 E-Ink Generator (ULTIMATE MASTER)</title>
+    <title>Joan 6 E-Ink Generator (ABSOLUTE EDITION)</title>
     
-    <!-- 1. BIBLIOTEKI IKON I CZCIONEK -->
+    <!-- 1. BIBLIOTEKI ZEWNĘTRZNE -->
     <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap" rel="stylesheet">
     
-    <!-- 2. SKRYPT INICJUJĄCY MOTYW -->
+    <!-- 2. SKRYPT INICJUJĄCY MOTYW (W HEAD) -->
     <script>
         (function() {
             try {
@@ -18,7 +18,7 @@
                     document.documentElement.classList.add('dark-mode');
                 }
             } catch(e) {
-                console.error("Błąd ładowania motywu:", e);
+                console.error("Błąd odczytu motywu:", e);
             }
         })();
     </script>
@@ -138,7 +138,7 @@
             color: var(--text-main); 
         }
 
-        /* INFO O PLIKU (NA DOLE) */
+        /* INFO O PLIKU */
         .file-path-info { 
             background-color: var(--link-bg); 
             color: var(--link-color); 
@@ -296,12 +296,12 @@
         .eink-row { 
             display: flex; 
             gap: 8px; /* Margines z Joan.txt */
-            margin-bottom: 15px; 
+            margin-bottom: 25px; 
             padding: 15px; 
             border: 2px dashed #999; 
             border-radius: 6px; 
             min-height: 180px; /* Zwiększona wysokość */
-            align-items: flex-end; /* Wyrównaj do dołu */
+            align-items: flex-end; 
             position: relative; 
         }
         
@@ -349,7 +349,7 @@
             display: flex; 
             flex-direction: column; 
             align-items: center; 
-            justify-content: space-between; /* Rozciągnij treść góra-dół */
+            justify-content: space-between; /* Rozciągnij treść */
             padding: 8px; 
             box-sizing: border-box; 
             cursor: pointer; 
@@ -389,13 +389,13 @@
         
         /* Ikona - Zmniejszona, aby zrobić miejsce */
         .ew-icon { 
-            font-size: 38px; /* Zmniejszona z 50px */
+            font-size: 38px; /* Zmniejszona */
             display: block; 
             margin: 2px 0; 
             pointer-events: none;
         }
         
-        /* STAN (WARTOŚĆ) - Wyraźny na dole */
+        /* STAN (WARTOŚĆ) - Na dole, wyraźny */
         .ew-value { 
             font-weight: 900; 
             font-size: 15px; 
@@ -455,12 +455,16 @@
             font-size: 14px; 
             line-height: 1.5; 
         }
+        
+        /* CUSTOM GRID INPUTS */
+        #custom-grid-inputs { display: none; gap: 10px; margin-top: 10px; align-items: center; border-top: 1px dashed var(--border); padding-top: 10px; }
+        .custom-num-input { width: 80px !important; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header-row">
-            <h1>Joan 6 E-Ink Generator (Ultimate Master)</h1>
+            <h1>Joan 6 E-Ink Generator (ABSOLUTE)</h1>
             <div class="controls">
                 <button type="button" onclick="toggleTheme()" id="btn-theme">🌙</button>
                 <button type="button" onclick="setLang('pl')" id="btn-pl" class="active">PL</button>
@@ -468,7 +472,7 @@
             </div>
         </div>
 
-        <!-- 1. USTAWIENIA SIATKI (SMART GRID) -->
+        <!-- 1. USTAWIENIA SIATKI (SMART GRID + CUSTOM) -->
         <div class="section">
             <div class="section-title">1. Ustawienia Dashboardu</div>
             <div class="flex-row">
@@ -478,20 +482,32 @@
                 </div>
                 <div class="flex-col">
                     <label>Układ Siatki (Smart Grid)</label>
-                    <select id="grid-preset" onchange="applyGrid()">
-                        <option value="6x8" selected>Standard+ (3 kolumny / 8 wierszy) - DOMYŚLNY</option>
-                        <option value="6x6">Standard (3 kolumny / 6 wierszy)</option>
-                        <option value="4x4">Duży (2 kolumny / 4 wiersze)</option>
-                        <option value="4x6">Średni (2 kolumny / 6 wierszy)</option>
-                        <option value="6x9">Mały (3 kolumny / 9 wierszy)</option>
+                    <select id="grid-preset" onchange="handleGridChange(this)">
+                        <option value="6x8" selected>Standard+ (6 kolumn x 8 wierszy) - DOMYŚLNY</option>
+                        <option value="6x6">Standard (6 kolumn x 6 wierszy)</option>
+                        <option value="4x4">Duży (4 kolumny x 4 wiersze)</option>
+                        <option value="4x6">Średni (4 kolumny x 6 wierszy)</option>
+                        <option value="6x9">Mały (6 kolumn x 9 wierszy)</option>
+                        <option value="custom">-- Układ Własny (Custom) --</option>
                     </select>
+                    
+                    <!-- POLA DLA UKŁADU WŁASNEGO -->
+                    <div id="custom-grid-inputs" class="flex-row">
+                        <div>
+                            <label style="font-size:10px">Kolumny:</label>
+                            <input type="number" id="custom-cols" class="custom-num-input" value="6" min="1" max="20" onchange="updateCustomGrid()">
+                        </div>
+                        <div>
+                            <label style="font-size:10px">Wiersze:</label>
+                            <input type="number" id="custom-rows" class="custom-num-input" value="8" min="1" max="20" onchange="updateCustomGrid()">
+                        </div>
+                    </div>
                 </div>
                 <input type="hidden" id="h-cols" value="6">
                 <input type="hidden" id="h-rows" value="8">
             </div>
         </div>
 
-        <!-- 2. IMPORT -->
         <div class="section" id="import-section">
             <details>
                 <summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">📂 Import / Eksport Kodu .DASH</summary>
@@ -508,7 +524,7 @@
             <input type="hidden" name="grid_columns" id="form-cols" value="6">
             <input type="hidden" name="grid_rows" id="form-rows" value="8">
             
-            <!-- 3. EDYTOR WIDGETU -->
+            <!-- 2. EDYTOR WIDGETU -->
             <div class="add-widget-box" id="editor-box">
                 <div class="section-title" id="editor-title" data-i18n="sec_add">2. Dodaj Widget</div>
                 
@@ -587,7 +603,7 @@
                 </div>
             </div>
 
-            <!-- 4. PODGLĄD E-INK -->
+            <!-- 3. PODGLĄD E-INK -->
             <div class="section">
                 <div class="section-title" data-i18n="sec_preview">3. Podgląd Dashboardu (Kliknij by edytować)</div>
                 <div class="preview-area" id="preview-container"></div>
@@ -598,7 +614,6 @@
             <button type="button" class="btn btn-gen" onclick="submitData()" data-i18n="btn_gen">GENERUJ KOD .DASH</button>
         </form>
 
-        <!-- 5. WYNIK YAML -->
         {% if generated_yaml %}
         <div class="section" style="margin-top:30px;">
             <div class="section-title">Wynikowy Kod YAML</div>
@@ -617,19 +632,18 @@
         {% endif %}
     </div>
 
-    <!-- ------------------------------------------------------------------ -->
-    <!-- LOGIKA JAVASCRIPT -->
-    <!-- ------------------------------------------------------------------ -->
     <script>
-        // --- DANE I ZMIENNE ---
+        // --- ZMIENNE ---
         const entitiesData = {{ entities | tojson | safe }};
         let rows = [[]]; 
         let editIdx = null; 
         let blockSmart = false; 
         let currentLang = 'pl';
         let importedDefsMap = {}; 
+        
+        // Stan poprzedniej siatki (do anulowania zmian)
+        let previousGridState = "6x8";
 
-        // --- TŁUMACZENIA ---
         const TRANSLATIONS = {
             pl: {
                 sec_add: "2. Dodaj Widget", sec_edit: "2. Edytuj Widget", sec_preview: "3. Podgląd Dashboardu",
@@ -638,18 +652,18 @@
                 btn_add: "+ DODAJ WIDGET", btn_update: "ZAPISZ ZMIANY", btn_cancel: "ANULUJ", 
                 btn_row: "+ Dodaj Wiersz", btn_gen: "GENERUJ KOD .DASH",
                 opt_switch: "Przełącznik / Światło", opt_cover: "Roleta / Brama", opt_sensor: "Sensor (Info)",
-                opt_binary: "Sensor Binarny (On/Off)", opt_lock: "Zamek", opt_person: "Osoba / Tracker",
+                opt_binary: "Sensor Binarny (On/Off)", opt_lock: "Zamek", opt_person: "Osoba",
                 opt_media: "Media Player", opt_climate: "Termostat", opt_input_select: "Lista Wyboru",
                 opt_input_number: "Suwak", opt_script: "Skrypt", opt_navigate: "Przycisk Nawigacji",
                 opt_label: "Etykieta (Tekst)", opt_clock: "Zegar", opt_spacer: "Odstęp (Pusty)",
                 size_1x1: "1x1 (Mały)", size_2x1: "2x1 (Szeroki)", size_2x2: "2x2 (Duży)",
                 size_3x1: "3x1 (Bardzo Szeroki)", size_1x2: "1x2 (Wysoki)", size_3x2: "3x2 (Ogromny)",
                 limit_15: "Maks 15 znaków", limit_20: "Maks 20 znaków",
-                limit_row: "Osiągnięto limit wierszy dla tego układu!"
+                warning_rows: "UWAGA: Wybrany układ ma mniej wierszy ({0}) niż aktualnie używasz ({1}). Część widgetów może zostać ucięta. Kontynuować?"
             },
             en: {
                 sec_add: "2. Add Widget", sec_edit: "2. Edit Widget", sec_preview: "3. Dashboard Preview",
-                lbl_type: "Widget Type", lbl_entity: "Entity", lbl_name: "Title", lbl_size: "Size", 
+                lbl_type: "Widget Type", lbl_entity: "Entity (Type Name or ID)", lbl_name: "Title on Screen", lbl_size: "Size", 
                 lbl_icon: "Icon", lbl_dash: "Dashboard Name", lbl_preview: "Icon",
                 btn_add: "+ ADD WIDGET", btn_update: "SAVE CHANGES", btn_cancel: "CANCEL", 
                 btn_row: "+ Add Row", btn_gen: "GENERATE .DASH CODE",
@@ -661,11 +675,10 @@
                 size_1x1: "1x1 (Small)", size_2x1: "2x1 (Wide)", size_2x2: "2x2 (Large)",
                 size_3x1: "3x1 (X-Wide)", size_1x2: "1x2 (Tall)", size_3x2: "3x2 (Huge)",
                 limit_15: "Max 15 chars", limit_20: "Max 20 chars",
-                limit_row: "Row limit reached for this layout!"
+                warning_rows: "WARNING: The selected layout has fewer rows ({0}) than currently used ({1}). Widgets may be lost. Continue?"
             }
         };
 
-        // --- MAPY SMART LOGIC ---
         const SMART_MAP = {
             'light': { type: 'switch', size: '(2x1)', iconOn: 'mdi-lightbulb-on', iconOff: 'mdi-lightbulb-outline' },
             'switch': { type: 'switch', size: '(2x1)', iconOn: 'mdi-toggle-switch', iconOff: 'mdi-toggle-switch-off' },
@@ -679,15 +692,7 @@
             'script': { type: 'script', size: '(2x1)', icon: 'mdi-script-text-outline' }
         };
 
-        // --- HELPERY ---
-
-        function getMaxRowsFromPreset() {
-            const val = document.getElementById('grid-preset').value;
-            // np. "6x8" -> 8
-            const parts = val.split('x');
-            return parseInt(parts[1]);
-        }
-
+        // --- FUNKCJE POMOCNICZE ---
         function normalizeString(str) {
             return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
         }
@@ -763,7 +768,6 @@
             counter.innerText = `${current}/${max} (${txt})`;
             if(current >= max) counter.classList.add('limit'); else counter.classList.remove('limit');
         }
-        
         function checkTitleLimit() { updateTitleLimit(); }
 
         function runSmartLogic(val) {
@@ -781,7 +785,6 @@
             let conf = SMART_MAP[domain] || { type: 'sensor', size: '(1x1)', icon: 'mdi-eye' };
 
             const check = (keywords) => keywords.some(k => idNorm.includes(k) || fNameNorm.includes(k));
-
             if (check(['glosnik', 'speaker', 'audio', 'tv', 'odtwarzacz'])) conf = SMART_MAP['media_player'];
             else if (check(['swiatlo', 'lamp', 'kinkiet', 'led', 'zarowka'])) conf = SMART_MAP['light'];
             else if (check(['gniazdko', 'wtyczka', 'outlet', 'plug'])) conf = SMART_MAP['switch'];
@@ -802,9 +805,9 @@
             if (domain === 'input_boolean') conf = SMART_MAP['switch'];
             if (domain === 'script') conf = SMART_MAP['script'];
 
-            // SMART GRID: Wymuś 2x1 dla układów Standard/Standard+
             const currentGrid = document.getElementById('grid-preset').value;
-            if ((currentGrid === '6x8' || currentGrid === '6x6') && conf.size === '(1x1)' && conf.type !== 'binary_sensor') {
+            // Smart Size dla 6 kolumn: Wymuś 2x1 dla switchy, chyba że to sensor
+            if ((currentGrid === '6x8' || currentGrid === '6x6' || currentGrid === 'custom') && conf.size === '(1x1)' && conf.type !== 'binary_sensor') {
                 conf.size = '(2x1)';
             }
 
@@ -821,8 +824,56 @@
             updateTitleLimit();
         }
 
+        // --- OBSŁUGA ZMIANY SIATKI ---
+        function handleGridChange(selectObj) {
+            const newVal = selectObj.value;
+            
+            if (newVal === 'custom') {
+                document.getElementById('custom-grid-inputs').style.display = 'flex';
+                updateCustomGrid();
+                return;
+            } else {
+                document.getElementById('custom-grid-inputs').style.display = 'none';
+            }
+
+            // Parsowanie target rows
+            let targetRows = 8;
+            if(newVal === '6x6' || newVal === '4x6') targetRows = 6;
+            if(newVal === '4x4') targetRows = 4;
+            if(newVal === '6x9') targetRows = 9;
+
+            // SPRAWDZENIE CZY NIE UCIENIE
+            const currentUsed = rows.length;
+            if (currentUsed > targetRows) {
+                const msg = TRANSLATIONS[currentLang].warning_rows.replace('{0}', targetRows).replace('{1}', currentUsed);
+                if (!confirm(msg)) {
+                    selectObj.value = previousGridState;
+                    if(previousGridState === 'custom') document.getElementById('custom-grid-inputs').style.display = 'flex';
+                    return;
+                }
+            }
+            
+            previousGridState = newVal;
+            applyGrid();
+        }
+
+        function updateCustomGrid() {
+            const c = document.getElementById('custom-cols').value;
+            const r = document.getElementById('custom-rows').value;
+            document.getElementById('h-cols').value = c;
+            document.getElementById('h-rows').value = r;
+            document.getElementById('form-cols').value = c;
+            document.getElementById('form-rows').value = r;
+        }
+
         function applyGrid() {
             const val = document.getElementById('grid-preset').value;
+            
+            if(val === 'custom') {
+                updateCustomGrid();
+                return;
+            }
+            
             const parts = val.split('x');
             document.getElementById('h-cols').value = parts[0];
             document.getElementById('h-rows').value = parts[1];
@@ -920,10 +971,10 @@
         }
 
         function addRow() {
-            // LIMIT WIERSZY
-            const limit = getMaxRowsFromPreset();
-            if (rows.length >= limit) {
-                alert(TRANSLATIONS[currentLang].limit_row + ` (${limit})`);
+            // Ochrona przed dodawaniem za dużo wierszy
+            const maxRows = parseInt(document.getElementById('h-rows').value) || 20;
+            if(rows.length >= maxRows) {
+                alert("Limit wierszy dla tego układu to: " + maxRows);
                 return;
             }
             rows.push([]);
@@ -1024,8 +1075,14 @@
             let rawDefs = {};
             let currentDefKey = null;
 
+            let foundCols = 6;
+            let foundRows = 8;
+
             lines.forEach(line => {
                 const tr = line.trim();
+                if(tr.startsWith('columns:')) foundCols = parseInt(tr.split(':')[1]);
+                if(tr.startsWith('rows:')) foundRows = parseInt(tr.split(':')[1]);
+
                 if(!tr || tr.startsWith('#')) return;
                 if (line.match(/^\S+:/) && !line.startsWith('layout:') && !line.startsWith('global_parameters:')) {
                     currentDefKey = line.split(':')[0].trim();
@@ -1041,6 +1098,23 @@
                     currentDefKey = null;
                 }
             });
+            
+            // Automatyczne ustawienie siatki
+            const presetVal = `${foundCols}x${foundRows}`;
+            const sel = document.getElementById('grid-preset');
+            let matched = false;
+            for(let i=0; i<sel.options.length; i++) {
+                if(sel.options[i].value === presetVal) { sel.value = presetVal; matched = true; break; }
+            }
+            if(!matched) {
+                sel.value = 'custom';
+                document.getElementById('custom-grid-inputs').style.display = 'flex';
+                document.getElementById('custom-cols').value = foundCols;
+                document.getElementById('custom-rows').value = foundRows;
+            }
+            previousGridState = sel.value;
+            applyGrid();
+
             importedDefsMap = rawDefs;
 
             lines.forEach(line => {
