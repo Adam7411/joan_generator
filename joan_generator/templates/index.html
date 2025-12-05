@@ -36,7 +36,6 @@
         .header-top { width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         h1 { margin: 0; color: var(--accent); font-size: 28px; font-weight: 900; text-transform: uppercase; }
         
-        /* STATUS STYLES */
         .small-status { 
             font-size: 0.6em; color: #009688; font-weight: normal; 
             margin-left: 10px; text-transform: none; 
@@ -70,7 +69,6 @@
         .btn-cancel { background: #757575; }
         .btn-row { background: #2196f3; margin-top: 15px; }
         .btn-import { background: #ff9800; color: white; margin-top: 10px; }
-        .btn-tetris { background: #9c27b0; color: white; margin-left: 10px; }
         .btn-dash-save { background: #009688; color: white; width: auto; padding: 8px 15px; font-size: 13px; }
         
         .btn-tool { padding: 6px 12px; font-size: 14px; margin-left: 6px; border-radius: 4px; cursor: pointer; color: white; border: none; font-weight: bold; display: inline-block; text-align: center; min-width: 30px; }
@@ -100,19 +98,47 @@
         .widget-wrapper:active { cursor: grabbing; }
         .ew-type-label { font-size: 10px; text-transform: uppercase; color: var(--text-main); margin-bottom: 4px; font-weight: bold; opacity: 0.7; text-align: center; }
 
-        /* INCREASED HEIGHT FOR WIDGETS TO FIX TITLE CUTOFF */
-        .eink-widget { background: #FFFFFF; border: 3px solid #000000; color: #000000; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 8px; box-sizing: border-box; position: relative; transition: transform 0.2s; user-select: none; box-shadow: 4px 4px 0px rgba(0,0,0,0.2); }
+        /* --- ZMIANY CSS: Lepsze upakowanie treści w widgecie --- */
+        .eink-widget { 
+            background: #FFFFFF; border: 3px solid #000000; color: #000000; 
+            display: flex; flex-direction: column; align-items: center; justify-content: flex-start; /* Zmiana z space-between */
+            padding: 6px; /* Mniejszy padding */
+            box-sizing: border-box; position: relative; transition: transform 0.2s; 
+            user-select: none; box-shadow: 4px 4px 0px rgba(0,0,0,0.2); 
+        }
         .eink-widget:hover { transform: translateY(-3px); z-index: 10; border-color: var(--accent); }
         .eink-widget.editing { border: 4px solid #ff9800; transform: scale(1.05); z-index: 20; box-shadow: 0 0 15px rgba(255, 152, 0, 0.5); }
-        .ew-title { font-weight: 900; font-size: 13px; text-align: center; width: 100%; line-height: 1.2; margin-top: 12px; margin-bottom: 2px; white-space: normal; text-transform: uppercase; pointer-events: none; overflow: hidden; }
-        .ew-icon { font-size: 38px; display: block; margin: 2px 0; pointer-events: none; }
-        .ew-value { font-weight: 900; font-size: 15px; text-transform: uppercase; margin-bottom: 5px; text-align: center; border-top: 2px solid #000; width: 90%; padding-top: 3px; margin-top: auto; pointer-events: none; }
+        
+        .ew-title { 
+            font-weight: 900; font-size: 13px; text-align: center; width: 100%; 
+            line-height: 1.1; margin-top: 8px; margin-bottom: 4px; 
+            white-space: normal; text-transform: uppercase; pointer-events: none; 
+            overflow: hidden; text-overflow: ellipsis; 
+            /* Pozwala na max 2 linie tekstu */
+            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+            flex-grow: 0;
+        }
+        
+        .ew-icon { 
+            font-size: 32px; /* Mniejsza ikona (było 38) */
+            display: block; margin: 2px 0; pointer-events: none; 
+            flex-grow: 0;
+        }
+        
+        .ew-value { 
+            font-weight: 900; font-size: 15px; text-transform: uppercase; 
+            margin-bottom: 2px; text-align: center; 
+            border-top: 2px solid #000; width: 90%; padding-top: 2px; 
+            margin-top: auto; /* Wypycha wartość na sam dół */
+            pointer-events: none; 
+        }
+        
         .ew-del { position: absolute; top: -8px; right: -8px; background: red; color: white; width: 20px; height: 20px; border-radius: 50%; text-align: center; line-height: 20px; font-weight: bold; display: none; cursor: pointer; z-index: 30; }
         .eink-widget:hover .ew-del { display: block; }
         
         .eink-widget.is-small { padding: 4px; }
-        .eink-widget.is-small .ew-title { font-size: 11px; margin-top: 4px; margin-bottom: 0; }
-        .eink-widget.is-small .ew-icon { font-size: 28px; margin: 2px 0; }
+        .eink-widget.is-small .ew-title { font-size: 11px; margin-top: 4px; margin-bottom: 0; -webkit-line-clamp: 1; }
+        .eink-widget.is-small .ew-icon { font-size: 24px; margin: 2px 0; }
         .eink-widget.is-small .ew-value { font-size: 12px; padding-top: 2px; margin-bottom: 2px; }
 
         .icon-preview { font-size: 32px; display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-input); }
@@ -133,12 +159,9 @@
         .dash-list { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 10px; }
         .dash-item { 
             background: var(--bg-input); border: 1px solid var(--border); 
-            padding: 15px 20px; /* Większy padding */
-            border-radius: 6px; cursor: pointer; 
-            font-size: 16px; /* Większa czcionka */
-            display: flex; align-items: center; gap: 10px; 
-            transition: all 0.2s; 
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            padding: 15px 20px; border-radius: 6px; cursor: pointer; 
+            font-size: 16px; display: flex; align-items: center; gap: 10px; 
+            transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
         .dash-item:hover { background: var(--highlight); transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
         .dash-item.active { background: #4caf50; color: white; border-color: #388e3c; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
@@ -178,19 +201,19 @@
                 <div class="flex-col">
                     <label data-i18n="lbl_grid">Układ Siatki (Smart Grid)</label>
                     <select id="grid-preset" onchange="handleGridChange()">
-                        <option value="4x8" data-i18n="grid_std_plus" selected>Standard+ (3 kolumny x 8 wierszy) - DOMYŚLNY</option>
-                        <option value="4x6" data-i18n="grid_std">Standard (3 kolumny x 6 wierszy)</option>
-                        <option value="4x4" data-i18n="grid_large">Duży (4 kolumny x 4 wiersze)</option>
-                        <option value="4x6m" data-i18n="grid_med">Średni (4 kolumny x 6 wierszy)</option>
-                        <option value="6x8" data-i18n="grid_small">Gęsty (6 kolumn x 8 wierszy)</option>
+                        <option value="4x8" data-i18n="grid_std_plus" selected>Standard+ (3 kolumny/4 jednostki x 8 wierszy) - DOMYŚLNY</option>
+                        <option value="4x6" data-i18n="grid_std">Standard (3 kolumny/4 jednostki x 6 wierszy)</option>
+                        <option value="4x4" data-i18n="grid_large">Duży (4 przyciski x 4 wiersze)</option>
+                        <option value="4x6m" data-i18n="grid_med">Średni (4 przyciski x 6 wierszy)</option>
+                        <option value="6x8" data-i18n="grid_small">Gęsty (6 małych kolumn x 8 wierszy)</option>
                         <option value="custom" data-i18n="grid_custom">Układ własny</option>
                     </select>
                     
                     <!-- CUSTOM GRID FIELDS -->
                     <div id="custom-grid-settings" style="display:none; margin-top: 10px; gap: 10px; flex-wrap: wrap;">
                         <div style="flex:1">
-                             <label style="font-size:11px; color:#666;">Kolumny</label>
-                             <input type="number" id="custom-cols" value="3" min="1" max="12" onchange="applyGrid(true)">
+                             <label style="font-size:11px; color:#666;">Kolumny (szt.)</label>
+                             <input type="number" id="custom-cols" value="4" min="1" max="12" onchange="applyGrid(true)">
                         </div>
                         <div style="flex:1">
                              <label style="font-size:11px; color:#666;">Wiersze</label>
@@ -394,8 +417,8 @@
             pl: {
                 title_main: "Joan 6 E-Ink Generator (Final Monster Edition)",
                 sec_settings: "1. Ustawienia Dashboardu", lbl_dash_title: "Tytuł Dashboardu", lbl_grid: "Układ Siatki (Smart Grid)",
-                grid_std_plus: "Standard+ (3 kolumny x 8 wierszy) - DOMYŚLNY", grid_std: "Standard (3 kolumny x 6 wierszy)",
-                grid_large: "Duży (4 kolumny x 4 wiersze)", grid_med: "Średni (4 kolumny x 6 wierszy)", grid_small: "Gęsty (6 kolumn x 8 wierszy)",
+                grid_std_plus: "Standard+ (3 kolumny/4 jednostki x 8 wierszy) - DOMYŚLNY", grid_std: "Standard (3 kolumny/4 jednostki x 6 wierszy)",
+                grid_large: "Duży (4 przyciski x 4 wiersze)", grid_med: "Średni (4 przyciski x 6 wierszy)", grid_small: "Gęsty (6 małych kolumn x 8 wierszy)",
                 grid_custom: "Układ własny",
                 sec_import: "📂 Import / Eksport Kodu .DASH", btn_import: "Wczytaj Kod",
                 sec_add: "2. Dodaj Widget", sec_edit: "2. Edytuj Widget",
@@ -424,8 +447,8 @@
             en: {
                 title_main: "Joan 6 E-Ink Generator (Final Monster Edition)",
                 sec_settings: "1. Dashboard Settings", lbl_dash_title: "Dashboard Title", lbl_grid: "Grid Layout (Smart Grid)",
-                grid_std_plus: "Standard+ (3 columns x 8 rows) - DEFAULT", grid_std: "Standard (3 columns x 6 rows)",
-                grid_large: "Large (4 columns x 4 rows)", grid_med: "Medium (4 columns x 6 rows)", grid_small: "Dense (6 columns x 8 rows)",
+                grid_std_plus: "Standard+ (3 col/4 units x 8 rows) - DEFAULT", grid_std: "Standard (3 col/4 units x 6 rows)",
+                grid_large: "Large (4 buttons x 4 rows)", grid_med: "Medium (4 buttons x 6 rows)", grid_small: "Dense (6 small cols x 8 rows)",
                 grid_custom: "Custom Layout",
                 sec_import: "📂 Import / Export .DASH Code", btn_import: "Load Code",
                 sec_add: "2. Add Widget", sec_edit: "2. Edit Widget",
@@ -627,7 +650,7 @@
             } else {
                 if (val === '4x4' || val === '4x6' || val === '4x6m') visualSlots = 4;
                 if (val === '6x8' || val === '6x9') visualSlots = 6; 
-                if (val === '4x8') visualSlots = 3;
+                if (val === '4x8') visualSlots = 4; // Changed to 4 to reflect 4 widgets width? No, let's keep visual simple
             }
             
             const px = (visualSlots * 117) + ((visualSlots - 1) * 8) + 40; 
@@ -655,19 +678,17 @@
             
             if (gridVal === 'custom') {
                 // In Custom Mode, the value entered in "Columns" is treated as the total width in basic units (if def_w=1)
-                // But for consistency with logic:
-                // Logic: if preset 4x8 (3 cols), maxSlots = 3 * 2 = 6.
-                // If custom user types 3 columns, maxSlots should be 6.
-                // Wait, run.py says: if def_w != 1: ad_columns = cols * 2.
-                // So let's assume user puts "real" columns in custom input.
-                const c = parseInt(document.getElementById('custom-cols').value) || 3;
+                const c = parseInt(document.getElementById('custom-cols').value) || 4;
                 return c * 2;
             }
 
+            // Standard+ (4x8) -> 4 cols in logic (so 8 units). Matches YAML columns=8.
+            // Standard (4x6) -> 4 cols in logic (so 8 units). Matches YAML columns=8.
             let maxSlots = 3; 
             if (gridVal === '4x4' || gridVal === '4x6' || gridVal === '4x6m') maxSlots = 4; 
             if (gridVal === '6x8' || gridVal === '6x9') maxSlots = 6;
-            if (gridVal === '4x8') maxSlots = 3;
+            if (gridVal === '4x8') maxSlots = 4; // Fixed logic: 4 cols * 2 = 8 units.
+            
             return maxSlots * 2; 
         }
 
@@ -728,22 +749,18 @@
             const hideIcons = (type === 'sensor' || type === 'clock' || type === 'spacer');
             document.getElementById('grp-icons').style.display = hideIcons ? 'none' : 'contents';
 
-            // --- MODYFIKACJA: ICONS LOGIC FOR NAVIGATE ---
             if (type === 'navigate') {
-                // Show Standard, Hide ON/OFF
                 document.getElementById('div-icon-std').style.display = 'block';
                 document.querySelector('#div-icon-std label').innerText = currentLang === 'pl' ? 'Ikona' : 'Icon';
                 
                 document.getElementById('div-icon-on').style.display = 'none';
                 document.getElementById('div-icon-off').style.display = 'none';
             } else if (!hideIcons) {
-                // Restore all for switches/etc
                 document.getElementById('div-icon-std').style.display = 'block';
                 document.querySelector('#div-icon-std label').innerText = TRANSLATIONS[currentLang].lbl_icon || 'Ikona (Standard)';
                 document.getElementById('div-icon-on').style.display = 'block';
                 document.getElementById('div-icon-off').style.display = 'block';
             } else {
-                // Hide all
                 document.getElementById('div-icon-std').style.display = 'none';
                 document.getElementById('div-icon-on').style.display = 'none';
                 document.getElementById('div-icon-off').style.display = 'none';
@@ -769,7 +786,6 @@
             document.getElementById('editor-box').classList.add('editing');
             document.getElementById('btn-cancel').classList.remove('hidden');
             
-            // --- FIX: Update TEXT ONLY, preserve STATUS SPAN ---
             document.getElementById('lbl-add-widget').innerText = TRANSLATIONS[currentLang].sec_edit;
             
             document.getElementById('btn-submit').innerText = TRANSLATIONS[currentLang].btn_update;
@@ -792,7 +808,6 @@
             document.getElementById('editor-box').classList.remove('editing');
             document.getElementById('btn-cancel').classList.add('hidden');
             
-            // --- FIX: Update TEXT ONLY, preserve STATUS SPAN ---
             document.getElementById('lbl-add-widget').innerText = TRANSLATIONS[currentLang].sec_add;
             
             document.getElementById('btn-submit').innerText = TRANSLATIONS[currentLang].btn_add;
@@ -970,14 +985,9 @@
                         rw = globalDefaultSize.h;
                     }
                     
-                    const width = (cols * 117) + ((cols - 1) * 8); 
-                    
-                    // MODYFIKACJA - ZWIĘKSZENIE WYSOKOŚCI O 30 PX, ABY ZMIEŚCIĆ TYTUŁ
-                    const height = (rw * 117) + ((rw - 1) * 8) + 30;
-                    
+                    const width = (cols * 117) + ((cols - 1) * 8); const height = (rw * 117) + ((rw - 1) * 8);
                     div.style.width = width + 'px'; div.style.height = height + 'px';
 
-                    // --- FIX: APPLY SMALL CLASS ---
                     if (cols === 1 && rw === 1) {
                         div.classList.add('is-small');
                     }
@@ -998,7 +1008,6 @@
                 container.appendChild(rowDiv);
             });
             
-            // Ensure custom mode updates properly even after render
             const val = document.getElementById('grid-preset').value;
             if(val === 'custom') applyGrid();
         }
@@ -1046,22 +1055,37 @@
 
             let preset = 'custom'; 
 
-            if (importedW === 1 && importedH === 1 && foundCols === 12 && foundRows === 8) {
-               preset = '6x8';
-            } 
-            else if (foundCols && foundRows) {
-                if (foundCols === 6 && foundRows === 8) preset = '4x8'; 
-                else if (foundCols === 6 && foundRows === 6) preset = '4x6';
-                else if (foundCols === 8 && foundRows === 4) preset = '4x4';
-                else if (foundCols === 8 && foundRows === 6) preset = '4x6m';
-                else if (foundCols >= 12) preset = '6x8'; 
+            // --- SMART PRESET DETECTION ---
+            if (foundCols && foundRows) {
+                if (importedW === 1) {
+                     // Unit size 1. Columns = Widgets.
+                     if (foundCols === 6 && foundRows === 8) preset = '6x8'; 
+                } else {
+                     // Unit size 2. Columns = Widgets * 2.
+                     // If foundCols=8, actual widgets=4. Preset 4x8.
+                     if (foundCols === 8 && foundRows === 8) preset = '4x8';
+                     else if (foundCols === 8 && foundRows === 6) preset = '4x6';
+                     else if (foundCols === 8 && foundRows === 4) preset = '4x4';
+                     
+                     // Handle your specific case for "3x6" if cols=6
+                     else if (foundCols === 6 && foundRows === 6) preset = 'custom'; 
+                }
             }
 
             const sel = document.getElementById('grid-preset');
-            if(sel.querySelector(`option[value="${preset}"]`)) sel.value = preset;
+            if(sel.querySelector(`option[value="${preset}"]`)) {
+                sel.value = preset;
+            } else {
+                sel.value = 'custom';
+                preset = 'custom';
+            }
             
             if (preset === 'custom') {
-                document.getElementById('custom-cols').value = foundCols || 3;
+                // If importedW=2, we divide columns by 2 to get "Widget Columns" for the custom input
+                let wCols = foundCols || 8;
+                if (importedW === 2) wCols = Math.floor(wCols / 2);
+                
+                document.getElementById('custom-cols').value = wCols;
                 document.getElementById('custom-rows').value = foundRows || 8;
             }
             
@@ -1256,7 +1280,6 @@
         
         // Datalist for dash nav
         const dashDl = document.getElementById('nav-dash-suggestions');
-        // (Optional: Fill from saved browser dashboards)
         const saved = JSON.parse(localStorage.getItem('joan_dashboards') || '{}');
         for(const k in saved) { const op = document.createElement('option'); op.value = k; dashDl.appendChild(op); }
 
