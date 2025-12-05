@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Joan 6 E-Ink Generator (GOD MODE)</title>
+    <title>Joan 6 E-Ink Generator (THE BEHEMOTH)</title>
     
     <!-- 1. BIBLIOTEKI ZEWNĘTRZNE -->
     <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap" rel="stylesheet">
     
-    <!-- 2. INICJALIZACJA MOTYWU (ANTI-FLICKER) -->
+    <!-- 2. SKRYPT INICJUJĄCY MOTYW -->
     <script>
         (function() {
             try {
@@ -18,14 +18,14 @@
                     document.documentElement.classList.add('dark-mode');
                 }
             } catch(e) {
-                console.error("Błąd odczytu motywu:", e);
+                console.error("Błąd ładowania motywu:", e);
             }
         })();
     </script>
 
     <style>
         /* ---------------------------------------------------------- */
-        /* 3. ZMIENNE KOLORYSTYCZNE (CSS VARIABLES) */
+        /* 3. ZMIENNE KOLORYSTYCZNE */
         /* ---------------------------------------------------------- */
         :root {
             --bg-body: #e0e0e0;
@@ -97,7 +97,7 @@
             letter-spacing: 1px;
         }
         
-        /* KONTROLKI MOTYWU I JĘZYKA */
+        /* KONTROLKI */
         .controls button { 
             padding: 8px 16px; 
             border: 1px solid var(--border); 
@@ -279,6 +279,7 @@
         .btn-cancel { background: #757575; }
         .btn-row { background: #2196f3; margin-top: 15px; }
         .btn-import { background: #ff9800; color: white; width: auto; margin-top: 10px; }
+        .btn-dash-save { background: #009688; color: white; width: auto; padding: 8px 15px; font-size: 13px; margin-left: 10px;}
 
         /* ------------------------------------------------------------------ */
         /* PODGLĄD E-INK (PIXEL PERFECT JOAN 6 STYLE) */
@@ -301,7 +302,7 @@
             border: 2px dashed #999; 
             border-radius: 6px; 
             min-height: 180px; /* Zwiększona wysokość */
-            align-items: flex-end; 
+            align-items: flex-end; /* Wyrównaj do dołu */
             position: relative; 
         }
         
@@ -375,11 +376,11 @@
         /* Tytuł - Mniejszy aby nie zasłaniał */
         .ew-title { 
             font-weight: 900; 
-            font-size: 13px; 
+            font-size: 12px; /* Mała czcionka */
             text-align: center; 
             width: 100%; 
             line-height: 1.2; 
-            margin-top: 12px; 
+            margin-top: 8px; 
             margin-bottom: 2px; 
             white-space: normal; 
             font-family: 'Roboto', 'Arial Black', sans-serif; 
@@ -459,12 +460,33 @@
         /* CUSTOM GRID INPUTS */
         #custom-grid-inputs { display: none; gap: 10px; margin-top: 10px; align-items: center; border-top: 1px dashed var(--border); padding-top: 10px; }
         .custom-num-input { width: 80px !important; }
+        
+        /* DASHBOARD MANAGER LIST */
+        .dash-list { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 10px; }
+        .dash-item { 
+            background: var(--bg-input); border: 1px solid var(--border); 
+            padding: 10px 15px; 
+            border-radius: 6px; cursor: pointer; 
+            font-size: 14px; 
+            display: flex; align-items: center; gap: 10px; 
+            transition: all 0.2s; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .dash-item:hover { background: var(--highlight); transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .dash-item.active { background: #4caf50; color: white; border-color: #388e3c; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .dash-item span { font-weight: bold; }
+        .dash-item button { 
+            font-size: 11px; padding: 4px 8px; margin-left: 10px; 
+            background: #d32f2f; color: white; border: none; 
+            border-radius: 4px; cursor: pointer; opacity: 0.8; 
+        }
+        .dash-item.active button { background: white; color: #d32f2f; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header-row">
-            <h1>Joan 6 E-Ink Generator (GOD MODE)</h1>
+            <h1>Joan 6 E-Ink Generator (THE BEHEMOTH)</h1>
             <div class="controls">
                 <button type="button" onclick="toggleTheme()" id="btn-theme">🌙</button>
                 <button type="button" onclick="setLang('pl')" id="btn-pl" class="active">PL</button>
@@ -483,11 +505,11 @@
                 <div class="flex-col">
                     <label>Układ Siatki (Smart Grid)</label>
                     <select id="grid-preset" onchange="handleGridChange(this)">
-                        <option value="6x8" selected>Standard+ (6 kolumn x 8 wierszy) - DOMYŚLNY</option>
-                        <option value="6x6">Standard (6 kolumn x 6 wierszy)</option>
-                        <option value="4x4">Duży (4 kolumny x 4 wiersze)</option>
-                        <option value="4x6">Średni (4 kolumny x 6 wierszy)</option>
-                        <option value="6x9">Mały (6 kolumn x 9 wierszy)</option>
+                        <option value="6x8" selected>Standard+ (3 kolumny / 8 wierszy) - DOMYŚLNY</option>
+                        <option value="6x6">Standard (3 kolumny / 6 wierszy)</option>
+                        <option value="4x4">Duży (2 kolumny / 4 wiersze)</option>
+                        <option value="4x6">Średni (2 kolumny / 6 wierszy)</option>
+                        <option value="6x9">Mały (3 kolumny / 9 wierszy)</option>
                         <option value="custom">-- Układ Własny (Custom) --</option>
                     </select>
                     
@@ -524,6 +546,9 @@
             <input type="hidden" name="ui_language" id="input-lang" value="pl">
             <input type="hidden" name="grid_columns" id="form-cols" value="6">
             <input type="hidden" name="grid_rows" id="form-rows" value="8">
+            
+            <input type="hidden" name="layout_data_json" id="layout_json">
+            <input type="hidden" name="custom_definitions_json" id="custom_defs_input">
             
             <!-- 3. EDYTOR WIDGETU -->
             <div class="add-widget-box" id="editor-box">
@@ -610,11 +635,22 @@
                 <div class="preview-area" id="preview-container"></div>
                 <button type="button" class="btn btn-row" onclick="addRow()" data-i18n="btn_row">+ Dodaj Wiersz</button>
             </div>
+            
+            <!-- MENADŻER DASHBOARDÓW -->
+            <div class="section" style="background:#f0f4c3;">
+                <div class="section-title" style="border-bottom-color:#afb42b;">Zapisane Dashboardy (Przeglądarka)</div>
+                <p style="font-size:12px;">Zapisz swoje układy lokalnie, aby łatwo się przełączać. Kliknij na nazwę, aby wczytać.</p>
+                <div class="flex-row" style="align-items: center;">
+                    <input type="text" id="save-name" placeholder="Nazwa zapisu (np. Kuchnia)" style="width:200px;">
+                    <button type="button" class="btn btn-dash-save" onclick="saveToBrowser()">ZAPISZ</button>
+                </div>
+                <div id="saved-dash-list" class="dash-list"></div>
+            </div>
 
-            <input type="hidden" name="layout_data_json" id="layout_json">
             <button type="button" class="btn btn-gen" onclick="submitData()" data-i18n="btn_gen">GENERUJ KOD .DASH</button>
         </form>
 
+        <!-- 5. WYNIK YAML -->
         {% if generated_yaml %}
         <div class="section" style="margin-top:30px;">
             <div class="section-title">Wynikowy Kod YAML</div>
@@ -644,9 +680,8 @@
         let blockSmart = false; 
         let currentLang = 'pl';
         let importedDefsMap = {}; 
-        
-        // Przechowuje poprzedni stan siatki, aby móc cofnąć zmianę
         let previousGridState = "6x8";
+        let currentLoadedDashName = null;
 
         const TRANSLATIONS = {
             pl: {
@@ -667,7 +702,7 @@
             },
             en: {
                 sec_add: "2. Add Widget", sec_edit: "2. Edit Widget", sec_preview: "3. Dashboard Preview",
-                lbl_type: "Widget Type", lbl_entity: "Entity (Type Name or ID)", lbl_name: "Title on Screen", lbl_size: "Size", 
+                lbl_type: "Widget Type", lbl_entity: "Entity", lbl_name: "Title", lbl_size: "Size", 
                 lbl_icon: "Icon", lbl_dash: "Dashboard Name", lbl_preview: "Icon",
                 btn_add: "+ ADD WIDGET", btn_update: "SAVE CHANGES", btn_cancel: "CANCEL", 
                 btn_row: "+ Add Row", btn_gen: "GENERATE .DASH CODE",
@@ -774,6 +809,7 @@
             counter.innerText = `${current}/${max} (${txt})`;
             if(current >= max) counter.classList.add('limit'); else counter.classList.remove('limit');
         }
+        
         function checkTitleLimit() { updateTitleLimit(); }
 
         function runSmartLogic(val) {
@@ -812,7 +848,7 @@
             if (domain === 'input_boolean') conf = SMART_MAP['switch'];
             if (domain === 'script') conf = SMART_MAP['script'];
 
-            // SMART GRID LOGIC: Wymuś 2x1 na dużych siatkach
+            // SMART GRID: Wymuś 2x1 dla układów Standard/Standard+
             const currentGrid = document.getElementById('grid-preset').value;
             if ((currentGrid === '6x8' || currentGrid === '6x6' || currentGrid === 'custom') && conf.size === '(1x1)' && conf.type !== 'binary_sensor') {
                 conf.size = '(2x1)';
@@ -831,7 +867,82 @@
             updateTitleLimit();
         }
 
-        // --- KLUCZOWA POPRAWKA: FIZYCZNE USUWANIE WIERSZY ---
+        // --- MANAGER DASHBOARDÓW (Browser Storage) ---
+        function saveToBrowser() {
+            const name = document.getElementById('save-name').value.trim();
+            if(!name) { alert("Podaj nazwę!"); return; }
+            
+            const data = {
+                rows: rows,
+                title: document.getElementById('dash-title').value,
+                grid: document.getElementById('grid-preset').value,
+                defs: importedDefsMap
+            };
+            
+            localStorage.setItem('joan_dash_' + name, JSON.stringify(data));
+            currentLoadedDashName = name;
+            refreshSavedList();
+            alert("Zapisano dashboard: " + name);
+        }
+
+        function loadFromBrowser(name) {
+            if(!confirm("Niezapisane zmiany zostaną utracone. Wczytać " + name + "?")) return;
+            const raw = localStorage.getItem('joan_dash_' + name);
+            if(!raw) return;
+            
+            try {
+                const data = JSON.parse(raw);
+                rows = data.rows;
+                importedDefsMap = data.defs || {};
+                document.getElementById('dash-title').value = data.title;
+                document.getElementById('grid-preset').value = data.grid;
+                
+                currentLoadedDashName = name;
+                refreshSavedList();
+                
+                syncTitle();
+                
+                // Sprawdź czy to Custom
+                if (data.grid === 'custom') {
+                    // Spróbuj zgadnąć z rows
+                    // Tutaj uproszczenie - zostawiamy 6x8 w polach custom
+                    document.getElementById('custom-grid-inputs').style.display = 'flex';
+                } else {
+                    document.getElementById('custom-grid-inputs').style.display = 'none';
+                }
+                
+                applyGrid();
+                renderPreview();
+            } catch(e) { console.error(e); alert("Błąd odczytu danych."); }
+        }
+
+        function deleteFromBrowser(name, e) {
+            e.stopPropagation();
+            if(confirm("Usunąć dashboard " + name + "?")) {
+                localStorage.removeItem('joan_dash_' + name);
+                if(currentLoadedDashName === name) currentLoadedDashName = null;
+                refreshSavedList();
+            }
+        }
+
+        function refreshSavedList() {
+            const list = document.getElementById('saved-dash-list');
+            list.innerHTML = '';
+            
+            Object.keys(localStorage).forEach(key => {
+                if(key.startsWith('joan_dash_')) {
+                    const name = key.replace('joan_dash_', '');
+                    const div = document.createElement('div');
+                    div.className = 'dash-item';
+                    if(name === currentLoadedDashName) div.classList.add('active');
+                    div.innerHTML = `<span>${name}</span> <button onclick="deleteFromBrowser('${name}', event)">X</button>`;
+                    div.onclick = () => loadFromBrowser(name);
+                    list.appendChild(div);
+                }
+            });
+        }
+
+        // --- SMART GRID PROTECTION ---
         function handleGridChange(selectObj) {
             const newVal = selectObj.value;
             
@@ -843,23 +954,19 @@
                 document.getElementById('custom-grid-inputs').style.display = 'none';
             }
 
-            // Parsowanie target rows
             let targetRows = 8;
             if(newVal === '6x6' || newVal === '4x6') targetRows = 6;
             if(newVal === '4x4') targetRows = 4;
             if(newVal === '6x9') targetRows = 9;
 
             const currentUsed = rows.length;
-            
-            // JEŚLI NOWA SIATKA MA MNIEJ WIERSZY NIŻ AKTUALNA
             if (currentUsed > targetRows) {
                 const msg = TRANSLATIONS[currentLang].warning_grid_rows.replace('{0}', targetRows).replace('{1}', currentUsed);
                 if (confirm(msg)) {
-                    // UŻYTKOWNIK ZATWIERDZIŁ -> FIZYCZNIE USUŃ WIERSZE
+                    // FIZYCZNE USUWANIE NADMIARU
                     rows = rows.slice(0, targetRows);
-                    renderPreview(); // ODŚWIEŻ PODGLĄD
+                    renderPreview();
                 } else {
-                    // UŻYTKOWNIK ANULOWAŁ -> PRZYWRÓĆ POPRZEDNI WYBÓR
                     selectObj.value = previousGridState;
                     if(previousGridState === 'custom') document.getElementById('custom-grid-inputs').style.display = 'flex';
                     return;
@@ -881,12 +988,7 @@
 
         function applyGrid() {
             const val = document.getElementById('grid-preset').value;
-            
-            if(val === 'custom') {
-                updateCustomGrid();
-                return;
-            }
-            
+            if(val === 'custom') { updateCustomGrid(); return; }
             const parts = val.split('x');
             document.getElementById('h-cols').value = parts[0];
             document.getElementById('h-rows').value = parts[1];
@@ -894,15 +996,8 @@
             document.getElementById('form-rows').value = parts[1];
         }
 
-        function syncTitle() {
-            document.getElementById('form-title').value = document.getElementById('dash-title').value;
-        }
-
-        function autoNameNav() {
-            if(blockSmart) return;
-            const val = document.getElementById('w-dash').value;
-            document.getElementById('w-name').value = val.toUpperCase();
-        }
+        function syncTitle() { document.getElementById('form-title').value = document.getElementById('dash-title').value; }
+        function autoNameNav() { if(blockSmart) return; document.getElementById('w-name').value = document.getElementById('w-dash').value.toUpperCase(); }
 
         function saveWidget() {
             const w = {
@@ -913,7 +1008,8 @@
                 size: document.getElementById('w-size').value,
                 icon: document.getElementById('w-icon').value,
                 icon_on: document.getElementById('w-icon-on').value,
-                icon_off: document.getElementById('w-icon-off').value
+                icon_off: document.getElementById('w-icon-off').value,
+                was_edited: true
             };
             if(w.type === 'navigate') w.id = 'navigate.' + w.dash;
             if(w.type === 'spacer') w.id = 'spacer';
@@ -1048,7 +1144,7 @@
                     div.className = 'eink-widget';
                     if(editIdx && editIdx.r === rI && editIdx.w === wI) div.classList.add('editing');
 
-                    let cols = 2, rw = 1; 
+                    let cols = 2, rw = 1;
                     if(w.size) {
                         const parts = w.size.replace(/[()]/g, '').split('x');
                         cols = parseInt(parts[0]) || 1;
@@ -1084,6 +1180,7 @@
 
         function submitData() {
             document.getElementById('layout_json').value = JSON.stringify(rows);
+            document.getElementById('custom_defs_input').value = JSON.stringify(importedDefsMap);
             document.getElementById('main-form').submit();
         }
 
@@ -1097,8 +1194,14 @@
             let rawDefs = {};
             let currentDefKey = null;
 
+            let foundCols = 6;
+            let foundRows = 8;
+
             lines.forEach(line => {
                 const tr = line.trim();
+                if(tr.startsWith('columns:')) foundCols = parseInt(tr.split(':')[1]);
+                if(tr.startsWith('rows:')) foundRows = parseInt(tr.split(':')[1]);
+
                 if(!tr || tr.startsWith('#')) return;
                 if (line.match(/^\S+:/) && !line.startsWith('layout:') && !line.startsWith('global_parameters:')) {
                     currentDefKey = line.split(':')[0].trim();
@@ -1114,6 +1217,23 @@
                     currentDefKey = null;
                 }
             });
+            
+            // Automatyczne ustawienie siatki
+            const presetVal = `${foundCols}x${foundRows}`;
+            const sel = document.getElementById('grid-preset');
+            let matched = false;
+            for(let i=0; i<sel.options.length; i++) {
+                if(sel.options[i].value === presetVal) { sel.value = presetVal; matched = true; break; }
+            }
+            if(!matched) {
+                sel.value = 'custom';
+                document.getElementById('custom-grid-inputs').style.display = 'flex';
+                document.getElementById('custom-cols').value = foundCols;
+                document.getElementById('custom-rows').value = foundRows;
+            }
+            previousGridState = sel.value;
+            applyGrid();
+
             importedDefsMap = rawDefs;
 
             lines.forEach(line => {
@@ -1149,7 +1269,7 @@
                             else if(id.startsWith('sensor.')) type = 'sensor';
                         }
                         if(name === id && type !== 'spacer') name = formatSmartName(id, '');
-                        rowData.push({ id, type, size, name, icon, icon_on, icon_off });
+                        rowData.push({ id, type, size, name, icon, icon_on, icon_off, was_edited: false });
                     });
                     newRows.push(rowData);
                 }
@@ -1214,6 +1334,7 @@
             const savedTheme = localStorage.getItem('joan_theme') || 'light';
             document.getElementById('btn-theme').innerText = savedTheme === 'dark' ? '☀️' : '🌙';
             updateTitleLimit();
+            refreshSavedList(); 
             if(!rows.length || (rows.length===1 && !rows[0].length)) { } else { renderPreview(); }
         });
     </script>
