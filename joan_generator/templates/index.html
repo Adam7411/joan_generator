@@ -23,11 +23,15 @@
             --text-main: #333333; --border: #cccccc; --accent: #d32f2f; --highlight: #e3f2fd;
             --preview-bg: #f0f0f0; --link-bg: #e1f5fe; --link-color: #0277bd; --shadow: 0 4px 15px rgba(0,0,0,0.1);
             --btn-text: #ffffff;
+            --grid-line: rgba(0,0,0,0.05);
+            --grid-border: #999999;
         }
         html.dark-mode {
             --bg-body: #121212; --bg-container: #1e1e1e; --bg-section: #252525; --bg-input: #2c2c2c;
             --text-main: #e0e0e0; --border: #444444; --accent: #ff5252; --highlight: #0d47a1;
             --preview-bg: #000000; --link-bg: #013655; --link-color: #81d4fa; --shadow: 0 4px 15px rgba(0,0,0,0.5);
+            --grid-line: rgba(255,255,255,0.08);
+            --grid-border: #777777;
         }
         body { font-family: 'Roboto', sans-serif; background-color: var(--bg-body); color: var(--text-main); padding: 20px; transition: background-color 0.3s; }
         .container { max-width: 1400px; margin: 0 auto; background: var(--bg-container); padding: 30px; border-radius: 10px; box-shadow: var(--shadow); }
@@ -79,9 +83,9 @@
         
         .eink-row { 
             display: flex; gap: 8px; margin-bottom: 15px; margin-top: 50px; padding: 15px; 
-            border: 2px dashed #999; border-radius: 6px; min-height: 140px; 
+            border: 2px dashed var(--grid-border); border-radius: 6px; min-height: 140px; 
             align-items: flex-end; position: relative; 
-            background-image: linear-gradient(to right, rgba(0,0,0,0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,0,0,0.05) 1px, transparent 1px); 
+            background-image: linear-gradient(to right, var(--grid-line) 1px, transparent 1px), linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px); 
             background-size: 125px 125px; 
             transition: border-color 0.3s, box-shadow 0.3s, width 0.3s; 
             cursor: pointer; flex-wrap: nowrap; overflow-x: hidden; overflow: visible !important; 
@@ -273,7 +277,7 @@
                         <input type="text" id="w-name" placeholder="np. Salon" oninput="checkTitleLimit(); searchEntities(this.value, true)">
                         <div id="char-count" class="char-counter">0/20</div>
                     </div>
-                    <div class="flex-col" style="flex: 1;">
+                    <div class="flex-col" style="flex: 1.">
                         <label data-i18n="lbl_type">Typ Widgetu</label>
                         <select id="w-type" onchange="toggleInputs()">
                             <option value="switch" data-i18n="opt_switch">Switch / Light</option>
@@ -354,20 +358,20 @@
                     <span id="status-manager" class="small-status"></span>
                 </div>
 
-                <p style="font-size: 0.9em; margin-bottom: 10px; font-weight:bold;">
+                <p style="font-size: 0.9em; margin-bottom: 10px; font-weight:bold;" data-i18n="manager_desc">
                     Zapisz swoje układy w przeglądarce, aby łatwo się między nimi przełączać. 
                     Aby przełączać strony na samym urządzeniu Joan 6, użyj widgetu 'Przycisk Nawigacji' (Navigate).
                 </p>
                 <div class="flex-row" style="align-items: flex-end;">
-                    <div class="flex-col" style="flex: 2;">
-                        <label>Zapisz obecny układ jako:</label>
+                    <div class="flex-col" style="flex: 2.">
+                        <label data-i18n="manager_save_as">Zapisz obecny układ jako:</label>
                         <div style="display:flex; gap: 10px;">
                             <input type="text" id="save-dash-name" placeholder="np. Salon">
-                            <button type="button" class="btn btn-dash-save" onclick="saveToBrowser()">ZAPISZ</button>
+                            <button type="button" class="btn btn-dash-save" onclick="saveToBrowser()" data-i18n="manager_save_btn">ZAPISZ</button>
                         </div>
                     </div>
-                    <div class="flex-col" style="flex: 3;">
-                        <label>Twoje zapisane dashboardy:</label>
+                    <div class="flex-col" style="flex: 3.">
+                        <label data-i18n="manager_saved_list">Twoje zapisane dashboardy:</label>
                         <div id="saved-dash-list" class="dash-list"></div>
                     </div>
                 </div>
@@ -442,7 +446,11 @@
                 hint_nav: "<b>Wskazówka:</b> Wpisz nazwę pliku <code>.dash</code> (bez rozszerzenia), który znajduje się w folderze <code>\\\\100.117.192.46\\addon_configs\\appdaemon\\dashboards\\</code>.<br>Służy do przechodzenia między ekranami.",
                 
                 lbl_current_small: "(AKTUALNIE PRACUJESZ NA DASHBOARDZIE: {0})",
-                sec_manager: "Multi-Dashboard Manager (Przeglądarka)"
+                sec_manager: "Multi-Dashboard Manager (Browser)",
+                manager_desc: "Zapisz swoje układy w przeglądarce, aby łatwo się między nimi przełączać. Aby przełączać strony na samym urządzeniu Joan 6, użyj widgetu 'Przycisk Nawigacji' (Navigate).",
+                manager_save_as: "Zapisz obecny układ jako:",
+                manager_save_btn: "ZAPISZ",
+                manager_saved_list: "Twoje zapisane dashboardy:"
             },
             en: {
                 title_main: "Joan 6 E-Ink Generator (Final Monster Edition)",
@@ -472,7 +480,11 @@
                 hint_nav: "<b>Hint:</b> Enter the <code>.dash</code> filename (without extension) located in <code>\\\\100.117.192.46\\addon_configs\\appdaemon\\dashboards\\</code>.<br>Used for dashboard navigation.",
                 
                 lbl_current_small: "(CURRENTLY WORKING ON DASHBOARD: {0})",
-                sec_manager: "Multi-Dashboard Manager (Browser)"
+                sec_manager: "Multi-Dashboard Manager (Browser)",
+                manager_desc: "Save your layouts in the browser to switch between them easily. To change pages on the Joan 6 device itself, use the 'Navigation Button' (Navigate) widget.",
+                manager_save_as: "Save current layout as:",
+                manager_save_btn: "SAVE",
+                manager_saved_list: "Your saved dashboards:"
             }
         };
 
@@ -606,8 +618,7 @@
                     // Cut excess rows
                     rows = rows.slice(0, newMaxRows);
                 } else {
-                    // User cancelled - technically we should revert selection but for now we just don't slice
-                    // and the visual grid will just look weird or cut off visually
+                    // User cancelled
                 }
             }
 
@@ -623,14 +634,12 @@
                 cols = parseInt(document.getElementById('custom-cols').value) || 3;
                 rws = parseInt(document.getElementById('custom-rows').value) || 8;
                 
-                // Update hidden fields
                 document.getElementById('h-cols').value = cols;
                 document.getElementById('h-rows').value = rws;
                 document.getElementById('form-cols').value = cols;
                 document.getElementById('form-rows').value = rws;
 
             } else {
-                // Preset logic
                 const parts = val.replace('m','').split('x');
                 cols = parts[0];
                 rws = parts[1];
@@ -643,14 +652,12 @@
             
             // Visual Width Calculation
             let visualSlots = 3; 
-            
             if (val === 'custom') {
-                // For visual representation, we treat custom cols as "Slots" roughly
                 visualSlots = parseInt(document.getElementById('custom-cols').value) || 3;
             } else {
                 if (val === '4x4' || val === '4x6' || val === '4x6m') visualSlots = 4;
                 if (val === '6x8' || val === '6x9') visualSlots = 6; 
-                if (val === '4x8') visualSlots = 4; // Changed to 4 to reflect 4 widgets width? No, let's keep visual simple
+                if (val === '4x8') visualSlots = 4;
             }
             
             const px = (visualSlots * 117) + ((visualSlots - 1) * 8) + 40; 
@@ -677,17 +684,14 @@
             const gridVal = document.getElementById('grid-preset').value;
             
             if (gridVal === 'custom') {
-                // In Custom Mode, the value entered in "Columns" is treated as the total width in basic units (if def_w=1)
                 const c = parseInt(document.getElementById('custom-cols').value) || 4;
                 return c * 2;
             }
 
-            // Standard+ (4x8) -> 4 cols in logic (so 8 units). Matches YAML columns=8.
-            // Standard (4x6) -> 4 cols in logic (so 8 units). Matches YAML columns=8.
             let maxSlots = 3; 
             if (gridVal === '4x4' || gridVal === '4x6' || gridVal === '4x6m') maxSlots = 4; 
             if (gridVal === '6x8' || gridVal === '6x9') maxSlots = 6;
-            if (gridVal === '4x8') maxSlots = 4; // Fixed logic: 4 cols * 2 = 8 units.
+            if (gridVal === '4x8') maxSlots = 4;
             
             return maxSlots * 2; 
         }
@@ -929,8 +933,6 @@
 
         function renderPreview() {
             const container = document.getElementById('preview-container'); container.innerHTML = '';
-            const activeRowIndex = editIdx ? editIdx.r : selectedRowIdx;
-
             rows.forEach((row, rI) => {
                 const rowDiv = document.createElement('div');
                 rowDiv.className = 'eink-row';
@@ -1055,19 +1057,13 @@
 
             let preset = 'custom'; 
 
-            // --- SMART PRESET DETECTION ---
             if (foundCols && foundRows) {
                 if (importedW === 1) {
-                     // Unit size 1. Columns = Widgets.
                      if (foundCols === 6 && foundRows === 8) preset = '6x8'; 
                 } else {
-                     // Unit size 2. Columns = Widgets * 2.
-                     // If foundCols=8, actual widgets=4. Preset 4x8.
                      if (foundCols === 8 && foundRows === 8) preset = '4x8';
                      else if (foundCols === 8 && foundRows === 6) preset = '4x6';
                      else if (foundCols === 8 && foundRows === 4) preset = '4x4';
-                     
-                     // Handle your specific case for "3x6" if cols=6
                      else if (foundCols === 6 && foundRows === 6) preset = 'custom'; 
                 }
             }
@@ -1081,7 +1077,6 @@
             }
             
             if (preset === 'custom') {
-                // If importedW=2, we divide columns by 2 to get "Widget Columns" for the custom input
                 let wCols = foundCols || 8;
                 if (importedW === 2) wCols = Math.floor(wCols / 2);
                 
@@ -1212,7 +1207,6 @@
 
             currentLoadedDashName = key;
             
-            // Update Status Text
             const infoText = TRANSLATIONS[currentLang].lbl_current_small.replace('{0}', key);
             document.getElementById('status-sec-1').innerText = infoText;
             document.getElementById('status-sec-2').innerText = infoText;
@@ -1255,12 +1249,13 @@
                 document.getElementById('w-id').placeholder = "np. głośnik kuchnia...";
                 document.getElementById('w-name').placeholder = "np. Salon";
                 document.getElementById('w-dash').placeholder = "np. main";
+                document.getElementById('save-dash-name').placeholder = "np. Salon";
             } else {
                 document.getElementById('w-id').placeholder = "e.g. kitchen speaker...";
                 document.getElementById('w-name').placeholder = "e.g. Living Room";
                 document.getElementById('w-dash').placeholder = "e.g. main";
+                document.getElementById('save-dash-name').placeholder = "e.g. Living Room";
             }
-            // Update Nav Hint
             const hintEl = document.getElementById('nav-hint');
             if(hintEl) hintEl.innerHTML = TRANSLATIONS[l].hint_nav;
 
