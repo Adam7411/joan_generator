@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Joan 6 E-Ink Generator (Final Monster Edition)</title>
+    <title>Joan 6 E-Ink Generator</title>
     
     <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap" rel="stylesheet">
@@ -23,14 +23,14 @@
             --text-main: #333333; --border: #cccccc; --accent: #d32f2f; --highlight: #e3f2fd;
             --preview-bg: #f0f0f0; --link-bg: #e1f5fe; --link-color: #0277bd; --shadow: 0 4px 15px rgba(0,0,0,0.1);
             --btn-text: #ffffff;
-            --grid-line: rgba(0,0,0,0.05);
+            --grid-line: rgba(0,0,0,0.06);
             --grid-border: #999999;
         }
         html.dark-mode {
             --bg-body: #121212; --bg-container: #1e1e1e; --bg-section: #252525; --bg-input: #2c2c2c;
             --text-main: #e0e0e0; --border: #444444; --accent: #ff5252; --highlight: #0d47a1;
             --preview-bg: #000000; --link-bg: #013655; --link-color: #81d4fa; --shadow: 0 4px 15px rgba(0,0,0,0.5);
-            --grid-line: rgba(255,255,255,0.08);
+            --grid-line: rgba(255,255,255,0.12);
             --grid-border: #777777;
         }
         body { font-family: 'Roboto', sans-serif; background-color: var(--bg-body); color: var(--text-main); padding: 20px; transition: background-color 0.3s; }
@@ -79,14 +79,17 @@
         .btn-del-row { background: #d32f2f; }
         .btn-move-row { background: #757575; }
 
-        .preview-area { background: var(--preview-bg); padding: 30px; border: 2px solid var(--border); border-radius: 8px; overflow-x: auto; min-height: 400px; transition: width 0.3s; }
-        
+        .preview-area { background: var(--preview-bg); padding: 20px; border: 2px solid var(--border); border-radius: 8px; overflow-x: auto; min-height: 400px; transition: width 0.3s; }
+
+        /* Grid aligned to widget cells (117 + 8 gap = 125) */
         .eink-row { 
-            display: flex; gap: 8px; margin-bottom: 15px; margin-top: 50px; padding: 15px; 
+            display: flex; gap: 8px; margin-bottom: 15px; margin-top: 40px; padding: 10px; 
             border: 2px dashed var(--grid-border); border-radius: 6px; min-height: 140px; 
             align-items: flex-end; position: relative; 
             background-image: linear-gradient(to right, var(--grid-line) 1px, transparent 1px), linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px); 
             background-size: 125px 125px; 
+            background-origin: content-box; 
+            background-clip: content-box;
             transition: border-color 0.3s, box-shadow 0.3s, width 0.3s; 
             cursor: pointer; flex-wrap: nowrap; overflow-x: hidden; overflow: visible !important; 
         }
@@ -180,7 +183,7 @@
     <div class="container">
         <div class="header-row">
             <div class="header-top">
-                <h1 data-i18n="title_main">Joan 6 E-Ink Generator (MONSTER EDITION)</h1>
+                <h1 data-i18n="title_main">Joan 6 E-Ink Generator</h1>
                 <div class="controls">
                     <button type="button" onclick="toggleTheme()" id="btn-theme">🌙</button>
                     <button type="button" onclick="setLang('pl')" id="btn-pl" class="active">PL</button>
@@ -407,7 +410,7 @@
 
         const TRANSLATIONS = {
             pl: {
-                title_main: "Joan 6 E-Ink Generator (Final Monster Edition)",
+                title_main: "Joan 6 E-Ink Generator",
                 sec_settings: "1. Ustawienia Dashboardu", lbl_dash_title: "Tytuł Dashboardu", lbl_grid: "Układ Siatki (Smart Grid)",
                 grid_std_plus: "Standard+ (3 kolumny/4 jednostki x 8 wierszy) - DOMYŚLNY", grid_std: "Standard (3 kolumny/4 jednostki x 6 wierszy)",
                 grid_large: "Duży (4 przyciski x 4 wiersze)", grid_med: "Średni (4 przyciski x 6 wierszy)", grid_small: "Gęsty (6 małych kolumn x 8 wierszy)",
@@ -441,7 +444,7 @@
                 manager_saved_list: "Twoje zapisane dashboardy:"
             },
             en: {
-                title_main: "Joan 6 E-Ink Generator (Final Monster Edition)",
+                title_main: "Joan 6 E-Ink Generator",
                 sec_settings: "1. Dashboard Settings", lbl_dash_title: "Dashboard Title", lbl_grid: "Grid Layout (Smart Grid)",
                 grid_std_plus: "Standard+ (3 col/4 units x 8 rows) - DEFAULT", grid_std: "Standard (3 col/4 units x 6 rows)",
                 grid_large: "Large (4 buttons x 4 rows)", grid_med: "Medium (4 buttons x 6 rows)", grid_small: "Dense (6 small cols x 8 rows)",
