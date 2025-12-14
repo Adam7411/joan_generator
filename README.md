@@ -73,6 +73,11 @@ Utwórz nowy plik z rozszerzeniem `.dash` w folderze konfiguracyjnym AppDaemon:
 ```text
 \\TWOJE_IP_HA\addon_configs\appdaemon\dashboards\joan_salon.dash
 ```
+- [Visionect Software Suite - Instalacja w Proxmox](https://github.com/Adam7411/Joan-6-Visionect_Home-Assistant)
+- [Visionect Software Suite - Instalacja w Home Assistant](https://github.com/Adam7411/visionect-v3-allinone/blob/main/visionect-v3-allinone/README_pl.md)
+- [Dodatek Visionect Joan dla Home Assistant](https://github.com/Adam7411/visionect_joan/blob/main/README_pl.md)
+- [Dodatek Joan 6: AppDaemon Dashboard Generator](https://github.com/Adam7411/joan_generator/)
+
 <img width="1768" height="2888" alt="image" src="https://github.com/user-attachments/assets/c71bcffa-c6a4-47df-ab1c-8006bb2260de" />
 
 ***
