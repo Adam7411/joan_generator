@@ -74,6 +74,7 @@ Create a new `.dash` file in the AppDaemon configuration folder:
 ```text
 \\YOUR_HA_IP\addon_configs\appdaemon\dashboards\joan_living_room.dash
 ```
-<img width="1768" height="2888" alt="image" src="https://github.com/user-attachments/assets/1b20fa12-feb5-404e-be7b-b452f35107db" />
+<img width="1827" height="2900" alt="image" src="https://github.com/user-attachments/assets/ac61375f-647e-46ff-9a30-d1196b35885a" />
+
 
 
