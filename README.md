@@ -73,5 +73,6 @@ Utwórz nowy plik z rozszerzeniem `.dash` w folderze konfiguracyjnym AppDaemon:
 ```text
 \\TWOJE_IP_HA\addon_configs\appdaemon\dashboards\joan_salon.dash
 ```
-<img width="1341" height="1276" alt="image" src="https://github.com/user-attachments/assets/e02011a6-7b87-4193-83b0-fa9399ce7a28" />
+<img width="1768" height="2888" alt="image" src="https://github.com/user-attachments/assets/c71bcffa-c6a4-47df-ab1c-8006bb2260de" />
+
 
