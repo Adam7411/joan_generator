@@ -1,3 +1,9 @@
+***
+- [Visionect Server v3 (All‑in‑One) installation in Home Assistant](https://github.com/Adam7411/visionect-v3-allinone)
+- [Visionect Software Suite - Installation in Proxmox](https://github.com/Adam7411/Joan-6-Visionect_Home-Assistant_EN)
+- [Visionect Joan for Home Assistant add-on](https://github.com/Adam7411/visionect_joan)
+***
+
 <div align="right">
 <strong>English</strong> | <a href="README.md">Polski</a>
 </div>
