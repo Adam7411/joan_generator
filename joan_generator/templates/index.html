@@ -177,6 +177,51 @@
             border-radius: 4px; cursor: pointer; opacity: 0.8; 
         }
         .dash-item.active button { background: white; color: #d32f2f; }
+        
+        /* Toast Notifications */
+        #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; max-width: 400px; }
+        .toast { padding: 15px 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); color: white; font-weight: 600; display: flex; align-items: center; gap: 10px; animation: slideIn 0.3s ease-out; min-width: 280px; }
+        .toast.success { background: #4caf50; }
+        .toast.warning { background: #ff9800; }
+        .toast.error { background: #f44336; }
+        .toast i { font-size: 20px; }
+        @keyframes slideIn { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes slideOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(400px); opacity: 0; } }
+        .toast.removing { animation: slideOut 0.3s ease-in forwards; }
+        
+        /* Widget Copy Button */
+        .ew-copy { position: absolute; top: 4px; right: 30px; background: #2196f3; color: white; border: none; border-radius: 3px; padding: 4px 8px; cursor: pointer; font-size: 12px; font-weight: bold; opacity: 0; transition: opacity 0.2s; z-index: 10; }
+        .eink-widget:hover .ew-copy { opacity: 1; }
+        .ew-copy:hover { background: #1976d2; }
+        
+        /* Zoom Controls */
+        .zoom-controls { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+        .zoom-btn { padding: 8px 16px; background: var(--bg-section); border: 1px solid var(--border); border-radius: 4px; cursor: pointer; font-weight: bold; color: var(--text-main); transition: all 0.2s; }
+        .zoom-btn:hover { background: var(--accent); color: var(--btn-text); }
+        .zoom-level { font-size: 14px; font-weight: bold; color: var(--text-main); padding: 8px 12px; background: var(--bg-input); border: 1px solid var(--border); border-radius: 4px; min-width: 80px; text-align: center; }
+        
+        /* Templates Section */
+        .template-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin-top: 15px; }
+        .template-card { background: var(--bg-input); border: 2px solid var(--border); padding: 20px; border-radius: 8px; cursor: pointer; transition: all 0.2s; text-align: center; }
+        .template-card:hover { border-color: var(--accent); transform: translateY(-3px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .template-card .icon { font-size: 36px; margin-bottom: 10px; }
+        .template-card .name { font-weight: bold; font-size: 16px; margin-bottom: 5px; color: var(--text-main); }
+        .template-card .desc { font-size: 12px; color: #999; }
+        
+        /* HA Integration */
+        .ha-status-box { background: #e8f5e9; border: 2px solid #4caf50; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        .ha-status-box.disconnected { background: #ffebee; border-color: #f44336; }
+        .ha-status-box .status-text { font-weight: bold; font-size: 16px; display: flex; align-items: center; gap: 10px; }
+        .ha-status-box .status-text i { font-size: 24px; }
+        .ha-dash-list { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
+        .ha-dash-item { background: var(--bg-input); border: 1px solid var(--border); padding: 12px 15px; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; }
+        .ha-dash-item .name { font-weight: bold; flex: 1; }
+        .ha-dash-item .actions { display: flex; gap: 8px; }
+        .ha-dash-item button { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; color: white; }
+        .ha-dash-item .btn-load { background: #2196f3; }
+        .ha-dash-item .btn-delete { background: #f44336; }
+        .ha-section { display: none; }
+        .ha-section.visible { display: block; }
     </style>
 </head>
 <body>
@@ -339,6 +384,21 @@
                     <span id="status-sec-3" class="small-status"></span>
                 </div>
                 <p style="font-size:0.85em; margin-bottom: 10px; color: #666;">Możesz przeciągać przyciski między wierszami oraz zmieniać ich kolejność w wierszu (Drag&Drop).</p>
+                
+                <!-- Zoom Controls -->
+                <div class="zoom-controls">
+                    <button type="button" class="zoom-btn" onclick="zoomPreview(-0.1)" title="Zoom out">
+                        <i class="mdi mdi-magnify-minus"></i> <span data-i18n="zoom_out">Pomniejsz</span>
+                    </button>
+                    <div class="zoom-level" id="zoom-level">100%</div>
+                    <button type="button" class="zoom-btn" onclick="zoomPreview(0.1)" title="Zoom in">
+                        <i class="mdi mdi-magnify-plus"></i> <span data-i18n="zoom_in">Powiększ</span>
+                    </button>
+                    <button type="button" class="zoom-btn" onclick="fitToScreen()" title="Fit to screen">
+                        <i class="mdi mdi-fit-to-screen"></i> <span data-i18n="fit_to_screen">Dopasuj do ekranu</span>
+                    </button>
+                </div>
+                
                 <div class="preview-area" id="preview-container"></div>
                 <button type="button" class="btn btn-row" onclick="addRow()" data-i18n="btn_row">+ Dodaj Wiersz</button>
             </div>
@@ -365,6 +425,89 @@
                         <label data-i18n="manager_saved_list">Twoje zapisane dashboardy:</label>
                         <div id="saved-dash-list" class="dash-list"></div>
                     </div>
+                </div>
+            </div>
+
+            <!-- Templates Section -->
+            <div class="section" style="border: 2px solid #ff9800; background: rgba(255, 152, 0, 0.05);">
+                <div class="section-title" style="border-bottom-color: #ff9800; color: #ff9800;">
+                    <span>📋 <span data-i18n="templates">Szablony</span></span>
+                </div>
+                <p style="font-size: 0.9em; margin-bottom: 10px; color: #666;">
+                    <span data-i18n="choose_template">Wybierz szablon</span> - 
+                    <strong style="color: #f57c00;" data-i18n="warning_replace_layout">Uwaga: to zastąpi obecny układ</strong>
+                </p>
+                <div class="template-grid">
+                    <div class="template-card" onclick="applyTemplate('living_room')">
+                        <div class="icon">🛋️</div>
+                        <div class="name" data-i18n="template_living_room">Salon - światła, TV, klimat</div>
+                    </div>
+                    <div class="template-card" onclick="applyTemplate('bedroom')">
+                        <div class="icon">🛏️</div>
+                        <div class="name" data-i18n="template_bedroom">Sypialnia - światła, rolety, budzik</div>
+                    </div>
+                    <div class="template-card" onclick="applyTemplate('kitchen')">
+                        <div class="icon">🍳</div>
+                        <div class="name" data-i18n="template_kitchen">Kuchnia - światła, czujniki urządzeń</div>
+                    </div>
+                    <div class="template-card" onclick="applyTemplate('security')">
+                        <div class="icon">🔒</div>
+                        <div class="name" data-i18n="template_security">Bezpieczeństwo - zamki, kamery, czujniki ruchu</div>
+                    </div>
+                    <div class="template-card" onclick="applyTemplate('garden')">
+                        <div class="icon">🌿</div>
+                        <div class="name" data-i18n="template_garden">Ogród - nawadnianie, oświetlenie zewnętrzne, pogoda</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Home Assistant Integration Section -->
+            <div class="section ha-section" id="ha-section" style="border: 2px solid #03a9f4; background: rgba(3, 169, 244, 0.05);">
+                <div class="section-title" style="border-bottom-color: #03a9f4; color: #03a9f4;">
+                    <span>🏠 <span data-i18n="ha_integration">Integracja Home Assistant</span></span>
+                </div>
+                
+                <!-- Status Box -->
+                <div class="ha-status-box" id="ha-status-box">
+                    <div class="status-text">
+                        <i class="mdi mdi-check-circle"></i>
+                        <span id="ha-status-text" data-i18n="ha_connected">Połączono z AppDaemon</span>
+                    </div>
+                </div>
+                
+                <!-- Save Current Dashboard -->
+                <div style="margin-bottom: 20px;">
+                    <label style="font-weight: bold; display: block; margin-bottom: 8px;">
+                        <span data-i18n="ha_save_to">Zapisz do AppDaemon</span>:
+                    </label>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <input type="text" id="ha-filename" placeholder="joandashboard" style="flex: 1;">
+                        <button type="button" class="btn" style="background: #4caf50;" onclick="saveToHA()">
+                            <i class="mdi mdi-content-save"></i> <span data-i18n="manager_save_btn">ZAPISZ</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Dashboard List -->
+                <div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <label style="font-weight: bold;">
+                            <span data-i18n="ha_dashboards">Dashboardy AppDaemon</span>:
+                        </label>
+                        <button type="button" class="btn" style="background: #2196f3; padding: 6px 12px; font-size: 13px;" onclick="refreshHADashboards()">
+                            <i class="mdi mdi-refresh"></i> <span data-i18n="ha_refresh">Odśwież listę</span>
+                        </button>
+                    </div>
+                    <div class="ha-dash-list" id="ha-dash-list">
+                        <!-- Populated by refreshHADashboards() -->
+                    </div>
+                </div>
+                
+                <!-- Restart Button -->
+                <div style="margin-top: 20px;">
+                    <button type="button" class="btn" style="background: #ff5722;" onclick="restartAppDaemon()">
+                        <i class="mdi mdi-restart"></i> <span data-i18n="ha_restart">Restartuj AppDaemon</span>
+                    </button>
                 </div>
             </div>
 
@@ -628,7 +771,58 @@
                 manager_desc: "Zapisz swoje układy w przeglądarce, aby łatwo się między nimi przełączać. Aby przełączać strony na samym urządzeniu Joan 6, użyj widgetu 'Przycisk Nawigacji' (Navigate).",
                 manager_save_as: "Zapisz obecny układ jako:",
                 manager_save_btn: "ZAPISZ",
-                manager_saved_list: "Twoje zapisane dashboardy:"
+                manager_saved_list: "Twoje zapisane dashboardy:",
+                
+                // Feature 3: Widget Copying
+                copy_widget: "Kopiuj widget",
+                widget_copied: "Widget skopiowany",
+                paste_widget: "Wklej widget",
+                
+                // Feature 4: Multi-Dashboard Navigation
+                related_dashboards: "Powiązane dashboardy",
+                navigate_to: "Nawigacja do:",
+                no_saved_dashboards: "Brak zapisanych dashboardów",
+                
+                // Feature 5: Responsive Grid System
+                zoom_in: "Powiększ",
+                zoom_out: "Pomniejsz",
+                fit_to_screen: "Dopasuj do ekranu",
+                zoom: "Zoom",
+                
+                // Feature 6: Dashboard Templates
+                templates: "Szablony",
+                choose_template: "Wybierz szablon",
+                apply_template: "Zastosuj szablon",
+                warning_replace_layout: "Uwaga: to zastąpi obecny układ",
+                template_living_room: "Salon - światła, TV, klimat",
+                template_bedroom: "Sypialnia - światła, rolety, budzik",
+                template_kitchen: "Kuchnia - światła, czujniki urządzeń",
+                template_security: "Bezpieczeństwo - zamki, kamery, czujniki ruchu",
+                template_garden: "Ogród - nawadnianie, oświetlenie zewnętrzne, pogoda",
+                
+                // Feature 7: Error Validation
+                error: "Błąd",
+                warning: "Ostrzeżenie",
+                success: "Sukces",
+                invalid_entity_format: "Nieprawidłowy format encji",
+                duplicate_widget_id: "Duplikat ID widgetu",
+                title_too_long: "Tytuł za długi",
+                target_dashboard_not_exists: "Dashboard docelowy nie istnieje",
+                
+                // Home Assistant Integration
+                ha_integration: "Integracja Home Assistant",
+                ha_connected: "Połączono z AppDaemon",
+                ha_not_connected: "AppDaemon niedostępny",
+                ha_dashboards: "Dashboardy AppDaemon",
+                ha_save_to: "Zapisz do AppDaemon",
+                ha_load: "Wczytaj",
+                ha_delete: "Usuń",
+                ha_restart: "Restartuj AppDaemon",
+                ha_refresh: "Odśwież listę",
+                ha_save_success: "Zapisano pomyślnie",
+                ha_load_success: "Wczytano pomyślnie",
+                ha_delete_success: "Usunięto pomyślnie",
+                ha_restart_success: "AppDaemon zrestartowany"
             },
             en: {
                 title_main: "Joan 6 E-Ink Generator",
@@ -662,7 +856,58 @@
                 manager_desc: "Save your layouts in the browser to switch between them easily. To change pages on the Joan 6 device itself, use the 'Navigation Button' (Navigate) widget.",
                 manager_save_as: "Save current layout as:",
                 manager_save_btn: "SAVE",
-                manager_saved_list: "Your saved dashboards:"
+                manager_saved_list: "Your saved dashboards:",
+                
+                // Feature 3: Widget Copying
+                copy_widget: "Copy widget",
+                widget_copied: "Widget copied",
+                paste_widget: "Paste widget",
+                
+                // Feature 4: Multi-Dashboard Navigation
+                related_dashboards: "Related dashboards",
+                navigate_to: "Navigate to:",
+                no_saved_dashboards: "No saved dashboards",
+                
+                // Feature 5: Responsive Grid System
+                zoom_in: "Zoom in",
+                zoom_out: "Zoom out",
+                fit_to_screen: "Fit to screen",
+                zoom: "Zoom",
+                
+                // Feature 6: Dashboard Templates
+                templates: "Templates",
+                choose_template: "Choose template",
+                apply_template: "Apply template",
+                warning_replace_layout: "Warning: this will replace current layout",
+                template_living_room: "Living Room - lights, TV, climate",
+                template_bedroom: "Bedroom - lights, blinds, alarm",
+                template_kitchen: "Kitchen - lights, appliances sensors",
+                template_security: "Security - locks, cameras, motion sensors",
+                template_garden: "Garden - irrigation, outdoor lights, weather",
+                
+                // Feature 7: Error Validation
+                error: "Error",
+                warning: "Warning",
+                success: "Success",
+                invalid_entity_format: "Invalid entity format",
+                duplicate_widget_id: "Duplicate widget ID",
+                title_too_long: "Title too long",
+                target_dashboard_not_exists: "Target dashboard doesn't exist",
+                
+                // Home Assistant Integration
+                ha_integration: "Home Assistant Integration",
+                ha_connected: "Connected to AppDaemon",
+                ha_not_connected: "AppDaemon unavailable",
+                ha_dashboards: "AppDaemon Dashboards",
+                ha_save_to: "Save to AppDaemon",
+                ha_load: "Load",
+                ha_delete: "Delete",
+                ha_restart: "Restart AppDaemon",
+                ha_refresh: "Refresh list",
+                ha_save_success: "Saved successfully",
+                ha_load_success: "Loaded successfully",
+                ha_delete_success: "Deleted successfully",
+                ha_restart_success: "AppDaemon restarted"
             }
         };
 
@@ -886,6 +1131,33 @@
             if(w.type === 'navigate') w.id = 'navigate.' + w.dash;
             if(w.type === 'spacer') w.id = 'spacer';
 
+            // Validation: Entity ID format
+            if (w.type !== 'navigate' && w.type !== 'spacer' && w.type !== 'clock' && w.type !== 'label' && w.id) {
+                if (!validateEntityId(w.id)) {
+                    showToast(TRANSLATIONS[currentLang].invalid_entity_format + ': ' + w.id, 'warning');
+                    // Don't return, just warn
+                }
+            }
+
+            // Validation: Duplicate widget ID
+            const excludeRow = editIdx ? editIdx.r : null;
+            const excludeWidget = editIdx ? editIdx.w : null;
+            if (w.id && checkDuplicateWidgetId(w.id, excludeRow, excludeWidget)) {
+                showToast(TRANSLATIONS[currentLang].duplicate_widget_id + ': ' + w.id, 'warning');
+            }
+
+            // Validation: Navigate target exists
+            if (w.type === 'navigate' && w.dash && !validateNavigateTarget(w.dash)) {
+                showToast(TRANSLATIONS[currentLang].target_dashboard_not_exists + ': ' + w.dash, 'warning');
+            }
+
+            // Validation: Title length
+            const size = w.size || '(2x1)';
+            const maxLen = (size === '(1x1)' || size === '(1x2)') ? 15 : 20;
+            if (w.name && w.name.length > maxLen) {
+                showToast(TRANSLATIONS[currentLang].title_too_long + ` (${w.name.length}/${maxLen})`, 'warning');
+            }
+
             let targetRowIdx = rows.length - 1;
             if (editIdx) targetRowIdx = editIdx.r;
             else if (selectedRowIdx !== null && selectedRowIdx < rows.length) targetRowIdx = selectedRowIdx;
@@ -894,12 +1166,20 @@
             if (editIdx) currentRow.splice(editIdx.w, 1); 
             
             if (getRowUsage(currentRow) + getSlots(w) > getMaxSlots()) {
-                alert(TRANSLATIONS[currentLang].alert_full); return;
+                showToast(TRANSLATIONS[currentLang].alert_full, 'error');
+                return;
             }
 
             if(editIdx) { rows[editIdx.r][editIdx.w] = w; cancelEdit(); }
             else { rows[targetRowIdx].push(w); clearForm(); blockSmart = false; }
             renderPreview();
+            
+            // Show success message
+            if (editIdx) {
+                showToast(TRANSLATIONS[currentLang].btn_update, 'success');
+            } else {
+                showToast(TRANSLATIONS[currentLang].btn_add, 'success');
+            }
         }
 
         function updateIconPreview() {
@@ -1005,7 +1285,7 @@
         function addRow() {
             const maxRows = parseInt(document.getElementById('h-rows').value) || 20;
             if (rows.length >= maxRows) {
-                alert(TRANSLATIONS[currentLang].alert_rows_limit);
+                showToast(TRANSLATIONS[currentLang].alert_rows_limit, 'warning');
                 return;
             }
             rows.push([]); 
@@ -1065,7 +1345,7 @@
             
             if (getRowUsage(rows[targetR]) + getSlots(movedWidget) > getMaxSlots()) {
                 rows[dragSrc.r].splice(dragSrc.w, 0, movedWidget);
-                alert(TRANSLATIONS[currentLang].alert_full);
+                showToast(TRANSLATIONS[currentLang].alert_full, 'warning');
                 renderPreview(); return;
             }
             
@@ -1087,7 +1367,7 @@
 
             if (getRowUsage(rows[targetR]) + getSlots(movedWidget) > getMaxSlots()) {
                 rows[dragSrc.r].splice(dragSrc.w, 0, movedWidget);
-                alert(TRANSLATIONS[currentLang].alert_full);
+                showToast(TRANSLATIONS[currentLang].alert_full, 'warning');
                 renderPreview(); return;
             }
 
@@ -1169,7 +1449,7 @@
                         const showIcon = (w.type !== 'sensor') && icon;
                         const iconHtml = showIcon ? `<i class="mdi ${icon} ew-icon"></i>` : `<div style="height:38px;"></div>`;
                         
-                        div.innerHTML = `<div class="ew-title">${w.name || w.id}</div>${iconHtml}<div class="ew-value">${realState}</div><div class="ew-del" onclick="deleteWidget(${rI}, ${wI}, event)">X</div>`;
+                        div.innerHTML = `<div class="ew-title">${w.name || w.id}</div>${iconHtml}<div class="ew-value">${realState}</div><button class="ew-copy" onclick="copyWidget(${rI}, ${wI}, event)" title="${TRANSLATIONS[currentLang].copy_widget}">📋</button><div class="ew-del" onclick="deleteWidget(${rI}, ${wI}, event)">X</div>`;
                     }
                     div.onclick = (e) => { e.stopPropagation(); editWidget(rI, wI); };
                     wrapper.appendChild(div); rowDiv.appendChild(wrapper);
@@ -1285,6 +1565,9 @@
                                 const iMatch = d.match(/icon:\s*(.*)/); if(iMatch) icon = iMatch[1].trim();
                                 const ionMatch = d.match(/icon_on:\s*(.*)/); if(ionMatch) icon_on = ionMatch[1].trim();
                                 const ioffMatch = d.match(/icon_off:\s*(.*)/); if(ioffMatch) icon_off = ioffMatch[1].trim();
+                                // For navigate widgets, also check icon_active/icon_inactive
+                                const iactiveMatch = d.match(/icon_active:\s*(.*)/); if(iactiveMatch) icon_on = iactiveMatch[1].trim();
+                                const iinactiveMatch = d.match(/icon_inactive:\s*(.*)/); if(iinactiveMatch) icon_off = iinactiveMatch[1].trim();
                             } else { 
                                 if(id === 'spacer') type = 'spacer'; 
                                 else if(id.startsWith('navigate.')) type = 'navigate'; 
@@ -1300,14 +1583,21 @@
                 }
             });
             
-            if(newRows.length > 0) { rows = newRows; renderPreview(); alert(currentLang === 'pl' ? "Pomyślnie zaimportowano układ." : "Import successful."); } 
-            else alert(currentLang === 'pl' ? "Błąd: Nie znaleziono layoutu." : "Error: Layout not found.");
+            if(newRows.length > 0) { 
+                rows = newRows; 
+                renderPreview(); 
+                showToast(currentLang === 'pl' ? "Pomyślnie zaimportowano układ." : "Import successful.", 'success'); 
+            } 
+            else showToast(currentLang === 'pl' ? "Błąd: Nie znaleziono layoutu." : "Error: Layout not found.", 'error');
             setTimeout(() => blockSmart = false, 1000);
         }
 
         function saveToBrowser() {
             const name = document.getElementById('save-dash-name').value;
-            if(!name) return alert("Wpisz nazwę!");
+            if(!name) {
+                showToast(currentLang === 'pl' ? "Wpisz nazwę!" : "Enter a name!", 'warning');
+                return;
+            }
             
             const saveData = {
                 rows: rows,
@@ -1326,7 +1616,10 @@
             all[name] = saveData;
             localStorage.setItem('joan_dashboards', JSON.stringify(all));
             loadSavedList();
-            alert("Zapisano w przeglądarce: " + name);
+            showToast((currentLang === 'pl' ? "Zapisano w przeglądarce: " : "Saved in browser: ") + name, 'success');
+            
+            // Update navigate widget suggestions
+            updateNavDashboardList();
         }
 
         function loadSavedList() {
@@ -1444,9 +1737,417 @@
             }
         }
 
+        // ==================== TOAST NOTIFICATIONS ====================
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            let icon = 'mdi-check-circle';
+            if (type === 'warning') icon = 'mdi-alert';
+            if (type === 'error') icon = 'mdi-alert-circle';
+            
+            toast.innerHTML = `<i class="mdi ${icon}"></i><span>${message}</span>`;
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.add('removing');
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        // Update navigate widget dashboard suggestions
+        function updateNavDashboardList() {
+            const dashDl = document.getElementById('nav-dash-suggestions');
+            dashDl.innerHTML = '';
+            const saved = JSON.parse(localStorage.getItem('joan_dashboards') || '{}');
+            for(const k in saved) { 
+                const op = document.createElement('option'); 
+                op.value = k; 
+                dashDl.appendChild(op); 
+            }
+        }
+
+        // ==================== WIDGET COPYING ====================
+        let copiedWidget = null;
+
+        function copyWidget(r, w, event) {
+            event.stopPropagation();
+            copiedWidget = JSON.parse(JSON.stringify(rows[r][w])); // Deep copy
+            showToast(TRANSLATIONS[currentLang].widget_copied, 'success');
+        }
+
+        function pasteWidget() {
+            if (!copiedWidget) {
+                showToast(TRANSLATIONS[currentLang].no_saved_dashboards, 'warning');
+                return;
+            }
+            
+            if (selectedRowIdx === null) {
+                showToast(currentLang === 'pl' ? 'Wybierz wiersz' : 'Select a row', 'warning');
+                return;
+            }
+            
+            const row = rows[selectedRowIdx];
+            const maxCols = parseInt(document.getElementById('h-cols').value);
+            
+            // Calculate current row usage
+            let used = 0;
+            row.forEach(w => {
+                const sz = w.size || '(2x1)';
+                const parts = sz.replace(/[()]/g, '').split('x');
+                used += parseInt(parts[0]) || 1;
+            });
+            
+            // Check if widget fits
+            const wSz = copiedWidget.size || '(2x1)';
+            const wParts = wSz.replace(/[()]/g, '').split('x');
+            const wCols = parseInt(wParts[0]) || 1;
+            
+            if (used + wCols > maxCols) {
+                showToast(TRANSLATIONS[currentLang].alert_full, 'error');
+                return;
+            }
+            
+            rows[selectedRowIdx].push(copiedWidget);
+            renderPreview();
+            showToast(TRANSLATIONS[currentLang].paste_widget, 'success');
+        }
+
+        // Keyboard shortcuts for copy/paste
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey || e.metaKey) {
+                if (e.key === 'c' && editIdx) {
+                    e.preventDefault();
+                    copiedWidget = JSON.parse(JSON.stringify(rows[editIdx.r][editIdx.w]));
+                    showToast(TRANSLATIONS[currentLang].widget_copied, 'success');
+                } else if (e.key === 'v' && copiedWidget) {
+                    e.preventDefault();
+                    pasteWidget();
+                }
+            }
+        });
+
+        // ==================== ZOOM CONTROLS ====================
+        let currentZoom = parseFloat(localStorage.getItem('joan_zoom') || '1.0');
+
+        function zoomPreview(delta) {
+            currentZoom = Math.max(0.5, Math.min(2.0, currentZoom + delta));
+            applyZoom();
+        }
+
+        function fitToScreen() {
+            const container = document.getElementById('preview-container');
+            const parent = container.parentElement;
+            const scale = Math.min(1.0, (parent.clientWidth - 40) / 1000); // Assume 1000px default width
+            currentZoom = scale;
+            applyZoom();
+        }
+
+        function applyZoom() {
+            const container = document.getElementById('preview-container');
+            container.style.transform = `scale(${currentZoom})`;
+            container.style.transformOrigin = 'top left';
+            document.getElementById('zoom-level').innerText = Math.round(currentZoom * 100) + '%';
+            localStorage.setItem('joan_zoom', currentZoom.toString());
+        }
+
+        // ==================== VALIDATION FUNCTIONS ====================
+        function validateEntityId(entityId) {
+            const pattern = /^[a-z_]+\.[a-z0-9_]+$/;
+            return pattern.test(entityId);
+        }
+
+        function checkDuplicateWidgetId(newId, excludeRow = null, excludeWidget = null) {
+            for (let r = 0; r < rows.length; r++) {
+                for (let w = 0; w < rows[r].length; w++) {
+                    if (r === excludeRow && w === excludeWidget) continue;
+                    if (rows[r][w].id === newId) return true;
+                }
+            }
+            return false;
+        }
+
+        function validateNavigateTarget(dashName) {
+            const saved = JSON.parse(localStorage.getItem('joan_dashboards') || '{}');
+            return dashName in saved || dashName === 'main';
+        }
+
+        // ==================== DASHBOARD TEMPLATES ====================
+        const TEMPLATES = {
+            living_room: {
+                title: 'Living Room',
+                rows: [
+                    [
+                        { id: 'light.living_room', type: 'switch', name: 'Ceiling Light', size: '(2x1)', icon: '', icon_on: 'mdi-lightbulb-on', icon_off: 'mdi-lightbulb-outline', was_edited: false },
+                        { id: 'light.tv_backlight', type: 'switch', name: 'TV Light', size: '(2x1)', icon: '', icon_on: 'mdi-lightbulb-on', icon_off: 'mdi-lightbulb-outline', was_edited: false }
+                    ],
+                    [
+                        { id: 'media_player.tv', type: 'media_player', name: 'TV', size: '(2x2)', icon: 'mdi-television', icon_on: '', icon_off: '', was_edited: false },
+                        { id: 'climate.living_room', type: 'climate', name: 'Climate', size: '(2x2)', icon: 'mdi-thermostat', icon_on: '', icon_off: '', was_edited: false }
+                    ]
+                ]
+            },
+            bedroom: {
+                title: 'Bedroom',
+                rows: [
+                    [
+                        { id: 'light.bedroom', type: 'switch', name: 'Main Light', size: '(2x1)', icon: '', icon_on: 'mdi-lightbulb-on', icon_off: 'mdi-lightbulb-outline', was_edited: false },
+                        { id: 'light.bedside', type: 'switch', name: 'Bedside', size: '(2x1)', icon: '', icon_on: 'mdi-lamp', icon_off: 'mdi-lamp-outline', was_edited: false }
+                    ],
+                    [
+                        { id: 'cover.bedroom_blinds', type: 'cover', name: 'Blinds', size: '(2x1)', icon: '', icon_on: 'mdi-window-shutter-open', icon_off: 'mdi-window-shutter', was_edited: false },
+                        { id: 'input_datetime.alarm', type: 'sensor', name: 'Alarm', size: '(2x1)', icon: 'mdi-alarm', icon_on: '', icon_off: '', was_edited: false }
+                    ]
+                ]
+            },
+            kitchen: {
+                title: 'Kitchen',
+                rows: [
+                    [
+                        { id: 'light.kitchen_ceiling', type: 'switch', name: 'Ceiling', size: '(2x1)', icon: '', icon_on: 'mdi-lightbulb-on', icon_off: 'mdi-lightbulb-outline', was_edited: false },
+                        { id: 'light.kitchen_counter', type: 'switch', name: 'Counter', size: '(2x1)', icon: '', icon_on: 'mdi-lightbulb-on', icon_off: 'mdi-lightbulb-outline', was_edited: false }
+                    ],
+                    [
+                        { id: 'sensor.fridge_power', type: 'sensor', name: 'Fridge', size: '(1x1)', icon: 'mdi-fridge', icon_on: '', icon_off: '', was_edited: false },
+                        { id: 'sensor.dishwasher', type: 'sensor', name: 'Dishwasher', size: '(1x1)', icon: 'mdi-dishwasher', icon_on: '', icon_off: '', was_edited: false },
+                        { id: 'sensor.oven', type: 'sensor', name: 'Oven', size: '(1x1)', icon: 'mdi-stove', icon_on: '', icon_off: '', was_edited: false },
+                        { id: 'sensor.coffee', type: 'sensor', name: 'Coffee', size: '(1x1)', icon: 'mdi-coffee', icon_on: '', icon_off: '', was_edited: false }
+                    ]
+                ]
+            },
+            security: {
+                title: 'Security',
+                rows: [
+                    [
+                        { id: 'lock.front_door', type: 'lock', name: 'Front Door', size: '(2x1)', icon: '', icon_on: 'mdi-lock-open', icon_off: 'mdi-lock', was_edited: false },
+                        { id: 'lock.back_door', type: 'lock', name: 'Back Door', size: '(2x1)', icon: '', icon_on: 'mdi-lock-open', icon_off: 'mdi-lock', was_edited: false }
+                    ],
+                    [
+                        { id: 'camera.front', type: 'binary_sensor', name: 'Front Cam', size: '(1x1)', icon: 'mdi-cctv', icon_on: '', icon_off: '', was_edited: false },
+                        { id: 'camera.back', type: 'binary_sensor', name: 'Back Cam', size: '(1x1)', icon: 'mdi-cctv', icon_on: '', icon_off: '', was_edited: false },
+                        { id: 'binary_sensor.motion_entry', type: 'binary_sensor', name: 'Entry Motion', size: '(2x1)', icon: '', icon_on: 'mdi-motion-sensor', icon_off: 'mdi-motion-sensor-off', was_edited: false }
+                    ]
+                ]
+            },
+            garden: {
+                title: 'Garden',
+                rows: [
+                    [
+                        { id: 'switch.irrigation', type: 'switch', name: 'Irrigation', size: '(2x1)', icon: '', icon_on: 'mdi-water', icon_off: 'mdi-water-off', was_edited: false },
+                        { id: 'light.garden', type: 'switch', name: 'Garden Light', size: '(2x1)', icon: '', icon_on: 'mdi-lightbulb-on', icon_off: 'mdi-lightbulb-outline', was_edited: false }
+                    ],
+                    [
+                        { id: 'sensor.temperature_outside', type: 'sensor', name: 'Temperature', size: '(2x1)', icon: 'mdi-thermometer', icon_on: '', icon_off: '', was_edited: false },
+                        { id: 'sensor.humidity_outside', type: 'sensor', name: 'Humidity', size: '(2x1)', icon: 'mdi-water-percent', icon_on: '', icon_off: '', was_edited: false }
+                    ]
+                ]
+            }
+        };
+
+        function applyTemplate(templateName) {
+            const template = TEMPLATES[templateName];
+            if (!template) return;
+            
+            const msg = TRANSLATIONS[currentLang].warning_replace_layout;
+            if (!confirm(msg)) return;
+            
+            rows = JSON.parse(JSON.stringify(template.rows)); // Deep copy
+            document.getElementById('dash-title').value = template.title;
+            syncTitle();
+            renderPreview();
+            showToast(TRANSLATIONS[currentLang].apply_template + ': ' + template.title, 'success');
+        }
+
+        // ==================== HOME ASSISTANT INTEGRATION ====================
+        async function checkHAStatus() {
+            try {
+                const response = await fetch('/api/status');
+                const data = await response.json();
+                
+                const section = document.getElementById('ha-section');
+                const statusBox = document.getElementById('ha-status-box');
+                const statusText = document.getElementById('ha-status-text');
+                
+                if (data.success && data.appdaemon_found) {
+                    section.classList.add('visible');
+                    statusBox.classList.remove('disconnected');
+                    statusText.innerHTML = `<i class="mdi mdi-check-circle"></i><span>${TRANSLATIONS[currentLang].ha_connected}</span>`;
+                    await refreshHADashboards();
+                } else {
+                    section.classList.add('visible');
+                    statusBox.classList.add('disconnected');
+                    statusText.innerHTML = `<i class="mdi mdi-close-circle"></i><span>${TRANSLATIONS[currentLang].ha_not_connected}</span>`;
+                }
+            } catch (error) {
+                console.log('HA integration not available:', error);
+                // Keep section hidden if API not available
+            }
+        }
+
+        async function refreshHADashboards() {
+            try {
+                const response = await fetch('/api/dashboards');
+                const data = await response.json();
+                
+                const listDiv = document.getElementById('ha-dash-list');
+                listDiv.innerHTML = '';
+                
+                if (data.success && data.dashboards && data.dashboards.length > 0) {
+                    data.dashboards.forEach(filename => {
+                        const item = document.createElement('div');
+                        item.className = 'ha-dash-item';
+                        
+                        const name = document.createElement('span');
+                        name.className = 'name';
+                        name.innerText = filename;
+                        item.appendChild(name);
+                        
+                        const actions = document.createElement('div');
+                        actions.className = 'actions';
+                        
+                        const loadBtn = document.createElement('button');
+                        loadBtn.className = 'btn-load';
+                        loadBtn.innerHTML = `<i class="mdi mdi-download"></i> ${TRANSLATIONS[currentLang].ha_load}`;
+                        loadBtn.onclick = () => loadFromHA(filename);
+                        actions.appendChild(loadBtn);
+                        
+                        const delBtn = document.createElement('button');
+                        delBtn.className = 'btn-delete';
+                        delBtn.innerHTML = `<i class="mdi mdi-delete"></i> ${TRANSLATIONS[currentLang].ha_delete}`;
+                        delBtn.onclick = () => deleteFromHA(filename);
+                        actions.appendChild(delBtn);
+                        
+                        item.appendChild(actions);
+                        listDiv.appendChild(item);
+                    });
+                } else {
+                    listDiv.innerHTML = `<p style="color: #999; text-align: center; padding: 20px;">${TRANSLATIONS[currentLang].no_saved_dashboards}</p>`;
+                }
+            } catch (error) {
+                console.error('Error refreshing dashboards:', error);
+                showToast(TRANSLATIONS[currentLang].error + ': ' + error.message, 'error');
+            }
+        }
+
+        async function saveToHA() {
+            const filename = document.getElementById('ha-filename').value.trim() || 'joandashboard';
+            
+            // Generate YAML code
+            document.getElementById('layout_json').value = JSON.stringify(rows);
+            document.getElementById('custom_defs').value = JSON.stringify(rawImportedDefs);
+            
+            const formData = new FormData(document.getElementById('main-form'));
+            
+            try {
+                const response = await fetch('/', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const html = await response.text();
+                
+                // Extract YAML from response
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const yamlElement = doc.getElementById('yaml-output');
+                
+                if (!yamlElement) {
+                    showToast(TRANSLATIONS[currentLang].error + ': Could not generate YAML', 'error');
+                    return;
+                }
+                
+                const yamlContent = yamlElement.textContent;
+                
+                // Save to AppDaemon
+                const saveResponse = await fetch('/api/dashboard/save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        filename: filename,
+                        content: yamlContent
+                    })
+                });
+                
+                const saveData = await saveResponse.json();
+                
+                if (saveData.success) {
+                    showToast(TRANSLATIONS[currentLang].ha_save_success + ': ' + saveData.filename, 'success');
+                    await refreshHADashboards();
+                } else {
+                    showToast(TRANSLATIONS[currentLang].error + ': ' + saveData.error, 'error');
+                }
+            } catch (error) {
+                console.error('Error saving to HA:', error);
+                showToast(TRANSLATIONS[currentLang].error + ': ' + error.message, 'error');
+            }
+        }
+
+        async function loadFromHA(filename) {
+            try {
+                const response = await fetch(`/api/dashboard/${filename}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('import-code').value = data.content;
+                    importYaml();
+                    showToast(TRANSLATIONS[currentLang].ha_load_success + ': ' + filename, 'success');
+                } else {
+                    showToast(TRANSLATIONS[currentLang].error + ': ' + data.error, 'error');
+                }
+            } catch (error) {
+                console.error('Error loading from HA:', error);
+                showToast(TRANSLATIONS[currentLang].error + ': ' + error.message, 'error');
+            }
+        }
+
+        async function deleteFromHA(filename) {
+            const msg = currentLang === 'pl' ? `Czy na pewno usunąć ${filename}?` : `Are you sure you want to delete ${filename}?`;
+            if (!confirm(msg)) return;
+            
+            try {
+                const response = await fetch(`/api/dashboard/delete/${filename}`, {
+                    method: 'DELETE'
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    showToast(TRANSLATIONS[currentLang].ha_delete_success + ': ' + filename, 'success');
+                    await refreshHADashboards();
+                } else {
+                    showToast(TRANSLATIONS[currentLang].error + ': ' + data.error, 'error');
+                }
+            } catch (error) {
+                console.error('Error deleting from HA:', error);
+                showToast(TRANSLATIONS[currentLang].error + ': ' + error.message, 'error');
+            }
+        }
+
+        async function restartAppDaemon() {
+            const msg = currentLang === 'pl' ? 'Czy na pewno zrestartować AppDaemon?' : 'Are you sure you want to restart AppDaemon?';
+            if (!confirm(msg)) return;
+            
+            try {
+                const response = await fetch('/api/appdaemon/restart', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    showToast(TRANSLATIONS[currentLang].ha_restart_success, 'success');
+                } else {
+                    showToast(TRANSLATIONS[currentLang].error + ': ' + data.error, 'error');
+                }
+            } catch (error) {
+                console.error('Error restarting AppDaemon:', error);
+                showToast(TRANSLATIONS[currentLang].error + ': ' + error.message, 'error');
+            }
+        }
+
         applyGrid();
         loadSavedList();
         setLang('pl');
+        applyZoom(); // Apply saved zoom level
         const iconDl = document.getElementById('icon-list');
         POPULAR_ICONS.forEach(i => { const op = document.createElement('option'); op.value = i; iconDl.appendChild(op); });
         const dashDl = document.getElementById('nav-dash-suggestions');
@@ -1454,6 +2155,10 @@
         for(const k in saved) { const op = document.createElement('option'); op.value = k; dashDl.appendChild(op); }
 
         updateResultPathsToHost();
+        checkHAStatus(); // Check HA integration on page load
     </script>
+    
+    <!-- Toast Notification Container -->
+    <div id="toast-container"></div>
 </body>
 </html>
