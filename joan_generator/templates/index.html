@@ -906,7 +906,7 @@
             // Also update HA dashboard filename suggestion
             const haFilename = document.getElementById('ha-dash-filename');
             if (haFilename && title) {
-                const safeName = title.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+                const safeName = title.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_-]/g, '');
                 haFilename.value = safeName + '.dash';
             }
         }

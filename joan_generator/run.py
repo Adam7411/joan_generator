@@ -638,7 +638,7 @@ def index():
                     
                     if w_type == 'navigate':
                         # POPRAWKA: Wyciągnij samą nazwę dashboardu (bez "navigate.")
-                        dash_target = w_id.replace('navigate.', '')
+                        dash_target = w_id[9:] if w_id.startswith('navigate.') else w_id
                         # POPRAWKA: Użyj icon_active i icon_inactive (oba wymagane dla navigate)
                         nav_icon = w_icon or 'mdi-arrow-right-circle'
                         generated_yaml += f"  widget_type: navigate\n"
