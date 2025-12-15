@@ -192,6 +192,16 @@
             </div>
         </div>
 
+        <!-- Home Assistant Integration Status -->
+        <div id="ha-status-box" class="section" style="border: 2px solid #4caf50; background: rgba(76, 175, 80, 0.05); display: none;">
+            <div class="section-title" style="border-bottom-color: #4caf50; color: #4caf50;">
+                <span data-i18n="sec_ha_status">📡 Home Assistant / AppDaemon Integration</span>
+            </div>
+            <div id="ha-status-content" style="padding: 10px;">
+                <p style="margin: 5px 0;"><strong data-i18n="ha_status_checking">Checking connection...</strong></p>
+            </div>
+        </div>
+
         <div class="section">
             <div class="section-title">
                 <span data-i18n="sec_settings">1. Ustawienia Dashboardu</span>
@@ -341,6 +351,39 @@
                 <p style="font-size:0.85em; margin-bottom: 10px; color: #666;">Możesz przeciągać przyciski między wierszami oraz zmieniać ich kolejność w wierszu (Drag&Drop).</p>
                 <div class="preview-area" id="preview-container"></div>
                 <button type="button" class="btn btn-row" onclick="addRow()" data-i18n="btn_row">+ Dodaj Wiersz</button>
+            </div>
+
+            <!-- Home Assistant Dashboards Manager -->
+            <div class="section" id="ha-dash-section" style="border: 2px solid #4caf50; background: rgba(76, 175, 80, 0.05); display: none;">
+                <div class="section-title" style="border-bottom-color: #4caf50; color: #4caf50;">
+                    <span data-i18n="sec_ha_dashboards">💾 Dashboardy w Home Assistant</span>
+                </div>
+
+                <p style="font-size: 0.9em; margin-bottom: 10px; font-weight:bold;" data-i18n="ha_dash_desc">
+                    Zapisz i wczytuj dashboardy bezpośrednio do/z folderu AppDaemon w Home Assistant.
+                </p>
+                
+                <div class="flex-row" style="margin-bottom: 15px;">
+                    <div class="flex-col" style="flex: 2;">
+                        <label data-i18n="ha_dash_filename">Nazwa pliku dashboardu:</label>
+                        <input type="text" id="ha-dash-filename" placeholder="joandashboard.dash">
+                    </div>
+                    <div class="flex-col" style="flex: 1; display: flex; align-items: flex-end;">
+                        <button type="button" class="btn btn-dash-save" style="background: #4caf50; width: 100%;" onclick="saveToHA()" data-i18n="ha_save_btn">💾 ZAPISZ DO HA</button>
+                    </div>
+                </div>
+
+                <div>
+                    <label data-i18n="ha_dash_existing">Istniejące pliki .dash w AppDaemon:</label>
+                    <div id="ha-dash-list" class="dash-list" style="min-height: 50px;">
+                        <p style="color: #666; font-style: italic;" data-i18n="ha_dash_loading">Wczytywanie...</p>
+                    </div>
+                </div>
+
+                <div style="margin-top: 15px; display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" class="btn" style="background: #2196f3;" onclick="refreshHADashboards()" data-i18n="ha_refresh_btn">🔄 Odśwież listę</button>
+                    <button type="button" class="btn" style="background: #ff9800;" onclick="restartAppDaemon()" data-i18n="ha_restart_btn">🔄 Restart AppDaemon</button>
+                </div>
             </div>
 
             <div class="section" style="border: 2px solid #009688; background: rgba(0, 150, 136, 0.05);">
@@ -628,7 +671,18 @@
                 manager_desc: "Zapisz swoje układy w przeglądarce, aby łatwo się między nimi przełączać. Aby przełączać strony na samym urządzeniu Joan 6, użyj widgetu 'Przycisk Nawigacji' (Navigate).",
                 manager_save_as: "Zapisz obecny układ jako:",
                 manager_save_btn: "ZAPISZ",
-                manager_saved_list: "Twoje zapisane dashboardy:"
+                manager_saved_list: "Twoje zapisane dashboardy:",
+                
+                sec_ha_status: "📡 Home Assistant / AppDaemon - Integracja",
+                ha_status_checking: "Sprawdzanie połączenia...",
+                sec_ha_dashboards: "💾 Dashboardy w Home Assistant",
+                ha_dash_desc: "Zapisz i wczytuj dashboardy bezpośrednio do/z folderu AppDaemon w Home Assistant.",
+                ha_dash_filename: "Nazwa pliku dashboardu:",
+                ha_save_btn: "💾 ZAPISZ DO HA",
+                ha_dash_existing: "Istniejące pliki .dash w AppDaemon:",
+                ha_dash_loading: "Wczytywanie...",
+                ha_refresh_btn: "🔄 Odśwież listę",
+                ha_restart_btn: "🔄 Restart AppDaemon"
             },
             en: {
                 title_main: "Joan 6 E-Ink Generator",
@@ -662,7 +716,18 @@
                 manager_desc: "Save your layouts in the browser to switch between them easily. To change pages on the Joan 6 device itself, use the 'Navigation Button' (Navigate) widget.",
                 manager_save_as: "Save current layout as:",
                 manager_save_btn: "SAVE",
-                manager_saved_list: "Your saved dashboards:"
+                manager_saved_list: "Your saved dashboards:",
+                
+                sec_ha_status: "📡 Home Assistant / AppDaemon Integration",
+                ha_status_checking: "Checking connection...",
+                sec_ha_dashboards: "💾 Dashboards in Home Assistant",
+                ha_dash_desc: "Save and load dashboards directly to/from AppDaemon folder in Home Assistant.",
+                ha_dash_filename: "Dashboard filename:",
+                ha_save_btn: "💾 SAVE TO HA",
+                ha_dash_existing: "Existing .dash files in AppDaemon:",
+                ha_dash_loading: "Loading...",
+                ha_refresh_btn: "🔄 Refresh list",
+                ha_restart_btn: "🔄 Restart AppDaemon"
             }
         };
 
@@ -835,7 +900,16 @@
             });
         }
 
-        function syncTitle() { document.getElementById('form-title').value = document.getElementById('dash-title').value; }
+        function syncTitle() { 
+            const title = document.getElementById('dash-title').value;
+            document.getElementById('form-title').value = title; 
+            // Also update HA dashboard filename suggestion
+            const haFilename = document.getElementById('ha-dash-filename');
+            if (haFilename && title) {
+                const safeName = title.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+                haFilename.value = safeName + '.dash';
+            }
+        }
         function autoNameNav() { if(blockSmart) return; document.getElementById('w-name').value = document.getElementById('w-dash').value.toUpperCase(); }
         function selectRow(rI) { if (editIdx) cancelEdit(); selectedRowIdx = rI; renderPreview(); }
 
@@ -1447,6 +1521,247 @@
             }
         }
 
+        // =========================================================================
+        // HOME ASSISTANT INTEGRATION FUNCTIONS
+        // =========================================================================
+
+        async function checkHAStatus() {
+            try {
+                const response = await fetch('/api/status');
+                const data = await response.json();
+                
+                const statusBox = document.getElementById('ha-status-box');
+                const statusContent = document.getElementById('ha-status-content');
+                const haDashSection = document.getElementById('ha-dash-section');
+                
+                if (data.success && data.appdaemon_found) {
+                    statusBox.style.display = 'block';
+                    statusBox.style.borderColor = '#4caf50';
+                    statusBox.style.background = 'rgba(76, 175, 80, 0.05)';
+                    
+                    statusContent.innerHTML = `
+                        <p style="margin: 5px 0; color: #4caf50;"><strong>✅ ${currentLang === 'pl' ? 'Połączono z Home Assistant' : 'Connected to Home Assistant'}</strong></p>
+                        <p style="margin: 5px 0; font-size: 0.9em;">📁 AppDaemon: <code>${data.appdaemon_path}</code></p>
+                        <p style="margin: 5px 0; font-size: 0.9em;">📊 ${currentLang === 'pl' ? 'Znaleziono' : 'Found'}: ${data.dashboards_count} ${currentLang === 'pl' ? 'plików .dash' : '.dash files'}</p>
+                    `;
+                    
+                    haDashSection.style.display = 'block';
+                    refreshHADashboards();
+                } else {
+                    statusBox.style.display = 'block';
+                    statusBox.style.borderColor = '#ff9800';
+                    statusBox.style.background = 'rgba(255, 152, 0, 0.05)';
+                    
+                    statusContent.innerHTML = `
+                        <p style="margin: 5px 0; color: #ff9800;"><strong>⚠️ ${currentLang === 'pl' ? 'AppDaemon nie znaleziony' : 'AppDaemon not found'}</strong></p>
+                        <p style="margin: 5px 0; font-size: 0.9em;">${currentLang === 'pl' ? 'Sprawdź czy AppDaemon jest zainstalowany i uruchomiony.' : 'Check if AppDaemon is installed and running.'}</p>
+                        <p style="margin: 5px 0; font-size: 0.9em;">${currentLang === 'pl' ? 'Możesz nadal generować kod YAML i zapisywać go ręcznie.' : 'You can still generate YAML code and save it manually.'}</p>
+                    `;
+                    
+                    haDashSection.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error checking HA status:', error);
+                const statusBox = document.getElementById('ha-status-box');
+                statusBox.style.display = 'block';
+                statusBox.style.borderColor = '#d32f2f';
+                statusBox.style.background = 'rgba(211, 47, 47, 0.05)';
+                
+                document.getElementById('ha-status-content').innerHTML = `
+                    <p style="margin: 5px 0; color: #d32f2f;"><strong>❌ ${currentLang === 'pl' ? 'Błąd połączenia' : 'Connection error'}</strong></p>
+                    <p style="margin: 5px 0; font-size: 0.9em;">${error.message}</p>
+                `;
+            }
+        }
+
+        async function refreshHADashboards() {
+            try {
+                const response = await fetch('/api/dashboards');
+                const data = await response.json();
+                
+                const listDiv = document.getElementById('ha-dash-list');
+                listDiv.innerHTML = '';
+                
+                if (data.success && data.dashboards && data.dashboards.length > 0) {
+                    data.dashboards.forEach(filename => {
+                        const item = document.createElement('div');
+                        item.className = 'dash-item';
+                        
+                        const icon = document.createElement('span');
+                        icon.innerText = '📄 ';
+                        item.appendChild(icon);
+                        
+                        const txt = document.createElement('span');
+                        txt.innerText = filename;
+                        item.appendChild(txt);
+                        
+                        const btnLoad = document.createElement('button');
+                        btnLoad.innerText = currentLang === 'pl' ? 'Wczytaj' : 'Load';
+                        btnLoad.style.background = '#2196f3';
+                        btnLoad.style.color = 'white';
+                        btnLoad.onclick = (e) => { e.stopPropagation(); loadFromHA(filename); };
+                        item.appendChild(btnLoad);
+                        
+                        const btnDel = document.createElement('button');
+                        btnDel.innerText = 'X';
+                        btnDel.onclick = (e) => { e.stopPropagation(); deleteFromHA(filename); };
+                        item.appendChild(btnDel);
+                        
+                        listDiv.appendChild(item);
+                    });
+                } else {
+                    listDiv.innerHTML = `<p style="color: #666; font-style: italic;">${currentLang === 'pl' ? 'Brak plików .dash' : 'No .dash files found'}</p>`;
+                }
+            } catch (error) {
+                console.error('Error refreshing HA dashboards:', error);
+                document.getElementById('ha-dash-list').innerHTML = `<p style="color: #d32f2f;">Error: ${error.message}</p>`;
+            }
+        }
+
+        async function saveToHA() {
+            const filename = document.getElementById('ha-dash-filename').value || document.getElementById('dash-title').value + '.dash';
+            
+            // Generate YAML content
+            document.getElementById('layout_json').value = JSON.stringify(rows);
+            document.getElementById('custom_defs').value = JSON.stringify(rawImportedDefs);
+            
+            // We need to generate the YAML content - we'll do this by creating a temporary form submission
+            // Actually, let's collect the data and call the backend directly
+            const title = document.getElementById('dash-title').value;
+            const cols = document.getElementById('h-cols').value;
+            const rowsCount = document.getElementById('h-rows').value;
+            const defSize = document.getElementById('input-def-size').value;
+            const lang = document.getElementById('input-lang').value;
+            
+            // Create form data
+            const formData = new FormData();
+            formData.append('title', title);
+            formData.append('grid_columns', cols);
+            formData.append('grid_rows', rowsCount);
+            formData.append('ui_language', lang);
+            formData.append('default_widget_size', defSize);
+            formData.append('layout_data_json', JSON.stringify(rows));
+            formData.append('custom_definitions_json', JSON.stringify(rawImportedDefs));
+            
+            try {
+                // First, generate the YAML by posting to the main form
+                const genResponse = await fetch('/', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!genResponse.ok) {
+                    throw new Error('Failed to generate YAML');
+                }
+                
+                const html = await genResponse.text();
+                
+                // Extract YAML from the response (it's in a textarea)
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const yamlContent = doc.querySelector('.output')?.value;
+                
+                if (!yamlContent) {
+                    throw new Error('No YAML content generated');
+                }
+                
+                // Now save to HA
+                const saveResponse = await fetch('/api/dashboard/save', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        filename: filename,
+                        content: yamlContent
+                    })
+                });
+                
+                const result = await saveResponse.json();
+                
+                if (result.success) {
+                    alert(`✅ ${result.message}\n${result.restart_message || ''}`);
+                    refreshHADashboards();
+                } else {
+                    alert(`❌ Error: ${result.error}`);
+                }
+            } catch (error) {
+                console.error('Error saving to HA:', error);
+                alert(`❌ ${currentLang === 'pl' ? 'Błąd zapisu' : 'Save error'}: ${error.message}`);
+            }
+        }
+
+        async function loadFromHA(filename) {
+            if (!confirm(currentLang === 'pl' ? 'Wczytać dashboard z Home Assistant? Niezapisane zmiany przepadną.' : 'Load dashboard from Home Assistant? Unsaved changes will be lost.')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/dashboard/${filename}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('import-code').value = data.content;
+                    importYaml();
+                    alert(`✅ ${currentLang === 'pl' ? 'Wczytano' : 'Loaded'}: ${filename}`);
+                } else {
+                    alert(`❌ Error: ${data.error}`);
+                }
+            } catch (error) {
+                console.error('Error loading from HA:', error);
+                alert(`❌ ${currentLang === 'pl' ? 'Błąd wczytywania' : 'Load error'}: ${error.message}`);
+            }
+        }
+
+        async function deleteFromHA(filename) {
+            if (!confirm(`${currentLang === 'pl' ? 'Usunąć plik' : 'Delete file'} ${filename}?`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/dashboard/delete/${filename}`, {
+                    method: 'DELETE'
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(`✅ ${data.message}`);
+                    refreshHADashboards();
+                } else {
+                    alert(`❌ Error: ${data.error}`);
+                }
+            } catch (error) {
+                console.error('Error deleting from HA:', error);
+                alert(`❌ ${currentLang === 'pl' ? 'Błąd usuwania' : 'Delete error'}: ${error.message}`);
+            }
+        }
+
+        async function restartAppDaemon() {
+            if (!confirm(currentLang === 'pl' ? 'Restart AppDaemon? Może to potrwać kilka sekund.' : 'Restart AppDaemon? This may take a few seconds.')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/appdaemon/restart', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(`✅ ${data.message}`);
+                } else {
+                    alert(`❌ Error: ${data.error}`);
+                }
+            } catch (error) {
+                console.error('Error restarting AppDaemon:', error);
+                alert(`❌ ${currentLang === 'pl' ? 'Błąd restartu' : 'Restart error'}: ${error.message}`);
+            }
+        }
+
+        // =========================================================================
+        // END HOME ASSISTANT INTEGRATION
+        // =========================================================================
+
         applyGrid();
         loadSavedList();
         setLang('pl');
@@ -1457,6 +1772,9 @@
         for(const k in saved) { const op = document.createElement('option'); op.value = k; dashDl.appendChild(op); }
 
         updateResultPathsToHost();
+        
+        // Check Home Assistant integration status on page load
+        checkHAStatus();
     </script>
 </body>
 </html>
