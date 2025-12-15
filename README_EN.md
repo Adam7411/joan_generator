@@ -80,6 +80,12 @@ Create a new `.dash` file in the AppDaemon configuration folder:
 ```text
 \\YOUR_HA_IP\addon_configs\appdaemon\dashboards\joan_living_room.dash
 ```
+***
+
+<img width="758" height="1024" alt="snapshot_camera_kuchnia_podglad_ekranu_15 12 2025, 08_05_58" src="https://github.com/user-attachments/assets/87369049-29d1-4a22-b6e8-c7654e052266" />
+---
+***
+---
 <img width="1827" height="2900" alt="image" src="https://github.com/user-attachments/assets/ac61375f-647e-46ff-9a30-d1196b35885a" />
 
 ---
