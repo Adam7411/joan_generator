@@ -1,3 +1,7 @@
+- [Visionect Software Suite - Instalacja w Proxmox](https://github.com/Adam7411/Joan-6-Visionect_Home-Assistant)
+- [Visionect Software Suite - Instalacja w Home Assistant](https://github.com/Adam7411/visionect-v3-allinone/blob/main/visionect-v3-allinone/README_pl.md)
+- [Dodatek Visionect Joan dla Home Assistant](https://github.com/Adam7411/visionect_joan/blob/main/README_pl.md)
+
 <div align="right">
 <strong>Polski</strong> | <a href="README_EN.md">English</a>
 </div>
@@ -74,10 +78,8 @@ Utwórz nowy plik z rozszerzeniem `.dash` w folderze konfiguracyjnym AppDaemon:
 \\TWOJE_IP_HA\addon_configs\appdaemon\dashboards\joan_salon.dash
 ```
 ***
-- [Visionect Software Suite - Instalacja w Proxmox](https://github.com/Adam7411/Joan-6-Visionect_Home-Assistant)
-- [Visionect Software Suite - Instalacja w Home Assistant](https://github.com/Adam7411/visionect-v3-allinone/blob/main/visionect-v3-allinone/README_pl.md)
-- [Dodatek Visionect Joan dla Home Assistant](https://github.com/Adam7411/visionect_joan/blob/main/README_pl.md)
-- [Dodatek Joan 6: AppDaemon Dashboard Generator](https://github.com/Adam7411/joan_generator/)
+<img width="758" height="1024" alt="snapshot_camera_kuchnia_podglad_ekranu_15 12 2025, 08_05_58" src="https://github.com/user-attachments/assets/d02d7a10-f1e0-4208-8119-9b1e1810e4bd" />
+
 ***
 <img width="1768" height="2888" alt="image" src="https://github.com/user-attachments/assets/c71bcffa-c6a4-47df-ab1c-8006bb2260de" />
 
