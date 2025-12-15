@@ -10,14 +10,22 @@
   "init": false,
   "panel_icon": "mdi:tablet-dashboard",
   "homeassistant_api": true,
+  "map": [
+    "addon_config:rw",
+    "config:rw"
+  ],
   "ports": {
     "5000/tcp": 5000
   },
   "webui": "http://[HOST]:[PORT:5000]/",
   "options": {
-    "manual_token": ""
+    "manual_token": "",
+    "appdaemon_path": "",
+    "auto_restart_appdaemon": false
   },
   "schema": {
-    "manual_token": "str"
+    "manual_token": "str",
+    "appdaemon_path": "str?",
+    "auto_restart_appdaemon": "bool"
   }
 }

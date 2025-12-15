@@ -1285,6 +1285,9 @@
                                 const iMatch = d.match(/icon:\s*(.*)/); if(iMatch) icon = iMatch[1].trim();
                                 const ionMatch = d.match(/icon_on:\s*(.*)/); if(ionMatch) icon_on = ionMatch[1].trim();
                                 const ioffMatch = d.match(/icon_off:\s*(.*)/); if(ioffMatch) icon_off = ioffMatch[1].trim();
+                                // Handle navigate widget icon_active/icon_inactive
+                                const iactiveMatch = d.match(/icon_active:\s*(.*)/); if(iactiveMatch) icon_on = iactiveMatch[1].trim();
+                                const iinactiveMatch = d.match(/icon_inactive:\s*(.*)/); if(iinactiveMatch) icon_off = iinactiveMatch[1].trim();
                             } else { 
                                 if(id === 'spacer') type = 'spacer'; 
                                 else if(id.startsWith('navigate.')) type = 'navigate'; 
