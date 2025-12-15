@@ -22,9 +22,10 @@ try:
             manual_token = options.get('manual_token')
             if manual_token and len(manual_token) > 10:
                 TOKEN = manual_token
-                API_URL = "http://homeassistant: 8123/api"
+                # USUNIĘTA SPACJA przed 8123:
+                API_URL = "http://homeassistant:8123/api"
                 TOKEN_SOURCE = "Manual (Konfiguracja)"
-                print(f"🔧 Wykryto manualny token.  Przełączam API na:  {API_URL}")
+                print(f"🔧 Wykryto manualny token. Przełączam API na: {API_URL}")
 except Exception as e: 
     print(f"ℹ️ Info: Nie udało się odczytać pliku opcji: {e}")
 
