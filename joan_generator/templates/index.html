@@ -205,11 +205,12 @@
                 <div class="flex-col">
                     <label data-i18n="lbl_grid">Układ Siatki (Smart Grid)</label>
                     <select id="grid-preset" onchange="handleGridChange()">
-                        <option value="4x8" data-i18n="grid_std_plus" selected>Standard+ (3 kolumny/4 jednostki x 8 wierszy) - DOMYŚLNY</option>
-                        <option value="4x6" data-i18n="grid_std">Standard (3 kolumny/4 jednostki x 6 wierszy)</option>
-                        <option value="4x4" data-i18n="grid_large">Duży (4 przyciski x 4 wiersze)</option>
-                        <option value="4x6m" data-i18n="grid_med">Średni (4 przyciski x 6 wierszy)</option>
-                        <option value="6x8" data-i18n="grid_small">Gęsty (6 małych kolumn x 8 wierszy)</option>
+                        <option value="3x8" selected>Standard (3 kolumny x 8 wierszy) - DOMYŚLNY</option>
+    
+                        <!-- Pozostałe opcje -->
+                        <option value="4x8" data-i18n="grid_std_plus">Szeroki (4 kolumny x 8 wierszy)</option>
+                        <option value="4x6" data-i18n="grid_std">Luźny (4 kolumny x 6 wierszy)</option>
+                        <option value="4x4" data-i18n="grid_large">Duże kafle (4 kolumny x 4 wiersze)</option>
                         <option value="custom" data-i18n="grid_custom">Układ własny</option>
                     </select>
                     
@@ -735,12 +736,9 @@
             else if (check(['wilg', 'humid'])) conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-water-percent' };
             
             const currentGrid = document.getElementById('grid-preset').value;
-            if ((currentGrid === '4x8' || currentGrid === '4x6') && conf.size === '(1x1)' && conf.type !== 'binary_sensor') {
+            // Dodajemy '3x8' do warunku
+            if ((currentGrid === '3x8' || currentGrid === '4x8' || currentGrid === '4x6') && conf.size === '(1x1)' && conf.type !== 'binary_sensor') {
                 conf.size = '(2x1)';
-            }
-            
-            if (conf.type === 'media_player' || conf.type === 'climate') {
-                conf.size = '(2x2)';
             }
 
             if (isTitleSearch) {
@@ -803,30 +801,28 @@
             if (val === 'custom') {
                 cols = parseInt(document.getElementById('custom-cols').value) || 3;
                 rws = parseInt(document.getElementById('custom-rows').value) || 8;
-                
-                document.getElementById('h-cols').value = cols;
-                document.getElementById('h-rows').value = rws;
-                document.getElementById('form-cols').value = cols;
-                document.getElementById('form-rows').value = rws;
-
+                // ... reszta bez zmian
             } else {
                 const parts = val.replace('m','').split('x');
                 cols = parts[0];
                 rws = parts[1];
-
-                document.getElementById('h-cols').value = cols;
-                document.getElementById('h-rows').value = rws;
-                document.getElementById('form-cols').value = cols;
-                document.getElementById('form-rows').value = rws;
+                // ... reszta bez zmian
             }
             
+            // ZAPISYWANIE DO UKRYTYCH PÓL
+            document.getElementById('h-cols').value = cols;
+            document.getElementById('h-rows').value = rws;
+            document.getElementById('form-cols').value = cols;
+            document.getElementById('form-rows').value = rws;
+
+            // --- TUTAJ JEST ZMIANA DLA PODGLĄDU ---
             let visualSlots = 3; 
             if (val === 'custom') {
                 visualSlots = parseInt(document.getElementById('custom-cols').value) || 3;
             } else {
-                if (val === '4x4' || val === '4x6' || val === '4x6m') visualSlots = 4;
-                if (val === '6x8' || val === '6x9') visualSlots = 6; 
-                if (val === '4x8') visualSlots = 4;
+                if (val === '3x8') visualSlots = 3; // Dla 3x8 mamy 3 sloty wizualne
+                if (val === '4x4' || val === '4x6' || val === '4x8') visualSlots = 4;
+                if (val === '6x8') visualSlots = 6; 
             }
             
             const px = (visualSlots * 117) + ((visualSlots - 1) * 8) + 40; 
@@ -858,11 +854,11 @@
             }
 
             let maxSlots = 3; 
-            if (gridVal === '4x4' || gridVal === '4x6' || gridVal === '4x6m') maxSlots = 4; 
-            if (gridVal === '6x8' || gridVal === '6x9') maxSlots = 6;
-            if (gridVal === '4x8') maxSlots = 4;
+            if (gridVal === '3x8') maxSlots = 3; // Limit 3 elementy (czyli 6 jednostek appdaemon)
+            if (gridVal === '4x4' || gridVal === '4x6' || gridVal === '4x8') maxSlots = 4; 
+            if (gridVal === '6x8') maxSlots = 6;
             
-            return maxSlots * 2; 
+            return maxSlots * 2; // Mnożymy razy 2, bo standardowy widget ma size=2
         }
 
         function getRowUsage(rowArr) {
