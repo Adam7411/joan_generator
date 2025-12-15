@@ -8,28 +8,28 @@ print("📦 1. Inicjalizacja aplikacji Joan 6 Generator...")
 app = Flask(__name__)
 
 # -------------------------------------------------------------------------
-# 1.  KONFIGURACJA API I TOKENU
+# 1. KONFIGURACJA API I TOKENU
 # -------------------------------------------------------------------------
-TOKEN = os.environ.get('SUPERVISOR_TOKEN')
+TOKEN = os.environ. get('SUPERVISOR_TOKEN')
 API_URL = "http://supervisor/core/api" 
 TOKEN_SOURCE = "System (Supervisor)"
 
 try:
     options_path = '/data/options.json'
-    if os. path.exists(options_path):
+    if os.path.exists(options_path):
         with open(options_path, 'r') as f:
-            options = json. load(f)
+            options = json.load(f)
             manual_token = options.get('manual_token')
             if manual_token and len(manual_token) > 10:
                 TOKEN = manual_token
-                API_URL = "http://homeassistant: 8123/api"
+                API_URL = "http://homeassistant:8123/api"
                 TOKEN_SOURCE = "Manual (Konfiguracja)"
                 print(f"🔧 Wykryto manualny token.  Przełączam API na: {API_URL}")
 except Exception as e: 
-    print(f"ℹ️ Info: Nie udało się odczytać pliku opcji:  {e}")
+    print(f"ℹ️ Info:  Nie udało się odczytać pliku opcji: {e}")
 
 if not TOKEN:
-    print("❌ OSTRZEŻENIE:  Brak tokena autoryzacji!  Lista encji będzie pusta.")
+    print("❌ OSTRZEŻENIE: Brak tokena autoryzacji!  Lista encji będzie pusta.")
 
 # -------------------------------------------------------------------------
 # 2. POBIERANIE DANYCH Z HOME ASSISTANT
@@ -58,49 +58,51 @@ def get_ha_entities():
                 entities.append(entity_obj)
             entities.sort(key=lambda x: x['id'])
             return entities
-    except Exception as e:
+    except Exception as e: 
         print(f"❌ Wyjątek:  {e}")
     return []
 
 # -------------------------------------------------------------------------
 # 3. STYLE (E-INK OPTIMIZED & TWEAKED)
 # -------------------------------------------------------------------------
-STYLE_TITLE = "color: #000000; font-size: 20px; font-weight: 700; text-align: center; padding-top: 5px; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif;"
-STYLE_WIDGET = "color: #000000 !important; background-color: #FFFFFF !important;"
+STYLE_TITLE = "color: #000000; font-size: 20px; font-weight: 700; text-align: center; padding-top:  5px; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif;"
+STYLE_WIDGET = "color: #000000 !important; background-color:  #FFFFFF !important;"
 STYLE_TEXT = "color: #000000 !important; font-weight: 700 !important;"
 STYLE_VALUE = "color: #000000 !important; font-size: 54px !important; font-weight: 700 !important; padding-top: 60px !important; line-height: 1.1 !important; display: inline-block !important;"
 STYLE_UNIT = "color: #000000 !important; padding-top: 60px !important; display: inline-block ! important;"
 STYLE_ICON = "color: #000000 !important;"
-STYLE_STATE_TEXT = "color: #000000 !important; font-weight:  700 !important; font-size: 16px !important;"
+STYLE_STATE_TEXT = "color: #000000 !important; font-weight: 700 !important; font-size: 16px !important;"
 
 # -------------------------------------------------------------------------
-# 4. KONWERSJA FORMATU IKON DLA APPDAEMON
+# 4. NORMALIZACJA FORMATU IKON DLA APPDAEMON
 # -------------------------------------------------------------------------
-def convert_icon_format(icon_name):
+def normalize_icon_format(icon_name):
     """
-    Konwertuje format ikon z 'mdi-nazwa' na 'mdi:nazwa' dla AppDaemon. 
-    AppDaemon wymaga formatu 'mdi:icon-name' zamiast 'mdi-icon-name'.
+    Normalizuje format ikon do formatu 'mdi-nazwa' wymaganego przez AppDaemon Dashboard. 
     
-    Przykłady:
-        'mdi-home' -> 'mdi:home'
-        'mdi-lightbulb-on' -> 'mdi:lightbulb-on'
-        'fa-home' -> 'fa-home' (bez zmian - Font Awesome)
+    AppDaemon Dashboard wymaga: 
+    - Material Design Icons: mdi-nazwa (np. mdi-home, mdi-power)
+    - Font Awesome: fas-nazwa, far-nazwa, fab-nazwa (np. fas-bell)
+    
+    Konwersje:
+        'mdi: home' -> 'mdi-home' (format HA -> format AppDaemon)
+        'mdi-home' -> 'mdi-home' (już poprawny)
         '' -> '' (puste pozostaje puste)
     """
-    if not icon_name:
+    if not icon_name: 
         return icon_name
     
-    icon_name = icon_name.strip()
+    icon_name = icon_name. strip()
     
-    # Konwertuj format mdi-nazwa na mdi:nazwa
-    if icon_name.startswith('mdi-'):
-        return 'mdi:' + icon_name[4:]
-    
-    # Jeśli już jest w formacie mdi:nazwa, pozostaw bez zmian
+    # Konwertuj format Home Assistant (mdi: nazwa) na format AppDaemon (mdi-nazwa)
     if icon_name.startswith('mdi:'):
+        return 'mdi-' + icon_name[4:]
+    
+    # Format mdi-nazwa jest już poprawny dla AppDaemon
+    if icon_name.startswith('mdi-'):
         return icon_name
     
-    # Font Awesome (fa-) i inne formaty - pozostaw bez zmian
+    # Font Awesome i inne formaty - pozostaw bez zmian
     return icon_name
 
 @app.route('/', methods=['GET', 'POST'])
@@ -110,7 +112,7 @@ def index():
     dashboard_filename = "joandashboard.dash"
     dashboard_slug = "joandashboard"
     
-    if request.method == 'POST': 
+    if request.method == 'POST':
         try:
             title = request.form. get('title', 'JoanDashboard')
             dashboard_slug = title.lower().replace(" ", "_")
@@ -131,7 +133,7 @@ def index():
             }
             dic = TRANS.get(lang, TRANS['pl'])
 
-            if def_w == 1:
+            if def_w == 1: 
                 ad_columns = int(cols)
             else: 
                 ad_columns = int(cols) * 2
@@ -143,15 +145,15 @@ def index():
             generated_yaml += f"columns: {ad_columns}\n"
             generated_yaml += f"rows: {rows}\n"
             generated_yaml += "global_parameters:\n"
-            generated_yaml += "  use_comma: 0\n"
+            generated_yaml += "  use_comma:  0\n"
             generated_yaml += "  precision: 1\n"
             generated_yaml += "  use_hass_icon: 1\n"
             generated_yaml += "  namespace: default\n"
             generated_yaml += "  devices:\n"
             generated_yaml += "    media_player:\n"
             generated_yaml += "      step: 5\n"
-            generated_yaml += f"  white_text_style:  \"{STYLE_TEXT}\"\n"
-            generated_yaml += f"  state_text_style:  \"{STYLE_STATE_TEXT}\"\n"
+            generated_yaml += f"  white_text_style: \"{STYLE_TEXT}\"\n"
+            generated_yaml += f"  state_text_style: \"{STYLE_STATE_TEXT}\"\n"
             generated_yaml += "skin: simplyred\n\n"
             
             layout_data_str = request.form.get('layout_data_json')
@@ -179,7 +181,7 @@ def index():
                         elif size_str == "(2x1)" and def_w == 2 and def_h == 1: is_default = True
                         elif size_str == "(1x1)" and def_w == 1 and def_h == 1: is_default = True
                             
-                        if not is_default and size_str: 
+                        if not is_default and size_str:
                              if not size_str.startswith('('): size_str = f"({size_str})"
                              widget_id += size_str
                              
@@ -204,26 +206,26 @@ def index():
 
                     w_type = w['type']
                     w_name = w['name']
-                    w_icon = convert_icon_format(w['icon'])  # KONWERSJA IKONY
-                    i_on = convert_icon_format(w. get('icon_on'))  # KONWERSJA IKONY
-                    i_off = convert_icon_format(w. get('icon_off'))  # KONWERSJA IKONY
+                    w_icon = normalize_icon_format(w['icon'])
+                    i_on = normalize_icon_format(w. get('icon_on'))
+                    i_off = normalize_icon_format(w. get('icon_off'))
                     
                     generated_yaml += f"{w_id}:\n"
                     
                     if w_type == 'navigate':
+                        # POPRAWKA: Wyciągnij samą nazwę dashboardu (bez "navigate.")
                         dash_target = w_id.replace('navigate. ', '')
-                        default_nav_icon = convert_icon_format('mdi-arrow-right-circle')
                         generated_yaml += f"  widget_type: navigate\n"
                         generated_yaml += f"  title: \"{w_name}\"\n"
-                        generated_yaml += f"  dashboard:  {dash_target}\n"
-                        generated_yaml += f"  icon_inactive: {w_icon or default_nav_icon}\n"
+                        generated_yaml += f"  dashboard:  {dash_target}\n"  # Tylko nazwa, bez "navigate."
+                        generated_yaml += f"  icon_inactive: {w_icon or 'mdi-arrow-right-circle'}\n"
                         generated_yaml += f"  title_style: \"{STYLE_TITLE}\"\n"
                         generated_yaml += f"  widget_style: \"{STYLE_WIDGET}\"\n"
 
                     elif w_type == 'sensor':
                         generated_yaml += f"  widget_type:  sensor\n"
                         generated_yaml += f"  entity:  {w_id}\n"
-                        generated_yaml += f"  title:  \"{w_name}\"\n"
+                        generated_yaml += f"  title: \"{w_name}\"\n"
                         generated_yaml += f"  title_style: \"{STYLE_TITLE}\"\n"
                         generated_yaml += f"  text_style: \"{STYLE_TEXT}\"\n"
                         generated_yaml += f"  value_style: \"{STYLE_VALUE}\"\n"
@@ -273,8 +275,8 @@ def index():
                         generated_yaml += f"  entity: {w_id}\n"
                         generated_yaml += f"  title: \"{w_name}\"\n"
                         
-                        if i_on: generated_yaml += f"  icon_on: {i_on}\n"
-                        if i_off: generated_yaml += f"  icon_off:  {i_off}\n"
+                        if i_on:  generated_yaml += f"  icon_on: {i_on}\n"
+                        if i_off: generated_yaml += f"  icon_off: {i_off}\n"
                         if ad_type == 'lock': 
                             if i_off: generated_yaml += f"  icon_locked: {i_off}\n"
                             if i_on: generated_yaml += f"  icon_unlocked: {i_on}\n"
@@ -289,7 +291,7 @@ def index():
                         
                         if ad_type in ['cover', 'binary_sensor', 'switch', 'light', 'lock']: 
                             generated_yaml += "  state_map:\n"
-                            if ad_type == 'cover':
+                            if ad_type == 'cover': 
                                 for s in ['open','closed','opening','closing']: generated_yaml += f"    \"{s}\": \"{dic. get(s,s)}\"\n"
                             elif ad_type == 'binary_sensor': 
                                 generated_yaml += f"    \"on\": \"{dic['open']}\"\n"
@@ -304,7 +306,7 @@ def index():
                     generated_yaml += "\n"
         except Exception as e: 
             print(f"❌ Error generating YAML: {e}")
-            generated_yaml = f"# ERROR GENERATING YAML:  {e}"
+            generated_yaml = f"# ERROR GENERATING YAML: {e}"
 
     return render_template('index.html', generated_yaml=generated_yaml, entities=ha_entities, filename=dashboard_filename, dash_name=dashboard_slug)
 
