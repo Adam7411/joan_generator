@@ -1270,28 +1270,58 @@
                     if (tr.startsWith('-')) {
                         const content = tr.substring(1).trim(); const widgets = content.split(',').map(s => s.trim()); const rowData = [];
                         widgets.forEach(wStr => {
-                            let id = wStr; 
-                            let size = ''; 
+                            let id = wStr;
+                            let size = '';
                             const sizeMatch = wStr.match(/\(\d+x\d+\)/);
-                            if(sizeMatch) { 
-                                size = sizeMatch[0]; 
-                                id = wStr.replace(size, '').trim(); 
-                            } 
-                            
-                            let type = 'switch'; let name = id; let icon = ''; let icon_on = ''; let icon_off = '';
-                            if(rawDefs[id]) {
-                                const d = rawDefs[id]; const tMatch = d.match(/widget_type:\s*(.*)/); if(tMatch) type = tMatch[1].trim();
-                                const nMatch = d.match(/title:\s*(.*)/); if(nMatch) name = nMatch[1].trim().replace(/['"]/g, '');
-                                const iMatch = d.match(/icon:\s*(.*)/); if(iMatch) icon = iMatch[1].trim();
-                                const ionMatch = d.match(/icon_on:\s*(.*)/); if(ionMatch) icon_on = ionMatch[1].trim();
-                                const ioffMatch = d.match(/icon_off:\s*(.*)/); if(ioffMatch) icon_off = ioffMatch[1].trim();
-                            } else { 
-                                if(id === 'spacer') type = 'spacer'; 
-                                else if(id.startsWith('navigate.')) type = 'navigate'; 
-                                else if(id.startsWith('sensor.')) type = 'sensor'; 
+                            if (sizeMatch) {
+                                size = sizeMatch[0];
+                                id = wStr.replace(size, '').trim();
                             }
-                            
-                            rowData.push({ id, type, size, name, icon, icon_on, icon_off, was_edited: false });
+
+                            let type = 'switch';
+                            let name = id;
+                            let icon = '';
+                            let icon_on = '';
+                            let icon_off = '';
+
+                            if (rawDefs[id]) {
+                                const d = rawDefs[id];
+                                
+                                // Typ i Tytuł
+                                const tMatch = d.match(/widget_type:\s*(.*)/);
+                                if (tMatch) type = tMatch[1].trim();
+                                const nMatch = d.match(/title:\s*(.*)/);
+                                if (nMatch) name = nMatch[1].trim().replace(/['"]/g, '');
+
+                                // Standardowe ikony
+                                const iMatch = d.match(/icon:\s*(.*)/);
+                                if (iMatch) icon = iMatch[1].trim();
+                                const ionMatch = d.match(/icon_on:\s*(.*)/);
+                                if (ionMatch) icon_on = ionMatch[1].trim();
+                                const ioffMatch = d.match(/icon_off:\s*(.*)/);
+                                if (ioffMatch) icon_off = ioffMatch[1].trim();
+
+                                // --- POPRAWKA DLA NAVIGATE (icon_active) ---
+                                const iActiveMatch = d.match(/icon_active:\s*(.*)/);
+                                if (iActiveMatch) icon = iActiveMatch[1].trim();
+                                
+                            } else {
+                                // Logika domyślna, jeśli nie znaleziono definicji widgetu
+                                if (id === 'spacer') type = 'spacer';
+                                else if (id.startsWith('navigate.')) type = 'navigate';
+                                else if (id.startsWith('sensor.')) type = 'sensor';
+                            }
+
+                            rowData.push({
+                                id,
+                                type,
+                                size,
+                                name,
+                                icon,
+                                icon_on,
+                                icon_off,
+                                was_edited: false
+                            });
                         });
                         newRows.push(rowData);
                     } else if (tr.match(/^[a-z0-9_]+:/i)) {
