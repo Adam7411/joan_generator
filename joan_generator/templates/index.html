@@ -654,7 +654,7 @@
                 opt_label: "Label (Text)", opt_clock: "Clock", opt_spacer: "Spacer (Empty)",
                 size_2x1: "2x1 (Wide Button)", size_1x1: "1x1 (Small)", size_2x2: "2x2 (Large)",
                 size_3x1: "3x1 (Extra Wide)", size_1x2: "1x2 (Tall)", size_3x2: "3x2 (Huge)",
-                btn_add: "+ ADD WIDGET", btn_update: "SAVE CHANGES", btn_cancel: "CANCEL",
+                btn_add: "+ ADD WIDGET", btn_update: "ZAPISZ ZMIANY", btn_cancel: "ANULUJ",
                 sec_preview: "3. Dashboard Preview", btn_row: "+ Add Row", btn_gen: "GENERATE .DASH CODE",
                 sec_result: "Generated YAML Code", lbl_save_path: "1. Save code to file:", lbl_open_link: "2. Restart AppDaemon and check:",
                 limit_15: "Max 15 chars", limit_20: "Max 20 chars", alert_full: "No space in this row! Change grid or add new row.",
@@ -833,7 +833,7 @@
                 visualSlots = parseInt(document.getElementById('custom-cols').value) || 3;
             } else {
                 if (val === '3x8') visualSlots = 3; // Dla 3x8 mamy 3 sloty wizualne
-                if (val === '4x4' || gridVal === '4x6' || val === '4x8') visualSlots = 4;
+                if (val === '4x4' || val === '4x6' || val === '4x8') visualSlots = 4;
                 if (val === '6x8') visualSlots = 6; 
             }
             
@@ -867,7 +867,7 @@
 
             let maxSlots = 3; 
             if (gridVal === '3x8') maxSlots = 3; // Limit 3 elementy (czyli 6 jednostek appdaemon)
-            if (gridVal === '4x4' || gridVal === '4x6' || gridVal === '4x8') maxSlots = 4; 
+            if (gridVal === '4x4' || gridVal === '4x6' || gridVal === '4x8') maxSlots = 4; // <--- FIX HERE
             if (gridVal === '6x8') maxSlots = 6;
             
             return maxSlots * 2; // Mnożymy razy 2, bo standardowy widget ma size=2
