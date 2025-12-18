@@ -833,7 +833,7 @@
                 visualSlots = parseInt(document.getElementById('custom-cols').value) || 3;
             } else {
                 if (val === '3x8') visualSlots = 3; // Dla 3x8 mamy 3 sloty wizualne
-                if (val === '4x4' || val === '4x6' || val === '4x8') visualSlots = 4;
+                if (val === '4x4' || gridVal === '4x6' || val === '4x8') visualSlots = 4;
                 if (val === '6x8') visualSlots = 6; 
             }
             
@@ -867,7 +867,7 @@
 
             let maxSlots = 3; 
             if (gridVal === '3x8') maxSlots = 3; // Limit 3 elementy (czyli 6 jednostek appdaemon)
-            if (gridVal === '4x4' || val === '4x6' || gridVal === '4x8') maxSlots = 4; 
+            if (gridVal === '4x4' || gridVal === '4x6' || gridVal === '4x8') maxSlots = 4; 
             if (gridVal === '6x8') maxSlots = 6;
             
             return maxSlots * 2; // Mnożymy razy 2, bo standardowy widget ma size=2
