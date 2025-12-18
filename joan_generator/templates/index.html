@@ -284,6 +284,8 @@
                             <option value="person" data-i18n="opt_person">Person / Tracker</option>
                             <option value="media_player" data-i18n="opt_media">Media Player</option>
                             <option value="climate" data-i18n="opt_climate">Climate</option>
+                            <option value="fan" data-i18n="opt_fan">Fan / Wentylator</option>
+                            <option value="scene" data-i18n="opt_scene">Scene / Scena</option>
                             <option value="input_select" data-i18n="opt_input_select">Input Select</option>
                             <option value="input_number" data-i18n="opt_input_number">Input Number</option>
                             <option value="script" data-i18n="opt_script">Script</option>
@@ -593,7 +595,8 @@
     "mdi-rhombus", "mdi-rhombus-outline", "mdi-octagon", "mdi-octagon-outline",
     "mdi-shape", "mdi-shape-outline", "mdi-shape-plus",
     "mdi-ray-vertex", "mdi-ray-start", "mdi-ray-end",
-    "mdi-vector-point", "mdi-vector-line", "mdi-vector-circle"
+    "mdi-vector-point", "mdi-vector-line", "mdi-vector-circle",
+    "mdi-palette", "mdi-palette-swatch", "mdi-movie", "mdi-movie-open"
 ];
 
         const TRANSLATIONS = {
@@ -612,6 +615,7 @@
                 opt_binary: "Sensor Binarny (On/Off)", opt_lock: "Zamek", opt_person: "Osoba / Tracker",
                 opt_media: "Media Player", opt_climate: "Termostat", opt_input_select: "Lista Wyboru",
                 opt_input_number: "Suwak", opt_script: "Skrypt", opt_navigate: "Przycisk Nawigacji",
+                opt_fan: "Wentylator", opt_scene: "Scena",
                 opt_label: "Etykieta (Tekst)", opt_clock: "Zegar", opt_spacer: "Odstęp (Pusty)",
                 size_2x1: "2x1 (Szeroki Przycisk)", size_1x1: "1x1 (Mały)", size_2x2: "2x2 (Duży)",
                 size_3x1: "3x1 (Bardzo Szeroki)", size_1x2: "1x2 (Wysoki)", size_3x2: "3x2 (Ogromny)",
@@ -646,6 +650,7 @@
                 opt_binary: "Binary Sensor", opt_lock: "Lock", opt_person: "Person / Tracker",
                 opt_media: "Media Player", opt_climate: "Climate", opt_input_select: "Input Select",
                 opt_input_number: "Input Number", opt_script: "Script", opt_navigate: "Navigation Button",
+                opt_fan: "Fan", opt_scene: "Scene",
                 opt_label: "Label (Text)", opt_clock: "Clock", opt_spacer: "Spacer (Empty)",
                 size_2x1: "2x1 (Wide Button)", size_1x1: "1x1 (Small)", size_2x2: "2x2 (Large)",
                 size_3x1: "3x1 (Extra Wide)", size_1x2: "1x2 (Tall)", size_3x2: "3x2 (Huge)",
@@ -677,7 +682,9 @@
             'media_player': { type: 'media_player', size: '(2x2)', icon: '' }, 
             'climate': { type: 'climate', size: '(2x2)', icon: '' }, 
             'lock': { type: 'lock', size: '(2x1)', iconOn: 'mdi-lock-open', iconOff: 'mdi-lock' }, 
-            'script': { type: 'script', size: '(2x1)', icon: 'mdi-script-text-outline' } 
+            'script': { type: 'script', size: '(2x1)', icon: 'mdi-script-text-outline' },
+            'fan': { type: 'fan', size: '(2x1)', iconOn: 'mdi-fan', iconOff: 'mdi-fan-off' },
+            'scene': { type: 'scene', size: '(2x1)', icon: 'mdi-palette' }
         };
 
         function normalizeString(str) { return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase(); }
@@ -716,7 +723,9 @@
                 const ent = entitiesData.find(e => e.id === input) || { attributes: {} };
                 const dClass = (ent.attributes.device_class || '').toLowerCase();
                 const domain = input.split('.')[0];
+                
                 if (SMART_MAP[domain]) conf = { ...SMART_MAP[domain] };
+                
                 if (dClass === 'garage') conf = { type: 'cover', size: '(2x1)', iconOn: 'mdi-garage-open', iconOff: 'mdi-garage' };
                 if (dClass === 'door') conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-door-open', iconOff: 'mdi-door-closed' };
                 if (dClass === 'battery') conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-battery' };
@@ -724,9 +733,12 @@
             }
             
             const check = (keywords) => keywords.some(k => inputNorm.includes(k));
+            
             if (check(['glosnik', 'speaker', 'audio', 'tv', 'odtwarzacz', 'radio'])) conf = SMART_MAP['media_player'];
             else if (check(['swiatlo', 'lamp', 'kinkiet', 'led', 'zarowka'])) conf = SMART_MAP['light'];
             else if (check(['gniazdko', 'wtyczka', 'outlet', 'plug'])) conf = SMART_MAP['switch'];
+            else if (check(['wiatrak', 'wentylator', 'fan', 'nawiew', 'cyrkulacja'])) conf = SMART_MAP['fan'];
+            else if (check(['scena', 'tryb', 'kino', 'wieczór', 'scene'])) conf = SMART_MAP['scene'];
             else if (check(['brama', 'garaz', 'gate'])) conf = { type: 'cover', size: '(2x1)', iconOn: 'mdi-garage-open', iconOff: 'mdi-garage' };
             else if (check(['rolet', 'blind', 'shutter', 'zaslon'])) conf = SMART_MAP['cover'];
             else if (check(['zamek', 'lock', 'rygiel'])) conf = SMART_MAP['lock'];
@@ -855,7 +867,7 @@
 
             let maxSlots = 3; 
             if (gridVal === '3x8') maxSlots = 3; // Limit 3 elementy (czyli 6 jednostek appdaemon)
-            if (gridVal === '4x4' || gridVal === '4x6' || gridVal === '4x8') maxSlots = 4; 
+            if (gridVal === '4x4' || val === '4x6' || gridVal === '4x8') maxSlots = 4; 
             if (gridVal === '6x8') maxSlots = 6;
             
             return maxSlots * 2; // Mnożymy razy 2, bo standardowy widget ma size=2
