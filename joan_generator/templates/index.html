@@ -8,15 +8,6 @@
     <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap" rel="stylesheet">
     
-    <script>
-        (function() {
-            try {
-                const savedTheme = localStorage.getItem('joan_theme') || 'light';
-                if (savedTheme === 'dark') { document.documentElement.classList.add('dark-mode'); }
-            } catch(e) { console.error(e); }
-        })();
-    </script>
-
     <style>
         :root {
             --bg-body: #e0e0e0; --bg-container: #ffffff; --bg-section: #fafafa; --bg-input: #ffffff;
@@ -40,13 +31,17 @@
         .header-top { width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         h1 { margin: 0; color: var(--accent); font-size: 28px; font-weight: 900; text-transform: uppercase; }
         
+        .status-bar { width: 100%; padding: 12px; margin-bottom: 20px; border-radius: 6px; font-weight: bold; text-align: center; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .status-ok { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .status-err { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
         .small-status { 
             font-size: 0.6em; color: #009688; font-weight: normal; 
             margin-left: 10px; text-transform: none; 
             display: inline-block; vertical-align: middle;
         }
 
-        .controls button { padding: 8px 16px; border: 1px solid var(--border); background: var(--bg-section); color: var(--text-main); border-radius: 4px; cursor: pointer; font-weight: bold; margin-left: 10px; }
+        .controls button { padding: 8px 16px; border: 1px solid var(--border); background: var(--bg-section); color: var(--text-main); border-radius: 4px; cursor: pointer; font-weight: bold; margin-left: 10px; font-size: 16px; }
         .controls button.active { background: var(--accent); color: var(--btn-text); border-color: var(--accent); }
         .section { background: var(--bg-section); padding: 25px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 30px; }
         
@@ -178,10 +173,30 @@
         }
         .dash-item.active button { background: white; color: #d32f2f; }
     </style>
+    
+    <script>
+        // Funkcja do aktualizacji ikonki motywu po załadowaniu
+        document.addEventListener("DOMContentLoaded", function() {
+            updateThemeIcon();
+        });
+    </script>
 </head>
 <body>
     <div class="container">
         <div class="header-row">
+            
+            {% if has_token %}
+            <div class="status-bar status-ok">
+                <i class="mdi mdi-check-circle"></i> 
+                <span data-i18n="status_ok">Połączono z Home Assistant (Token OK)</span>
+            </div>
+            {% else %}
+            <div class="status-bar status-err">
+                <i class="mdi mdi-alert-circle"></i> 
+                <span data-i18n="status_err">Brak tokena API! Lista encji jest pusta. Sprawdź konfigurację dodatku.</span>
+            </div>
+            {% endif %}
+
             <div class="header-top">
                 <h1 data-i18n="title_main">Joan 6 E-Ink Generator</h1>
                 <div class="controls">
@@ -205,12 +220,10 @@
                 <div class="flex-col">
                     <label data-i18n="lbl_grid">Układ Siatki (Smart Grid)</label>
                     <select id="grid-preset" onchange="handleGridChange()">
-                        <option value="3x8" selected>Standard (3 kolumny x 8 wierszy) - DOMYŚLNY</option>
-    
-                        <!-- Pozostałe opcje -->
-                        <option value="4x8" data-i18n="grid_std_plus">Szeroki (4 kolumny x 8 wierszy)</option>
-                        <option value="4x6" data-i18n="grid_std">Luźny (4 kolumny x 6 wierszy)</option>
-                        <option value="4x4" data-i18n="grid_large">Duże kafle (4 kolumny x 4 wiersze)</option>
+                        <option value="3x8" data-i18n="grid_3x8" selected>Standard (3 kolumny x 8 wierszy) - DOMYŚLNY</option>
+                        <option value="4x8" data-i18n="grid_4x8">Szeroki (4 kolumny x 8 wierszy)</option>
+                        <option value="4x6" data-i18n="grid_4x6">Luźny (4 kolumny x 6 wierszy)</option>
+                        <option value="4x4" data-i18n="grid_4x4">Duże kafle (4 kolumny x 4 wiersze)</option>
                         <option value="custom" data-i18n="grid_custom">Układ własny</option>
                     </select>
                     
@@ -288,6 +301,7 @@
                             <option value="scene" data-i18n="opt_scene">Scene / Scena</option>
                             <option value="input_select" data-i18n="opt_input_select">Input Select</option>
                             <option value="input_number" data-i18n="opt_input_number">Input Number</option>
+                            <option value="input_button" data-i18n="opt_input_button">Input Button / Przycisk</option>
                             <option value="script" data-i18n="opt_script">Script</option>
                             <option value="navigate" data-i18n="opt_navigate">Navigate / Button</option>
                         </select>
@@ -603,8 +617,10 @@
             pl: {
                 title_main: "Joan 6 E-Ink Generator",
                 sec_settings: "1. Ustawienia Dashboardu", lbl_dash_title: "Tytuł Dashboardu", lbl_grid: "Układ Siatki (Smart Grid)",
-                grid_std_plus: "Standard+ (3 kolumny/4 jednostki x 8 wierszy) - DOMYŚLNY", grid_std: "Standard (3 kolumny/4 jednostki x 6 wierszy)",
-                grid_large: "Duży (4 przyciski x 4 wiersze)", grid_med: "Średni (4 przyciski x 6 wierszy)", grid_small: "Gęsty (6 małych kolumn x 8 wierszy)",
+                grid_3x8: "Standard (3 kolumny x 8 wierszy) - DOMYŚLNY", 
+                grid_4x8: "Szeroki (4 kolumny x 8 wierszy)", 
+                grid_4x6: "Luźny (4 kolumny x 6 wierszy)", 
+                grid_4x4: "Duże kafle (4 kolumny x 4 wiersze)",
                 grid_custom: "Układ własny",
                 sec_import: "📂 Import / Eksport Kodu .DASH", btn_import: "Wczytaj Kod",
                 sec_add: "2. Dodaj Widget", sec_edit: "2. Edytuj Widget",
@@ -615,7 +631,7 @@
                 opt_binary: "Sensor Binarny (On/Off)", opt_lock: "Zamek", opt_person: "Osoba / Tracker",
                 opt_media: "Media Player", opt_climate: "Termostat", opt_input_select: "Lista Wyboru",
                 opt_input_number: "Suwak", opt_script: "Skrypt", opt_navigate: "Przycisk Nawigacji",
-                opt_fan: "Wentylator", opt_scene: "Scena",
+                opt_fan: "Wentylator", opt_scene: "Scena", opt_input_button: "Input Button / Przycisk",
                 opt_label: "Etykieta (Tekst)", opt_clock: "Zegar", opt_spacer: "Odstęp (Pusty)",
                 size_2x1: "2x1 (Szeroki Przycisk)", size_1x1: "1x1 (Mały)", size_2x2: "2x2 (Duży)",
                 size_3x1: "3x1 (Bardzo Szeroki)", size_1x2: "1x2 (Wysoki)", size_3x2: "3x2 (Ogromny)",
@@ -633,13 +649,18 @@
                 manager_desc: "Zapisz swoje układy w przeglądarce, aby łatwo się między nimi przełączać. Aby przełączać strony na samym urządzeniu Joan 6, użyj widgetu 'Przycisk Nawigacji' (Navigate).",
                 manager_save_as: "Zapisz obecny układ jako:",
                 manager_save_btn: "ZAPISZ",
-                manager_saved_list: "Twoje zapisane dashboardy:"
+                manager_saved_list: "Twoje zapisane dashboardy:",
+                
+                status_ok: "Połączono z Home Assistant (Token OK)",
+                status_err: "Brak tokena API! Lista encji jest pusta. Sprawdź konfigurację dodatku."
             },
             en: {
                 title_main: "Joan 6 E-Ink Generator",
                 sec_settings: "1. Dashboard Settings", lbl_dash_title: "Dashboard Title", lbl_grid: "Grid Layout (Smart Grid)",
-                grid_std_plus: "Standard+ (3 col/4 units x 8 rows) - DEFAULT", grid_std: "Standard (3 col/4 units x 6 rows)",
-                grid_large: "Large (4 buttons x 4 rows)", grid_med: "Medium (4 buttons x 6 rows)", grid_small: "Dense (6 small cols x 8 rows)",
+                grid_3x8: "Standard (3 cols x 8 rows) - DEFAULT", 
+                grid_4x8: "Wide (4 cols x 8 rows)", 
+                grid_4x6: "Loose (4 cols x 6 rows)", 
+                grid_4x4: "Large Tiles (4 cols x 4 rows)",
                 grid_custom: "Custom Layout",
                 sec_import: "📂 Import / Export .DASH Code", btn_import: "Load Code",
                 sec_add: "2. Add Widget", sec_edit: "2. Edit Widget",
@@ -650,11 +671,11 @@
                 opt_binary: "Binary Sensor", opt_lock: "Lock", opt_person: "Person / Tracker",
                 opt_media: "Media Player", opt_climate: "Climate", opt_input_select: "Input Select",
                 opt_input_number: "Input Number", opt_script: "Script", opt_navigate: "Navigation Button",
-                opt_fan: "Fan", opt_scene: "Scene",
+                opt_fan: "Fan", opt_scene: "Scene", opt_input_button: "Input Button",
                 opt_label: "Label (Text)", opt_clock: "Clock", opt_spacer: "Spacer (Empty)",
                 size_2x1: "2x1 (Wide Button)", size_1x1: "1x1 (Small)", size_2x2: "2x2 (Large)",
                 size_3x1: "3x1 (Extra Wide)", size_1x2: "1x2 (Tall)", size_3x2: "3x2 (Huge)",
-                btn_add: "+ ADD WIDGET", btn_update: "ZAPISZ ZMIANY", btn_cancel: "ANULUJ",
+                btn_add: "+ ADD WIDGET", btn_update: "SAVE CHANGES", btn_cancel: "CANCEL",
                 sec_preview: "3. Dashboard Preview", btn_row: "+ Add Row", btn_gen: "GENERATE .DASH CODE",
                 sec_result: "Generated YAML Code", lbl_save_path: "1. Save code to file:", lbl_open_link: "2. Restart AppDaemon and check:",
                 limit_15: "Max 15 chars", limit_20: "Max 20 chars", alert_full: "No space in this row! Change grid or add new row.",
@@ -668,7 +689,10 @@
                 manager_desc: "Save your layouts in the browser to switch between them easily. To change pages on the Joan 6 device itself, use the 'Navigation Button' (Navigate) widget.",
                 manager_save_as: "Save current layout as:",
                 manager_save_btn: "SAVE",
-                manager_saved_list: "Your saved dashboards:"
+                manager_saved_list: "Your saved dashboards:",
+                
+                status_ok: "Connected to Home Assistant (Token OK)",
+                status_err: "No API Token! Entity list is empty. Check add-on configuration."
             }
         };
 
@@ -684,7 +708,8 @@
             'lock': { type: 'lock', size: '(2x1)', iconOn: 'mdi-lock-open', iconOff: 'mdi-lock' }, 
             'script': { type: 'script', size: '(2x1)', icon: 'mdi-script-text-outline' },
             'fan': { type: 'fan', size: '(2x1)', iconOn: 'mdi-fan', iconOff: 'mdi-fan-off' },
-            'scene': { type: 'scene', size: '(2x1)', icon: 'mdi-palette' }
+            'scene': { type: 'scene', size: '(2x1)', icon: 'mdi-palette' },
+            'input_button': { type: 'input_button', size: '(2x1)', icon: 'mdi-gesture-tap-button' }
         };
 
         function normalizeString(str) { return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase(); }
@@ -739,6 +764,7 @@
             else if (check(['gniazdko', 'wtyczka', 'outlet', 'plug'])) conf = SMART_MAP['switch'];
             else if (check(['wiatrak', 'wentylator', 'fan', 'nawiew', 'cyrkulacja'])) conf = SMART_MAP['fan'];
             else if (check(['scena', 'tryb', 'kino', 'wieczór', 'scene'])) conf = SMART_MAP['scene'];
+            else if (check(['przycisk', 'button', 'klik'])) conf = SMART_MAP['input_button'];
             else if (check(['brama', 'garaz', 'gate'])) conf = { type: 'cover', size: '(2x1)', iconOn: 'mdi-garage-open', iconOff: 'mdi-garage' };
             else if (check(['rolet', 'blind', 'shutter', 'zaslon'])) conf = SMART_MAP['cover'];
             else if (check(['zamek', 'lock', 'rygiel'])) conf = SMART_MAP['lock'];
@@ -813,26 +839,22 @@
             if (val === 'custom') {
                 cols = parseInt(document.getElementById('custom-cols').value) || 3;
                 rws = parseInt(document.getElementById('custom-rows').value) || 8;
-                // ... reszta bez zmian
             } else {
                 const parts = val.replace('m','').split('x');
                 cols = parts[0];
                 rws = parts[1];
-                // ... reszta bez zmian
             }
             
-            // ZAPISYWANIE DO UKRYTYCH PÓL
             document.getElementById('h-cols').value = cols;
             document.getElementById('h-rows').value = rws;
             document.getElementById('form-cols').value = cols;
             document.getElementById('form-rows').value = rws;
 
-            // --- TUTAJ JEST ZMIANA DLA PODGLĄDU ---
             let visualSlots = 3; 
             if (val === 'custom') {
                 visualSlots = parseInt(document.getElementById('custom-cols').value) || 3;
             } else {
-                if (val === '3x8') visualSlots = 3; // Dla 3x8 mamy 3 sloty wizualne
+                if (val === '3x8') visualSlots = 3; 
                 if (val === '4x4' || val === '4x6' || val === '4x8') visualSlots = 4;
                 if (val === '6x8') visualSlots = 6; 
             }
@@ -866,11 +888,11 @@
             }
 
             let maxSlots = 3; 
-            if (gridVal === '3x8') maxSlots = 3; // Limit 3 elementy (czyli 6 jednostek appdaemon)
-            if (gridVal === '4x4' || gridVal === '4x6' || gridVal === '4x8') maxSlots = 4; // <--- FIX HERE
+            if (gridVal === '3x8') maxSlots = 3; 
+            if (gridVal === '4x4' || gridVal === '4x6' || gridVal === '4x8') maxSlots = 4; 
             if (gridVal === '6x8') maxSlots = 6;
             
-            return maxSlots * 2; // Mnożymy razy 2, bo standardowy widget ma size=2
+            return maxSlots * 2; 
         }
 
         function getRowUsage(rowArr) {
@@ -1435,16 +1457,31 @@
             loadSavedList();
         }
 
+        function updateThemeIcon() {
+            const isDark = document.documentElement.classList.contains('dark-mode');
+            document.getElementById('btn-theme').innerText = isDark ? '☀️' : '🌙';
+        }
+
         function toggleTheme() {
             document.documentElement.classList.toggle('dark-mode');
             localStorage.setItem('joan_theme', document.documentElement.classList.contains('dark-mode') ? 'dark' : 'light');
+            updateThemeIcon();
         }
         
         function setLang(l) {
             currentLang = l;
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const k = el.getAttribute('data-i18n');
-                if(TRANSLATIONS[l][k]) el.innerText = TRANSLATIONS[l][k];
+                if(TRANSLATIONS[l][k]) {
+                    // Dla inputów i selectów musimy ustawić inaczej
+                    if(el.tagName === 'OPTION') {
+                        el.innerText = TRANSLATIONS[l][k];
+                    } else if(el.tagName === 'INPUT' && (el.type === 'button' || el.type === 'submit')) {
+                        el.value = TRANSLATIONS[l][k];
+                    } else {
+                        el.innerText = TRANSLATIONS[l][k];
+                    }
+                }
             });
             document.getElementById('btn-pl').classList.toggle('active', l === 'pl');
             document.getElementById('btn-en').classList.toggle('active', l === 'en');
