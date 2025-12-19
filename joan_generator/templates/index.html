@@ -7,6 +7,27 @@
     
     <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap" rel="stylesheet">
+    <script>
+        // 1. Natychmiast ustaw klasę dark-mode (zanim pojawi się białe tło)
+        (function() {
+            try {
+                const savedTheme = localStorage.getItem('joan_theme') || 'light';
+                if (savedTheme === 'dark') { 
+                    document.documentElement.classList.add('dark-mode'); 
+                }
+            } catch(e) { console.error(e); }
+        })();
+
+        // 2. Gdy strona się załaduje, ustaw odpowiednią ikonkę (Słońce/Księżyc)
+        document.addEventListener("DOMContentLoaded", function() {
+            const isDark = document.documentElement.classList.contains('dark-mode');
+            const btn = document.getElementById('btn-theme');
+            if(btn) {
+                btn.innerText = isDark ? '☀️' : '🌙';
+            }
+        });
+    </script>
+    <!-- ▲▲▲ KONIEC WKLEJANIA ▲▲▲ -->
     
     <style>
         :root {
