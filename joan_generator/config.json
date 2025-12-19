@@ -7,6 +7,8 @@
   "arch": ["aarch64", "amd64", "armv7"],
   "startup": "application",
   "boot": "auto",
+  "hassio_api": true,        
+  "hassio_role": "manager", 
   "init": false,
   "panel_icon": "mdi:tablet-dashboard",
   "homeassistant_api": true,
