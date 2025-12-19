@@ -127,8 +127,6 @@ def index():
             dic = TRANS.get(lang, TRANS['pl'])
 
             # AppDaemon liczy kolumny jednostkowe (np. 117px).
-            # Jeśli domyślny widget ma szerokość 1 (mały), to kolumn jest tyle ile podano.
-            # Jeśli domyślny widget ma szerokość 2 (duży), to kolumn jednostkowych jest 2x więcej.
             if def_w == 1:
                 ad_columns = int(cols)
             else: 
@@ -148,7 +146,9 @@ def index():
             generated_yaml += "  namespace: default\n"
             generated_yaml += "  devices:\n"
             generated_yaml += "    media_player:\n"
-            generated_yaml += "      step: 5\n"
+            generated_yaml += "      step: 5\n" # Globalny krok głośności
+            generated_yaml += "    climate:\n"
+            generated_yaml += "      step: 1\n" # Globalny krok temperatury
             generated_yaml += f"  white_text_style: \"{STYLE_TEXT}\"\n"
             generated_yaml += f"  state_text_style: \"{STYLE_STATE_TEXT}\"\n"
             generated_yaml += "skin: simplyred\n\n"
@@ -202,7 +202,6 @@ def index():
                         continue
                     seen_ids.add(w_id)
                     
-                    # Jeśli widget był importowany i nie edytowany, użyj oryginalnej definicji
                     if w_id in custom_defs and not w.get('was_edited', False):
                         generated_yaml += f"{w_id}:\n"
                         for line in custom_defs[w_id].split('\n'):
@@ -259,7 +258,18 @@ def index():
                         generated_yaml += f"  widget_style: \"{STYLE_WIDGET}\"\n"
                         generated_yaml += f"  icon_style: \"{STYLE_ICON}\"\n"
                         generated_yaml += "  truncate_name: 20\n"
-                        generated_yaml += "  step: 5\n"
+                        generated_yaml += "  step: 5\n" # Upewnienie się, że krok głośności to 5%
+
+                    # --- CLIMATE (TERMOSTAT) ---
+                    elif w_type == 'climate':
+                        generated_yaml += f"  widget_type: climate\n"
+                        generated_yaml += f"  entity: {w_id}\n"
+                        generated_yaml += f"  title: \"{w_name}\"\n"
+                        generated_yaml += f"  step: 1\n" # Ważne dla E-Ink: Krok zmiany temperatury
+                        generated_yaml += f"  precision: 1\n"
+                        generated_yaml += f"  title_style: \"{STYLE_TITLE}\"\n"
+                        generated_yaml += f"  widget_style: \"{STYLE_WIDGET}\"\n"
+                        generated_yaml += f"  icon_style: \"{STYLE_ICON}\"\n"
 
                     # --- FAN (WENTYLATOR) ---
                     elif w_type == 'fan':
@@ -270,11 +280,17 @@ def index():
                         if i_off: generated_yaml += f"  icon_off: {i_off}\n"
                         if w_icon and not i_on: generated_yaml += f"  icon: {w_icon}\n"
                         
+                        # NAPRAWA PRĘDKOŚCI DLA NOWEGO HA (Mapowanie low/med/high na procenty)
+                        generated_yaml += "  low_speed: 33\n"
+                        generated_yaml += "  medium_speed: 66\n"
+                        generated_yaml += "  high_speed: 100\n"
+
                         generated_yaml += f"  title_style: \"{STYLE_TITLE}\"\n"
                         generated_yaml += f"  widget_style: \"{STYLE_WIDGET}\"\n"
                         generated_yaml += f"  icon_style_active: \"{STYLE_ICON}\"\n"
                         generated_yaml += f"  icon_style_inactive: \"{STYLE_ICON}; opacity: 0.5;\"\n"
-                        # Style dla ikonek prędkości (ważne dla e-ink, by nie były kolorowe)
+                        
+                        # Style dla ikonek prędkości
                         generated_yaml += f"  speed1_icon_style_active: \"{STYLE_ICON}\"\n"
                         generated_yaml += f"  speed1_icon_style_inactive: \"{STYLE_ICON}; opacity: 0.3;\"\n"
                         generated_yaml += f"  speed2_icon_style_active: \"{STYLE_ICON}\"\n"
