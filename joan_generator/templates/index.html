@@ -479,8 +479,13 @@
                 </div>
                 <div class="file-info-block">
                     <strong data-i18n="lbl_open_link">2. Uruchom ponownie AppDaemon i sprawdź:</strong>
-                    <div class="link-box">
+                    <div class="link-box" style="display: flex; align-items: center; justify-content: space-between; gap: 15px;">
                         <a href="http://[HA_HOST]:5050/{{ dash_name }}" id="dashboard-link" target="_blank">http://[HA_HOST]:5050/{{ dash_name }}</a>
+
+                        <button type="button" onclick="restartAppDaemon()" class="btn-tool" style="background: #ff9800; font-size: 14px; padding: 6px
+                    12px; height: auto;" title="Restart AppDaemon">
+                                 <i class="mdi mdi-refresh"></i> Restart AppDaemon
+                        </button>
                     </div>
                 </div>
             </div>
