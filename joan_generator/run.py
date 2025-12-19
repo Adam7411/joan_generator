@@ -102,6 +102,7 @@ def index():
     ha_entities = get_ha_entities()
     dashboard_filename = "joandashboard.dash"
     dashboard_slug = "joandashboard"
+    has_token = bool(TOKEN) # Flaga dla szablonu HTML
     
     if request.method == 'POST':
         try:
@@ -406,7 +407,7 @@ def index():
             print(f"❌ Error generating YAML: {e}")
             generated_yaml = f"# ERROR GENERATING YAML: {e}"
 
-    return render_template('index.html', generated_yaml=generated_yaml, entities=ha_entities, filename=dashboard_filename, dash_name=dashboard_slug)
+    return render_template('index.html', generated_yaml=generated_yaml, entities=ha_entities, filename=dashboard_filename, dash_name=dashboard_slug, has_token=has_token)
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000, debug=True)
