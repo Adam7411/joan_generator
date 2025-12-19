@@ -8,8 +8,11 @@
     <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap" rel="stylesheet">
     
+    <!-- Biblioteka do walidacji YAML -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
+
     <script>
-        // 1. Natychmiast ustaw klasę dark-mode (zanim pojawi się białe tło)
+        // 1. Zapamiętanie motywu (zapobieganie błyskowi bieli)
         (function() {
             try {
                 const savedTheme = localStorage.getItem('joan_theme') || 'light';
@@ -19,7 +22,7 @@
             } catch(e) { console.error(e); }
         })();
 
-        // 2. Gdy strona się załaduje, ustaw odpowiednią ikonkę (Słońce/Księżyc)
+        // 2. Ustawienie ikony motywu po załadowaniu
         document.addEventListener("DOMContentLoaded", function() {
             const isDark = document.documentElement.classList.contains('dark-mode');
             const btn = document.getElementById('btn-theme');
@@ -68,6 +71,8 @@
 
         .controls button { padding: 8px 16px; border: 1px solid var(--border); background: var(--bg-section); color: var(--text-main); border-radius: 4px; cursor: pointer; font-weight: bold; margin-left: 10px; font-size: 16px; }
         .controls button.active { background: var(--accent); color: var(--btn-text); border-color: var(--accent); }
+        .controls button.btn-restart { background: #ff9800; color: white; border-color: #f57c00; }
+        
         .section { background: var(--bg-section); padding: 25px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 30px; }
         
         .section-title { font-size: 1.4em; font-weight: 900; border-bottom: 3px solid var(--accent); display: inline-block; margin-bottom: 20px; color: var(--text-main); }
@@ -227,6 +232,20 @@
         .grid-icon-item:hover { background-color: var(--highlight); border-color: var(--link-color); }
         .grid-icon-item i { font-size: 28px; margin-bottom: 5px; }
         .grid-icon-item span { font-size: 10px; text-align: center; word-break: break-all; }
+
+        /* --- TOAST NOTIFICATIONS --- */
+        .toast {
+            visibility: hidden; min-width: 250px; margin-left: -125px; background-color: #333; color: #fff; text-align: center;
+            border-radius: 4px; padding: 16px; position: fixed; z-index: 3000; left: 50%; bottom: 30px; font-size: 16px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        .toast.show { visibility: visible; -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
+        .toast.error { background-color: #d32f2f; }
+        .toast.success { background-color: #388e3c; }
+        @-webkit-keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
+        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
+        @-webkit-keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+        @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
     </style>
 </head>
 <body>
@@ -248,6 +267,7 @@
             <div class="header-top">
                 <h1 data-i18n="title_main">Joan 6 E-Ink Generator</h1>
                 <div class="controls">
+                    <button type="button" onclick="restartAppDaemon()" class="btn-restart" id="btn-restart" title="Restart AppDaemon"><i class="mdi mdi-refresh"></i></button>
                     <button type="button" onclick="toggleTheme()" id="btn-theme">🌙</button>
                     <button type="button" onclick="setLang('pl')" id="btn-pl" class="active">PL</button>
                     <button type="button" onclick="setLang('en')" id="btn-en">EN</button>
@@ -269,6 +289,8 @@
                     <label data-i18n="lbl_grid">Układ Siatki (Smart Grid)</label>
                     <select id="grid-preset" onchange="handleGridChange()">
                         <option value="3x8" data-i18n="grid_3x8" selected>Standard (3 kolumny x 8 wierszy) - DOMYŚLNY</option>
+    
+                        <!-- Pozostałe opcje -->
                         <option value="4x8" data-i18n="grid_4x8">Szeroki (4 kolumny x 8 wierszy)</option>
                         <option value="4x6" data-i18n="grid_4x6">Luźny (4 kolumny x 6 wierszy)</option>
                         <option value="4x4" data-i18n="grid_4x4">Duże kafle (4 kolumny x 4 wiersze)</option>
@@ -478,6 +500,9 @@
             <div id="icon-grid" class="icon-grid"></div>
         </div>
     </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toast" class="toast">Komunikat</div>
 
     <script>
         const entitiesData = {{ entities | tojson | safe }};
@@ -723,7 +748,10 @@
                 
                 status_ok: "Połączono z Home Assistant (Token OK)",
                 status_err: "Brak tokena API! Lista encji jest pusta. Sprawdź konfigurację dodatku.",
-                modal_title: "Wybierz Ikonę"
+                modal_title: "Wybierz Ikonę",
+                toast_restart: "Restartowanie AppDaemon...",
+                toast_yaml_err: "Błąd składni YAML w linii {0}: {1}",
+                toast_success: "Sukces!"
             },
             en: {
                 title_main: "Joan 6 E-Ink Generator",
@@ -764,7 +792,10 @@
                 
                 status_ok: "Connected to Home Assistant (Token OK)",
                 status_err: "No API Token! Entity list is empty. Check add-on configuration.",
-                modal_title: "Select Icon"
+                modal_title: "Select Icon",
+                toast_restart: "Restarting AppDaemon...",
+                toast_yaml_err: "YAML Syntax Error on line {0}: {1}",
+                toast_success: "Success!"
             }
         };
 
@@ -1286,7 +1317,23 @@
         function submitData() { document.getElementById('layout_json').value = JSON.stringify(rows); document.getElementById('custom_defs').value = JSON.stringify(rawImportedDefs); document.getElementById('main-form').submit(); }
 
         function importYaml() {
-            const text = document.getElementById('import-code').value; if(!text) return; blockSmart = true;
+            const text = document.getElementById('import-code').value; 
+            if(!text) return; 
+            
+            // --- WALIDACJA YAML PRZED IMPORTEM ---
+            try {
+                if (typeof jsyaml !== 'undefined') {
+                    jsyaml.load(text); // Próba parsowania
+                }
+            } catch (e) {
+                let msg = TRANSLATIONS[currentLang].toast_yaml_err;
+                msg = msg.replace('{0}', e.mark ? (e.mark.line + 1) : '?').replace('{1}', e.reason || e.message);
+                showToast(msg, 'error');
+                return; // Przerwij import
+            }
+            // -------------------------------------
+
+            blockSmart = true;
             const lines = text.split('\n'); const newRows = []; let inLayout = false; let rawDefs = {}; let currentDefKey = null; let currentDefLines = [];
             
             let importedW = 2, importedH = 1;
@@ -1643,6 +1690,32 @@
             if (event.target == modal) {
                 closeIconPicker();
             }
+        }
+
+        /* --- RESTART APPDAEMON --- */
+        async function restartAppDaemon() {
+            showToast(TRANSLATIONS[currentLang].toast_restart);
+            try {
+                const response = await fetch('/restart_appdaemon', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const data = await response.json();
+                if (data.status === 'success') {
+                    showToast(TRANSLATIONS[currentLang].toast_success, 'success');
+                } else {
+                    showToast('Error: ' + data.message, 'error');
+                }
+            } catch (err) {
+                showToast('Error: ' + err.message, 'error');
+            }
+        }
+
+        function showToast(message, type = '') {
+            const toast = document.getElementById("toast");
+            toast.innerText = message;
+            toast.className = "toast show " + type;
+            setTimeout(function(){ toast.className = toast.className.replace("show", ""); }, 3000);
         }
 
         applyGrid();
