@@ -81,8 +81,7 @@ STYLE_STATE_TEXT = "color: #000000 !important; font-weight: 700 !important; font
 # -------------------------------------------------------------------------
 def normalize_icon_format(icon_name):
     """
-    Normalizuje format ikon do formatu 'mdi-nazwa' wymaganego przez AppDaemon Dashboard.
-    Konwertuje 'mdi:home' -> 'mdi-home'.
+    Normalizuje format ikon do formatu 'mdi-nazwa'.
     """
     if not icon_name: 
         return icon_name
@@ -119,11 +118,26 @@ def index():
             def_w = int(def_size_parts[0].strip())
             def_h = int(def_size_parts[1].strip()) if len(def_size_parts) > 1 else 1
 
-            # Tłumaczenia stanów
+            # -------------------------------------------------
+            # TŁUMACZENIA STANÓW (BILINGUAL SUPPORT)
+            # -------------------------------------------------
             TRANS = {
-                'pl': {'on': 'WŁĄCZONE', 'off': 'WYŁĄCZONE', 'open': 'OTWARTA', 'closed': 'ZAMKNIĘTA', 'opening': 'OTWIERANIE', 'closing': 'ZAMYKANIE', 'locked': 'ZAMKNIĘTE', 'unlocked': 'OTWARTE', 'home': 'W DOMU', 'not_home': 'POZA'},
-                'en': {'on': 'ON', 'off': 'OFF', 'open': 'OPEN', 'closed': 'CLOSED', 'opening': 'OPENING', 'closing': 'CLOSING', 'locked': 'LOCKED', 'unlocked': 'UNLOCKED', 'home': 'HOME', 'not_home': 'AWAY'}
+                'pl': {
+                    'on': 'WŁĄCZONE', 'off': 'WYŁĄCZONE', 
+                    'open': 'OTWARTE', 'closed': 'ZAMKNIĘTE', 
+                    'opening': 'OTWIERANIE', 'closing': 'ZAMYKANIE', 
+                    'locked': 'ZAMKNIĘTE', 'unlocked': 'OTWARTE', 
+                    'home': 'W DOMU', 'not_home': 'POZA'
+                },
+                'en': {
+                    'on': 'ON', 'off': 'OFF', 
+                    'open': 'OPEN', 'closed': 'CLOSED', 
+                    'opening': 'OPENING', 'closing': 'CLOSING', 
+                    'locked': 'LOCKED', 'unlocked': 'UNLOCKED', 
+                    'home': 'HOME', 'not_home': 'AWAY'
+                }
             }
+            # Wybierz słownik na podstawie języka z formularza
             dic = TRANS.get(lang, TRANS['pl'])
 
             # AppDaemon liczy kolumny jednostkowe (np. 117px).
@@ -132,7 +146,9 @@ def index():
             else: 
                 ad_columns = int(cols) * 2
 
+            # -------------------------------------------------
             # NAGŁÓWEK PLIKU YAML
+            # -------------------------------------------------
             generated_yaml += f"title: {title}\n"
             generated_yaml += "widget_dimensions: [117, 117]\n"
             generated_yaml += f"widget_size: [{def_w}, {def_h}]\n"
@@ -159,7 +175,9 @@ def index():
             
             processed_widgets = []
             
+            # -------------------------------------------------
             # GENEROWANIE SEKCJI LAYOUT
+            # -------------------------------------------------
             if layout_data_str:
                 layout_rows = json.loads(layout_data_str)
                 generated_yaml += "layout:\n"
@@ -176,6 +194,7 @@ def index():
                         size_str = w.get('size', '')
                         is_default = False
                         
+                        # Sprawdzanie czy rozmiar jest domyślny
                         if size_str == f"({def_w}x{def_h})":
                             is_default = True
                         elif size_str == "(2x1)" and def_w == 2 and def_h == 1:
@@ -195,13 +214,16 @@ def index():
                 generated_yaml += "\n# -------------------\n# DEFINICJE WIDŻETÓW\n# -------------------\n\n"
                 seen_ids = set()
                 
+                # -------------------------------------------------
                 # GENEROWANIE SZCZEGÓŁÓW KAŻDEGO WIDGETU
+                # -------------------------------------------------
                 for w in processed_widgets: 
                     w_id = w['id']
                     if w_id in seen_ids: 
                         continue
                     seen_ids.add(w_id)
                     
+                    # Importowane widgety bez edycji zachowują swój kod
                     if w_id in custom_defs and not w.get('was_edited', False):
                         generated_yaml += f"{w_id}:\n"
                         for line in custom_defs[w_id].split('\n'):
@@ -258,7 +280,7 @@ def index():
                         generated_yaml += f"  widget_style: \"{STYLE_WIDGET}\"\n"
                         generated_yaml += f"  icon_style: \"{STYLE_ICON}\"\n"
                         generated_yaml += "  truncate_name: 20\n"
-                        generated_yaml += "  step: 5\n" # Upewnienie się, że krok głośności to 5%
+                        generated_yaml += "  step: 5\n" # Krok głośności 5%
 
                     # --- CLIMATE (TERMOSTAT) ---
                     elif w_type == 'climate':
@@ -280,7 +302,7 @@ def index():
                         if i_off: generated_yaml += f"  icon_off: {i_off}\n"
                         if w_icon and not i_on: generated_yaml += f"  icon: {w_icon}\n"
                         
-                        # NAPRAWA PRĘDKOŚCI DLA NOWEGO HA (Mapowanie low/med/high na procenty)
+                        # NAPRAWA PRĘDKOŚCI (Mapowanie low/med/high na procenty dla nowego HA)
                         generated_yaml += "  low_speed: 33\n"
                         generated_yaml += "  medium_speed: 66\n"
                         generated_yaml += "  high_speed: 100\n"
@@ -290,7 +312,7 @@ def index():
                         generated_yaml += f"  icon_style_active: \"{STYLE_ICON}\"\n"
                         generated_yaml += f"  icon_style_inactive: \"{STYLE_ICON}; opacity: 0.5;\"\n"
                         
-                        # Style dla ikonek prędkości
+                        # Style dla ikonek prędkości (kontrast e-ink)
                         generated_yaml += f"  speed1_icon_style_active: \"{STYLE_ICON}\"\n"
                         generated_yaml += f"  speed1_icon_style_inactive: \"{STYLE_ICON}; opacity: 0.3;\"\n"
                         generated_yaml += f"  speed2_icon_style_active: \"{STYLE_ICON}\"\n"
@@ -303,9 +325,9 @@ def index():
                         generated_yaml += f"  widget_type: scene\n"
                         generated_yaml += f"  entity: {w_id}\n"
                         generated_yaml += f"  title: \"{w_name}\"\n"
-                        if i_on: generated_yaml += f"  icon_on: {i_on}\n"
-                        if i_off: generated_yaml += f"  icon_off: {i_off}\n"
-                        if w_icon and not i_on: generated_yaml += f"  icon: {w_icon}\n"
+                        # Scena jest bezstanowa, używamy tylko jednej ikony
+                        if w_icon: generated_yaml += f"  icon: {w_icon}\n"
+                        elif i_on: generated_yaml += f"  icon: {i_on}\n" 
                         
                         generated_yaml += f"  title_style: \"{STYLE_TITLE}\"\n"
                         generated_yaml += f"  widget_style: \"{STYLE_WIDGET}\"\n"
@@ -328,9 +350,10 @@ def index():
                             generated_yaml += f"  icon: {w_icon}\n"
                         generated_yaml += f"  text_style: \"{STYLE_TITLE}\"\n"
                     
-                    # --- GENERIC (Switch, Cover, Script, Light, Lock etc.) ---
+                    # --- GENERIC (Switch, Cover, Script, Light, Lock, Input Button etc.) ---
                     else:
                         ad_type = w_type
+                        # Mapowanie typów generatora na typy AppDaemon
                         if w_type == 'binary_sensor': ad_type = 'binary_sensor'
                         if w_type == 'input_boolean': ad_type = 'switch'
                         if w_type == 'person': ad_type = 'device_tracker'
@@ -339,6 +362,7 @@ def index():
                         if w_type == 'input_select': ad_type = 'input_select'
                         if w_type == 'input_number': ad_type = 'input_number'
                         if w_type == 'script': ad_type = 'script'
+                        if w_type == 'input_button': ad_type = 'script' # Traktujemy input_button jak skrypt
                         
                         generated_yaml += f"  widget_type: {ad_type}\n"
                         generated_yaml += f"  entity: {w_id}\n"
@@ -361,6 +385,7 @@ def index():
                         generated_yaml += f"  icon_style_active: \"{STYLE_ICON}\"\n"
                         generated_yaml += f"  icon_style_inactive: \"{STYLE_ICON}\"\n"
                         
+                        # Tłumaczenie stanów (State Map) zależnie od języka
                         if ad_type in ['cover', 'binary_sensor', 'switch', 'light', 'lock']: 
                             generated_yaml += "  state_map:\n"
                             if ad_type == 'cover':
