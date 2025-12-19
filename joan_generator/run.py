@@ -89,6 +89,9 @@ def normalize_icon_format(icon_name):
 # -------------------------------------------------------------------------
 # 5. ENDPOINT RESTARTU APPDAEMON
 # -------------------------------------------------------------------------
+# -------------------------------------------------------------------------
+# 5. ULEPSZONY ENDPOINT RESTARTU (OBSŁUGA BŁĘDU 403)
+# -------------------------------------------------------------------------
 @app.route('/restart_appdaemon', methods=['POST'])
 def restart_appdaemon():
     if not TOKEN:
@@ -97,29 +100,42 @@ def restart_appdaemon():
     headers = {"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json"}
     
     try:
-        # 1. Pobierz listę dodatków
+        # KROK 1: Próbujemy znaleźć AppDaemona oficjalną drogą
+        ad_slug = None
         addons_resp = requests.get(f"{SUPERVISOR_URL}/addons", headers=headers, timeout=10)
         
-        if addons_resp.status_code != 200:
-            return jsonify({"status": "error", "message": f"Błąd API Supervisora: {addons_resp.status_code}"}), 500
-
-        addons_data = addons_resp.json().get('data', {}).get('addons', [])
-        ad_slug = None
-        
-        for addon in addons_data:
-            # Szukamy po slugu lub nazwie
-            if "appdaemon" in addon.get('slug', '').lower() or "appdaemon" in addon.get('name', '').lower():
-                ad_slug = addon['slug']
-                break
+        if addons_resp.status_code == 200:
+            addons_data = addons_resp.json().get('data', {}).get('addons', [])
+            for addon in addons_data:
+                if "appdaemon" in addon.get('slug', '').lower() or "appdaemon" in addon.get('name', '').lower():
+                    ad_slug = addon['slug']
+                    break
+        elif addons_resp.status_code == 403:
+            # Jeśli brak uprawnień do listy, zgadujemy najpopularniejszy slug
+            print("⚠️ Brak uprawnień do listy dodatków (403). Próbuję domyślny slug.")
+            ad_slug = "a0d7b954_appdaemon" # Standardowy slug dla Community AppDaemon
         
         if not ad_slug:
-            return jsonify({"status": "error", "message": "Nie znaleziono dodatku AppDaemon!"}), 404
-            
-        # 2. Wyślij komendę restartu
-        restart_resp = requests.post(f"{SUPERVISOR_URL}/addons/{ad_slug}/restart", headers=headers, timeout=30)
+            return jsonify({"status": "error", "message": "Nie udało się ustalić nazwy dodatku AppDaemon (Brak uprawnień?)"}), 403
+
+        # KROK 2: Próba restartu przez API Home Assistant (Service Call)
+        # To często działa, nawet gdy Supervisor API odmawia dostępu
+        print(f"🔄 Próba restartu {ad_slug} przez HA Service API...")
+        service_url = f"{API_URL}/services/hassio/addon_restart"
+        service_resp = requests.post(service_url, headers=headers, json={"addon": ad_slug}, timeout=30)
+
+        if service_resp.status_code in [200, 201]:
+             return jsonify({"status": "success", "message": f"Zrestartowano AppDaemon ({ad_slug}) przez Usługi HA"})
+
+        # KROK 3: Jeśli serwis zawiódł, próba przez API Supervisora (wymaga hassio_role: manager)
+        print(f"⚠️ Service API zawiodło ({service_resp.status_code}). Próba przez Supervisor API...")
+        supervisor_restart_url = f"{SUPERVISOR_URL}/addons/{ad_slug}/restart"
+        restart_resp = requests.post(supervisor_restart_url, headers=headers, timeout=30)
         
         if restart_resp.status_code == 200:
-            return jsonify({"status": "success", "message": f"Zrestartowano AppDaemon ({ad_slug})"})
+            return jsonify({"status": "success", "message": f"Zrestartowano AppDaemon ({ad_slug}) przez Supervisor"})
+        elif restart_resp.status_code == 403:
+             return jsonify({"status": "error", "message": "Brak uprawnień (403). Dodaj 'hassio_role': 'manager' w config.json dodatku!"}), 403
         else:
             return jsonify({"status": "error", "message": f"Błąd restartu: {restart_resp.status_code}"}), 500
 
