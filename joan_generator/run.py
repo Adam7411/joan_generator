@@ -251,17 +251,23 @@ def index():
                     generated_yaml += f"{w_id}:\n"
                     
                     if w_type == 'navigate':
+                        # Czyścimy ID z prefixu, aby uzyskać samą nazwę dashboardu (np. "joan3")
                         dash_target = w_id.replace('navigate.', '')
                         nav_icon = w_icon or 'mdi-arrow-right-circle'
-                        generated_yaml += f"  widget_type: navigate\n"
+                        
+                        # Zmieniamy widget_type na 'link', aby uzyskać czysty URL bez ?skin=...
+                        generated_yaml += f"  widget_type: link\n"
                         generated_yaml += f"  title: \"{w_name}\"\n"
-                        generated_yaml += f"  dashboard: {dash_target}\n"
-                        generated_yaml += f"  icon_active: {nav_icon}\n"
-                        generated_yaml += f"  icon_inactive: {nav_icon}\n"
+                        
+                        # Ustawiamy bezpośrednią ścieżkę (np. /joan3 lub /wojtek)
+                        generated_yaml += f"  url: /{dash_target}\n"
+                        
+                        # Widżet 'link' używa parametru 'icon' zamiast active/inactive
+                        generated_yaml += f"  icon: {nav_icon}\n"
+                        
                         generated_yaml += f"  title_style: \"{STYLE_TITLE}\"\n"
                         generated_yaml += f"  widget_style: \"{STYLE_WIDGET}\"\n"
-                        generated_yaml += f"  icon_active_style: \"{STYLE_ICON}\"\n"
-                        generated_yaml += f"  icon_inactive_style: \"{STYLE_ICON}\"\n"
+                        generated_yaml += f"  icon_style: \"{STYLE_ICON}\"\n"
 
                     elif w_type == 'sensor':
                         generated_yaml += f"  widget_type: sensor\n"
