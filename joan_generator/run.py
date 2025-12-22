@@ -251,23 +251,26 @@ def index():
                     generated_yaml += f"{w_id}:\n"
                     
                     if w_type == 'navigate':
-                        # Kluczowa poprawka: pobieramy tylko to, co jest po kropce.
-                        # Jeśli w_id to "navigate.joan3", dash_target otrzyma "joan3"
-                        # Jeśli w_id to "joan3", dash_target otrzyma "joan3"
-                        dash_target = w_id.split('.')[-1]
+                        # 1. Wyciągamy czystą nazwę dashboardu dla parametru 'dashboard:'
+                        # Jeśli id to "navigate.joan3", zostanie samo "joan3"
+                        dash_target = w_id.replace('navigate.', '').strip()
                         
-                        nav_icon = w_icon or 'mdi-arrow-right-circle'
+                        # 2. Ustawiamy ikonę - Ty używasz 'mdi-arrow-left-circle' w starym kodzie
+                        nav_icon = w_icon or 'mdi-arrow-left-circle'
+                        
+                        # 3. Budujemy definicję zgodnie z Twoim starym, działającym wzorem
                         generated_yaml += f"  widget_type: navigate\n"
                         generated_yaml += f"  title: \"{w_name}\"\n"
-                        generated_yaml += f"  dashboard: {dash_target}\n"  # Teraz wygeneruje: dashboard: joan3
-                        generated_yaml += f"  icon_active: {nav_icon}\n"
+                        generated_yaml += f"  dashboard: {dash_target}\n"
                         generated_yaml += f"  icon_inactive: {nav_icon}\n"
                         
-                        # Style z Twojego działającego przykładu (większy font, specyficzne marginesy)
-                        generated_yaml += f"  title_style: \"color: #000000; font-size: 24px; font-weight: 700; text-align: center; padding-top: 5px; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif;\"\n"
-                        generated_yaml += f"  widget_style: \"background-color: #FFFFFF !important; border-radius: 8px !important; padding: 10px !important; color: #000000 !important;\"\n"
-                        generated_yaml += f"  icon_active_style: \"{STYLE_ICON}\"\n"
-                        generated_yaml += f"  icon_inactive_style: \"{STYLE_ICON}\"\n"
+                        # 4. Twoje specyficzne style (font 24px, Bold, Roboto)
+                        # Usunąłem border-radius skoro nie jest wymagany, ale zostawiłem padding i kolory
+                        NAV_TITLE_STYLE = "color: #000000; font-size: 24px; font-weight: 700; text-align: center; padding-top: 5px; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif;"
+                        NAV_WIDGET_STYLE = "background-color: #FFFFFF !important; padding: 10px !important; color: #000000 !important;"
+                        
+                        generated_yaml += f"  title_style: \"{NAV_TITLE_STYLE}\"\n"
+                        generated_yaml += f"  widget_style: \"{NAV_WIDGET_STYLE}\"\n"
 
                     elif w_type == 'sensor':
                         generated_yaml += f"  widget_type: sensor\n"
