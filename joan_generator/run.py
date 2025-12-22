@@ -251,23 +251,23 @@ def index():
                     generated_yaml += f"{w_id}:\n"
                     
                     if w_type == 'navigate':
-                        # Czyścimy ID z prefixu, aby uzyskać samą nazwę dashboardu (np. "joan3")
-                        dash_target = w_id.replace('navigate.', '')
+                        # Kluczowa poprawka: pobieramy tylko to, co jest po kropce.
+                        # Jeśli w_id to "navigate.joan3", dash_target otrzyma "joan3"
+                        # Jeśli w_id to "joan3", dash_target otrzyma "joan3"
+                        dash_target = w_id.split('.')[-1]
+                        
                         nav_icon = w_icon or 'mdi-arrow-right-circle'
-                        
-                        # Zmieniamy widget_type na 'link', aby uzyskać czysty URL bez ?skin=...
-                        generated_yaml += f"  widget_type: link\n"
+                        generated_yaml += f"  widget_type: navigate\n"
                         generated_yaml += f"  title: \"{w_name}\"\n"
+                        generated_yaml += f"  dashboard: {dash_target}\n"  # Teraz wygeneruje: dashboard: joan3
+                        generated_yaml += f"  icon_active: {nav_icon}\n"
+                        generated_yaml += f"  icon_inactive: {nav_icon}\n"
                         
-                        # Ustawiamy bezpośrednią ścieżkę (np. /joan3 lub /wojtek)
-                        generated_yaml += f"  url: /{dash_target}\n"
-                        
-                        # Widżet 'link' używa parametru 'icon' zamiast active/inactive
-                        generated_yaml += f"  icon: {nav_icon}\n"
-                        
-                        generated_yaml += f"  title_style: \"{STYLE_TITLE}\"\n"
-                        generated_yaml += f"  widget_style: \"{STYLE_WIDGET}\"\n"
-                        generated_yaml += f"  icon_style: \"{STYLE_ICON}\"\n"
+                        # Style z Twojego działającego przykładu (większy font, specyficzne marginesy)
+                        generated_yaml += f"  title_style: \"color: #000000; font-size: 24px; font-weight: 700; text-align: center; padding-top: 5px; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif;\"\n"
+                        generated_yaml += f"  widget_style: \"background-color: #FFFFFF !important; border-radius: 8px !important; padding: 10px !important; color: #000000 !important;\"\n"
+                        generated_yaml += f"  icon_active_style: \"{STYLE_ICON}\"\n"
+                        generated_yaml += f"  icon_inactive_style: \"{STYLE_ICON}\"\n"
 
                     elif w_type == 'sensor':
                         generated_yaml += f"  widget_type: sensor\n"
