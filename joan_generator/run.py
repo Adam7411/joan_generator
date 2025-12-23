@@ -120,6 +120,59 @@ def restart_appdaemon_addon():
         return False, f"Błąd API: {response.status_code} {response.text}"
 
 # -------------------------------------------------------------------------
+# NOWE FUNKCJE: INTEGRACJA Z VISIONECT JOAN
+# -------------------------------------------------------------------------
+def get_joan_devices():
+    """Filtruje encje, aby znaleźć urządzenia Joan (szukamy kamer Visionect)."""
+    all_entities = get_ha_entities()
+    joan_devices = []
+    for ent in all_entities:
+        # Szukamy kamer z integracji visionect (zazwyczaj mają unikalne ID lub nazwę)
+        # Zakładamy, że encja to np. camera.joan_6_live_view
+        if ent['id'].startswith('camera.') and 'visionect' in str(ent).lower():
+            joan_devices.append(ent)
+        # Alternatywnie szukamy po friendly_name
+        elif ent['id'].startswith('camera.') and 'joan' in ent['attributes'].get('friendly_name', '').lower():
+            joan_devices.append(ent)
+    return joan_devices
+
+def deploy_url_to_device(device_entity_id, dashboard_name):
+    """Wysyła URL dashboardu do urządzenia Joan za pomocą usługi set_url."""
+    if not TOKEN: return False, "Brak tokena API."
+    
+    # Adres Twojego AppDaemona (można by go pobierać dynamicznie, ale tu wpiszemy standard)
+    # UWAGA: Użyj adresu IP HA, który jest widoczny dla urządzenia Joan!
+    # Pobieramy IP z API_URL (wycinamy http:// i :8123)
+    try:
+        host_ip = API_URL.split('//')[1].split(':')[0]
+    except:
+        host_ip = "homeassistant.local" # Fallback
+        
+    target_url = f"http://{host_ip}:5050/{dashboard_name}"
+    
+    headers = {"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json"}
+    service_url = f"{API_URL}/services/visionect_joan/set_url"
+    
+    # Konwersja entity_id kamery na device_id jest trudna bez rejestru, 
+    # ale integracja visionect_joan często przyjmuje entity_id w service call (sprawdź to).
+    # Jeśli wymaga device_id, musielibyśmy odpytać rejestr. 
+    # Spróbujmy najpierw przekazać encję, wiele integracji to obsługuje.
+    
+    payload = {
+        "entity_id": device_entity_id, 
+        "url": target_url
+    }
+    
+    try:
+        print(f"🚀 [DEPLOY] Wysyłanie {target_url} do {device_entity_id}")
+        resp = requests.post(service_url, json=payload, headers=headers, timeout=10)
+        if resp.status_code in [200, 201]:
+            return True, f"Wysłano URL do {device_entity_id}"
+        return False, f"Błąd integracji ({resp.status_code}): {resp.text}"
+    except Exception as e:
+        return False, str(e)
+
+# -------------------------------------------------------------------------
 # 3. STYLE (E-INK OPTIMIZED & TWEAKED)
 # -------------------------------------------------------------------------
 # Style wymuszające wysoki kontrast (czarny na białym) dla ekranów E-Ink
@@ -155,30 +208,43 @@ def normalize_icon_format(icon_name):
 def index():
     generated_yaml = ""
     ha_entities = get_ha_entities()
+    joan_devices = get_joan_devices() # <--- NOWOŚĆ: Lista tabletów
     dashboard_filename = "joandashboard.dash"
     dashboard_slug = "joandashboard"
     has_token = bool(TOKEN)
     save_message = None # <--- DODAJ ZMIENNĄ DLA KOMUNIKATU
 
     if request.method == 'POST':
+        # Form Data Retrieval
+        title = request.form.get('title', 'JoanDashboard')
+        # Aktualizacja sluga od razu, bo jest potrzebny do deploy
+        dashboard_slug = title.lower().replace(" ", "_").replace("ą","a").replace("ć","c").replace("ę","e").replace("ł","l").replace("ń","n").replace("ó","o").replace("ś","s").replace("ź","z").replace("ż","z")
+        
+        action_type = request.form.get('action_type', 'generate')
+        target_device = request.form.get('deploy_device_id') # <--- NOWOŚĆ
+        
         # Sprawdzamy czy to restart czy generowanie
-        action = request.form.get('action', 'generate') # <--- ODCZYT AKCJI
-
-        if action == 'restart':
+        if action_type == 'restart':
             success, msg = restart_appdaemon_addon()
             if success:
                 save_message = f"✅ Sukces: {msg}"
             else:
                 save_message = f"❌ Błąd: {msg}"
         
+        elif action_type == 'deploy':
+            if not target_device:
+                save_message = "❌ Błąd: Nie wybrano urządzenia Joan z listy."
+            else:
+                success, msg = deploy_url_to_device(target_device, dashboard_slug)
+                if success:
+                    save_message = f"🚀 {msg}"
+                else:
+                    save_message = f"⚠️ Błąd wysyłania: {msg}"
+        
         else:
             # ... TUTAJ ZACZYNA SIĘ STARY KOD (try: title = request.form...)
             # ... NIC TU NIE ZMIENIAJ AŻ DO DOŁU BLOKU try/except
             try:
-                title = request.form.get('title', 'JoanDashboard')
-                dashboard_slug = title.lower().replace(" ", "_")
-                dashboard_filename = dashboard_slug + ".dash"
-                
                 cols = request.form.get('grid_columns', '4')
                 rows_grid = request.form.get('grid_rows', '8')
                 lang = request.form.get('ui_language', 'pl')
@@ -476,7 +542,7 @@ def index():
                 print(f"❌ Error generating YAML: {e}")
                 generated_yaml = f"# ERROR GENERATING YAML: {e}"
 
-    return render_template('index.html', generated_yaml=generated_yaml, entities=ha_entities, filename=dashboard_filename, dash_name=dashboard_slug, has_token=has_token, save_message=save_message)
+    return render_template('index.html', generated_yaml=generated_yaml, entities=ha_entities, joan_devices=joan_devices, filename=dashboard_filename, dash_name=dashboard_slug, has_token=has_token, save_message=save_message)
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000, debug=True)
