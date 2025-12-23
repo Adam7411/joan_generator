@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Joan 6 E-Ink Generator</title>
-    
+
     <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap" rel="stylesheet">
     
@@ -225,14 +225,44 @@
             flex: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); 
             gap: 10px; padding: 10px; background: var(--bg-section); border: 1px solid var(--border); border-radius: 4px;
         }
+        /* --- STYL DLA PICKERA IKON --- */
+        .input-group { display: flex; gap: 5px; }
+        .picker-btn { cursor: pointer; padding: 0 10px; font-size: 18px; border: 1px solid var(--border); background: var(--bg-section); border-radius: 4px; display: flex; align-items: center; justify-content: center; }
+        
+        .icon-picker-modal { 
+            display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; 
+            background-color: var(--modal-bg); backdrop-filter: blur(2px);
+        }
+        .icon-picker-content { 
+            background-color: var(--modal-content); margin: 5% auto; padding: 20px; border: 1px solid var(--border); 
+            border-radius: 8px; width: 90%; max-width: 800px; height: 80vh; display: flex; flex-direction: column; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); color: var(--text-main);
+        }
+        
+        .icon-grid { 
+            flex: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); 
+            gap: 10px; padding: 15px; background: #ffffff; border: 1px solid var(--border); border-radius: 4px;
+        }
+
+        /* KLUCZOWA POPRAWKA DLA WYŚWIETLANIA IKON */
         .grid-icon-item { 
             display: flex; flex-direction: column; align-items: center; justify-content: center; 
-            padding: 10px; cursor: pointer; border-radius: 4px; border: 1px solid transparent; 
+            padding: 10px; cursor: pointer; border-radius: 4px; border: 1px solid #eee; background: #fff;
+            transition: all 0.2s;
         }
-        .grid-icon-item:hover { background-color: var(--highlight); border-color: var(--link-color); }
-        .grid-icon-item i { font-size: 28px; margin-bottom: 5px; }
-        .grid-icon-item span { font-size: 10px; text-align: center; word-break: break-all; }
-
+        .grid-icon-item:hover { background-color: #f0f0f0; border-color: #000; }
+        
+        .grid-icon-item i { 
+            font-family: "Material Design Icons" !important; /* Wymuszenie czcionki */
+            font-size: 36px !important; 
+            color: #000000 !important; /* Na E-Ink musi być czyste czarne */
+            margin-bottom: 5px; 
+            display: inline-block;
+            font-style: normal;
+        }
+        .grid-icon-item span { 
+            font-size: 10px; color: #333; text-align: center; word-break: break-all; font-weight: bold;
+        }
         /* --- TOAST NOTIFICATIONS --- */
         .toast {
             visibility: hidden; min-width: 250px; margin-left: -125px; background-color: #333; color: #fff; text-align: center;
@@ -1613,19 +1643,33 @@
 
         function renderIconGrid(filter = "") {
             const grid = document.getElementById('icon-grid');
+            if (!grid) return;
+            
             grid.innerHTML = '';
             const f = filter.toLowerCase();
             
-            let count = 0;
+            // Renderujemy wszystkie 600 ikon z Twojej listy
             POPULAR_ICONS.forEach(icon => {
-                if (count > 200 && filter === "") return; // Limit dla wydajności przy pustym filtrze
                 if (icon.toLowerCase().includes(f)) {
                     const div = document.createElement('div');
                     div.className = 'grid-icon-item';
+                    div.title = icon; // Podpowiedź po najechaniu
                     div.onclick = () => selectIcon(icon);
-                    div.innerHTML = `<i class="mdi ${icon}"></i><span>${icon.replace('mdi-', '')}</span>`;
+                    
+                    // Ważne: ikona musi mieć klasę 'mdi' i klasę z nazwą 'mdi-nazwa'
+                    div.innerHTML = `
+                        <i class="mdi ${icon}"></i>
+                        <span>${icon.replace('mdi-', '')}</span>
+                    `;
                     grid.appendChild(div);
-                    count++;
+                }
+            });
+
+            // Jeśli nic nie znaleziono
+            if (grid.innerHTML === '') {
+                grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 20px;">Nie znaleziono ikon pasujących do filtra.</div>';
+            }
+        
                 }
             });
         }
