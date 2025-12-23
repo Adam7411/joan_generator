@@ -102,8 +102,22 @@
         .btn-gen { background: var(--accent); width: 100%; font-size: 20px; padding: 15px; margin-top: 20px; }
         .btn-cancel { background: #757575; }
         .btn-row { background: #2196f3; margin-top: 15px; }
-        .btn-import { background: #ff9800; color: white; margin-top: 10px; }
-        .btn-dash-save { background: #009688; color: white; width: auto; padding: 8px 15px; font-size: 13px; }
+
+        /* --- NAPRAWA PRZYCISKU RESTART --- */
+        .btn-restart { 
+            background: #d32f2f; 
+            color: white; 
+            font-size: 16px; 
+            font-weight: bold;
+            border: 1px solid #b71c1c; 
+        }
+        /* Dodaj to poniżej, aby w trybie ciemnym przycisk świecił */
+        html.dark-mode .btn-restart {
+            background: #ff5252; /* Jaśniejszy czerwony */
+            border: 2px solid white; /* Biała obwódka dla kontrastu */
+            color: white;
+            box-shadow: 0 0 10px rgba(255, 82, 82, 0.4);
+        }
         
         .btn-tool { padding: 6px 12px; font-size: 14px; margin-left: 6px; border-radius: 4px; cursor: pointer; color: white; border: none; font-weight: bold; display: inline-block; text-align: center; min-width: 30px; }
         .btn-del-row { background: #d32f2f; }
