@@ -254,6 +254,19 @@
         .step-content { flex-grow: 1; }
         .live-preview-box { text-align: center; margin-top: 10px; border: 2px dashed #999; padding: 10px; min-height: 200px; display: none; }
         .live-preview-box img { max-width: 100%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+
+        /* --- POPRAWKA DLA TRYBU CIEMNEGO --- */
+        html.dark-mode .deploy-wizard {
+            background: #1e1e1e;
+            border-color: #444;
+            color: #e0e0e0;
+        }
+        html.dark-mode .step-row { border-color: #444; }
+        html.dark-mode .step-num { background: #d32f2f; color: white; }
+        html.dark-mode h3 { color: #81d4fa !important; }
+        html.dark-mode strong { color: #fff; }
+        html.dark-mode small { color: #bbb; }
+        html.dark-mode .live-preview-box { border-color: #666; }
     </style>
 </head>
 <body>
@@ -560,6 +573,15 @@
             <button type="button" class="btn btn-copy" onclick="copyToClipboard()">📋 KOPIUJ KOD DO SCHOWKA</button>
             <textarea class="output" id="output-yaml" readonly>{{ generated_yaml }}</textarea>
         </div>
+        {% endif %}
+
+        {% if generated_yaml %}
+        <script>
+            // Automatyczne przewinięcie do wyniku
+            document.getElementById('output-yaml').scrollIntoView({behavior: "smooth"});
+            // Próba automatycznego skopiowania (może być blokowana przez przeglądarkę bez kliknięcia)
+            setTimeout(copyToClipboard, 500); 
+        </script>
         {% endif %}
     </div>
 
@@ -1898,17 +1920,15 @@
             if (box.style.display === 'block') {
                 box.style.display = 'none';
             } else {
-                box.style.display = 'block';
                 const entityId = select.value;
-                if(entityId) {
-                    // Używamy proxy przez API HA do pobrania obrazka kamery
-                    // Zakładamy, że mamy dostęp. Jeśli nie, wyświetli się błąd obrazka.
-                    // Najlepiej użyć endpointu /api/camera_proxy/{entity_id}
-                    img.src = `/api/camera_proxy/${entityId}?token=BRAK_TOKENA_JS_ALE_MOZE_ZADZIALA_SESJA`;
-                    // UWAGA: W iframe add-ona to może nie zadziałać bezpośrednio bez tokena w URL.
-                    // Lepsza metoda: niech Python pobierze obrazek. Ale na razie spróbujmy prosty placeholder.
-                    img.alt = "Podgląd wymaga tokena w JS. Użyj aplikacji Visionect.";
+                if(!entityId) {
+                    alert("Wybierz najpierw urządzenie z listy (Krok 3)!");
+                    return;
                 }
+                box.style.display = 'block';
+                // Używamy naszego nowego proxy w Pythonie, aby ominąć brak autoryzacji
+                img.src = `/camera_proxy/${entityId}?t=${new Date().getTime()}`;
+                img.alt = "Ładowanie podglądu...";
             }
         }
 
