@@ -72,29 +72,52 @@ def get_ha_entities():
 # FUNKCJA RESTARTU APPDAEMON
 # -------------------------------------------------------------------------
 def restart_appdaemon_addon():
-    if not os.environ.get('SUPERVISOR_TOKEN'):
-        return False, "Brak tokena Supervisor (wymagane środowisko Add-on)"
+    """Restartuje AppDaemon używając dostępnego tokena (Manual lub Supervisor)"""
+    
+    # 1. Sprawdź czy mamy JAKIKOLWIEK token (Manualny lub Systemowy)
+    if not TOKEN:
+        return False, "Błąd: Brak tokena API (uzupełnij manual_token w konfiguracji)."
+    
+    # Zdefiniuj slug Twojego AppDaemona
+    target_slug = "a0d7b954_appdaemon"
     
     headers = {
-        "Authorization": f"Bearer {os.environ.get('SUPERVISOR_TOKEN')}",
+        "Authorization": f"Bearer {TOKEN}",
         "Content-Type": "application/json"
     }
-    # Endpoint Supervisora do restartu (wewnętrzny docker network)
-    url = f"{SUPERVISOR_URL}/addons/{APPDAEMON_SLUG}/restart"
-    
-    try:
-        print(f"🔄 Restartowanie: {APPDAEMON_SLUG}...")
-        response = requests.post(url, headers=headers, timeout=30)
+
+    # 2. Wybierz metodę restartu w zależności od wykrytego API
+    # Jeśli API_URL zawiera "homeassistant" lub port "8123", to używamy Manual Tokena
+    if "homeassistant" in API_URL or "8123" in API_URL:
+        # Metoda 1: Service Call (dla Manual Token)
+        url = f"{API_URL}/services/hassio/addon_restart"
+        payload = {"addon": target_slug}
+        print(f"🔄 Restart przez Service Call (Manual Token): {url}")
         
-        if response.status_code in [200, 201, 202, 204]:
-            print("✅ Restart zainicjowany pomyślnie.")
-            return True, "Zainicjowano restart AppDaemon."
-        else:
-            print(f"❌ Błąd restartu: {response.status_code} - {response.text}")
-            return False, f"Błąd restartu: {response.status_code}"
-    except Exception as e:
-        print(f"❌ Wyjątek restartu: {e}")
-        return False, str(e)
+        try:
+            response = requests.post(url, headers=headers, json=payload, timeout=30)
+        except Exception as e:
+            print(f"❌ Wyjątek połączenia: {e}")
+            return False, str(e)
+
+    else:
+        # Metoda 2: Supervisor API (dla Tokena Systemowego)
+        url = f"http://supervisor/addons/{target_slug}/restart"
+        print(f"🔄 Restart przez Supervisor API: {url}")
+        
+        try:
+            response = requests.post(url, headers=headers, timeout=30)
+        except Exception as e:
+            print(f"❌ Wyjątek połączenia: {e}")
+            return False, str(e)
+
+    # 3. Sprawdź wynik
+    if response.status_code in [200, 201, 202]:
+        print("✅ Restart udany.")
+        return True, "Zrestartowano AppDaemon."
+    else:
+        print(f"❌ Błąd API: {response.status_code} - {response.text}")
+        return False, f"Błąd API: {response.status_code} {response.text}"
 
 # -------------------------------------------------------------------------
 # 3. STYLE (E-INK OPTIMIZED & TWEAKED)
