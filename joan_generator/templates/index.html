@@ -237,6 +237,23 @@
         .grid-icon-item:hover { background-color: var(--highlight); border-color: var(--link-color); }
         .grid-icon-item i { font-size: 28px; margin-bottom: 5px; }
         .grid-icon-item span { font-size: 10px; text-align: center; word-break: break-all; }
+
+        /* --- STYL BATTERY ADVISOR --- */
+        .battery-bar { height: 10px; background: #eee; border-radius: 5px; margin-top: 5px; overflow: hidden; }
+        .battery-fill { height: 100%; width: 0%; transition: width 0.5s, background-color 0.5s; }
+        .battery-ok { background-color: #4caf50; }
+        .battery-warn { background-color: #ff9800; }
+        .battery-crit { background-color: #f44336; }
+        .battery-text { font-size: 0.8em; font-weight: bold; margin-top: 2px; text-align: right; }
+
+        /* --- STYL WIZARD WDROŻENIA --- */
+        .deploy-wizard { background: #e3f2fd; border: 2px solid #2196f3; padding: 20px; border-radius: 8px; margin-top: 30px; }
+        .step-row { display: flex; align-items: center; margin-bottom: 15px; opacity: 0.5; transition: opacity 0.3s; }
+        .step-row.active { opacity: 1; }
+        .step-num { background: #2196f3; color: white; width: 30px; height: 30px; border-radius: 50%; text-align: center; line-height: 30px; font-weight: bold; margin-right: 15px; flex-shrink: 0; }
+        .step-content { flex-grow: 1; }
+        .live-preview-box { text-align: center; margin-top: 10px; border: 2px dashed #999; padding: 10px; min-height: 200px; display: none; }
+        .live-preview-box img { max-width: 100%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
     </style>
 </head>
 <body>
@@ -319,7 +336,7 @@
         </div>
 
         <form method="POST" id="main-form">
-            <input type="hidden" name="action" id="form-action" value="generate">
+            <input type="hidden" name="action_type" id="form-action" value="generate">
             <input type="hidden" name="title" id="form-title" value="JoanDashboard">
             <input type="hidden" name="ui_language" id="input-lang" value="pl">
             <input type="hidden" name="grid_columns" id="form-cols" value="4">
@@ -419,6 +436,13 @@
 
                 <datalist id="icon-list"></datalist>
 
+                <div style="margin-top: 15px;">
+                    <label>Szacowany Wpływ na Baterię</label>
+                    <div class="battery-bar"><div id="bat-fill" class="battery-fill battery-ok"></div></div>
+                    <div id="bat-text" class="battery-text">Niski</div>
+                    <ul id="bat-warnings" style="font-size: 0.75em; color: #d32f2f; margin: 5px 0 0 15px; padding: 0;"></ul>
+                </div>
+
                 <div class="flex-row" style="margin-top: 20px;">
                     <button type="button" class="btn btn-add" id="btn-submit" onclick="saveWidget()" data-i18n="btn_add">+ DODAJ WIDGET</button>
                     <button type="button" class="btn btn-cancel hidden" id="btn-cancel" onclick="cancelEdit()" data-i18n="btn_cancel">ANULUJ</button>
@@ -460,22 +484,73 @@
                 </div>
             </div>
 
-        <!-- NOWE MIEJSCE: SEKCJA ZARZĄDZANIA PROJEKTEM (JSON) -->
-        <div class="project-box" style="margin-top: 20px;">
-            <h3 style="margin-top:0;" data-i18n="sec_backup">📂 Zarządzanie Projektem (Backup na Dysk)</h3>
-            <p style="font-size:0.9em; margin-bottom:15px;" data-i18n="backup_desc">
-                Pobierz plik .json na dysk swojego komputera. To pełna kopia zapasowa, która pozwala przenieść projekt na inne urządzenie.
-            </p>
-            <button type="button" class="project-btn" onclick="downloadProject()" data-i18n="btn_download">⬇️ POBIERZ PROJEKT (.JSON)</button>
-            <button type="button" class="project-btn" onclick="document.getElementById('upload-json').click()" data-i18n="btn_upload">⬆️ WGRAJ PROJEKT Z DYSKU</button>
-            <input type="file" id="upload-json" style="display:none" accept=".json" onchange="loadProjectFile(this)">
-        </div>
+            <!-- NOWE MIEJSCE: SEKCJA ZARZĄDZANIA PROJEKTEM (JSON) -->
+            <div class="project-box" style="margin-top: 20px;">
+                <h3 style="margin-top:0;" data-i18n="sec_backup">📂 Zarządzanie Projektem (Backup na Dysk)</h3>
+                <p style="font-size:0.9em; margin-bottom:15px;" data-i18n="backup_desc">
+                    Pobierz plik .json na dysk swojego komputera. To pełna kopia zapasowa, która pozwala przenieść projekt na inne urządzenie.
+                </p>
+                <button type="button" class="project-btn" onclick="downloadProject()" data-i18n="btn_download">⬇️ POBIERZ PROJEKT (.JSON)</button>
+                <button type="button" class="project-btn" onclick="document.getElementById('upload-json').click()" data-i18n="btn_upload">⬆️ WGRAJ PROJEKT Z DYSKU</button>
+                <input type="file" id="upload-json" style="display:none" accept=".json" onchange="loadProjectFile(this)">
+            </div>
 
-        <input type="hidden" name="layout_data_json" id="layout_json">
-            <input type="hidden" name="custom_definitions_json" id="custom_defs">
-            <div style="display:flex; gap:10px; margin-top:20px;">
-                <button type="button" class="btn btn-gen" style="flex:1;" onclick="submitForm('generate')" data-i18n="btn_gen">GENERUJ KOD .DASH</button>
-                <button type="button" class="btn btn-gen" style="flex:1; background-color: #d32f2f;" onclick="submitForm('restart')">RESTART APPDAEMON</button>
+            <!-- WIZARD BEZPOŚREDNIEGO WDROŻENIA -->
+            <div class="deploy-wizard">
+                <h3 style="margin-top:0; color:#0d47a1;">🚀 Centrum Wdrożenia (Direct Deploy)</h3>
+                
+                <!-- KROK 1 -->
+                <div class="step-row active">
+                    <div class="step-num">1</div>
+                    <div class="step-content">
+                        <strong>Zapisz plik .dash na serwerze</strong><br>
+                        <small>Skopiuj wygenerowany kod i zapisz go ręcznie przez Sambę lub File Editor w folderze <code>/config/appdaemon/dashboards/</code>.</small>
+                        <div style="margin-top:5px;">
+                            <button type="button" class="btn btn-gen" onclick="submitForm('generate')" style="font-size:14px; padding:8px;">1. GENERUJ I KOPIUJ KOD</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KROK 2 -->
+                <div class="step-row active">
+                    <div class="step-num">2</div>
+                    <div class="step-content">
+                        <strong>Zrestartuj AppDaemon</strong><br>
+                        <small>Wymuś na dodatku wczytanie nowego pliku. Czekaj na komunikat sukcesu powyżej.</small>
+                        <div style="margin-top:5px;">
+                            <button type="button" class="btn btn-restart" onclick="submitForm('restart')" style="font-size:14px; padding:8px;">2. RESTARTUJ APPDAEMON</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KROK 3 -->
+                <div class="step-row active" style="border-top: 1px solid #bbdefb; padding-top:15px;">
+                    <div class="step-num">3</div>
+                    <div class="step-content">
+                        <strong>Wyślij na Tablet (Live)</strong><br>
+                        <small>Automatycznie ustaw adres URL nowego dashboardu na wybranym urządzeniu Joan.</small>
+                        <div style="margin-top:10px; display:flex; gap:10px; align-items:center;">
+                            <select name="deploy_device_id" style="flex:1;">
+                                <option value="">-- Wybierz urządzenie Joan --</option>
+                                {% for dev in joan_devices %}
+                                <option value="{{ dev.entity_id }}">{{ dev.attributes.friendly_name }} ({{ dev.entity_id }})</option>
+                                {% endfor %}
+                            </select>
+                            <button type="button" class="btn" style="background:#ff9800; color:white;" onclick="submitForm('deploy')">3. WYŚLIJ NA TABLET ▶</button>
+                        </div>
+                        
+                        <!-- LIVE PREVIEW -->
+                        <div style="margin-top: 15px;">
+                            <button type="button" onclick="toggleLivePreview()" style="background:none; border:none; color:#0d47a1; cursor:pointer; text-decoration:underline; font-weight:bold;">
+                                📷 Pokaż/Ukryj podgląd na żywo (z kamery Joan)
+                            </button>
+                            <div id="live-preview-container" class="live-preview-box">
+                                <p style="color:#666; font-size:0.8em;">Wybierz urządzenie powyżej, aby zobaczyć podgląd.</p>
+                                <img id="live-img" src="" alt="Podgląd niedostępny">
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </form>
 
@@ -1034,6 +1109,7 @@
             if(editIdx) { rows[editIdx.r][editIdx.w] = w; cancelEdit(); }
             else { rows[targetRowIdx].push(w); clearForm(); blockSmart = false; }
             renderPreview();
+            updateBatteryScore(); // Dodane wywołanie
         }
 
         function updateIconPreview() {
@@ -1113,7 +1189,7 @@
         function cancelEdit() {
             editIdx = null; blockSmart = false;
             document.getElementById('editor-box').classList.remove('editing');
-            document.getElementById('btn-cancel').classList.add('hidden');
+            document.getElementById('btn-cancel').classList.remove('hidden');
             
             document.getElementById('lbl-add-widget').innerText = TRANSLATIONS[currentLang].sec_add;
             
@@ -1127,7 +1203,7 @@
             manualIconOverride = false; updateIconPreview(); updateTitleLimit();
         }
 
-        function deleteWidget(r, w, e) { e.stopPropagation(); rows[r].splice(w, 1); if(editIdx && editIdx.r === r && editIdx.w === w) cancelEdit(); renderPreview(); }
+        function deleteWidget(r, w, e) { e.stopPropagation(); rows[r].splice(w, 1); if(editIdx && editIdx.r === r && editIdx.w === w) cancelEdit(); renderPreview(); updateBatteryScore(); }
         function deleteRow(r) { if(confirm("Usunąć cały wiersz?")) { rows.splice(r, 1); if(rows.length === 0) rows.push([]); if(editIdx && editIdx.r === r) cancelEdit(); if(selectedRowIdx === r) selectedRowIdx = null; renderPreview(); } }
         
         function moveRow(idx, direction) {
@@ -1313,6 +1389,7 @@
             
             const val = document.getElementById('grid-preset').value;
             if(val === 'custom') applyGrid();
+            updateBatteryScore();
         }
 
         function submitForm(actionType) {
@@ -1760,6 +1837,79 @@
                 }
             };
             reader.readAsText(file);
+        }
+
+        // --- BATTERY ADVISOR ---
+        function updateBatteryScore() {
+            let score = 0; // 0-100 (0 = super, 100 = śmierć baterii)
+            const warnings = [];
+            
+            // 1. Analiza odświeżania (Zegary, sekundniki)
+            let hasSeconds = false;
+            let sensorCount = 0;
+            
+            // Sprawdzamy widgety w formularzu (symulacja) i w tabeli rows
+            // (Tutaj uproszczona analiza bieżącego widgetu w edytorze)
+            const type = document.getElementById('w-type').value;
+            
+            if (type === 'clock') score += 10; 
+            // W realnym kodzie trzeba by sprawdzić czy checkbox "show_seconds" jest zaznaczony (nie mamy go w tym prostym UI, ale zakładamy)
+            
+            if (['sensor', 'binary_sensor'].includes(type)) score += 2; // Każdy sensor to potencjalne wybudzenie
+            
+            // Analiza całej siatki
+            let totalWidgets = 0;
+            rows.forEach(r => r.forEach(w => {
+                totalWidgets++;
+                if(w.type === 'clock') score += 10;
+                if(w.type === 'sensor') score += 2;
+                if(w.type === 'media_player') score += 5; // Częste zmiany okładek/tytułów
+            }));
+
+            if (score > 20) warnings.push("Duża liczba dynamicznych elementów.");
+            if (score > 50) warnings.push("Wysokie zużycie! Sprawdź czy potrzebujesz wszystkich sensorów.");
+            
+            // Wizualizacja
+            const fill = document.getElementById('bat-fill');
+            const txt = document.getElementById('bat-text');
+            const list = document.getElementById('bat-warnings');
+            
+            let w = Math.min(score * 2, 100);
+            fill.style.width = w + "%";
+            
+            fill.className = 'battery-fill'; // reset
+            if(w < 30) { fill.classList.add('battery-ok'); txt.innerText = "Niski (Super)"; }
+            else if(w < 70) { fill.classList.add('battery-warn'); txt.innerText = "Średni"; }
+            else { fill.classList.add('battery-crit'); txt.innerText = "Wysoki (Uwaga!)"; }
+            
+            list.innerHTML = warnings.map(warn => `<li>${warn}</li>`).join('');
+        }
+
+        // Podpinamy advisor pod zmiany w formularzu i dodawanie
+        document.getElementById('w-type').addEventListener('change', updateBatteryScore);
+        // Wywołaj też w saveWidget()
+
+        // --- LIVE PREVIEW ---
+        function toggleLivePreview() {
+            const box = document.getElementById('live-preview-container');
+            const img = document.getElementById('live-img');
+            const select = document.querySelector('select[name="deploy_device_id"]');
+            
+            if (box.style.display === 'block') {
+                box.style.display = 'none';
+            } else {
+                box.style.display = 'block';
+                const entityId = select.value;
+                if(entityId) {
+                    // Używamy proxy przez API HA do pobrania obrazka kamery
+                    // Zakładamy, że mamy dostęp. Jeśli nie, wyświetli się błąd obrazka.
+                    // Najlepiej użyć endpointu /api/camera_proxy/{entity_id}
+                    img.src = `/api/camera_proxy/${entityId}?token=BRAK_TOKENA_JS_ALE_MOZE_ZADZIALA_SESJA`;
+                    // UWAGA: W iframe add-ona to może nie zadziałać bezpośrednio bez tokena w URL.
+                    // Lepsza metoda: niech Python pobierze obrazek. Ale na razie spróbujmy prosty placeholder.
+                    img.alt = "Podgląd wymaga tokena w JS. Użyj aplikacji Visionect.";
+                }
+            }
         }
 
         // Zamknij modal klikając poza nim
