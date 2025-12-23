@@ -233,6 +233,15 @@
     <div class="container">
         <div class="header-row">
             
+            {% if save_message %}
+            <div style="padding: 15px; margin-bottom: 20px; border-radius: 6px; font-weight: bold; text-align: center; 
+                        {% if '❌' in save_message %} background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;
+                        {% elif '⚠️' in save_message %} background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba;
+                        {% else %} background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; {% endif %}">
+                {{ save_message }}
+            </div>
+            {% endif %}
+
             {% if has_token %}
             <div class="status-bar status-ok">
                 <i class="mdi mdi-check-circle"></i> 
@@ -307,6 +316,7 @@
             <input type="hidden" name="grid_columns" id="form-cols" value="4">
             <input type="hidden" name="grid_rows" id="form-rows" value="8">
             <input type="hidden" name="default_widget_size" id="input-def-size" value="2, 1">
+            <input type="hidden" name="action_type" id="action_type" value="generate">
             
             <div class="add-widget-box" id="editor-box">
                 <div class="section-title">
@@ -444,7 +454,11 @@
 
             <input type="hidden" name="layout_data_json" id="layout_json">
             <input type="hidden" name="custom_definitions_json" id="custom_defs">
-            <button type="button" class="btn btn-gen" onclick="submitData()" data-i18n="btn_gen">GENERUJ KOD .DASH</button>
+            
+            <div style="display:flex; gap:10px; margin-top:20px;">
+                <button type="button" class="btn btn-gen" style="flex:1;" onclick="submitData('generate')" data-i18n="btn_gen">PODGLĄD KODU YAML</button>
+                <button type="button" class="btn btn-gen" style="flex:1; background-color: #d32f2f;" onclick="submitData('save_restart')" data-i18n="btn_save_restart">💾 ZAPISZ PLIK I RESTARTUJ APPDAEMON</button>
+            </div>
         </form>
 
         {% if generated_yaml %}
@@ -723,7 +737,8 @@
                 
                 status_ok: "Połączono z Home Assistant (Token OK)",
                 status_err: "Brak tokena API! Lista encji jest pusta. Sprawdź konfigurację dodatku.",
-                modal_title: "Wybierz Ikonę"
+                modal_title: "Wybierz Ikonę",
+                btn_save_restart: "💾 ZAPISZ I RESTARTUJ (AppDaemon)"
             },
             en: {
                 title_main: "Joan 6 E-Ink Generator",
@@ -764,7 +779,8 @@
                 
                 status_ok: "Connected to Home Assistant (Token OK)",
                 status_err: "No API Token! Entity list is empty. Check add-on configuration.",
-                modal_title: "Select Icon"
+                modal_title: "Select Icon",
+                btn_save_restart: "💾 SAVE & RESTART (AppDaemon)"
             }
         };
 
@@ -1283,7 +1299,18 @@
             if(val === 'custom') applyGrid();
         }
 
-        function submitData() { document.getElementById('layout_json').value = JSON.stringify(rows); document.getElementById('custom_defs').value = JSON.stringify(rawImportedDefs); document.getElementById('main-form').submit(); }
+        function submitData(type) {
+            if (!type) type = 'generate';
+            document.getElementById('action_type').value = type;
+            
+            if (type === 'save_restart') {
+                if(!confirm("Czy na pewno chcesz nadpisać plik .dash na serwerze i zrestartować AppDaemon?")) return;
+            }
+
+            document.getElementById('layout_json').value = JSON.stringify(rows);
+            document.getElementById('custom_defs').value = JSON.stringify(rawImportedDefs);
+            document.getElementById('main-form').submit();
+        }
 
         function importYaml() {
             const text = document.getElementById('import-code').value; if(!text) return; blockSmart = true;
