@@ -123,7 +123,7 @@
         
         .widget-wrapper { display: flex; flex-direction: column; align-items: center; margin-right: 0; position: relative; flex-shrink: 0; cursor: grab; }
         .widget-wrapper:active { cursor: grabbing; }
-        .ew-type-label { font-size: 10px; text-transform: uppercase; color: var(--text-main); margin-bottom: 4px; font-weight: bold; opacity: 0.7; text-align: center; }
+        .ew-type-label { font-size: 10px; text-transform: uppercase; color: var(--text-main); margin-bottom: 4px; font-weight: bold; text-align: center; }
 
         .eink-widget { 
             background: #FFFFFF; border: 3px solid #000000; color: #000000; 
@@ -232,6 +232,12 @@
 <body>
     <div class="container">
         <div class="header-row">
+            {% if save_message %}
+            <div style="padding: 15px; margin-bottom: 20px; border-radius: 6px; font-weight: bold; text-align: center; 
+                border: 1px solid #ccc; background-color: #e0f7fa; color: #006064;">
+                {{ save_message }}
+            </div>
+            {% endif %}
             
             {% if has_token %}
             <div class="status-bar status-ok">
@@ -302,6 +308,7 @@
         </div>
 
         <form method="POST" id="main-form">
+            <input type="hidden" name="action" id="form-action" value="generate">
             <input type="hidden" name="title" id="form-title" value="JoanDashboard">
             <input type="hidden" name="ui_language" id="input-lang" value="pl">
             <input type="hidden" name="grid_columns" id="form-cols" value="4">
@@ -444,7 +451,10 @@
 
             <input type="hidden" name="layout_data_json" id="layout_json">
             <input type="hidden" name="custom_definitions_json" id="custom_defs">
-            <button type="button" class="btn btn-gen" onclick="submitData()" data-i18n="btn_gen">GENERUJ KOD .DASH</button>
+            <div style="display:flex; gap:10px; margin-top:20px;">
+                <button type="button" class="btn btn-gen" style="flex:1;" onclick="submitForm('generate')" data-i18n="btn_gen">GENERUJ KOD .DASH</button>
+                <button type="button" class="btn btn-gen" style="flex:1; background-color: #d32f2f;" onclick="submitForm('restart')">RESTART APPDAEMON</button>
+            </div>
         </form>
 
         {% if generated_yaml %}
@@ -501,7 +511,7 @@
     "mdi-dishwasher", "mdi-washing-machine", "mdi-tumble-dryer", "mdi-iron", "mdi-iron-outline",
     "mdi-shower", "mdi-shower-head", "mdi-toilet", "mdi-bathtub", "mdi-bathtub-outline",
     "mdi-desk", "mdi-desk-lamp", "mdi-chair-rolling", "mdi-bookshelf",
-    "mdi-baby-carriage", "mdi-teddy-bear", "mdi-hanger", "mdi-wardrobe", "mdi-wardrobe-outline",
+    "mdi-baby-carriage", "mdi-baby-face", "mdi-baby-face-outline", "mdi-teddy-bear", "mdi-hanger", "mdi-wardrobe", "mdi-wardrobe-outline",
     "mdi-stairs", "mdi-stairs-up", "mdi-stairs-down", "mdi-elevator", "mdi-elevator-passenger",
     
     // === OŚWIETLENIE ===
@@ -628,7 +638,6 @@
     "mdi-solar-panel", "mdi-solar-panel-large", "mdi-solar-power", "mdi-solar-power-variant",
     "mdi-wind-turbine", "mdi-transmission-tower",
     "mdi-ev-station", "mdi-ev-plug-type2", "mdi-car-electric-outline",
-    "mdi-battery-charging-100", "mdi-battery-charging-80", "mdi-battery-charging-60", "mdi-battery-charging-40", "mdi-battery-charging-20",
     "mdi-home-battery", "mdi-home-battery-outline", "mdi-battery-heart", "mdi-battery-heart-outline",
     "mdi-meter-electric", "mdi-meter-electric-outline", "mdi-meter-gas", "mdi-meter-gas-outline",
     "mdi-current-ac", "mdi-current-dc",
@@ -827,6 +836,7 @@
                 if (dClass === 'door') conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-door-open', iconOff: 'mdi-door-closed' };
                 if (dClass === 'battery') conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-battery' };
                 if (dClass === 'temperature') conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-thermometer' };
+                if (dClass === 'humidity') conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-water-percent' };
             }
             
             const check = (keywords) => keywords.some(k => inputNorm.includes(k));
@@ -1283,7 +1293,20 @@
             if(val === 'custom') applyGrid();
         }
 
-        function submitData() { document.getElementById('layout_json').value = JSON.stringify(rows); document.getElementById('custom_defs').value = JSON.stringify(rawImportedDefs); document.getElementById('main-form').submit(); }
+        function submitForm(actionType) {
+            document.getElementById('form-action').value = actionType;
+
+            if (actionType === 'restart') {
+                if(!confirm("Czy na pewno zrestartować AppDaemon?")) return;
+                document.getElementById('main-form').submit();
+                return;
+            }
+
+            // Stary kod generowania JSON
+            document.getElementById('layout_json').value = JSON.stringify(rows);
+            document.getElementById('custom_defs').value = JSON.stringify(rawImportedDefs);
+            document.getElementById('main-form').submit();
+        }
 
         function importYaml() {
             const text = document.getElementById('import-code').value; if(!text) return; blockSmart = true;
@@ -1496,7 +1519,7 @@
             document.getElementById('grid-preset').value = data.grid || '4x8';
             globalDefaultSize = data.defSize || {w:2, h:1};
             
-            if (data.grid === 'custom' && data.customCols) {
+            if (data.grid === 'custom') {
                 document.getElementById('custom-cols').value = data.customCols;
                 document.getElementById('custom-rows').value = data.customRows;
             }
