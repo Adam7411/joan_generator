@@ -83,8 +83,18 @@
         .add-widget-box.editing { border: 3px solid #ff9800; background: rgba(255, 152, 0, 0.15); }
         .flex-row { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 15px; align-items: center; }
         .flex-col { flex: 1; min-width: 160px; }
-        label { display: block; font-weight: bold; font-size: 0.9em; margin-bottom: 8px; color: var(--text-main); }
         input, select, textarea { width: 100%; padding: 12px; border: 1px solid var(--border); background: var(--bg-input); color: var(--text-main); border-radius: 4px; box-sizing: border-box; }
+        
+        /* --- NOWE STYLE (Wklej to) --- */
+        .input-valid { border: 2px solid #4caf50 !important; background-color: #e8f5e9 !important; }
+        .input-invalid { border: 2px solid #f44336 !important; background-color: #ffebee !important; }
+
+        .project-box { background: var(--highlight); border: 2px dashed var(--accent); padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center; }
+        .project-btn { background: #5c6bc0; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; margin: 0 5px; }
+        .project-btn:hover { opacity: 0.9; }
+        
+        .btn-copy { background: #607d8b; color: white; width: 100%; margin-bottom: 5px; padding: 10px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn-copy:hover { background: #455a64; }
         
         .btn { padding: 12px 24px; border: none; cursor: pointer; border-radius: 4px; font-weight: bold; text-transform: uppercase; color: var(--btn-text); font-size: 14px; }
         .btn:hover { opacity: 0.9; transform: translateY(-1px); }
@@ -232,13 +242,14 @@
 <body>
     <div class="container">
         <div class="header-row">
+            
             {% if save_message %}
             <div style="padding: 15px; margin-bottom: 20px; border-radius: 6px; font-weight: bold; text-align: center; 
                 border: 1px solid #ccc; background-color: #e0f7fa; color: #006064;">
                 {{ save_message }}
             </div>
             {% endif %}
-            
+
             {% if has_token %}
             <div class="status-bar status-ok">
                 <i class="mdi mdi-check-circle"></i> 
@@ -259,6 +270,14 @@
                     <button type="button" onclick="setLang('en')" id="btn-en">EN</button>
                 </div>
             </div>
+        </div>
+
+        <!-- SEKCJA ZARZĄDZANIA PROJEKTEM (JSON) -->
+        <div class="project-box">
+            <strong style="display:block; margin-bottom:10px;">📂 Zarządzanie Projektem (Backup)</strong>
+            <button type="button" class="project-btn" onclick="downloadProject()">⬇️ POBIERZ PROJEKT (.JSON)</button>
+            <button type="button" class="project-btn" onclick="document.getElementById('upload-json').click()">⬆️ WGRAJ PROJEKT</button>
+            <input type="file" id="upload-json" style="display:none" accept=".json" onchange="loadProjectFile(this)">
         </div>
 
         <div class="section">
@@ -324,7 +343,7 @@
                 <div class="flex-row" style="margin-bottom: 20px;">
                     <div class="flex-col" id="grp-entity" style="flex: 100%;">
                         <label data-i18n="lbl_entity">Encja (Wyszukaj po nazwie lub ID)</label>
-                        <input list="entity-list" id="w-id" placeholder="np. głośnik kuchnia..." oninput="searchEntities(this.value)" autocomplete="off">
+                        <input list="entity-list" id="w-id" placeholder="np. switch.salon" oninput="searchEntities(this.value); validateEntityInput(this.value)" autocomplete="off">
                         <datalist id="entity-list"></datalist>
                     </div>
                     <div class="flex-col hidden" id="grp-nav" style="flex: 100%;">
@@ -460,19 +479,8 @@
         {% if generated_yaml %}
         <div class="section" style="margin-top:30px;">
             <div class="section-title" data-i18n="sec_result">Wynikowy Kod YAML</div>
-            <div class="file-path-info">
-                <div class="file-info-block">
-                    <strong data-i18n="lbl_save_path">1. Zapisz kod w pliku:</strong>
-                    <code id="path-code">\\[HA_HOST]\addon_configs\appdaemon\dashboards\{{ filename }}</code>
-                </div>
-                <div class="file-info-block">
-                    <strong data-i18n="lbl_open_link">2. Uruchom ponownie AppDaemon i sprawdź:</strong>
-                    <div class="link-box">
-                        <a href="http://[HA_HOST]:5050/{{ dash_name }}" id="dashboard-link" target="_blank">http://[HA_HOST]:5050/{{ dash_name }}</a>
-                    </div>
-                </div>
-            </div>
-            <textarea class="output" readonly>{{ generated_yaml }}</textarea>
+            <button type="button" class="btn btn-copy" onclick="copyToClipboard()">📋 KOPIUJ KOD DO SCHOWKA</button>
+            <textarea class="output" id="output-yaml" readonly>{{ generated_yaml }}</textarea>
         </div>
         {% endif %}
     </div>
@@ -491,6 +499,7 @@
 
     <script>
         const entitiesData = {{ entities | tojson | safe }};
+        const validEntityIds = new Set(entitiesData.map(e => e.id));
         let rows = [[]]; 
         let editIdx = null; 
         let selectedRowIdx = null; 
@@ -1658,6 +1667,86 @@
                 updateIconPreview();
             }
             closeIconPicker();
+        }
+
+        // --- 1. WALIDACJA ENCJI ---
+        function validateEntityInput(val) {
+            const el = document.getElementById('w-id');
+            if(!val) {
+                el.classList.remove('input-valid', 'input-invalid');
+                return;
+            }
+            // Uznajemy za poprawne: istniejące w HA, nawigację lub spacery
+            if (validEntityIds.has(val) || val.startsWith('navigate.') || val === 'spacer') {
+                el.classList.add('input-valid');
+                el.classList.remove('input-invalid');
+            } else {
+                el.classList.add('input-invalid');
+                el.classList.remove('input-valid');
+            }
+        }
+
+        // --- 2. KOPIOWANIE DO SCHOWKA ---
+        function copyToClipboard() {
+            const copyText = document.getElementById("output-yaml");
+            if (!copyText) return;
+            copyText.select();
+            copyText.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(copyText.value).then(() => {
+                alert("Skopiowano kod do schowka!");
+            });
+        }
+
+        // --- 3. EKSPORT PROJEKTU (JSON) ---
+        function downloadProject() {
+            const data = {
+                rows: rows,
+                defs: rawImportedDefs,
+                title: document.getElementById('dash-title').value,
+                grid: document.getElementById('grid-preset').value,
+                defSize: globalDefaultSize,
+                customCols: document.getElementById('custom-cols').value,
+                customRows: document.getElementById('custom-rows').value
+            };
+            const json = JSON.stringify(data, null, 2);
+            const blob = new Blob([json], {type: "application/json"});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = data.title + "_backup.json";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        // --- 4. IMPORT PROJEKTU (JSON) ---
+        function loadProjectFile(input) {
+            const file = input.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    // Przywracanie zmiennych
+                    rows = data.rows || [[]];
+                    rawImportedDefs = data.defs || {};
+                    document.getElementById('dash-title').value = data.title || "JoanDashboard";
+                    syncTitle();
+                    document.getElementById('grid-preset').value = data.grid || '3x8';
+                    globalDefaultSize = data.defSize || {w:2, h:1};
+                    
+                    if (data.grid === 'custom') {
+                        document.getElementById('custom-cols').value = data.customCols || 4;
+                        document.getElementById('custom-rows').value = data.customRows || 8;
+                    }
+                    
+                    handleGridChange(); // Odśwież widok
+                    alert("Pomyślnie wczytano projekt z pliku JSON!");
+                } catch(err) {
+                    alert("Błąd pliku JSON: " + err);
+                }
+            };
+            reader.readAsText(file);
         }
 
         // Zamknij modal klikając poza nim
