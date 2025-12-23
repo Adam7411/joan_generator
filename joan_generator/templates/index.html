@@ -494,72 +494,54 @@
         let currentIconInputId = null;
 
         const POPULAR_ICONS = [
-    // === DOM I POMIESZCZENIA ===
-    "mdi-home", "mdi-home-outline", "mdi-home-automation", "mdi-home-floor-1", "mdi-home-floor-2", 
-    "mdi-home-floor-3", "mdi-sofa", "mdi-bed", "mdi-table-chair", "mdi-desk", "mdi-wardrobe", 
-    "mdi-silverware-fork-knife", "mdi-stove", "mdi-fridge", "mdi-microwave", "mdi-dishwasher", 
-    "mdi-coffee-maker", "mdi-bathtub", "mdi-shower", "mdi-toilet", "mdi-washing-machine", 
-    "mdi-tumble-dryer", "mdi-iron", "mdi-garage", "mdi-garage-open", "mdi-stairs", "mdi-elevator", 
-    "mdi-balcony", "mdi-fireplace", "mdi-lightbulb", "mdi-lightbulb-on", "mdi-lightbulb-off",
-
-    // === KLIMATYZACJA I CZUJNIKI ===
-    "mdi-thermometer", "mdi-thermostat", "mdi-home-thermometer", "mdi-water-percent", 
-    "mdi-air-conditioner", "mdi-fan", "mdi-fan-off", "mdi-radiator", "mdi-heating-coil", 
-    "mdi-fire", "mdi-snowflake", "mdi-weather-sunny", "mdi-weather-night", "mdi-weather-cloudy", 
-    "mdi-weather-rainy", "mdi-weather-pouring", "mdi-weather-snowy", "mdi-weather-lightning", 
-    "mdi-weather-windy", "mdi-wind-power", "mdi-smoke-detector-variant", "mdi-gas-cylinder", 
-    "mdi-molecule-co2", "mdi-water-alert", "mdi-motion-sensor", "mdi-leak", "mdi-eye", "mdi-eye-off",
+    // === PODSTAWY DOMU ===
+    "mdi-home", "mdi-home-outline", "mdi-lightbulb", "mdi-lightbulb-on", "mdi-lightbulb-off",
+    "mdi-power", "mdi-power-plug", "mdi-power-socket-eu", "mdi-toggle-switch", "mdi-toggle-switch-off",
+    "mdi-thermometer", "mdi-thermostat", "mdi-fan", "mdi-fan-off", "mdi-air-conditioner",
+    "mdi-radiator", "mdi-fire", "mdi-snowflake", "mdi-water-percent", "mdi-shield",
 
     // === BEZPIECZEŃSTWO I DRZWI ===
-    "mdi-lock", "mdi-lock-open", "mdi-shield-check", "mdi-shield-lock", "mdi-shield-home", 
-    "mdi-shield-alert", "mdi-door", "mdi-door-open", "mdi-door-closed", "mdi-gate", 
-    "mdi-gate-open", "mdi-window-closed-variant", "mdi-window-open-variant", "mdi-window-shutter", 
-    "mdi-window-shutter-open", "mdi-blinds", "mdi-curtains", "mdi-cctv", "mdi-webcam", 
-    "mdi-alarm-bell", "mdi-bell", "mdi-bell-ring", "mdi-key", "mdi-key-variant",
+    "mdi-lock", "mdi-lock-open", "mdi-door", "mdi-door-open", "mdi-door-closed",
+    "mdi-window-shutter", "mdi-window-shutter-open", "mdi-window-closed", "mdi-window-open",
+    "mdi-gate", "mdi-gate-open", "mdi-cctv", "mdi-webcam", "mdi-bell", "mdi-bell-ring", "mdi-key",
 
-    // === MULTIMEDIA I RTV ===
-    "mdi-television", "mdi-remote", "mdi-speaker", "mdi-speaker-wireless", "mdi-volume-high", 
-    "mdi-volume-medium", "mdi-volume-low", "mdi-volume-mute", "mdi-play", "mdi-pause", 
-    "mdi-stop", "mdi-skip-next", "mdi-skip-previous", "mdi-fast-forward", "mdi-rewind", 
-    "mdi-cast", "mdi-chromecast", "mdi-headphones", "mdi-music", "mdi-gamepad-variant",
+    // === MULTIMEDIA ===
+    "mdi-television", "mdi-remote", "mdi-speaker", "mdi-volume-high", "mdi-volume-medium",
+    "mdi-volume-low", "mdi-volume-mute", "mdi-play", "mdi-pause", "mdi-stop",
+    "mdi-skip-next", "mdi-skip-previous", "mdi-headphones", "mdi-music", "mdi-cast",
 
     // === BIURO I FINANSE ===
-    "mdi-briefcase", "mdi-printer", "mdi-scanner", "mdi-keyboard", "mdi-mouse", 
-    "mdi-desktop-tower", "mdi-laptop", "mdi-monitor", "mdi-tablet", "mdi-cellphone", 
-    "mdi-wifi", "mdi-router-wireless", "mdi-server", "mdi-database", "mdi-cloud-upload", 
-    "mdi-email", "mdi-email-outline", "mdi-paperclip", "mdi-attachment", "mdi-file-document", 
-    "mdi-folder", "mdi-calculator", "mdi-bank", "mdi-cash", "mdi-credit-card", 
-    "mdi-wallet", "mdi-piggy-bank", "mdi-chart-line", "mdi-chart-bar", "mdi-chart-pie", 
-    "mdi-percent", "mdi-currency-eur", "mdi-currency-usd", "mdi-cash-multiple",
+    "mdi-briefcase", "mdi-printer", "mdi-scanner", "mdi-keyboard", "mdi-mouse",
+    "mdi-desktop-tower", "mdi-laptop", "mdi-monitor", "mdi-cellphone", "mdi-wifi",
+    "mdi-email", "mdi-email-outline", "mdi-folder", "mdi-calculator", "mdi-bank",
+    "mdi-cash", "mdi-credit-card", "mdi-wallet", "mdi-piggy-bank", "mdi-chart-line",
 
-    // === OGRÓD I ZEWNĄTRZ ===
-    "mdi-flower", "mdi-tree", "mdi-pine-tree", "mdi-grass", "mdi-sprout", "mdi-leaf", 
-    "mdi-watering-can", "mdi-sprinkler", "mdi-sprinkler-variant", "mdi-pool", "mdi-hot-tub", 
-    "mdi-grill", "mdi-fence", "mdi-mower", "mdi-fountain", "mdi-solar-panel-large", 
-    "mdi-mailbox", "mdi-camera-outdoor",
+    // === JEDZENIE I AGD ===
+    "mdi-food", "mdi-silverware-fork-knife", "mdi-silverware", "mdi-coffee", "mdi-coffee-outline",
+    "mdi-tea", "mdi-fridge", "mdi-dishwasher", "mdi-stove", "mdi-microwave",
+    "mdi-pot-steam", "mdi-chef-hat", "mdi-cake-variant", "mdi-pizza", "mdi-hamburger",
+
+    // === SPORT I ZDROWIE ===
+    "mdi-dumbbell", "mdi-run", "mdi-walk", "mdi-bike", "mdi-swim",
+    "mdi-soccer", "mdi-basketball", "mdi-tennis", "mdi-trophy", "mdi-timer",
+    "mdi-heart-pulse", "mdi-medical-bag", "mdi-pill", "mdi-doctor", "mdi-tooth",
+
+    // === NATURA I OGRÓD ===
+    "mdi-tree", "mdi-pine-tree", "mdi-flower", "mdi-flower-outline", "mdi-sprout",
+    "mdi-grass", "mdi-leaf", "mdi-watering-can", "mdi-sprinkler", "mdi-mower",
+    "mdi-dog", "mdi-cat", "mdi-horse", "mdi-cow", "mdi-earth",
 
     // === TRANSPORT I PODRÓŻE ===
-    "mdi-car", "mdi-car-electric", "mdi-car-connected", "mdi-ev-station", "mdi-motorbike", 
-    "mdi-bicycle", "mdi-bike", "mdi-scooter", "mdi-bus", "mdi-train", "mdi-airplane", 
-    "mdi-map-marker", "mdi-map-marker-radius", "mdi-navigation", "mdi-compass", "mdi-gas-station", 
-    "mdi-parking", "mdi-traffic-light", "mdi-camera", "mdi-video",
+    "mdi-car", "mdi-car-electric", "mdi-bus", "mdi-truck", "mdi-motorbike",
+    "mdi-bicycle", "mdi-train", "mdi-airplane", "mdi-map-marker", "mdi-navigation",
+    "mdi-gas-station", "mdi-parking", "mdi-traffic-light", "mdi-camera", "mdi-video",
 
-    // === CZAS I NARZĘDZIA ===
-    "mdi-clock", "mdi-clock-outline", "mdi-alarm", "mdi-calendar", "mdi-calendar-check", 
-    "mdi-history", "mdi-timer-sand", "mdi-hammer", "mdi-wrench", "mdi-screwdriver", 
-    "mdi-saw-blade", "mdi-pliers", "mdi-tape-measure", "mdi-toolbox", "mdi-ruler", 
-    "mdi-flashlight", "mdi-cog", "mdi-tune", "mdi-hard-hat", "mdi-brush", "mdi-bucket",
-
-    // === SYMBOLE I INTERFEJS ===
-    "mdi-heart", "mdi-heart-outline", "mdi-star", "mdi-star-outline", "mdi-thumb-up", 
-    "mdi-thumb-down", "mdi-emoticon-happy", "mdi-emoticon-neutral", "mdi-account", 
-    "mdi-account-group", "mdi-gift", "mdi-balloon", "mdi-help-circle", "mdi-information", 
-    "mdi-alert", "mdi-check", "mdi-close", "mdi-plus", "mdi-minus", "mdi-refresh", 
-    "mdi-sync", "mdi-download", "mdi-upload", "mdi-send", "mdi-trash-can", "mdi-pencil", 
-    "mdi-arrow-left", "mdi-arrow-right", "mdi-arrow-up", "mdi-arrow-down", 
-    "mdi-arrow-left-bold-circle", "mdi-arrow-right-bold-circle", "mdi-chevron-left", "mdi-chevron-right"
+    // === NAWIGACJA (DLA PRZYCISKÓW NAVIGATE) ===
+    "mdi-arrow-left", "mdi-arrow-right", "mdi-arrow-up", "mdi-arrow-down",
+    "mdi-arrow-left-bold-circle", "mdi-arrow-right-bold-circle", "mdi-arrow-up-bold-circle", "mdi-arrow-down-bold-circle",
+    "mdi-chevron-left", "mdi-chevron-right", "mdi-menu", "mdi-refresh", "mdi-sync",
+    "mdi-plus", "mdi-minus", "mdi-check", "mdi-close", "mdi-home"
 ];
-
         const TRANSLATIONS = {
             pl: {
                 title_main: "Joan 6 E-Ink Generator",
@@ -1050,7 +1032,7 @@
             
             rows[targetR].push(movedWidget);
             dragSrc = null; renderPreview();
-        }
+        }const POPULAR_ICONS = [
 
         function handleWidgetDrop(e, targetR, targetW) {
             e.stopPropagation(); e.preventDefault();
