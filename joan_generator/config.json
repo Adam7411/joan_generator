@@ -12,10 +12,7 @@
   "init": false,
   "panel_icon": "mdi:tablet-dashboard",
   "homeassistant_api": true,
-  "map": [
-    "config:rw",
-    "addon_configs:rw"
-  ],
+  "map": ["config:rw", "share:rw"]
   "ports": {
     "5000/tcp": 5000
   },
