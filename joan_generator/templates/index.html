@@ -272,14 +272,6 @@
             </div>
         </div>
 
-        <!-- SEKCJA ZARZĄDZANIA PROJEKTEM (JSON) -->
-        <div class="project-box">
-            <strong style="display:block; margin-bottom:10px;">📂 Zarządzanie Projektem (Backup)</strong>
-            <button type="button" class="project-btn" onclick="downloadProject()">⬇️ POBIERZ PROJEKT (.JSON)</button>
-            <button type="button" class="project-btn" onclick="document.getElementById('upload-json').click()">⬆️ WGRAJ PROJEKT</button>
-            <input type="file" id="upload-json" style="display:none" accept=".json" onchange="loadProjectFile(this)">
-        </div>
-
         <div class="section">
             <div class="section-title">
                 <span data-i18n="sec_settings">1. Ustawienia Dashboardu</span>
@@ -468,7 +460,18 @@
                 </div>
             </div>
 
-            <input type="hidden" name="layout_data_json" id="layout_json">
+        <!-- NOWE MIEJSCE: SEKCJA ZARZĄDZANIA PROJEKTEM (JSON) -->
+        <div class="project-box" style="margin-top: 20px;">
+            <h3 style="margin-top:0;" data-i18n="sec_backup">📂 Zarządzanie Projektem (Backup na Dysk)</h3>
+            <p style="font-size:0.9em; margin-bottom:15px;" data-i18n="backup_desc">
+                Pobierz plik .json na dysk swojego komputera. To pełna kopia zapasowa, która pozwala przenieść projekt na inne urządzenie.
+            </p>
+            <button type="button" class="project-btn" onclick="downloadProject()" data-i18n="btn_download">⬇️ POBIERZ PROJEKT (.JSON)</button>
+            <button type="button" class="project-btn" onclick="document.getElementById('upload-json').click()" data-i18n="btn_upload">⬆️ WGRAJ PROJEKT Z DYSKU</button>
+            <input type="file" id="upload-json" style="display:none" accept=".json" onchange="loadProjectFile(this)">
+        </div>
+
+        <input type="hidden" name="layout_data_json" id="layout_json">
             <input type="hidden" name="custom_definitions_json" id="custom_defs">
             <div style="display:flex; gap:10px; margin-top:20px;">
                 <button type="button" class="btn btn-gen" style="flex:1;" onclick="submitForm('generate')" data-i18n="btn_gen">GENERUJ KOD .DASH</button>
@@ -741,7 +744,12 @@
                 
                 status_ok: "Połączono z Home Assistant (Token OK)",
                 status_err: "Brak tokena API! Lista encji jest pusta. Sprawdź konfigurację dodatku.",
-                modal_title: "Wybierz Ikonę"
+                modal_title: "Wybierz Ikonę",
+                // NOWE TŁUMACZENIA:
+                sec_backup: "📂 Zarządzanie Projektem (Backup na Dysk)",
+                backup_desc: "Pobierz plik .json na dysk swojego komputera. To pełna kopia zapasowa, która pozwala przenieść projekt na inne urządzenie.",
+                btn_download: "⬇️ POBIERZ PROJEKT (.JSON)",
+                btn_upload: "⬆️ WGRAJ PROJEKT Z DYSKU"
             },
             en: {
                 title_main: "Joan 6 E-Ink Generator",
@@ -782,7 +790,12 @@
                 
                 status_ok: "Connected to Home Assistant (Token OK)",
                 status_err: "No API Token! Entity list is empty. Check add-on configuration.",
-                modal_title: "Select Icon"
+                modal_title: "Select Icon",
+                // NOWE TŁUMACZENIA:
+                sec_backup: "📂 Project Management (Disk Backup)",
+                backup_desc: "Download the .json file to your computer drive. This is a full backup that allows you to transfer the project to another device.",
+                btn_download: "⬇️ DOWNLOAD PROJECT (.JSON)",
+                btn_upload: "⬆️ UPLOAD PROJECT FROM DISK"
             }
         };
 
