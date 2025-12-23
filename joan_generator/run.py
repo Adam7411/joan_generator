@@ -243,17 +243,21 @@ def index():
                     
                     # --- NAVIGATE ---
                     if w_type == 'navigate':
-                        dash_target = w_id.replace('navigate.', '')
-                        nav_icon = w_icon or 'mdi-arrow-right-circle'
+                        dash_target = w_id.replace('navigate.', '').strip()
+                        nav_icon = w_icon or 'mdi-arrow-left-circle'
+                        
                         generated_yaml += f"  widget_type: navigate\n"
                         generated_yaml += f"  title: \"{w_name}\"\n"
                         generated_yaml += f"  dashboard: {dash_target}\n"
+                        # Podajemy obie wersje ikony, aby zawsze była widoczna
                         generated_yaml += f"  icon_active: {nav_icon}\n"
                         generated_yaml += f"  icon_inactive: {nav_icon}\n"
-                        generated_yaml += f"  title_style: \"{STYLE_TITLE}\"\n"
-                        generated_yaml += f"  widget_style: \"{STYLE_WIDGET}\"\n"
-                        generated_yaml += f"  icon_active_style: \"{STYLE_ICON}\"\n"
-                        generated_yaml += f"  icon_inactive_style: \"{STYLE_ICON}\"\n"
+                        
+                        NAV_TITLE_STYLE = "color: #000000; font-size: 24px; font-weight: 700; text-align: center; padding-top: 5px; width: 100%; font-family: 'Roboto', sans-serif;"
+                        NAV_WIDGET_STYLE = "background-color: #FFFFFF !important; padding: 10px !important; color: #000000 !important;"
+                        
+                        generated_yaml += f"  title_style: \"{NAV_TITLE_STYLE}\"\n"
+                        generated_yaml += f"  widget_style: \"{NAV_WIDGET_STYLE}\"\n"
 
                     # --- SENSOR ---
                     elif w_type == 'sensor':
