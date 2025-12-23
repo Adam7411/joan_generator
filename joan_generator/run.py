@@ -173,24 +173,25 @@ def deploy_url_to_device(device_entity_id, dashboard_name):
         return False, str(e)
 
 # -------------------------------------------------------------------------
-# NOWE TRASY: PROXY DLA OBRAZKÓW KAMER
+# PROXY DO KAMERY (Podgląd Live)
 # -------------------------------------------------------------------------
 @app.route('/camera_proxy/<entity_id>')
 def camera_proxy(entity_id):
-    """Pobiera obraz z kamery HA i przekazuje do przeglądarki."""
+    """Pobiera obraz z kamery HA używając tokena Supervisora i oddaje go do przeglądarki."""
     if not TOKEN: return "No Token", 403
     
     headers = {
         "Authorization": f"Bearer {TOKEN}",
         "Content-Type": "application/json"
     }
-    # Używamy API HA do pobrania proxy obrazu
+    # Używamy API HA do pobrania obrazka
     url = f"{API_URL}/camera_proxy/{entity_id}"
     
     try:
+        # Pobieramy obrazek z HA
         resp = requests.get(url, headers=headers, timeout=10)
         if resp.status_code == 200:
-            # Zwracamy obrazek bezpośrednio
+            # Zwracamy go do przeglądarki
             from flask import Response
             return Response(resp.content, mimetype=resp.headers.get('Content-Type', 'image/jpeg'))
         else:
@@ -234,7 +235,10 @@ def normalize_icon_format(icon_name):
 def index():
     generated_yaml = ""
     ha_entities = get_ha_entities()
-    joan_devices = get_joan_devices() # <--- NOWOŚĆ: Lista tabletów
+    
+    # 1. Filtrujemy urządzenia Joan (szukamy wszystkich kamer, bo to najpewniejszy sposób)
+    joan_devices = [e for e in ha_entities if e['id'].startswith('camera.')]
+    
     dashboard_filename = "joandashboard.dash"
     dashboard_slug = "joandashboard"
     has_token = bool(TOKEN)
