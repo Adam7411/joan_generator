@@ -173,6 +173,32 @@ def deploy_url_to_device(device_entity_id, dashboard_name):
         return False, str(e)
 
 # -------------------------------------------------------------------------
+# NOWE TRASY: PROXY DLA OBRAZKÓW KAMER
+# -------------------------------------------------------------------------
+@app.route('/camera_proxy/<entity_id>')
+def camera_proxy(entity_id):
+    """Pobiera obraz z kamery HA i przekazuje do przeglądarki."""
+    if not TOKEN: return "No Token", 403
+    
+    headers = {
+        "Authorization": f"Bearer {TOKEN}",
+        "Content-Type": "application/json"
+    }
+    # Używamy API HA do pobrania proxy obrazu
+    url = f"{API_URL}/camera_proxy/{entity_id}"
+    
+    try:
+        resp = requests.get(url, headers=headers, timeout=10)
+        if resp.status_code == 200:
+            # Zwracamy obrazek bezpośrednio
+            from flask import Response
+            return Response(resp.content, mimetype=resp.headers.get('Content-Type', 'image/jpeg'))
+        else:
+            return f"Error from HA: {resp.status_code}", 404
+    except Exception as e:
+        return str(e), 500
+
+# -------------------------------------------------------------------------
 # 3. STYLE (E-INK OPTIMIZED & TWEAKED)
 # -------------------------------------------------------------------------
 # Style wymuszające wysoki kontrast (czarny na białym) dla ekranów E-Ink
