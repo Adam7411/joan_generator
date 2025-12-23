@@ -18,6 +18,8 @@ TOKEN_SOURCE = "System (Supervisor)"
 # Tutaj wpisz slug swojego AppDaemona (folderu z addon_configs)
 APPDAEMON_SLUG = "a0d7b954_appdaemon" # <--- DODAJ TO
 
+OUTPUT_DIR = None  # <--- DODAJ TĘ LINIJKĘ
+
 try:
     options_path = '/data/options.json'
     if os.path.exists(options_path):
@@ -186,7 +188,7 @@ def camera_proxy(entity_id):
         # Pobieramy obrazek z HA
         resp = requests.get(url, headers=headers, timeout=10)
         if resp.status_code == 200:
-            # Zwracamy go do przeglądarki
+            # Zwracamy go do przeglądarce
             from flask import Response
             return Response(resp.content, mimetype=resp.headers.get('Content-Type', 'image/jpeg'))
         else:
@@ -259,7 +261,7 @@ def index():
     
     global OUTPUT_DIR
     if OUTPUT_DIR is None:
-        OUTPUT_DIR = detect_dashboard_path(APPDAEMON_ADDON_SLUG)
+        OUTPUT_DIR = detect_dashboard_path(APPDAEMON_SLUG)
 
     if request.method == 'POST':
         try:
