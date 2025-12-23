@@ -1,22 +1,15 @@
 {
   "name": "Joan 6: AppDaemon Dashboard Generator",
-  "version": "1.2.4",
+  "version": "1.2.2",
   "slug": "joan_generator",
-  "description": "Generator dashboardów E-Ink dla Joan 6",
+  "description": ".dash file creator for AppDaemon, optimized for Visionect Joan 6 screens.",
   "url": "https://github.com/Adam7411/visionect_joan",
   "arch": ["aarch64", "amd64", "armv7"],
   "startup": "application",
   "boot": "auto",
-  "hassio_api": true,
-  "hassio_role": "manager",
   "init": false,
   "panel_icon": "mdi:tablet-dashboard",
   "homeassistant_api": true,
-  "map": [
-    "config:rw",
-    "share:rw",
-    "addon_configs:rw"
-  ],
   "ports": {
     "5000/tcp": 5000
   },
