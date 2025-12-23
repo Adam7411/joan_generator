@@ -517,9 +517,9 @@
                     <div class="step-num">1</div>
                     <div class="step-content">
                         <strong>Zapisz plik .dash na serwerze</strong><br>
-                        <small>Skopiuj wygenerowany kod i zapisz go ręcznie przez Sambę lub File Editor w folderze <code>/config/appdaemon/dashboards/</code>.</small>
+                        <small>Kliknij, aby wygenerować kod. Kod pojawi się na samym dole strony.</small>
                         <div style="margin-top:5px;">
-                            <button type="button" class="btn btn-gen" onclick="submitForm('generate')" style="font-size:14px; padding:8px;">1. GENERUJ I KOPIUJ KOD</button>
+                            <button type="button" class="btn btn-gen" onclick="submitForm('generate')" style="font-size:14px; padding:8px;">1. GENERUJ KOD</button>
                         </div>
                     </div>
                 </div>
@@ -546,7 +546,7 @@
                             <select name="deploy_device_id" style="flex:1;">
                                 <option value="">-- Wybierz urządzenie Joan --</option>
                                 {% for dev in joan_devices %}
-                                <option value="{{ dev.entity_id }}">{{ dev.attributes.friendly_name }} ({{ dev.entity_id }})</option>
+                                <option value="{{ dev.id }}">{{ dev.attributes.friendly_name }} ({{ dev.id }})</option>
                                 {% endfor %}
                             </select>
                             <button type="button" class="btn" style="background:#ff9800; color:white;" onclick="submitForm('deploy')">3. WYŚLIJ NA TABLET ▶</button>
@@ -570,17 +570,16 @@
         {% if generated_yaml %}
         <div class="section" style="margin-top:30px;">
             <div class="section-title" data-i18n="sec_result">Wynikowy Kod YAML</div>
-            <button type="button" class="btn btn-copy" onclick="copyToClipboard()">📋 KOPIUJ KOD DO SCHOWKA</button>
+            
+            <!-- PRZYCISK KOPIOWANIA - POJAWIA SIĘ TYLKO GDY JEST KOD -->
+            <button type="button" class="btn btn-copy" onclick="copyToClipboard()" style="background:#009688; color:white; margin-bottom:10px;">📋 KLIKNIJ, ABY SKOPIOWAĆ KOD</button>
+            
             <textarea class="output" id="output-yaml" readonly>{{ generated_yaml }}</textarea>
         </div>
-        {% endif %}
-
-        {% if generated_yaml %}
+        
+        <!-- Automatyczne przewinięcie do wyniku -->
         <script>
-            // Automatyczne przewinięcie do wyniku
             document.getElementById('output-yaml').scrollIntoView({behavior: "smooth"});
-            // Próba automatycznego skopiowania (może być blokowana przez przeglądarkę bez kliknięcia)
-            setTimeout(copyToClipboard, 500); 
         </script>
         {% endif %}
     </div>
