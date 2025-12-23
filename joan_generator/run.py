@@ -7,12 +7,12 @@ from flask import Flask, render_template, request
 # =========================================================================
 # INITIALIZATION & SETUP
 # =========================================================================
-print("📦 [INIT] Initializing Joan 6 Generator application...")
+print("📦 [INIT] Initializing Joan 6 Generator application (Full Version)...")
 print("-------------------------------------------------------------------")
 
 app = Flask(__name__)
 # Secret key for session/flash messages security
-app.secret_key = 'joan_generator_secret_key_full_production'
+app.secret_key = 'joan_generator_secret_key_full_production_v2'
 
 # =========================================================================
 # 1. API & TOKEN CONFIGURATION
@@ -23,9 +23,10 @@ API_URL = "http://supervisor/core/api"
 SUPERVISOR_URL = "http://supervisor"
 TOKEN_SOURCE = "System (Supervisor)"
 
-# Default settings (will be overwritten by auto-detection logic)
+# Default settings
 APPDAEMON_ADDON_SLUG = "a0d7b954_appdaemon" 
-OUTPUT_DIR = None  # None to force detection logic on startup
+# FORCED PATH based on previous successful diagnosis
+OUTPUT_DIR = "/share/dashboards" 
 
 # -------------------------------------------------------------------------
 # HELPER: DEBUGGING DIRECTORY STRUCTURE
@@ -33,20 +34,16 @@ OUTPUT_DIR = None  # None to force detection logic on startup
 def debug_directories():
     """
     Helper function to list directories visible to the container.
-    This helps diagnose 'Permission denied' or 'No such file' errors
-    which are common in HA Add-on environment.
     """
     print("\n🔍 --- DIRECTORY STRUCTURE DEBUG START ---")
     
-    # List of critical paths to check for existence and read permissions
     paths_to_check = [
         "/", 
         "/config", 
         "/addon_configs", 
         "/share", 
         "/data",
-        "/config/appdaemon",
-        "/config/appdaemon/dashboards"
+        "/share/dashboards"
     ]
     
     available_mounts = []
@@ -58,14 +55,12 @@ def debug_directories():
             try:
                 # Attempt to list contents to verify read access
                 contents = [d for d in os.listdir(p)]
-                # Filter to show only directories/files, limited count to avoid log spam
-                preview = contents[:10]
                 count = len(contents)
-                print(f"   └── Contents ({count} items): {preview}...") 
+                print(f"   └── Contents ({count} items): {contents[:5]}...") 
             except Exception as e:
                 print(f"   ⚠️ Directory exists but ACCESS DENIED to {p}: {e}")
         else:
-            print(f"❌ Directory does NOT exist (not mounted or wrong path): {p}")
+            print(f"❌ Directory does NOT exist: {p}")
             
     print("🔍 --- DIRECTORY STRUCTURE DEBUG END ---\n")
     return available_mounts
@@ -73,7 +68,6 @@ def debug_directories():
 # -------------------------------------------------------------------------
 # LOAD ADD-ON OPTIONS (options.json)
 # -------------------------------------------------------------------------
-# This section reads configuration provided by the user in HA Add-on configuration tab
 try:
     options_path = '/data/options.json'
     if os.path.exists(options_path):
@@ -81,21 +75,15 @@ try:
         with open(options_path, 'r') as f:
             options = json.load(f)
             
-            # 1. Manual Token Override (Useful for local testing or non-supervisor env)
+            # 1. Manual Token Override
             manual_token = options.get('manual_token')
             if manual_token and len(manual_token) > 10:
                 TOKEN = manual_token
-                # If manual token is used, we usually talk to HA Core directly on port 8123
                 API_URL = "http://homeassistant:8123/api"
                 TOKEN_SOURCE = "Manual (Configuration)"
                 print(f"🔧 [CONFIG] Manual token detected. Switching API URL to: {API_URL}")
             
-            # 2. Path Override (User explicitly sets where to save)
-            if options.get('output_path'):
-                OUTPUT_DIR = options.get('output_path')
-                print(f"🔧 [CONFIG] Output path enforced by configuration: {OUTPUT_DIR}")
-            
-            # 3. Slug Override (User explicitly sets AppDaemon slug)
+            # 2. Slug Override
             if options.get('appdaemon_slug'):
                 APPDAEMON_ADDON_SLUG = options.get('appdaemon_slug')
                 print(f"🔧 [CONFIG] AppDaemon slug enforced by configuration: {APPDAEMON_ADDON_SLUG}")
@@ -108,15 +96,14 @@ except Exception as e:
 
 # Critical check for Token
 if not TOKEN:
-    print("❌ [CRITICAL] WARNING: No Authorization Token found! Entity list will be empty and restart will fail.")
+    print("❌ [CRITICAL] WARNING: No Authorization Token found!")
 
 # =========================================================================
-# 2. ENVIRONMENT AUTO-DETECTION (AppDaemon & Paths)
+# 2. ENVIRONMENT AUTO-DETECTION
 # =========================================================================
 def detect_appdaemon_slug():
     """
     Queries Supervisor API to find the actual slug of the installed AppDaemon add-on.
-    This handles variations like 'a0d7b954_appdaemon' vs local builds.
     """
     if not os.environ.get('SUPERVISOR_TOKEN'):
         print("ℹ️ [DETECT] No Supervisor token available for slug detection. Keeping default.")
@@ -133,7 +120,6 @@ def detect_appdaemon_slug():
             
             for addon in addons:
                 slug = addon.get('slug', '')
-                # Look for 'appdaemon' in the slug string and ensure it's installed
                 if 'appdaemon' in slug and addon.get('installed', False):
                     print(f"✅ [DETECT] Found installed AppDaemon Add-on: {slug}")
                     return slug
@@ -144,95 +130,13 @@ def detect_appdaemon_slug():
     except Exception as e:
         print(f"⚠️ [DETECT] Exception during AppDaemon slug detection: {e}")
     
-    return APPDAEMON_ADDON_SLUG # Fallback
+    return APPDAEMON_ADDON_SLUG 
 
-def detect_dashboard_path(detected_slug):
-    """
-    Attempts to find a valid writable directory for .dash files.
-    Prioritizes specific AppDaemon config folders, falls back to generic /config.
-    """
-    print(f"🔍 [PATH] Attempting to detect best save path for slug: {detected_slug}")
-    
-    # Priority list of paths to check
-    candidates = [
-        # 1. New HA OS structure in /addon_configs (Best practice if mounted)
-        f"/addon_configs/{detected_slug}/dashboards",
-        f"/addon_configs/{detected_slug}/conf/dashboards",
-        # 2. Legacy structure in /config (Most common for file sharing)
-        "/config/appdaemon/dashboards",
-        "/config/appdaemon/conf/dashboards",
-        # 3. Share folder (Alternative if config is locked)
-        "/share/dashboards",
-        "/share/appdaemon/dashboards"
-    ]
-
-    # If user enforced a path in options, try that first
-    if 'options' in globals() and options.get('output_path'):
-        user_path = options.get('output_path')
-        print(f"ℹ️ [PATH] Checking user-defined path first: {user_path}")
-        candidates.insert(0, user_path)
-
-    # Preliminary check for mount points visibility
-    has_config = os.path.exists("/config")
-    has_addon_configs = os.path.exists("/addon_configs")
-    has_share = os.path.exists("/share")
-    
-    if not has_config and not has_addon_configs and not has_share:
-        print("❌ [CRITICAL] No major directories (/config, /addon_configs, /share) are mounted!")
-        print("   Please check your 'config.json' -> 'map' section.")
-        # We return None, logic later will show error to user
-        return None
-
-    for path in candidates:
-        # Check if directory exists
-        if os.path.exists(path):
-            print(f"✅ [PATH] Found existing valid directory: {path}")
-            # Verify write access
-            if os.access(path, os.W_OK):
-                return path
-            else:
-                print(f"   ⚠️ Read-only access to {path}, skipping...")
-        
-        # If not, check if parent exists and we can create it
-        parent = os.path.dirname(path)
-        if os.path.exists(parent):
-            if os.access(parent, os.W_OK):
-                try:
-                    # Attempt to create directory
-                    os.makedirs(path, exist_ok=True)
-                    print(f"✅ [PATH] Successfully created directory: {path}")
-                    return path
-                except Exception as e:
-                    print(f"   ⚠️ Failed to create {path}: {e}")
-            else:
-                pass # Parent exists but not writable
-    
-    # Fallback logic if nothing specific found
-    if has_config:
-        fallback = "/config/appdaemon/dashboards"
-        print(f"⚠️ [PATH] Specific path not found. Defaulting to fallback in /config: {fallback}")
-        # Try to create it just in case
-        try:
-            os.makedirs(fallback, exist_ok=True)
-        except: pass
-        return fallback
-        
-    return None
-
-# =========================================================================
-# RUN STARTUP ROUTINES
-# =========================================================================
+# Execute detection on startup
 debug_directories()
 
-# 1. Detect Slug
 if 'options' in globals() and not options.get('appdaemon_slug'):
     APPDAEMON_ADDON_SLUG = detect_appdaemon_slug()
-
-# 2. Detect Path
-if 'options' in globals() and not options.get('output_path'):
-    OUTPUT_DIR = detect_dashboard_path(APPDAEMON_ADDON_SLUG)
-elif 'options' in globals() and options.get('output_path'):
-    OUTPUT_DIR = options.get('output_path')
 
 print(f"📂 [FINAL] Configured Target Save Directory: {OUTPUT_DIR}")
 print("-------------------------------------------------------------------")
@@ -242,7 +146,7 @@ print("-------------------------------------------------------------------")
 # =========================================================================
 def get_ha_entities():
     """
-    Fetches all states from Home Assistant Core API to populate the list.
+    Fetches all states from Home Assistant Core API.
     """
     if not TOKEN:
         return []
@@ -263,7 +167,6 @@ def get_ha_entities():
                 attributes = state.get('attributes', {})
                 unit = attributes.get('unit_of_measurement', '')
                 
-                # Create a simplified object for the frontend
                 entity_obj = {
                     'id': state['entity_id'],
                     'state': state['state'],
@@ -276,7 +179,6 @@ def get_ha_entities():
                 }
                 entities.append(entity_obj)
             
-            # Sort alphabetically by entity_id
             entities.sort(key=lambda x: x['id'])
             return entities
             
@@ -288,18 +190,14 @@ def get_ha_entities():
 def restart_appdaemon():
     """
     Sends a request to Home Assistant to restart the AppDaemon add-on.
-    Handles both Internal Supervisor API and External Service Calls.
     """
     if not TOKEN:
         return False, "No API Token available."
     
-    # Determine which API endpoint to use based on configuration
     if "supervisor" in API_URL:
-        # Internal Supervisor API (Direct container to supervisor communication)
         url = f"{SUPERVISOR_URL}/addons/{APPDAEMON_ADDON_SLUG}/restart"
         method = "POST"
     else:
-        # External/Core API Service Call (Standard HA Service)
         url = f"{API_URL}/services/hassio/addon_restart"
         method = "POST_SERVICE"
 
@@ -310,14 +208,12 @@ def restart_appdaemon():
     
     try:
         print(f"🔄 [RESTART] Attempting restart of addon: {APPDAEMON_ADDON_SLUG}")
-        print(f"   Using URL: {url}")
         
         response = None
         if method == "POST_SERVICE":
             payload = {"addon": APPDAEMON_ADDON_SLUG}
             response = requests.post(url, json=payload, headers=headers, timeout=20)
         else:
-            # Supervisor API direct call (no body needed for restart)
             response = requests.post(url, headers=headers, timeout=20)
             
         if response.status_code in [200, 201]:
@@ -334,7 +230,6 @@ def restart_appdaemon():
 # =========================================================================
 # 4. E-INK STYLES AND FORMATTERS
 # =========================================================================
-# High contrast styles for E-Ink displays (Black on White)
 STYLE_TITLE = "color: #000000; font-size: 20px; font-weight: 700; text-align: center; padding-top: 5px; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif;"
 STYLE_WIDGET = "color: #000000 !important; background-color: #FFFFFF !important;"
 STYLE_TEXT = "color: #000000 !important; font-weight: 700 !important;"
@@ -342,6 +237,11 @@ STYLE_VALUE = "color: #000000 !important; font-size: 54px !important; font-weigh
 STYLE_UNIT = "color: #000000 !important; padding-top: 60px !important; display: inline-block !important;"
 STYLE_ICON = "color: #000000 !important;"
 STYLE_STATE_TEXT = "color: #000000 !important; font-weight: 700 !important; font-size: 16px !important;"
+
+def safe_yaml_string(s):
+    """Escapes strings for YAML to prevent syntax errors."""
+    if not s: return ""
+    return str(s).replace('"', '\\"')
 
 def normalize_icon_format(icon_name):
     """Ensures icons have mdi- prefix for AppDaemon."""
@@ -363,11 +263,9 @@ def index():
     has_token = bool(TOKEN)
     save_message = None
     
-    # Re-detect output directory on every request if it was null (retry logic)
+    # Force output dir to share
     global OUTPUT_DIR
-    if OUTPUT_DIR is None:
-        print("⚠️ [RUNTIME] Output Directory is None, retrying detection...")
-        OUTPUT_DIR = detect_dashboard_path(APPDAEMON_ADDON_SLUG)
+    OUTPUT_DIR = "/share/dashboards"
 
     if request.method == 'POST':
         try:
@@ -375,7 +273,8 @@ def index():
             title = request.form.get('title', 'JoanDashboard')
             action_type = request.form.get('action_type', 'generate')
             
-            dashboard_slug = title.lower().replace(" ", "_")
+            # Clean filename
+            dashboard_slug = title.lower().replace(" ", "_").replace("ą","a").replace("ć","c").replace("ę","e").replace("ł","l").replace("ń","n").replace("ó","o").replace("ś","s").replace("ź","z").replace("ż","z")
             dashboard_filename = dashboard_slug + ".dash"
             
             cols = request.form.get('grid_columns', '4')
@@ -387,26 +286,24 @@ def index():
             def_w = int(def_size_parts[0].strip())
             def_h = int(def_size_parts[1].strip()) if len(def_size_parts) > 1 else 1
 
-            # Translation Dictionary for State Maps
+            # Translation Dictionary
             TRANS = {
                 'pl': {
-                    'on': 'WŁĄCZONE', 'off': 'WYŁĄCZONE', 
-                    'open': 'OTWARTE', 'closed': 'ZAMKNIĘTE', 
-                    'opening': 'OTWIERANIE', 'closing': 'ZAMYKANIE', 
-                    'locked': 'ZAMKNIĘTE', 'unlocked': 'OTWARTE', 
-                    'home': 'W DOMU', 'not_home': 'POZA'
+                    'on': 'WŁ', 'off': 'WYŁ', 
+                    'open': 'OTW', 'closed': 'ZAM', 
+                    'locked': 'ZAM', 'unlocked': 'OTW',
+                    'home': 'DOM', 'not_home': 'POZA'
                 },
                 'en': {
                     'on': 'ON', 'off': 'OFF', 
                     'open': 'OPEN', 'closed': 'CLOSED', 
-                    'opening': 'OPENING', 'closing': 'CLOSING', 
-                    'locked': 'LOCKED', 'unlocked': 'UNLOCKED', 
+                    'locked': 'LOCKED', 'unlocked': 'UNLOCKED',
                     'home': 'HOME', 'not_home': 'AWAY'
                 }
             }
             dic = TRANS.get(lang, TRANS['pl'])
 
-            # Calculate AppDaemon Columns (base unit 117px)
+            # AppDaemon Columns
             if def_w == 1: 
                 ad_columns = int(cols)
             else: 
@@ -433,7 +330,8 @@ def index():
             generated_yaml += "      step: 1\n"
             generated_yaml += f"  white_text_style: \"{STYLE_TEXT}\"\n"
             generated_yaml += f"  state_text_style: \"{STYLE_STATE_TEXT}\"\n"
-            generated_yaml += "skin: simplyred\n\n"
+            # Using default skin to avoid 'skin not found' errors
+            generated_yaml += "skin: default\n\n"
             
             layout_data_str = request.form.get('layout_data_json')
             custom_defs_str = request.form.get('custom_definitions_json', '{}')
@@ -461,7 +359,6 @@ def index():
                         size_str = w.get('size', '')
                         is_default = False
                         
-                        # Size detection
                         if size_str == f"({def_w}x{def_h})": is_default = True
                         elif size_str == "(2x1)" and def_w == 2 and def_h == 1: is_default = True
                         elif size_str == "(1x1)" and def_w == 1 and def_h == 1: is_default = True
@@ -495,7 +392,7 @@ def index():
                         continue
 
                     w_type = w['type']
-                    w_name = w['name']
+                    w_name = safe_yaml_string(w['name'])
                     w_icon = normalize_icon_format(w['icon'])
                     i_on = normalize_icon_format(w.get('icon_on'))
                     i_off = normalize_icon_format(w.get('icon_off'))
@@ -569,7 +466,6 @@ def index():
                         generated_yaml += f"  widget_style: \"{STYLE_WIDGET}\"\n"
                         generated_yaml += f"  icon_style_active: \"{STYLE_ICON}\"\n"
                         generated_yaml += f"  icon_style_inactive: \"{STYLE_ICON}; opacity: 0.5;\"\n"
-                        # Speed Icons
                         generated_yaml += f"  speed1_icon_style_active: \"{STYLE_ICON}\"\n"
                         generated_yaml += f"  speed1_icon_style_inactive: \"{STYLE_ICON}; opacity: 0.3;\"\n"
                         generated_yaml += f"  speed2_icon_style_active: \"{STYLE_ICON}\"\n"
@@ -605,54 +501,169 @@ def index():
                             generated_yaml += f"  icon: {w_icon}\n"
                         generated_yaml += f"  text_style: \"{STYLE_TITLE}\"\n"
                     
-                    # === GENERIC WIDGETS ===
-                    else:
-                        ad_type = w_type
-                        if w_type == 'binary_sensor': ad_type = 'binary_sensor'
-                        if w_type == 'input_boolean': ad_type = 'switch'
-                        if w_type == 'person': ad_type = 'device_tracker'
-                        if w_type == 'light': ad_type = 'switch'
-                        if w_type == 'lock': ad_type = 'lock'
-                        if w_type == 'input_select': ad_type = 'input_select'
-                        if w_type == 'input_number': ad_type = 'input_number'
-                        if w_type == 'script': ad_type = 'script'
-                        if w_type == 'input_button': ad_type = 'script'
-                        
-                        generated_yaml += f"  widget_type: {ad_type}\n"
+                    # === SWITCH ===
+                    elif w_type == 'switch':
+                        generated_yaml += f"  widget_type: switch\n"
                         generated_yaml += f"  entity: {w_id}\n"
                         generated_yaml += f"  title: \"{w_name}\"\n"
-                        
                         if i_on: generated_yaml += f"  icon_on: {i_on}\n"
                         if i_off: generated_yaml += f"  icon_off: {i_off}\n"
-                        
-                        if ad_type == 'lock':
-                            if i_off: generated_yaml += f"  icon_locked: {i_off}\n"
-                            if i_on: generated_yaml += f"  icon_unlocked: {i_on}\n"
-                        
-                        if w_icon and not i_on: 
-                            generated_yaml += f"  icon: {w_icon}\n"
-                        
+                        if w_icon and not i_on: generated_yaml += f"  icon: {w_icon}\n"
                         generated_yaml += f"  state_text: 1\n"
                         generated_yaml += f"  title_style: \"{STYLE_TITLE}\"\n"
                         generated_yaml += f"  text_style: \"{STYLE_TEXT}\"\n"
                         generated_yaml += f"  widget_style: \"{STYLE_WIDGET}\"\n"
                         generated_yaml += f"  icon_style_active: \"{STYLE_ICON}\"\n"
                         generated_yaml += f"  icon_style_inactive: \"{STYLE_ICON}\"\n"
-                        
-                        if ad_type in ['cover', 'binary_sensor', 'switch', 'light', 'lock']: 
-                            generated_yaml += "  state_map:\n"
-                            if ad_type == 'cover':
-                                for s in ['open', 'closed', 'opening', 'closing']: 
-                                    generated_yaml += f"    \"{s}\": \"{dic.get(s, s)}\"\n"
-                            elif ad_type == 'binary_sensor':
-                                generated_yaml += f"    \"on\": \"{dic['open']}\"\n"
-                                generated_yaml += f"    \"off\": \"{dic['closed']}\"\n"
-                            elif ad_type == 'lock':
-                                generated_yaml += f"    \"locked\": \"{dic['locked']}\"\n"
-                                generated_yaml += f"    \"unlocked\": \"{dic['unlocked']}\"\n"
-                            else:
-                                generated_yaml += f"    \"on\": \"{dic['on']}\"\n"
-                                generated_yaml += f"    \"off\": \"{dic['off']}\"\n"
+                        generated_yaml += f"  state_map:\n"
+                        generated_yaml += f"    \"on\": \"{dic['on']}\"\n"
+                        generated_yaml += f"    \"off\": \"{dic['off']}\"\n"
+
+                    # === LIGHT ===
+                    elif w_type == 'light':
+                        generated_yaml += f"  widget_type: switch\n"
+                        generated_yaml += f"  entity: {w_id}\n"
+                        generated_yaml += f"  title: \"{w_name}\"\n"
+                        if i_on: generated_yaml += f"  icon_on: {i_on}\n"
+                        if i_off: generated_yaml += f"  icon_off: {i_off}\n"
+                        if w_icon and not i_on: generated_yaml += f"  icon: {w_icon}\n"
+                        generated_yaml += f"  state_text: 1\n"
+                        generated_yaml += f"  title_style: \"{STYLE_TITLE}\"\n"
+                        generated_yaml += f"  text_style: \"{STYLE_TEXT}\"\n"
+                        generated_yaml += f"  widget_style: \"{STYLE_WIDGET}\"\n"
+                        generated_yaml += f"  icon_style_active: \"{STYLE_ICON}\"\n"
+                        generated_yaml += f"  icon_style_inactive: \"{STYLE_ICON}\"\n"
+                        generated_yaml += f"  state_map:\n"
+                        generated_yaml += f"    \"on\": \"{dic['on']}\"\n"
+                        generated_yaml += f"    \"off\": \"{dic['off']}\"\n"
+
+                    # === COVER ===
+                    elif w_type == 'cover':
+                        generated_yaml += f"  widget_type: cover\n"
+                        generated_yaml += f"  entity: {w_id}\n"
+                        generated_yaml += f"  title: \"{w_name}\"\n"
+                        if i_on: generated_yaml += f"  icon_on: {i_on}\n"
+                        if i_off: generated_yaml += f"  icon_off: {i_off}\n"
+                        if w_icon and not i_on: generated_yaml += f"  icon: {w_icon}\n"
+                        generated_yaml += f"  state_text: 1\n"
+                        generated_yaml += f"  title_style: \"{STYLE_TITLE}\"\n"
+                        generated_yaml += f"  text_style: \"{STYLE_TEXT}\"\n"
+                        generated_yaml += f"  widget_style: \"{STYLE_WIDGET}\"\n"
+                        generated_yaml += f"  icon_style_active: \"{STYLE_ICON}\"\n"
+                        generated_yaml += f"  icon_style_inactive: \"{STYLE_ICON}\"\n"
+                        generated_yaml += f"  state_map:\n"
+                        for s in ['open', 'closed', 'opening', 'closing']: 
+                            generated_yaml += f"    \"{s}\": \"{dic.get(s, s)}\"\n"
+
+                    # === BINARY SENSOR ===
+                    elif w_type == 'binary_sensor':
+                        generated_yaml += f"  widget_type: binary_sensor\n"
+                        generated_yaml += f"  entity: {w_id}\n"
+                        generated_yaml += f"  title: \"{w_name}\"\n"
+                        if i_on: generated_yaml += f"  icon_on: {i_on}\n"
+                        if i_off: generated_yaml += f"  icon_off: {i_off}\n"
+                        if w_icon and not i_on: generated_yaml += f"  icon: {w_icon}\n"
+                        generated_yaml += f"  state_text: 1\n"
+                        generated_yaml += f"  title_style: \"{STYLE_TITLE}\"\n"
+                        generated_yaml += f"  text_style: \"{STYLE_TEXT}\"\n"
+                        generated_yaml += f"  widget_style: \"{STYLE_WIDGET}\"\n"
+                        generated_yaml += f"  icon_style_active: \"{STYLE_ICON}\"\n"
+                        generated_yaml += f"  icon_style_inactive: \"{STYLE_ICON}\"\n"
+                        generated_yaml += f"  state_map:\n"
+                        generated_yaml += f"    \"on\": \"{dic['open']}\"\n"
+                        generated_yaml += f"    \"off\": \"{dic['closed']}\"\n"
+
+                    # === LOCK ===
+                    elif w_type == 'lock':
+                        generated_yaml += f"  widget_type: lock\n"
+                        generated_yaml += f"  entity: {w_id}\n"
+                        generated_yaml += f"  title: \"{w_name}\"\n"
+                        if i_off: generated_yaml += f"  icon_locked: {i_off}\n"
+                        if i_on: generated_yaml += f"  icon_unlocked: {i_on}\n"
+                        if w_icon and not i_on: generated_yaml += f"  icon: {w_icon}\n"
+                        generated_yaml += f"  state_text: 1\n"
+                        generated_yaml += f"  title_style: \"{STYLE_TITLE}\"\n"
+                        generated_yaml += f"  text_style: \"{STYLE_TEXT}\"\n"
+                        generated_yaml += f"  widget_style: \"{STYLE_WIDGET}\"\n"
+                        generated_yaml += f"  icon_style_active: \"{STYLE_ICON}\"\n"
+                        generated_yaml += f"  icon_style_inactive: \"{STYLE_ICON}\"\n"
+                        generated_yaml += f"  state_map:\n"
+                        generated_yaml += f"    \"locked\": \"{dic['locked']}\"\n"
+                        generated_yaml += f"    \"unlocked\": \"{dic['unlocked']}\"\n"
+
+                    # === INPUT BOOLEAN ===
+                    elif w_type == 'input_boolean':
+                        generated_yaml += f"  widget_type: switch\n"
+                        generated_yaml += f"  entity: {w_id}\n"
+                        generated_yaml += f"  title: \"{w_name}\"\n"
+                        if i_on: generated_yaml += f"  icon_on: {i_on}\n"
+                        if i_off: generated_yaml += f"  icon_off: {i_off}\n"
+                        generated_yaml += f"  state_text: 1\n"
+                        generated_yaml += f"  title_style: \"{STYLE_TITLE}\"\n"
+                        generated_yaml += f"  text_style: \"{STYLE_TEXT}\"\n"
+                        generated_yaml += f"  widget_style: \"{STYLE_WIDGET}\"\n"
+                        generated_yaml += f"  icon_style_active: \"{STYLE_ICON}\"\n"
+                        generated_yaml += f"  icon_style_inactive: \"{STYLE_ICON}\"\n"
+                        generated_yaml += f"  state_map:\n"
+                        generated_yaml += f"    \"on\": \"{dic['on']}\"\n"
+                        generated_yaml += f"    \"off\": \"{dic['off']}\"\n"
+
+                    # === INPUT BUTTON / SCRIPT ===
+                    elif w_type == 'input_button' or w_type == 'script':
+                        generated_yaml += f"  widget_type: script\n"
+                        generated_yaml += f"  entity: {w_id}\n"
+                        generated_yaml += f"  title: \"{w_name}\"\n"
+                        if w_icon: generated_yaml += f"  icon: {w_icon}\n"
+                        elif i_on: generated_yaml += f"  icon: {i_on}\n"
+                        generated_yaml += f"  title_style: \"{STYLE_TITLE}\"\n"
+                        generated_yaml += f"  widget_style: \"{STYLE_WIDGET}\"\n"
+                        generated_yaml += f"  icon_style_active: \"{STYLE_ICON}\"\n"
+                        generated_yaml += f"  icon_style_inactive: \"{STYLE_ICON}\"\n"
+
+                    # === INPUT SELECT ===
+                    elif w_type == 'input_select':
+                        generated_yaml += f"  widget_type: input_select\n"
+                        generated_yaml += f"  entity: {w_id}\n"
+                        generated_yaml += f"  title: \"{w_name}\"\n"
+                        generated_yaml += f"  title_style: \"{STYLE_TITLE}\"\n"
+                        generated_yaml += f"  text_style: \"{STYLE_TEXT}\"\n"
+                        generated_yaml += f"  widget_style: \"{STYLE_WIDGET}\"\n"
+
+                    # === INPUT NUMBER ===
+                    elif w_type == 'input_number':
+                        generated_yaml += f"  widget_type: input_number\n"
+                        generated_yaml += f"  entity: {w_id}\n"
+                        generated_yaml += f"  title: \"{w_name}\"\n"
+                        generated_yaml += f"  title_style: \"{STYLE_TITLE}\"\n"
+                        generated_yaml += f"  text_style: \"{STYLE_TEXT}\"\n"
+                        generated_yaml += f"  widget_style: \"{STYLE_WIDGET}\"\n"
+
+                    # === PERSON / TRACKER ===
+                    elif w_type == 'person':
+                        generated_yaml += f"  widget_type: device_tracker\n"
+                        generated_yaml += f"  entity: {w_id}\n"
+                        generated_yaml += f"  title: \"{w_name}\"\n"
+                        if i_on: generated_yaml += f"  icon_on: {i_on}\n"
+                        if i_off: generated_yaml += f"  icon_off: {i_off}\n"
+                        generated_yaml += f"  state_text: 1\n"
+                        generated_yaml += f"  title_style: \"{STYLE_TITLE}\"\n"
+                        generated_yaml += f"  text_style: \"{STYLE_TEXT}\"\n"
+                        generated_yaml += f"  widget_style: \"{STYLE_WIDGET}\"\n"
+                        generated_yaml += f"  state_map:\n"
+                        generated_yaml += f"    \"home\": \"{dic['home']}\"\n"
+                        generated_yaml += f"    \"not_home\": \"{dic['not_home']}\"\n"
+
+                    # === FALLBACK / GENERIC ===
+                    else:
+                        # Fallback for unknown types
+                        generated_yaml += f"  widget_type: {w_type}\n"
+                        generated_yaml += f"  entity: {w_id}\n"
+                        generated_yaml += f"  title: \"{w_name}\"\n"
+                        if i_on: generated_yaml += f"  icon_on: {i_on}\n"
+                        if i_off: generated_yaml += f"  icon_off: {i_off}\n"
+                        if w_icon and not i_on: generated_yaml += f"  icon: {w_icon}\n"
+                        generated_yaml += f"  title_style: \"{STYLE_TITLE}\"\n"
+                        generated_yaml += f"  widget_style: \"{STYLE_WIDGET}\"\n"
 
                     generated_yaml += "\n"
             
@@ -662,7 +673,7 @@ def index():
             if action_type == 'save_restart':
                 # Check write permissions implicitly by output directory presence
                 if OUTPUT_DIR is None:
-                    save_message = "❌ CONFIG ERROR: Container cannot write to /config or /addon_configs. Please verify 'map' in config.json."
+                    save_message = "❌ CONFIG ERROR: Container cannot write to /share. Please verify 'map' in config.json."
                 else:
                     try:
                         # Ensure directory exists
