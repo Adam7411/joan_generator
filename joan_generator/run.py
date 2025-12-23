@@ -1,39 +1,54 @@
 import os
 import json
 import requests
+import sys
 from flask import Flask, render_template, request
 
 # =========================================================================
-# INITIALIZATION
+# INITIALIZATION & SETUP
 # =========================================================================
-print("📦 1. Initializing Joan 6 Generator application...")
+print("📦 [INIT] Initializing Joan 6 Generator application...")
+print("-------------------------------------------------------------------")
+
 app = Flask(__name__)
 # Secret key for session/flash messages security
-app.secret_key = 'joan_generator_secret_key_full_version'
+app.secret_key = 'joan_generator_secret_key_full_production'
 
 # =========================================================================
 # 1. API & TOKEN CONFIGURATION
 # =========================================================================
-# Default to Supervisor environment variables
+# Default to Supervisor environment variables provided by HA OS
 TOKEN = os.environ.get('SUPERVISOR_TOKEN')
 API_URL = "http://supervisor/core/api"
 SUPERVISOR_URL = "http://supervisor"
 TOKEN_SOURCE = "System (Supervisor)"
 
-# Default settings (will be overwritten by auto-detection)
+# Default settings (will be overwritten by auto-detection logic)
 APPDAEMON_ADDON_SLUG = "a0d7b954_appdaemon" 
-OUTPUT_DIR = None  # None to force detection logic
+OUTPUT_DIR = None  # None to force detection logic on startup
 
 # -------------------------------------------------------------------------
-# DEBUGGING FUNCTION
+# HELPER: DEBUGGING DIRECTORY STRUCTURE
 # -------------------------------------------------------------------------
 def debug_directories():
     """
     Helper function to list directories visible to the container.
-    This helps diagnose 'Permission denied' or 'No such file' errors.
+    This helps diagnose 'Permission denied' or 'No such file' errors
+    which are common in HA Add-on environment.
     """
-    print("🔍 --- DIRECTORY STRUCTURE DEBUG ---")
-    paths_to_check = ["/", "/config", "/addon_configs", "/share", "/data"]
+    print("\n🔍 --- DIRECTORY STRUCTURE DEBUG START ---")
+    
+    # List of critical paths to check for existence and read permissions
+    paths_to_check = [
+        "/", 
+        "/config", 
+        "/addon_configs", 
+        "/share", 
+        "/data",
+        "/config/appdaemon",
+        "/config/appdaemon/dashboards"
+    ]
+    
     available_mounts = []
     
     for p in paths_to_check:
@@ -41,65 +56,75 @@ def debug_directories():
             print(f"✅ Directory exists: {p}")
             available_mounts.append(p)
             try:
-                # List first few items to verify read access
-                contents = [d for d in os.listdir(p) if os.path.isdir(os.path.join(p, d))]
-                print(f"   Contents of {p} (first 10): {contents[:10]}...") 
+                # Attempt to list contents to verify read access
+                contents = [d for d in os.listdir(p)]
+                # Filter to show only directories/files, limited count to avoid log spam
+                preview = contents[:10]
+                count = len(contents)
+                print(f"   └── Contents ({count} items): {preview}...") 
             except Exception as e:
-                print(f"   ⚠️ Access denied to {p}: {e}")
+                print(f"   ⚠️ Directory exists but ACCESS DENIED to {p}: {e}")
         else:
-            print(f"❌ Directory does NOT exist (not mounted): {p}")
-    print("--------------------------------------------")
+            print(f"❌ Directory does NOT exist (not mounted or wrong path): {p}")
+            
+    print("🔍 --- DIRECTORY STRUCTURE DEBUG END ---\n")
     return available_mounts
 
 # -------------------------------------------------------------------------
 # LOAD ADD-ON OPTIONS (options.json)
 # -------------------------------------------------------------------------
+# This section reads configuration provided by the user in HA Add-on configuration tab
 try:
     options_path = '/data/options.json'
     if os.path.exists(options_path):
-        print(f"ℹ️ Reading options from: {options_path}")
+        print(f"ℹ️ [OPTIONS] Reading user configuration from: {options_path}")
         with open(options_path, 'r') as f:
             options = json.load(f)
             
-            # 1. Manual Token Override
+            # 1. Manual Token Override (Useful for local testing or non-supervisor env)
             manual_token = options.get('manual_token')
             if manual_token and len(manual_token) > 10:
                 TOKEN = manual_token
                 # If manual token is used, we usually talk to HA Core directly on port 8123
                 API_URL = "http://homeassistant:8123/api"
                 TOKEN_SOURCE = "Manual (Configuration)"
-                print(f"🔧 Manual token detected. Switching API URL to: {API_URL}")
+                print(f"🔧 [CONFIG] Manual token detected. Switching API URL to: {API_URL}")
             
-            # 2. Path Override
+            # 2. Path Override (User explicitly sets where to save)
             if options.get('output_path'):
                 OUTPUT_DIR = options.get('output_path')
-                print(f"🔧 Output path enforced by configuration: {OUTPUT_DIR}")
+                print(f"🔧 [CONFIG] Output path enforced by configuration: {OUTPUT_DIR}")
             
-            # 3. Slug Override
+            # 3. Slug Override (User explicitly sets AppDaemon slug)
             if options.get('appdaemon_slug'):
                 APPDAEMON_ADDON_SLUG = options.get('appdaemon_slug')
-                print(f"🔧 AppDaemon slug enforced by configuration: {APPDAEMON_ADDON_SLUG}")
+                print(f"🔧 [CONFIG] AppDaemon slug enforced by configuration: {APPDAEMON_ADDON_SLUG}")
+
+    else:
+        print(f"ℹ️ [OPTIONS] No options.json found at {options_path}. Using defaults.")
 
 except Exception as e: 
-    print(f"ℹ️ Info: Could not read options.json (Dev mode?): {e}")
+    print(f"⚠️ [OPTIONS] Error reading options.json: {e}")
 
+# Critical check for Token
 if not TOKEN:
-    print("❌ WARNING: No Authorization Token found! Entity list will be empty.")
+    print("❌ [CRITICAL] WARNING: No Authorization Token found! Entity list will be empty and restart will fail.")
 
 # =========================================================================
-# 2. ENVIRONMENT AUTO-DETECTION (AppDaemon)
+# 2. ENVIRONMENT AUTO-DETECTION (AppDaemon & Paths)
 # =========================================================================
 def detect_appdaemon_slug():
     """
     Queries Supervisor API to find the actual slug of the installed AppDaemon add-on.
+    This handles variations like 'a0d7b954_appdaemon' vs local builds.
     """
     if not os.environ.get('SUPERVISOR_TOKEN'):
-        print("ℹ️ No Supervisor token available for slug detection. Using default.")
+        print("ℹ️ [DETECT] No Supervisor token available for slug detection. Keeping default.")
         return APPDAEMON_ADDON_SLUG 
 
     headers = {"Authorization": f"Bearer {os.environ.get('SUPERVISOR_TOKEN')}"}
     try:
-        print(f"🔍 querying Supervisor for installed addons at {SUPERVISOR_URL}/addons")
+        print(f"🔍 [DETECT] Querying Supervisor for installed addons...")
         resp = requests.get(f"{SUPERVISOR_URL}/addons", headers=headers, timeout=5)
         
         if resp.status_code == 200:
@@ -107,91 +132,117 @@ def detect_appdaemon_slug():
             addons = data.get('addons', [])
             
             for addon in addons:
-                # Look for 'appdaemon' in the slug string
                 slug = addon.get('slug', '')
+                # Look for 'appdaemon' in the slug string and ensure it's installed
                 if 'appdaemon' in slug and addon.get('installed', False):
-                    print(f"✅ Detected installed AppDaemon Add-on: {slug}")
+                    print(f"✅ [DETECT] Found installed AppDaemon Add-on: {slug}")
                     return slug
+            print("⚠️ [DETECT] AppDaemon not found in installed addons list.")
         else:
-            print(f"⚠️ Supervisor API returned status: {resp.status_code}")
+            print(f"⚠️ [DETECT] Supervisor API returned status: {resp.status_code}")
             
     except Exception as e:
-        print(f"⚠️ Error during AppDaemon slug detection: {e}")
+        print(f"⚠️ [DETECT] Exception during AppDaemon slug detection: {e}")
     
     return APPDAEMON_ADDON_SLUG # Fallback
 
 def detect_dashboard_path(detected_slug):
     """
     Attempts to find a valid writable directory for .dash files.
+    Prioritizes specific AppDaemon config folders, falls back to generic /config.
     """
+    print(f"🔍 [PATH] Attempting to detect best save path for slug: {detected_slug}")
     
     # Priority list of paths to check
     candidates = [
-        # 1. New HA OS structure in /addon_configs
+        # 1. New HA OS structure in /addon_configs (Best practice if mounted)
         f"/addon_configs/{detected_slug}/dashboards",
         f"/addon_configs/{detected_slug}/conf/dashboards",
-        # 2. Legacy structure in /config
+        # 2. Legacy structure in /config (Most common for file sharing)
         "/config/appdaemon/dashboards",
-        "/config/appdaemon/conf/dashboards"
+        "/config/appdaemon/conf/dashboards",
+        # 3. Share folder (Alternative if config is locked)
+        "/share/dashboards",
+        "/share/appdaemon/dashboards"
     ]
 
     # If user enforced a path in options, try that first
-    if options.get('output_path'):
-        candidates.insert(0, options.get('output_path'))
+    if 'options' in globals() and options.get('output_path'):
+        user_path = options.get('output_path')
+        print(f"ℹ️ [PATH] Checking user-defined path first: {user_path}")
+        candidates.insert(0, user_path)
 
-    # Preliminary check for mount points
+    # Preliminary check for mount points visibility
     has_config = os.path.exists("/config")
     has_addon_configs = os.path.exists("/addon_configs")
+    has_share = os.path.exists("/share")
     
-    if not has_config and not has_addon_configs and not options.get('output_path'):
-        print("❌ CRITICAL ERROR: Neither /config nor /addon_configs is mounted!")
-        print("   Please add 'map: [\"config:rw\"]' to your add-on config.yaml")
+    if not has_config and not has_addon_configs and not has_share:
+        print("❌ [CRITICAL] No major directories (/config, /addon_configs, /share) are mounted!")
+        print("   Please check your 'config.json' -> 'map' section.")
+        # We return None, logic later will show error to user
         return None
 
     for path in candidates:
         # Check if directory exists
         if os.path.exists(path):
-            print(f"✅ Found existing dashboard directory: {path}")
-            return path
+            print(f"✅ [PATH] Found existing valid directory: {path}")
+            # Verify write access
+            if os.access(path, os.W_OK):
+                return path
+            else:
+                print(f"   ⚠️ Read-only access to {path}, skipping...")
         
         # If not, check if parent exists and we can create it
         parent = os.path.dirname(path)
         if os.path.exists(parent):
-            try:
-                # Attempt to create directory
-                os.makedirs(path, exist_ok=True)
-                print(f"✅ Created dashboard directory: {path}")
-                return path
-            except Exception as e:
-                print(f"   ⚠️ Could not create {path}: {e}")
+            if os.access(parent, os.W_OK):
+                try:
+                    # Attempt to create directory
+                    os.makedirs(path, exist_ok=True)
+                    print(f"✅ [PATH] Successfully created directory: {path}")
+                    return path
+                except Exception as e:
+                    print(f"   ⚠️ Failed to create {path}: {e}")
+            else:
+                pass # Parent exists but not writable
     
-    # Fallback logic
+    # Fallback logic if nothing specific found
     if has_config:
         fallback = "/config/appdaemon/dashboards"
-        print(f"⚠️ Ideal path not found. Defaulting to fallback: {fallback}")
+        print(f"⚠️ [PATH] Specific path not found. Defaulting to fallback in /config: {fallback}")
+        # Try to create it just in case
+        try:
+            os.makedirs(fallback, exist_ok=True)
+        except: pass
         return fallback
         
     return None
 
-# Execute detection on startup
+# =========================================================================
+# RUN STARTUP ROUTINES
+# =========================================================================
 debug_directories()
 
-if not options.get('appdaemon_slug'):
+# 1. Detect Slug
+if 'options' in globals() and not options.get('appdaemon_slug'):
     APPDAEMON_ADDON_SLUG = detect_appdaemon_slug()
 
-if not options.get('output_path'):
+# 2. Detect Path
+if 'options' in globals() and not options.get('output_path'):
     OUTPUT_DIR = detect_dashboard_path(APPDAEMON_ADDON_SLUG)
-else:
+elif 'options' in globals() and options.get('output_path'):
     OUTPUT_DIR = options.get('output_path')
 
-print(f"📂 Target Save Directory: {OUTPUT_DIR}")
+print(f"📂 [FINAL] Configured Target Save Directory: {OUTPUT_DIR}")
+print("-------------------------------------------------------------------")
 
 # =========================================================================
 # 3. HOME ASSISTANT API FUNCTIONS
 # =========================================================================
 def get_ha_entities():
     """
-    Fetches all states from Home Assistant Core API.
+    Fetches all states from Home Assistant Core API to populate the list.
     """
     if not TOKEN:
         return []
@@ -212,6 +263,7 @@ def get_ha_entities():
                 attributes = state.get('attributes', {})
                 unit = attributes.get('unit_of_measurement', '')
                 
+                # Create a simplified object for the frontend
                 entity_obj = {
                     'id': state['entity_id'],
                     'state': state['state'],
@@ -229,24 +281,25 @@ def get_ha_entities():
             return entities
             
     except Exception as e: 
-        print(f"❌ Exception fetching entities: {e}")
+        print(f"❌ [API] Exception fetching entities: {e}")
         
     return []
 
 def restart_appdaemon():
     """
     Sends a request to Home Assistant to restart the AppDaemon add-on.
+    Handles both Internal Supervisor API and External Service Calls.
     """
     if not TOKEN:
         return False, "No API Token available."
     
-    # Determine which API endpoint to use
+    # Determine which API endpoint to use based on configuration
     if "supervisor" in API_URL:
-        # Internal Supervisor API
+        # Internal Supervisor API (Direct container to supervisor communication)
         url = f"{SUPERVISOR_URL}/addons/{APPDAEMON_ADDON_SLUG}/restart"
         method = "POST"
     else:
-        # External/Core API Service Call
+        # External/Core API Service Call (Standard HA Service)
         url = f"{API_URL}/services/hassio/addon_restart"
         method = "POST_SERVICE"
 
@@ -256,25 +309,26 @@ def restart_appdaemon():
     }
     
     try:
-        print(f"🔄 Attempting restart of addon: {APPDAEMON_ADDON_SLUG} via {url}...")
+        print(f"🔄 [RESTART] Attempting restart of addon: {APPDAEMON_ADDON_SLUG}")
+        print(f"   Using URL: {url}")
         
         response = None
         if method == "POST_SERVICE":
             payload = {"addon": APPDAEMON_ADDON_SLUG}
             response = requests.post(url, json=payload, headers=headers, timeout=20)
         else:
-            # Supervisor API direct call
+            # Supervisor API direct call (no body needed for restart)
             response = requests.post(url, headers=headers, timeout=20)
             
         if response.status_code in [200, 201]:
-            print("✅ Restart command sent successfully.")
+            print("✅ [RESTART] Command sent successfully.")
             return True, f"Saved to {OUTPUT_DIR} and restart command sent to {APPDAEMON_ADDON_SLUG}."
         else:
-            print(f"❌ Restart failed. Status: {response.status_code}. Body: {response.text}")
+            print(f"❌ [RESTART] Failed. Status: {response.status_code}. Body: {response.text}")
             return False, f"Restart failed (Code {response.status_code}): {response.text}"
             
     except Exception as e:
-        print(f"❌ Exception during restart: {e}")
+        print(f"❌ [RESTART] Exception during restart: {e}")
         return False, f"Exception during restart: {str(e)}"
 
 # =========================================================================
@@ -298,7 +352,7 @@ def normalize_icon_format(icon_name):
     return icon_name
 
 # =========================================================================
-# 5. FLASK ROUTES
+# 5. FLASK ROUTE HANDLER
 # =========================================================================
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -312,6 +366,7 @@ def index():
     # Re-detect output directory on every request if it was null (retry logic)
     global OUTPUT_DIR
     if OUTPUT_DIR is None:
+        print("⚠️ [RUNTIME] Output Directory is None, retrying detection...")
         OUTPUT_DIR = detect_dashboard_path(APPDAEMON_ADDON_SLUG)
 
     if request.method == 'POST':
@@ -607,23 +662,43 @@ def index():
             if action_type == 'save_restart':
                 # Check write permissions implicitly by output directory presence
                 if OUTPUT_DIR is None:
-                    save_message = "❌ CONFIG ERROR: Container cannot write to /config. Please add 'map: [\"config:rw\"]' to addon configuration."
+                    save_message = "❌ CONFIG ERROR: Container cannot write to /config or /addon_configs. Please verify 'map' in config.json."
                 else:
                     try:
                         # Ensure directory exists
                         if not os.path.exists(OUTPUT_DIR):
                             try:
+                                print(f"ℹ️ [SAVE] Creating missing directory: {OUTPUT_DIR}")
                                 os.makedirs(OUTPUT_DIR, exist_ok=True)
                             except OSError as e:
                                 save_message = f"❌ Error creating directory {OUTPUT_DIR}: {e}"
                         
                         if not save_message: # Proceed if no errors
                             full_path = os.path.join(OUTPUT_DIR, dashboard_filename)
+                            print(f"ℹ️ [SAVE] Writing file to: {full_path}")
                             
                             # Write file
                             with open(full_path, "w", encoding="utf-8") as f:
                                 f.write(generated_yaml)
                             
+                            # --- CRITICAL PERMISSION FIX ---
+                            # This ensures that AppDaemon (running as a different user)
+                            # can actually read the file created by this generator.
+                            try:
+                                os.chmod(full_path, 0o666) # Read/Write for everyone
+                                print(f"✅ [PERM] Permissions set to 666 for {full_path}")
+                            except Exception as e:
+                                print(f"⚠️ [PERM] Could not set permissions: {e}")
+                            # -------------------------------
+
+                            # --- FILE VERIFICATION ---
+                            if os.path.exists(full_path):
+                                size = os.path.getsize(full_path)
+                                print(f"✅ [VERIFY] File confirmed on disk. Size: {size} bytes.")
+                            else:
+                                print("❌ [VERIFY] File NOT found after write operation!")
+                            # -------------------------
+
                             # Restart Add-on
                             success, msg = restart_appdaemon()
                             if success:
@@ -632,6 +707,7 @@ def index():
                                 save_message = f"⚠️ File saved, but restart failed: {msg}"
                             
                     except Exception as e:
+                        print(f"❌ [SAVE] Exception: {e}")
                         save_message = f"❌ Exception during file save: {e}"
 
         except Exception as e: 
