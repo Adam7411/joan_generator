@@ -20,7 +20,24 @@ TOKEN_SOURCE = "System (Supervisor)"
 APPDAEMON_ADDON_SLUG = "a0d7b954_appdaemon" 
 OUTPUT_DIR = "/config/appdaemon/dashboards"
 
-# Odczyt opcji z pliku konfiguracyjnego Add-onu (jeśli użytkownik wpisał własne)
+# Funkcja debugująca strukturę plików (Pomoże zrozumieć, dlaczego nie widzi katalogu)
+def debug_directories():
+    print("🔍 --- DEBUGOWANIE STRUKTURY KATALOGÓW ---")
+    paths_to_check = ["/", "/config", "/addon_configs", "/data"]
+    for p in paths_to_check:
+        if os.path.exists(p):
+            print(f"✅ Katalog istnieje: {p}")
+            try:
+                # Wypisz tylko katalogi, żeby nie śmiecić
+                contents = [d for d in os.listdir(p) if os.path.isdir(os.path.join(p, d))]
+                print(f"   Zawartość {p}: {contents[:10]}...") 
+            except Exception as e:
+                print(f"   Brak uprawnień do odczytu {p}: {e}")
+        else:
+            print(f"❌ Katalog NIE istnieje (brak montowania): {p}")
+    print("--------------------------------------------")
+
+# Odczyt opcji z pliku konfiguracyjnego Add-onu
 try:
     options_path = '/data/options.json'
     if os.path.exists(options_path):
@@ -57,16 +74,14 @@ if not TOKEN:
 def detect_appdaemon_slug():
     """Próbuje znaleźć właściwy slug AppDaemona odpytując Supervisora"""
     if not os.environ.get('SUPERVISOR_TOKEN'):
-        return APPDAEMON_ADDON_SLUG # Zwróć domyślny jeśli brak dostępu do Supervisora
+        return APPDAEMON_ADDON_SLUG 
 
     headers = {"Authorization": f"Bearer {os.environ.get('SUPERVISOR_TOKEN')}"}
     try:
-        # Pobierz listę wszystkich dodatków
         resp = requests.get(f"{SUPERVISOR_URL}/addons", headers=headers, timeout=5)
         if resp.status_code == 200:
             addons = resp.json().get('data', {}).get('addons', [])
             for addon in addons:
-                # Szukamy zainstalowanego dodatku, który ma 'appdaemon' w nazwie
                 if 'appdaemon' in addon.get('slug', '') and addon.get('installed', False):
                     found_slug = addon.get('slug')
                     print(f"✅ Wykryto zainstalowany AppDaemon: {found_slug}")
@@ -74,47 +89,58 @@ def detect_appdaemon_slug():
     except Exception as e:
         print(f"⚠️ Błąd podczas detekcji AppDaemona: {e}")
     
-    return APPDAEMON_ADDON_SLUG # Fallback do domyślnego
+    return APPDAEMON_ADDON_SLUG 
 
 def detect_dashboard_path(detected_slug):
     """
     Próbuje ustalić, gdzie zapisać plik .dash.
-    Sprawdza kolejno:
-    1. Ścieżkę wymuszoną w options.json (już ustawione w OUTPUT_DIR na starcie)
-    2. /addon_configs/{slug}/dashboards (Nowa struktura HA)
-    3. /config/appdaemon/dashboards (Stara struktura / mapowanie legacy)
     """
     
-    # Jeśli użytkownik nie wymusił ścieżki w options, szukamy jej:
-    current_path = OUTPUT_DIR
-    
-    # Lista potencjalnych ścieżek
+    # Lista potencjalnych ścieżek w kolejności priorytetu
     candidates = [
-        # Ścieżka zdefiniowana globalnie (domyślna lub z options)
-        current_path, 
-        # Nowa struktura HA OS (addon_configs)
+        # 1. Nowa struktura (jeśli jest zamontowana)
         f"/addon_configs/{detected_slug}/dashboards",
-        # Alternatywna nazwa folderu config
         f"/addon_configs/{detected_slug}/conf/dashboards",
-        # Klasyczna struktura w /config
+        # 2. Klasyczna struktura w /config (najbardziej prawdopodobna dla Add-onów)
         "/config/appdaemon/dashboards",
         "/config/appdaemon/conf/dashboards"
     ]
 
-    for path in candidates:
-        if os.path.exists(path):
-            print(f"✅ Znaleziono poprawny katalog dashboardów: {path}")
-            return path
-    
-    print(f"⚠️ Nie znaleziono idealnego katalogu. Używam domyślnego: {current_path}. Może być konieczne utworzenie go ręcznie.")
-    return current_path
+    # Jeśli użytkownik wymusił ścieżkę w options, dodaj ją na początek
+    if options.get('output_path'):
+        candidates.insert(0, options.get('output_path'))
 
-# Uruchom detekcję przy starcie (chyba że użytkownik wymusił w options)
+    for path in candidates:
+        # Sprawdzamy czy katalog istnieje
+        if os.path.exists(path):
+            print(f"✅ Znaleziono istniejący katalog dashboardów: {path}")
+            return path
+        
+        # Jeśli nie istnieje, sprawdzamy czy możemy go utworzyć (czy katalog nadrzędny istnieje)
+        parent = os.path.dirname(path)
+        if os.path.exists(parent):
+            try:
+                os.makedirs(path, exist_ok=True)
+                print(f"✅ Utworzono katalog dashboardów: {path}")
+                return path
+            except:
+                pass # Brak uprawnień, idziemy dalej
+    
+    print(f"⚠️ Nie znaleziono idealnego katalogu. Używam domyślnego: /config/appdaemon/dashboards")
+    return "/config/appdaemon/dashboards"
+
+# Uruchom detekcję przy starcie
+debug_directories() # <--- NOWOŚĆ: Pokaż co widzi kontener
 if not options.get('appdaemon_slug'):
     APPDAEMON_ADDON_SLUG = detect_appdaemon_slug()
 
+# Zawsze próbuj wykryć ścieżkę na nowo, chyba że zablokowana w options
 if not options.get('output_path'):
     OUTPUT_DIR = detect_dashboard_path(APPDAEMON_ADDON_SLUG)
+else:
+    OUTPUT_DIR = options.get('output_path')
+
+print(f"📂 Docelowy katalog zapisu: {OUTPUT_DIR}")
 
 # -------------------------------------------------------------------------
 # 3. POBIERANIE DANYCH Z HA I RESTART
@@ -153,33 +179,27 @@ def restart_appdaemon():
     if not TOKEN:
         return False, "Brak tokena API."
     
-    # Jeśli API_URL wskazuje na Supervisora (wewnętrzny adres) używamy innej ścieżki
-    # niż jeśli wskazujemy na Core API (zewnętrzny/manualny token)
-    
     if "supervisor" in API_URL:
-        # Używamy API Supervisora bezpośrednio
         url = f"{SUPERVISOR_URL}/addons/{APPDAEMON_ADDON_SLUG}/restart"
         method = "POST"
     else:
-        # Używamy Core API (Service call)
         url = f"{API_URL}/services/hassio/addon_restart"
         method = "POST_SERVICE"
 
     headers = {"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json"}
     
     try:
-        print(f"🔄 Próba restartu dodatku: {APPDAEMON_ADDON_SLUG} poprzez {url}...")
+        print(f"🔄 Próba restartu dodatku: {APPDAEMON_ADDON_SLUG}...")
         
         if method == "POST_SERVICE":
             payload = {"addon": APPDAEMON_ADDON_SLUG}
             response = requests.post(url, json=payload, headers=headers, timeout=20)
         else:
-            # Supervisor API endpoint nie wymaga body dla restartu
             response = requests.post(url, headers=headers, timeout=20)
             
         if response.status_code in [200, 201]:
             print("✅ Wysłano polecenie restartu.")
-            return True, f"Zapisano w '{OUTPUT_DIR}' i zrestartowano '{APPDAEMON_ADDON_SLUG}'."
+            return True, f"Zapisano do {OUTPUT_DIR} i zrestartowano {APPDAEMON_ADDON_SLUG}."
         else:
             print(f"❌ Błąd restartu: {response.text}")
             return False, f"Błąd restartu (Code {response.status_code}): {response.text}"
@@ -439,14 +459,16 @@ def index():
             
             # --- ZAPIS I RESTART ---
             if action_type == 'save_restart':
-                if not os.path.exists(OUTPUT_DIR):
-                    try:
-                        os.makedirs(OUTPUT_DIR, exist_ok=True)
-                    except OSError as e:
-                        save_message = f"❌ Błąd: Nie można utworzyć folderu {OUTPUT_DIR}. ({e})"
-                
-                full_path = os.path.join(OUTPUT_DIR, dashboard_filename)
                 try:
+                    # Próba utworzenia katalogu jeśli nie istnieje
+                    if not os.path.exists(OUTPUT_DIR):
+                        try:
+                            os.makedirs(OUTPUT_DIR, exist_ok=True)
+                        except OSError as e:
+                            print(f"❌ Nie można utworzyć katalogu {OUTPUT_DIR}: {e}")
+                    
+                    full_path = os.path.join(OUTPUT_DIR, dashboard_filename)
+                    
                     with open(full_path, "w", encoding="utf-8") as f:
                         f.write(generated_yaml)
                     
