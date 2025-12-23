@@ -136,29 +136,24 @@ def get_joan_devices():
             joan_devices.append(ent)
     return joan_devices
 
+# --- BRAKUJĄCA FUNKCJA DO WYSYŁANIA URL ---
 def deploy_url_to_device(device_entity_id, dashboard_name):
-    """Wysyła URL dashboardu do urządzenia Joan za pomocą usługi set_url."""
     if not TOKEN: return False, "Brak tokena API."
     
-    # Adres Twojego AppDaemona (można by go pobierać dynamicznie, ale tu wpiszemy standard)
-    # UWAGA: Użyj adresu IP HA, który jest widoczny dla urządzenia Joan!
-    # Pobieramy IP z API_URL (wycinamy http:// i :8123)
+    # Pobieramy IP Hassa z adresu API
     try:
         host_ip = API_URL.split('//')[1].split(':')[0]
     except:
-        host_ip = "homeassistant.local" # Fallback
+        host_ip = "homeassistant.local"
         
     target_url = f"http://{host_ip}:5050/{dashboard_name}"
     
     headers = {"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json"}
+    # Standardowa usługa integracji Visionect
     service_url = f"{API_URL}/services/visionect_joan/set_url"
     
-    # Konwersja entity_id kamery na device_id jest trudna bez rejestru, 
-    # ale integracja visionect_joan często przyjmuje entity_id w service call (sprawdź to).
-    # Jeśli wymaga device_id, musielibyśmy odpytać rejestr. 
-    # Spróbujmy najpierw przekazać encję, wiele integracji to obsługuje.
-    
     payload = {
+        "device_id": [], # Integracja często wymaga listy lub ID urządzenia, spróbujmy entity_id w params
         "entity_id": device_entity_id, 
         "url": target_url
     }
@@ -167,8 +162,8 @@ def deploy_url_to_device(device_entity_id, dashboard_name):
         print(f"🚀 [DEPLOY] Wysyłanie {target_url} do {device_entity_id}")
         resp = requests.post(service_url, json=payload, headers=headers, timeout=10)
         if resp.status_code in [200, 201]:
-            return True, f"Wysłano URL do {device_entity_id}"
-        return False, f"Błąd integracji ({resp.status_code}): {resp.text}"
+            return True, f"Wysłano do {device_entity_id}"
+        return False, f"Błąd ({resp.status_code}): {resp.text}"
     except Exception as e:
         return False, str(e)
 
@@ -270,8 +265,8 @@ def index():
         try:
             # Pobieranie danych
             title = request.form.get('title', 'JoanDashboard')
-            # Ważne: pobieramy 'action' z formularza (musi pasować do name="action" w HTML)
-            action_type = request.form.get('action', 'generate')
+            # NAPRAWA: Zmienić 'action' na 'action_type'
+            action_type = request.form.get('action_type', 'generate')
             
             dashboard_slug = title.lower().replace(" ", "_").replace("ą","a").replace("ć","c").replace("ę","e").replace("ł","l").replace("ń","n").replace("ó","o").replace("ś","s").replace("ź","z").replace("ż","z")
             dashboard_filename = dashboard_slug + ".dash"
