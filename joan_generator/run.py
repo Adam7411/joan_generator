@@ -214,41 +214,58 @@ def index():
                 # w = (Total_W - (cols - 1) * margin) / cols
                 
                 # -------------------------------------------------
-                # OPTIMIZED MATH (BEST FIT)
+                # OPTIMIZED MATH (ZERO GAP FIT)
                 # -------------------------------------------------
-                def calculate_best_fit(screen_size, count, min_margin=0, max_margin=15):
+                def calculate_zero_gap_fit(screen_size, count, min_margin=0, max_margin=30):
                     """
-                    Znajduje najlepszą kombinację (wymiar, margines), aby wypełnić ekran
-                    i zminimalizować resztę (puste miejsce).
+                    Szuka takiej kombinacji (dim, margin), aby:
+                    (count * dim) + ((count - 1) * margin) == screen_size
+                    Iterujemy po 'dim', aby znaleźć całkowity 'margin'.
                     """
-                    best_dim = 0
-                    best_margin = 8
-                    min_remainder = screen_size # Start with worst case
+                    # Szacunkowy max dim (gdy margin=0)
+                    start_dim = screen_size // count
                     
-                    # Iterujemy po możliwych marginesach, aby znaleźć taki, który daje najmniejszą resztę
-                    for m in range(min_margin, max_margin + 1):
-                        # Total = count * dim + (count - 1) * m
-                        # dim = (Total - (count - 1) * m) / count
+                    best_sol = None
+                    min_remainder = screen_size
+                    
+                    # Szukamy w dół od maksymalnego możliwego wymiaru
+                    for dim in range(start_dim, 10, -1):
+                        occupied_by_widgets = count * dim
+                        remaining_for_margins = screen_size - occupied_by_widgets
                         
-                        available = screen_size - ((count - 1) * m)
-                        if available <= 0: continue
+                        # Marginesów jest count - 1
+                        if count <= 1:
+                            # 1 kolumna: margin nie ma znaczenia dla szerokości wewn., 
+                            # ale AppDaemon może go używać. Przyjmijmy 0 remainder.
+                            return dim, 0
+                            
+                        gaps = count - 1
                         
-                        dim = available // count
-                        if dim <= 0: continue
+                        # Sprawdzamy czy reszta dzieli się przez liczbę przerw
+                        if remaining_for_margins % gaps == 0:
+                            m = remaining_for_margins // gaps
+                            if min_margin <= m <= max_margin:
+                                # ZNALEZIONO IDEALNE DOPASOWANIE (Reszta 0)
+                                return dim, m
                         
-                        remainder = available % count
+                        # Jeśli nie idealne, sprawdzamy 'dobroć' tego dopasowania
+                        # (chcemy jak najmniejszą resztę z dzielenia przez gaps)
+                        remainder = remaining_for_margins % gaps
                         
-                        # Jeśli ta kombinacja daje mniejszą resztę (dziurę), wybieramy ją
                         if remainder < min_remainder:
-                            min_remainder = remainder
-                            best_dim = dim
-                            best_margin = m
-                            
-                        # Idealny fit
-                        if remainder == 0:
-                            break
-                            
-                    return best_dim, best_margin
+                            # Sprawdzamy czy wynikowy margines całkowity mieści się w zakresie
+                            m_approx = remaining_for_margins // gaps
+                            if min_margin <= m_approx <= max_margin:
+                                min_remainder = remainder
+                                best_sol = (dim, m_approx)
+                                
+                    if best_sol:
+                        return best_sol
+                    
+                    # Fallback (powrót do prostego dzielenia dla margin=8)
+                    fallback_m = 8
+                    fallback_dim = (screen_size - (count - 1) * fallback_m) // count
+                    return fallback_dim, fallback_m
 
                 # AppDaemon liczy kolumny jednostkowe (np. 117px).
                 if def_w == 1:
@@ -260,12 +277,23 @@ def index():
                 ad_rows = int(rows_grid)
 
                 # Obliczanie optymalnych wymiarów i marginesów
-                dim_x, margin_x = calculate_best_fit(SCREEN_W, ad_columns, min_margin=4, max_margin=12)
-                dim_y, margin_y = calculate_best_fit(SCREEN_H, ad_rows, min_margin=4, max_margin=12)
+                dim_x, margin_x = calculate_zero_gap_fit(SCREEN_W, ad_columns, min_margin=2, max_margin=20)
+                dim_y, margin_y = calculate_zero_gap_fit(SCREEN_H, ad_rows, min_margin=2, max_margin=20)
+                
+                # Weryfikacja (Real used space)
+                real_w = (ad_columns * dim_x) + ((ad_columns - 1) * margin_x)
+                real_h = (ad_rows * dim_y) + ((ad_rows - 1) * margin_y)
 
                 # -------------------------------------------------
                 # NAGŁÓWEK PLIKU YAML
                 # -------------------------------------------------
+                generated_yaml += f"# Auto-Generated by Joan 6 Generator\n"
+                generated_yaml += f"# Device: {dev_model} ({orientation})\n"
+                generated_yaml += f"# Screen: {SCREEN_W}x{SCREEN_H}\n"
+                generated_yaml += f"# Grid: {ad_columns}x{ad_rows} (Units)\n"
+                generated_yaml += f"# Calc: Dim=[{dim_x},{dim_y}], Margin=[{margin_x},{margin_y}]\n"
+                generated_yaml += f"# Real Used: {real_w}x{real_h} (Gap: {SCREEN_W - real_w}x{SCREEN_H - real_h})\n"
+                
                 generated_yaml += f"title: {title}\n"
                 generated_yaml += f"widget_dimensions: [{dim_x}, {dim_y}]\n"
                 generated_yaml += f"widget_size: [{def_w}, {def_h}]\n"
