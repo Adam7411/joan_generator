@@ -1210,8 +1210,11 @@
         </div>
     </div>
 
+    <script type="application/json" id="entities-data">
+        {{ entities | tojson | safe }}
+    </script>
     <script>
-        const entitiesData = {{ entities | tojson | safe }};
+        const entitiesData = JSON.parse(document.getElementById('entities-data').textContent);
         const validEntityIds = new Set(entitiesData.map(e => e.id));
         let rows = [[]];
         let editIdx = null;
