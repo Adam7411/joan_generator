@@ -183,46 +183,69 @@ def index():
                 rows_grid = request.form.get('grid_rows', '8')
                 lang = request.form.get('ui_language', 'pl')
                 
-                default_size_str = request.form.get('default_widget_size', '2, 1')
-                def_size_parts = default_size_str.split(',')
-                def_w = int(def_size_parts[0].strip())
-                def_h = int(def_size_parts[1].strip()) if len(def_size_parts) > 1 else 1
-
                 # -------------------------------------------------
-                # TŁUMACZENIA STANÓW (BILINGUAL SUPPORT)
+                # DEVICE & RESOLUTION LOGIC
                 # -------------------------------------------------
-                TRANS = {
-                    'pl': {
-                        'on': 'WŁĄCZONE', 'off': 'WYŁĄCZONE', 
-                        'open': 'OTWARTE', 'closed': 'ZAMKNIĘTE', 
-                        'opening': 'OTWIERANIE', 'closing': 'ZAMYKANIE', 
-                        'locked': 'ZAMKNIĘTE', 'unlocked': 'OTWARTE', 
-                        'home': 'W DOMU', 'not_home': 'POZA'
-                    },
-                    'en': {
-                        'on': 'ON', 'off': 'OFF', 
-                        'open': 'OPEN', 'closed': 'CLOSED', 
-                        'opening': 'OPENING', 'closing': 'CLOSING', 
-                        'locked': 'LOCKED', 'unlocked': 'UNLOCKED', 
-                        'home': 'HOME', 'not_home': 'AWAY'
-                    }
+                dev_model = request.form.get('device_model', 'joan6')
+                orientation = request.form.get('orientation', 'landscape')
+                
+                # Base resolutions (Landscape)
+                RES_MAP = {
+                    'joan6': (800, 600),
+                    'joan6pro': (1024, 758)
                 }
-                # Wybierz słownik na podstawie języka z formularza
-                dic = TRANS.get(lang, TRANS['pl'])
+                
+                base_w, base_h = RES_MAP.get(dev_model, (800, 600))
+                
+                # Handle Orientation
+                if orientation == 'portrait':
+                    SCREEN_W, SCREEN_H = base_h, base_w
+                else:
+                    SCREEN_W, SCREEN_H = base_w, base_h
 
+                # AppDaemon Math
+                # widget_dimensions: [width, height]
+                # Formula: Total_W = (cols * w) + ((cols - 1) * margin)
+                # w = (Total_W - (cols - 1) * margin) / cols
+                
+                MARGIN_X = 8
+                MARGIN_Y = 8
+                
                 # AppDaemon liczy kolumny jednostkowe (np. 117px).
                 if def_w == 1:
                     ad_columns = int(cols)
                 else: 
                     ad_columns = int(cols) * 2
 
+                # Calculate Dimensions
+                # Note: 'cols' from form is likely user-facing columns (e.g. 4), but AppDaemon 'columns' might be different (8).
+                # However, for the math, we care about the grid defined in AppDaemon.
+                # If we use 2x1 as default, then ad_columns = 8.
+                # We want 4 LARGE TILES to fit. 
+                # Each large tile is 2 units wide + 1 margin.
+                # So width of large tile = (2 * unit_w) + margin.
+                # Total width = 4 * large_tile + 3 * margin
+                #             = 4 * (2 * unit_w + margin) + 3 * margin
+                #             = 8 * unit_w + 4 * margin + 3 * margin 
+                #             = 8 * unit_w + 7 * margin.
+                # General formula for N units: (N * unit) + (N-1) * margin
+                
+                # So we just need to solve for unit_w for 'ad_columns' count.
+                # unit_w = (SCREEN_W - (ad_columns - 1) * MARGIN_X) / ad_columns
+                
+                dim_x = (SCREEN_W - ((ad_columns - 1) * MARGIN_X)) // ad_columns
+                
+                # For Height, we use rows_grid
+                ad_rows = int(rows_grid)
+                dim_y = (SCREEN_H - ((ad_rows - 1) * MARGIN_Y)) // ad_rows
+
                 # -------------------------------------------------
                 # NAGŁÓWEK PLIKU YAML
                 # -------------------------------------------------
                 generated_yaml += f"title: {title}\n"
-                generated_yaml += "widget_dimensions: [117, 117]\n"
+                generated_yaml += f"widget_dimensions: [{dim_x}, {dim_y}]\n"
                 generated_yaml += f"widget_size: [{def_w}, {def_h}]\n"
-                generated_yaml += "widget_margins: [8, 8]\n"
+                generated_yaml += f"widget_margins: [{MARGIN_X}, {MARGIN_Y}]\n"
                 generated_yaml += f"columns: {ad_columns}\n"
                 generated_yaml += f"rows: {rows_grid}\n"
                 generated_yaml += "global_parameters:\n"
