@@ -189,6 +189,11 @@ def index():
                 dev_model = request.form.get('device_model', 'joan6')
                 orientation = request.form.get('orientation', 'landscape')
                 
+                default_size_str = request.form.get('default_widget_size', '2, 1')
+                def_size_parts = default_size_str.split(',')
+                def_w = int(def_size_parts[0].strip())
+                def_h = int(def_size_parts[1].strip()) if len(def_size_parts) > 1 else 1
+                
                 # Base resolutions (Landscape)
                 RES_MAP = {
                     'joan6': (800, 600),
