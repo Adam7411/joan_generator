@@ -2462,11 +2462,31 @@
         function copyToClipboard() {
             const copyText = document.getElementById("output-yaml");
             if (!copyText) return;
-            copyText.select();
-            copyText.setSelectionRange(0, 99999);
-            navigator.clipboard.writeText(copyText.value).then(() => {
-                alert("Skopiowano kod do schowka!");
-            });
+
+            // Metoda dla bezpiecznych kontekstów (HTTPS / localhost)
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(copyText.value).then(() => {
+                    alert("Skopiowano kod do schowka!");
+                }).catch(err => {
+                    console.error('Błąd kopiowania async: ', err);
+                    fallbackCopy(copyText);
+                });
+            } else {
+                fallbackCopy(copyText);
+            }
+        }
+
+        function fallbackCopy(textArea) {
+            textArea.focus();
+            textArea.select();
+            try {
+                const successful = document.execCommand('copy');
+                const msg = successful ? 'Skopiowano kod do schowka!' : 'Nie udało się skopiować automatycznie. Skopiuj ręcznie.';
+                alert(msg);
+            } catch (err) {
+                console.error('Błąd kopiowania fallback: ', err);
+                alert('Nie udało się skopiować automatycznie. Użyj Ctrl+C.');
+            }
         }
 
         // --- 3. EKSPORT PROJEKTU (JSON) ---
