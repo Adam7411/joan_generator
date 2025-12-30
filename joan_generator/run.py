@@ -183,89 +183,32 @@ def index():
                 rows_grid = request.form.get('grid_rows', '8')
                 lang = request.form.get('ui_language', 'pl')
                 
-                # -------------------------------------------------
-                # DEVICE & RESOLUTION LOGIC
-                # -------------------------------------------------
-                dev_model = request.form.get('device_model', 'joan6')
-                orientation = request.form.get('orientation', 'landscape')
-                
                 default_size_str = request.form.get('default_widget_size', '2, 1')
                 def_size_parts = default_size_str.split(',')
                 def_w = int(def_size_parts[0].strip())
                 def_h = int(def_size_parts[1].strip()) if len(def_size_parts) > 1 else 1
-                
-                # Base resolutions (Landscape)
-                RES_MAP = {
-                    'joan6': (800, 600),
-                    'joan6pro': (1024, 758)
-                }
-                
-                base_w, base_h = RES_MAP.get(dev_model, (800, 600))
-                
-                # Handle Orientation
-                if orientation == 'portrait':
-                    SCREEN_W, SCREEN_H = base_h, base_w
-                else:
-                    SCREEN_W, SCREEN_H = base_w, base_h
 
-                # AppDaemon Math
-                # widget_dimensions: [width, height]
-                # Formula: Total_W = (cols * w) + ((cols - 1) * margin)
-                # w = (Total_W - (cols - 1) * margin) / cols
-                
                 # -------------------------------------------------
-                # OPTIMIZED MATH (ZERO GAP FIT)
+                # TŁUMACZENIA STANÓW (BILINGUAL SUPPORT)
                 # -------------------------------------------------
-                def calculate_zero_gap_fit(screen_size, count, min_margin=0, max_margin=30):
-                    """
-                    Szuka takiej kombinacji (dim, margin), aby:
-                    (count * dim) + ((count - 1) * margin) == screen_size
-                    Iterujemy po 'dim', aby znaleźć całkowity 'margin'.
-                    """
-                    # Szacunkowy max dim (gdy margin=0)
-                    start_dim = screen_size // count
-                    
-                    best_sol = None
-                    min_remainder = screen_size
-                    
-                    # Szukamy w dół od maksymalnego możliwego wymiaru
-                    for dim in range(start_dim, 10, -1):
-                        occupied_by_widgets = count * dim
-                        remaining_for_margins = screen_size - occupied_by_widgets
-                        
-                        # Marginesów jest count - 1
-                        if count <= 1:
-                            # 1 kolumna: margin nie ma znaczenia dla szerokości wewn., 
-                            # ale AppDaemon może go używać. Przyjmijmy 0 remainder.
-                            return dim, 0
-                            
-                        gaps = count - 1
-                        
-                        # Sprawdzamy czy reszta dzieli się przez liczbę przerw
-                        if remaining_for_margins % gaps == 0:
-                            m = remaining_for_margins // gaps
-                            if min_margin <= m <= max_margin:
-                                # ZNALEZIONO IDEALNE DOPASOWANIE (Reszta 0)
-                                return dim, m
-                        
-                        # Jeśli nie idealne, sprawdzamy 'dobroć' tego dopasowania
-                        # (chcemy jak najmniejszą resztę z dzielenia przez gaps)
-                        remainder = remaining_for_margins % gaps
-                        
-                        if remainder < min_remainder:
-                            # Sprawdzamy czy wynikowy margines całkowity mieści się w zakresie
-                            m_approx = remaining_for_margins // gaps
-                            if min_margin <= m_approx <= max_margin:
-                                min_remainder = remainder
-                                best_sol = (dim, m_approx)
-                                
-                    if best_sol:
-                        return best_sol
-                    
-                    # Fallback (powrót do prostego dzielenia dla margin=8)
-                    fallback_m = 8
-                    fallback_dim = (screen_size - (count - 1) * fallback_m) // count
-                    return fallback_dim, fallback_m
+                TRANS = {
+                    'pl': {
+                        'on': 'WŁĄCZONE', 'off': 'WYŁĄCZONE', 
+                        'open': 'OTWARTE', 'closed': 'ZAMKNIĘTE', 
+                        'opening': 'OTWIERANIE', 'closing': 'ZAMYKANIE', 
+                        'locked': 'ZAMKNIĘTE', 'unlocked': 'OTWARTE', 
+                        'home': 'W DOMU', 'not_home': 'POZA'
+                    },
+                    'en': {
+                        'on': 'ON', 'off': 'OFF', 
+                        'open': 'OPEN', 'closed': 'CLOSED', 
+                        'opening': 'OPENING', 'closing': 'CLOSING', 
+                        'locked': 'LOCKED', 'unlocked': 'UNLOCKED', 
+                        'home': 'HOME', 'not_home': 'AWAY'
+                    }
+                }
+                # Wybierz słownik na podstawie języka z formularza
+                dic = TRANS.get(lang, TRANS['pl'])
 
                 # AppDaemon liczy kolumny jednostkowe (np. 117px).
                 if def_w == 1:
@@ -273,31 +216,13 @@ def index():
                 else: 
                     ad_columns = int(cols) * 2
 
-                # For Height, we use rows_grid
-                ad_rows = int(rows_grid)
-
-                # Obliczanie optymalnych wymiarów i marginesów
-                dim_x, margin_x = calculate_zero_gap_fit(SCREEN_W, ad_columns, min_margin=2, max_margin=20)
-                dim_y, margin_y = calculate_zero_gap_fit(SCREEN_H, ad_rows, min_margin=2, max_margin=20)
-                
-                # Weryfikacja (Real used space)
-                real_w = (ad_columns * dim_x) + ((ad_columns - 1) * margin_x)
-                real_h = (ad_rows * dim_y) + ((ad_rows - 1) * margin_y)
-
                 # -------------------------------------------------
                 # NAGŁÓWEK PLIKU YAML
                 # -------------------------------------------------
-                generated_yaml += f"# Auto-Generated by Joan 6 Generator\n"
-                generated_yaml += f"# Device: {dev_model} ({orientation})\n"
-                generated_yaml += f"# Screen: {SCREEN_W}x{SCREEN_H}\n"
-                generated_yaml += f"# Grid: {ad_columns}x{ad_rows} (Units)\n"
-                generated_yaml += f"# Calc: Dim=[{dim_x},{dim_y}], Margin=[{margin_x},{margin_y}]\n"
-                generated_yaml += f"# Real Used: {real_w}x{real_h} (Gap: {SCREEN_W - real_w}x{SCREEN_H - real_h})\n"
-                
                 generated_yaml += f"title: {title}\n"
-                generated_yaml += f"widget_dimensions: [{dim_x}, {dim_y}]\n"
+                generated_yaml += "widget_dimensions: [117, 117]\n"
                 generated_yaml += f"widget_size: [{def_w}, {def_h}]\n"
-                generated_yaml += f"widget_margins: [{margin_x}, {margin_y}]\n"
+                generated_yaml += "widget_margins: [8, 8]\n"
                 generated_yaml += f"columns: {ad_columns}\n"
                 generated_yaml += f"rows: {rows_grid}\n"
                 generated_yaml += "global_parameters:\n"
