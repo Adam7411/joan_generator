@@ -848,6 +848,34 @@
             text-align: center;
             word-break: break-all;
         }
+
+        /* --- DARK MODE FORM FIXES --- */
+        body.dark-mode input,
+        body.dark-mode select,
+        body.dark-mode textarea {
+            background-color: #2c2c2c !important;
+            color: #e0e0e0 !important;
+            border-color: #555 !important;
+        }
+
+        body.dark-mode input::placeholder {
+            color: #888 !important;
+        }
+
+        /* Fix for WebKit Autofill (prevents white background on selection) */
+        body.dark-mode input:-webkit-autofill,
+        body.dark-mode input:-webkit-autofill:hover,
+        body.dark-mode input:-webkit-autofill:focus,
+        body.dark-mode input:-webkit-autofill:active {
+            -webkit-box-shadow: 0 0 0 30px #2c2c2c inset !important;
+            -webkit-text-fill-color: #e0e0e0 !important;
+            transition: background-color 5000s ease-in-out 0s;
+        }
+
+        body.dark-mode #w-id {
+            background-color: #2c2c2c !important;
+            color: #e0e0e0 !important;
+        }
     </style>
 </head>
 
