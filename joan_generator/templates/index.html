@@ -689,6 +689,22 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
+        /* Dark Mode overrides for inputs */
+        body.dark-mode input[type="text"],
+        body.dark-mode input[type="number"],
+        body.dark-mode select,
+        body.dark-mode textarea {
+            background-color: #333;
+            color: #ddd;
+            border-color: #555;
+        }
+
+        /* Specyficzna poprawka dla input#w-id, jeśli ma inne style */
+        body.dark-mode #w-id {
+            background-color: #333 !important;
+            color: #fff !important;
+        }
+
         .dash-item.active {
             background: #4caf50;
             color: white;
@@ -2025,37 +2041,44 @@
             });
 
             // Heurystyka orientacji na podstawie kolumn i wierszy
+            const orientSelect = document.getElementById('device-orientation');
+
             if (foundCols && foundRows) {
-                if (foundCols >= foundRows) {
+                if (foundCols > foundRows) { // Więcej kolumn niż wierszy -> Landscape
                     foundOrientation = 'landscape';
-                    document.getElementById('device-orientation').value = 'landscape';
-                } else {
-                    foundOrientation = 'portrait';
-                    document.getElementById('device-orientation').value = 'portrait';
+                    orientSelect.value = 'landscape';
                 }
+                else if (foundCols < foundRows) { // Mniej kolumn niż wierszy -> Portrait
+                    foundOrientation = 'portrait';
+                    orientSelect.value = 'portrait';
+                }
+                else {
+                    // Kwadrat? Domyślnie Landscape
+                    foundOrientation = 'landscape';
+                    orientSelect.value = 'landscape';
+                }
+
+                // Force visual update
+                orientSelect.dispatchEvent(new Event('change'));
             }
 
             document.getElementById('dash-title').value = foundTitle;
             syncTitle();
 
             let preset = 'custom';
-            // Automatyczny dobór presetu dla Joan 6 Landscape (User request)
-            if (foundOrientation === 'landscape' && (!foundCols || (foundCols === 8))) {
-                // Sugerujemy 4x6 lub 4x4 dla lepszej czytelności na 6 calach
-                preset = '4x4';
-                // Ale jeśli import ma konkretną ilość wierszy, szanujemy to
-                if (foundRows === 6) preset = '4x6';
-                if (foundRows === 8) preset = '4x8';
-            }
-            else if (foundCols && foundRows) {
-                // ... (reszta logiki dopasowania presetu) ...
-                if (importedW === 1) {
-                    if (foundCols === 6 && foundRows === 8) preset = '6x8';
+
+            // Automatyczny dobór presetu
+            if (foundCols && foundRows) {
+                // Dokładne dopasowanie do znanych presetów
+                const dimKey = `${foundCols}x${foundRows}`;
+                const knownPresets = ['4x4', '4x6', '4x8', '6x8', '8x4', '8x6', '8x8'];
+
+                if (knownPresets.includes(dimKey)) {
+                    preset = dimKey;
                 } else {
-                    if (foundCols === 8 && foundRows === 8) preset = '4x8';
-                    else if (foundCols === 8 && foundRows === 6) preset = '4x6';
-                    else if (foundCols === 8 && foundRows === 4) preset = '4x4';
-                    else if (foundCols === 6 && foundRows === 6) preset = 'custom';
+                    // Logika fallback
+                    if (foundOrientation === 'landscape' && !foundCols) preset = '4x4'; // Default landscape estimate
+                    else preset = 'custom';
                 }
             }
 
