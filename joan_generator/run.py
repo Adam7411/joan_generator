@@ -213,36 +213,55 @@ def index():
                 # Formula: Total_W = (cols * w) + ((cols - 1) * margin)
                 # w = (Total_W - (cols - 1) * margin) / cols
                 
-                MARGIN_X = 8
-                MARGIN_Y = 8
-                
+                # -------------------------------------------------
+                # OPTIMIZED MATH (BEST FIT)
+                # -------------------------------------------------
+                def calculate_best_fit(screen_size, count, min_margin=0, max_margin=15):
+                    """
+                    Znajduje najlepszą kombinację (wymiar, margines), aby wypełnić ekran
+                    i zminimalizować resztę (puste miejsce).
+                    """
+                    best_dim = 0
+                    best_margin = 8
+                    min_remainder = screen_size # Start with worst case
+                    
+                    # Iterujemy po możliwych marginesach, aby znaleźć taki, który daje najmniejszą resztę
+                    for m in range(min_margin, max_margin + 1):
+                        # Total = count * dim + (count - 1) * m
+                        # dim = (Total - (count - 1) * m) / count
+                        
+                        available = screen_size - ((count - 1) * m)
+                        if available <= 0: continue
+                        
+                        dim = available // count
+                        if dim <= 0: continue
+                        
+                        remainder = available % count
+                        
+                        # Jeśli ta kombinacja daje mniejszą resztę (dziurę), wybieramy ją
+                        if remainder < min_remainder:
+                            min_remainder = remainder
+                            best_dim = dim
+                            best_margin = m
+                            
+                        # Idealny fit
+                        if remainder == 0:
+                            break
+                            
+                    return best_dim, best_margin
+
                 # AppDaemon liczy kolumny jednostkowe (np. 117px).
                 if def_w == 1:
                     ad_columns = int(cols)
                 else: 
                     ad_columns = int(cols) * 2
 
-                # Calculate Dimensions
-                # Note: 'cols' from form is likely user-facing columns (e.g. 4), but AppDaemon 'columns' might be different (8).
-                # However, for the math, we care about the grid defined in AppDaemon.
-                # If we use 2x1 as default, then ad_columns = 8.
-                # We want 4 LARGE TILES to fit. 
-                # Each large tile is 2 units wide + 1 margin.
-                # So width of large tile = (2 * unit_w) + margin.
-                # Total width = 4 * large_tile + 3 * margin
-                #             = 4 * (2 * unit_w + margin) + 3 * margin
-                #             = 8 * unit_w + 4 * margin + 3 * margin 
-                #             = 8 * unit_w + 7 * margin.
-                # General formula for N units: (N * unit) + (N-1) * margin
-                
-                # So we just need to solve for unit_w for 'ad_columns' count.
-                # unit_w = (SCREEN_W - (ad_columns - 1) * MARGIN_X) / ad_columns
-                
-                dim_x = (SCREEN_W - ((ad_columns - 1) * MARGIN_X)) // ad_columns
-                
                 # For Height, we use rows_grid
                 ad_rows = int(rows_grid)
-                dim_y = (SCREEN_H - ((ad_rows - 1) * MARGIN_Y)) // ad_rows
+
+                # Obliczanie optymalnych wymiarów i marginesów
+                dim_x, margin_x = calculate_best_fit(SCREEN_W, ad_columns, min_margin=4, max_margin=12)
+                dim_y, margin_y = calculate_best_fit(SCREEN_H, ad_rows, min_margin=4, max_margin=12)
 
                 # -------------------------------------------------
                 # NAGŁÓWEK PLIKU YAML
@@ -250,7 +269,7 @@ def index():
                 generated_yaml += f"title: {title}\n"
                 generated_yaml += f"widget_dimensions: [{dim_x}, {dim_y}]\n"
                 generated_yaml += f"widget_size: [{def_w}, {def_h}]\n"
-                generated_yaml += f"widget_margins: [{MARGIN_X}, {MARGIN_Y}]\n"
+                generated_yaml += f"widget_margins: [{margin_x}, {margin_y}]\n"
                 generated_yaml += f"columns: {ad_columns}\n"
                 generated_yaml += f"rows: {rows_grid}\n"
                 generated_yaml += "global_parameters:\n"
