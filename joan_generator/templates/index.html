@@ -876,6 +876,30 @@
             background-color: #2c2c2c !important;
             color: #e0e0e0 !important;
         }
+
+        /* --- AGRESYWNA POPRAWKA DLA TRYBU CIEMNEGO --- */
+        html.dark-mode body .container input#w-id,
+        html.dark-mode body .container input#w-id:focus,
+        html.dark-mode body .container input#w-id:active {
+            background-color: #333333 !important;
+            background-image: none !important;
+            color: #ffffff !important;
+            border: 1px solid #555 !important;
+            box-shadow: none !important;
+            color-scheme: dark !important;
+            /* Forces browser native popups/inputs to dark mode */
+        }
+
+        /* Fix for WebKit Autofill - FORCE DARK BACKGROUND via Box Shadow */
+        html.dark-mode input#w-id:-webkit-autofill,
+        html.dark-mode input#w-id:-webkit-autofill:hover,
+        html.dark-mode input#w-id:-webkit-autofill:focus,
+        html.dark-mode input#w-id:-webkit-autofill:active {
+            -webkit-box-shadow: 0 0 0 30px #333333 inset !important;
+            -webkit-text-fill-color: #ffffff !important;
+            caret-color: white !important;
+            color-scheme: dark !important;
+        }
     </style>
 </head>
 
