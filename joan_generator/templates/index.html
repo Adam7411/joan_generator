@@ -2126,7 +2126,7 @@
             if (foundCols && foundRows) {
                 // Dokładne dopasowanie do znanych presetów
                 const dimKey = `${foundCols}x${foundRows}`;
-                const knownPresets = ['4x4', '4x6', '4x8', '6x8', '8x4', '8x6', '8x8'];
+                const knownPresets = ['3x8', '4x4', '4x6', '4x8', '6x8', '8x4', '8x6', '8x8'];
 
                 if (knownPresets.includes(dimKey)) {
                     preset = dimKey;
@@ -2463,7 +2463,9 @@
             const copyText = document.getElementById("output-yaml");
             if (!copyText) return;
 
-            // Metoda dla bezpiecznych kontekstów (HTTPS / localhost)
+            // Ustawienie widoczności/fokusu dla pewności
+            copyText.style.display = 'block';
+
             if (navigator.clipboard && window.isSecureContext) {
                 navigator.clipboard.writeText(copyText.value).then(() => {
                     alert("Skopiowano kod do schowka!");
