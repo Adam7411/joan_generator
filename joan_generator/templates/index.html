@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width", initial-scale=1.0">
     <title>Joan 6 E-Ink Generator</title>
     
     <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css" rel="stylesheet">
@@ -1699,11 +1699,53 @@
         function copyToClipboard() {
             const copyText = document.getElementById("output-yaml");
             if (!copyText) return;
+
+            // 1. Zaznacz tekst w polu (ważne dla obu metod)
             copyText.select();
-            copyText.setSelectionRange(0, 99999);
-            navigator.clipboard.writeText(copyText.value).then(() => {
-                alert("Skopiowano kod do schowka!");
-            });
+            copyText.setSelectionRange(0, 99999); // Dla urządzeń mobilnych
+
+            // 2. Metoda A: Nowoczesne API Clipboard (wymaga HTTPS)
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(copyText.value).then(() => {
+                    // UX: Zmiana tekstu przycisku na chwilę
+                    const btn = document.querySelector('.btn-copy');
+                    const originalText = btn.innerText;
+                    btn.innerText = "✅ SKOPIOWANO!";
+                    btn.style.backgroundColor = "#4caf50";
+                    setTimeout(() => {
+                        btn.innerText = originalText;
+                        btn.style.backgroundColor = "";
+                    }, 2000);
+                }).catch(err => {
+                    console.error("Błąd API Clipboard, próbuję fallbacku...", err);
+                    useExecCommandFallback(copyText);
+                });
+            } else {
+                // 3. Metoda B: Starsza metoda execCommand('copy') - działa na HTTP
+                useExecCommandFallback(copyText);
+            }
+        }
+
+        // Funkcja zapasowa dla połączeń bez HTTPS (lokalne IP)
+        function useExecCommandFallback(element) {
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    // UX: Zmiana tekstu przycisku na chwilę
+                    const btn = document.querySelector('.btn-copy');
+                    const originalText = btn.innerText;
+                    btn.innerText = "✅ SKOPIOWANO!";
+                    btn.style.backgroundColor = "#4caf50";
+                    setTimeout(() => {
+                        btn.innerText = originalText;
+                        btn.style.backgroundColor = "";
+                    }, 2000);
+                } else {
+                    alert("❌ Nie udało się skopiować. Zaznacz tekst i użyj Ctrl+C.");
+                }
+            } catch (err) {
+                alert("❌ Błąd kopiowania: " + err);
+            }
         }
 
         // --- 3. EKSPORT PROJEKTU (JSON) ---
