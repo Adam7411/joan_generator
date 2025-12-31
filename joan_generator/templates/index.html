@@ -382,17 +382,6 @@
                     </div>
                 </div>
 
-                <div class="flex-row" id="extra-params-row" style="display:none;">
-                    <div class="flex-col" id="grp-precision">
-                        <label>Precyzja (miejsca po przecinku)</label>
-                        <input type="number" id="w-precision" value="1" min="0" max="3">
-                    </div>
-                    <div class="flex-col" id="grp-step">
-                        <label>Krok zmiany (Step)</label>
-                        <input type="number" id="w-step" value="1" min="0.1" step="0.1">
-                    </div>
-                </div>
-
                 <div class="flex-row">
                     <div class="flex-col">
                         <label data-i18n="lbl_size">Rozmiar</label>
@@ -1034,8 +1023,6 @@
                 icon: document.getElementById('w-icon').value,
                 icon_on: document.getElementById('w-icon-on').value,
                 icon_off: document.getElementById('w-icon-off').value,
-                precision: document.getElementById('w-precision').value,
-                step: document.getElementById('w-step').value,
                 was_edited: true
             };
             if(w.type === 'navigate') w.id = 'navigate.' + w.dash;
@@ -1093,18 +1080,6 @@
                 document.getElementById('div-icon-on').style.display = 'none';
                 document.getElementById('div-icon-off').style.display = 'none';
             }
-
-            // Obsługa dodatkowych parametrów
-            const extraRow = document.getElementById('extra-params-row');
-            const precCol = document.getElementById('grp-precision');
-            const stepCol = document.getElementById('grp-step');
-
-            const showPrecision = ['sensor'].includes(type);
-            const showStep = ['climate', 'input_number', 'media_player'].includes(type);
-
-            extraRow.style.display = (showPrecision || showStep) ? 'flex' : 'none';
-            precCol.style.display = showPrecision ? 'block' : 'none';
-            stepCol.style.display = showStep ? 'block' : 'none';
         }
 
         function updateTitleLimit() {
@@ -1138,8 +1113,6 @@
             document.getElementById('w-icon').value = data.icon || '';
             document.getElementById('w-icon-on').value = data.icon_on || '';
             document.getElementById('w-icon-off').value = data.icon_off || '';
-            document.getElementById('w-precision').value = data.precision || '1';
-            document.getElementById('w-step').value = data.step || '1';
             manualIconOverride = true;
             updateIconPreview(); updateTitleLimit();
             setTimeout(() => blockSmart = false, 500); renderPreview(); 
@@ -1159,7 +1132,6 @@
         function clearForm() {
             document.getElementById('w-id').value = ''; document.getElementById('w-name').value = '';
             document.getElementById('w-icon').value = ''; document.getElementById('w-icon-on').value = ''; document.getElementById('w-icon-off').value = '';
-            document.getElementById('w-precision').value = '1'; document.getElementById('w-step').value = '1';
             manualIconOverride = false; updateIconPreview(); updateTitleLimit();
         }
 
