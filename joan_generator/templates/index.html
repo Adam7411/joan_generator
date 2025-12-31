@@ -86,8 +86,16 @@
         input, select, textarea { width: 100%; padding: 12px; border: 1px solid var(--border); background: var(--bg-input); color: var(--text-main); border-radius: 4px; box-sizing: border-box; }
         
         /* --- NOWE STYLE (Wklej to) --- */
-        .input-valid { border: 2px solid #4caf50 !important; background-color: #e8f5e9 !important; }
-        .input-invalid { border: 2px solid #f44336 !important; background-color: #ffebee !important; }
+        .input-valid { border: 2px solid #4caf50 !important; }
+        .input-invalid { border: 2px solid #f44336 !important; }
+
+        /* Jasny motyw */
+        html:not(.dark-mode) .input-valid { background-color: #e8f5e9 !important; color: #1b5e20 !important; }
+        html:not(.dark-mode) .input-invalid { background-color: #ffebee !important; color: #b71c1c !important; }
+
+        /* Ciemny motyw - ciemniejsze tło walidacji */
+        html.dark-mode .input-valid { background-color: #1b5e20 !important; color: #ffffff !important; }
+        html.dark-mode .input-invalid { background-color: #7f1d1d !important; color: #ffffff !important; }
 
         .project-box { background: var(--highlight); border: 2px dashed var(--accent); padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center; }
         .project-btn { background: #5c6bc0; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; margin: 0 5px; }
@@ -358,7 +366,7 @@
                             <option value="switch" data-i18n="opt_switch">Switch / Light</option>
                             <option value="cover" data-i18n="opt_cover">Cover / Gate</option>
                             <option value="sensor" data-i18n="opt_sensor">Sensor</option>
-                            <option value="binary_sensor" data-i18n="opt_binary">Binary Sensor</option>
+                            <option value="binary_sensor" data-i18n="opt_binary">Binary Sensor (On/Off)</option>
                             <option value="lock" data-i18n="opt_lock">Lock</option>
                             <option value="person" data-i18n="opt_person">Person / Tracker</option>
                             <option value="media_player" data-i18n="opt_media">Media Player</option>
@@ -617,8 +625,8 @@
     "mdi-account-multiple", "mdi-account-multiple-outline", "mdi-account-group", "mdi-account-group-outline",
     "mdi-account-check", "mdi-account-check-outline", "mdi-account-off", "mdi-account-off-outline",
     "mdi-home-account", "mdi-account-clock", "mdi-account-clock-outline",
-    "mdi-human-male", "mdi-human-female", "mdi-human-male-female", "mdi-human-child",
-    "mdi-baby", "mdi-baby-face", "mdi-baby-face-outline",
+    "mdi-human-male", "mdi-human-female", "mdi-human-male-female", "mdi-baby",
+    "mdi-baby-face", "mdi-baby-face-outline",
     "mdi-dog", "mdi-dog-side", "mdi-cat", "mdi-paw", "mdi-paw-outline",
     "mdi-car", "mdi-car-outline", "mdi-car-side", "mdi-car-electric", "mdi-car-connected",
     "mdi-motorbike", "mdi-bicycle", "mdi-bike", "mdi-scooter", "mdi-bus", "mdi-train",
@@ -1113,7 +1121,7 @@
         function cancelEdit() {
             editIdx = null; blockSmart = false;
             document.getElementById('editor-box').classList.remove('editing');
-            document.getElementById('btn-cancel').classList.add('hidden');
+            document.getElementById('btn-cancel').classList.remove('hidden');
             
             document.getElementById('lbl-add-widget').innerText = TRANSLATIONS[currentLang].sec_add;
             
@@ -1546,19 +1554,7 @@
                 document.getElementById('custom-rows').value = data.customRows;
             }
             
-            document.getElementById('input-def-size').value = `${globalDefaultSize.w}, ${globalDefaultSize.h}`;
-            if (globalDefaultSize.w === 1) document.getElementById('w-size').value = '(1x1)';
-            else document.getElementById('w-size').value = '(2x1)';
-
-            currentLoadedDashName = key;
-            
-            const infoText = TRANSLATIONS[currentLang].lbl_current_small.replace('{0}', key);
-            document.getElementById('status-sec-1').innerText = infoText;
-            document.getElementById('status-sec-2').innerText = infoText;
-            document.getElementById('status-sec-3').innerText = infoText;
-            document.getElementById('status-manager').innerText = infoText;
-
-            handleGridChange();
+            handleGridChange(); // Odśwież widok
             loadSavedList();
         }
         
