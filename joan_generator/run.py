@@ -190,18 +190,6 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs):
     output.append("widget_margins: [8, 8]")
     output.append(f"columns: {ad_columns}")
     output.append(f"rows: {grid_params['rows_grid']}")
-
-    # DEFINICJA ZMIENNYCH (Variables) - Dzięki temu YAML jest krótszy
-    output.append("\n# Zmienne stylów")
-    output.append(f"var_style_title: \"{STYLE_TITLE}\"")
-    output.append(f"var_style_widget: \"{STYLE_WIDGET}\"")
-    output.append(f"var_style_text: \"{STYLE_TEXT}\"")
-    output.append(f"var_style_value: \"{STYLE_VALUE}\"")
-    output.append(f"var_style_unit: \"{STYLE_UNIT}\"")
-    output.append(f"var_style_icon: \"{STYLE_ICON}\"")
-    output.append(f"var_style_state: \"{STYLE_STATE_TEXT}\"")
-
-    output.append("")
     output.append("global_parameters:")
     output.append("  use_comma: 0")
     output.append("  precision: 1")
@@ -212,8 +200,8 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs):
     output.append("      step: 5")
     output.append("    climate:")
     output.append("      step: 1")
-    output.append("  white_text_style: \"$var_style_text\"")
-    output.append("  state_text_style: \"$var_style_state\"")
+    output.append(f"  white_text_style: \"{STYLE_TEXT}\"")
+    output.append(f"  state_text_style: \"{STYLE_STATE_TEXT}\"")
     output.append("skin: simplyred")
     output.append("")
 
@@ -301,52 +289,49 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs):
                     output.append(f"  dashboard: {dash_target}")
                     output.append(f"  icon_active: {nav_icon}")
                     output.append(f"  icon_inactive: {nav_icon}")
-                    output.append(f"  title_style: \"$var_style_title\"")
-                    output.append(f"  widget_style: \"$var_style_widget\"")
-                    output.append(f"  icon_active_style: \"$var_style_icon\"")
-                    output.append(f"  icon_inactive_style: \"$var_style_icon\"")
+                    output.append(f"  title_style: \"{STYLE_TITLE}\"")
+                    output.append(f"  widget_style: \"{STYLE_WIDGET}\"")
+                    output.append(f"  icon_active_style: \"{STYLE_ICON}\"")
+                    output.append(f"  icon_inactive_style: \"{STYLE_ICON}\"")
 
                 # --- SENSOR ---
                 elif w_type == 'sensor':
-                    w_precision = w.get('precision', '1')
-                    
                     output.append(f"  widget_type: sensor")
                     output.append(f"  entity: {w_id}")
                     output.append(f"  title: \"{w_name}\"")
-                    output.append(f"  title_style: \"$var_style_title\"")
-                    output.append(f"  text_style: \"$var_style_text\"")
-                    output.append(f"  value_style: \"$var_style_value\"")
-                    output.append(f"  unit_style: \"$var_style_unit\"")
-                    output.append(f"  widget_style: \"$var_style_widget\"")
-                    output.append(f"  precision: {w_precision}")
+                    output.append(f"  title_style: \"{STYLE_TITLE}\"")
+                    output.append(f"  text_style: \"{STYLE_TEXT}\"")
+                    output.append(f"  value_style: \"{STYLE_VALUE}\"")
+                    output.append(f"  unit_style: \"{STYLE_UNIT}\"")
+                    output.append(f"  widget_style: \"{STYLE_WIDGET}\"")
+                    if any(k in w_id for k in ['battery', 'bateria', 'level']):
+                        output.append("  precision: 0")
+                    else:
+                        output.append("  precision: 1")
 
                 # --- MEDIA PLAYER ---
                 elif w_type == 'media_player':
-                    w_step = w.get('step', '5')
-                    
                     output.append(f"  widget_type: media_player")
                     output.append(f"  entity: {w_id}")
                     output.append(f"  title: \"{w_name}\"")
                     if w_icon:
                         output.append(f"  icon: {w_icon}")
-                    output.append(f"  title_style: \"$var_style_title\"")
-                    output.append(f"  widget_style: \"$var_style_widget\"")
-                    output.append(f"  icon_style: \"$var_style_icon\"")
+                    output.append(f"  title_style: \"{STYLE_TITLE}\"")
+                    output.append(f"  widget_style: \"{STYLE_WIDGET}\"")
+                    output.append(f"  icon_style: \"{STYLE_ICON}\"")
                     output.append("  truncate_name: 20")
-                    output.append(f"  step: {w_step}")
+                    output.append("  step: 5")
 
                 # --- CLIMATE (TERMOSTAT) ---
                 elif w_type == 'climate':
-                    w_step = w.get('step', '1')
-                    
                     output.append(f"  widget_type: climate")
                     output.append(f"  entity: {w_id}")
                     output.append(f"  title: \"{w_name}\"")
-                    output.append(f"  step: {w_step}")
+                    output.append(f"  step: 1")
                     output.append(f"  precision: 1")
-                    output.append(f"  title_style: \"$var_style_title\"")
-                    output.append(f"  widget_style: \"$var_style_widget\"")
-                    output.append(f"  icon_style: \"$var_style_icon\"")
+                    output.append(f"  title_style: \"{STYLE_TITLE}\"")
+                    output.append(f"  widget_style: \"{STYLE_WIDGET}\"")
+                    output.append(f"  icon_style: \"{STYLE_ICON}\"")
 
                 # --- FAN (WENTYLATOR) ---
                 elif w_type == 'fan':
@@ -361,17 +346,17 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs):
                     output.append("  medium_speed: 66")
                     output.append("  high_speed: 100")
 
-                    output.append(f"  title_style: \"$var_style_title\"")
-                    output.append(f"  widget_style: \"$var_style_widget\"")
-                    output.append(f"  icon_style_active: \"$var_style_icon\"")
-                    output.append(f"  icon_style_inactive: \"$var_style_icon; opacity: 0.5;\"")
+                    output.append(f"  title_style: \"{STYLE_TITLE}\"")
+                    output.append(f"  widget_style: \"{STYLE_WIDGET}\"")
+                    output.append(f"  icon_style_active: \"{STYLE_ICON}\"")
+                    output.append(f"  icon_style_inactive: \"{STYLE_ICON}; opacity: 0.5;\"")
                     
-                    output.append(f"  speed1_icon_style_active: \"$var_style_icon\"")
-                    output.append(f"  speed1_icon_style_inactive: \"$var_style_icon; opacity: 0.3;\"")
-                    output.append(f"  speed2_icon_style_active: \"$var_style_icon\"")
-                    output.append(f"  speed2_icon_style_inactive: \"$var_style_icon; opacity: 0.3;\"")
-                    output.append(f"  speed3_icon_style_active: \"$var_style_icon\"")
-                    output.append(f"  speed3_icon_style_inactive: \"$var_style_icon; opacity: 0.3;\"")
+                    output.append(f"  speed1_icon_style_active: \"{STYLE_ICON}\"")
+                    output.append(f"  speed1_icon_style_inactive: \"{STYLE_ICON}; opacity: 0.3;\"")
+                    output.append(f"  speed2_icon_style_active: \"{STYLE_ICON}\"")
+                    output.append(f"  speed2_icon_style_inactive: \"{STYLE_ICON}; opacity: 0.3;\"")
+                    output.append(f"  speed3_icon_style_active: \"{STYLE_ICON}\"")
+                    output.append(f"  speed3_icon_style_inactive: \"{STYLE_ICON}; opacity: 0.3;\"")
 
                 # --- SCENE (SCENA) ---
                 elif w_type == 'scene':
@@ -381,18 +366,18 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs):
                     if w_icon: output.append(f"  icon: {w_icon}")
                     elif i_on: output.append(f"  icon: {i_on}")
                     
-                    output.append(f"  title_style: \"$var_style_title\"")
-                    output.append(f"  widget_style: \"$var_style_widget\"")
-                    output.append(f"  icon_style_active: \"$var_style_icon\"")
-                    output.append(f"  icon_style_inactive: \"$var_style_icon\"")
+                    output.append(f"  title_style: \"{STYLE_TITLE}\"")
+                    output.append(f"  widget_style: \"{STYLE_WIDGET}\"")
+                    output.append(f"  icon_style_active: \"{STYLE_ICON}\"")
+                    output.append(f"  icon_style_inactive: \"{STYLE_ICON}\"")
 
                 # --- CLOCK ---
                 elif w_type == 'clock':
                     output.append(f"  widget_type: clock")
                     output.append(f"  time_format: 24hr")
                     output.append(f"  show_seconds: 0")
-                    output.append(f"  date_style: \"$var_style_text\"")
-                    output.append(f"  time_style: \"$var_style_value\"")
+                    output.append(f"  date_style: \"{STYLE_TEXT}\"")
+                    output.append(f"  time_style: \"{STYLE_VALUE}\"")
 
                 # --- LABEL ---
                 elif w_type == 'label':
@@ -400,7 +385,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs):
                     output.append(f"  text: \"{w_name}\"")
                     if w_icon: 
                         output.append(f"  icon: {w_icon}")
-                    output.append(f"  text_style: \"$var_style_title\"")
+                    output.append(f"  text_style: \"{STYLE_TITLE}\"")
                 
                 # --- GENERIC (Switch, Cover, Script, Light, Lock, Input Button etc.) ---
                 else:
@@ -430,11 +415,11 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs):
                         output.append(f"  icon: {w_icon}")
                     
                     output.append(f"  state_text: 1")
-                    output.append(f"  title_style: \"$var_style_title\"")
-                    output.append(f"  text_style: \"$var_style_text\"")
-                    output.append(f"  widget_style: \"$var_style_widget\"")
-                    output.append(f"  icon_style_active: \"$var_style_icon\"")
-                    output.append(f"  icon_style_inactive: \"$var_style_icon\"")
+                    output.append(f"  title_style: \"{STYLE_TITLE}\"")
+                    output.append(f"  text_style: \"{STYLE_TEXT}\"")
+                    output.append(f"  widget_style: \"{STYLE_WIDGET}\"")
+                    output.append(f"  icon_style_active: \"{STYLE_ICON}\"")
+                    output.append(f"  icon_style_inactive: \"{STYLE_ICON}\"")
                     
                     if ad_type in ['cover', 'binary_sensor', 'switch', 'light', 'lock']: 
                         output.append("  state_map:")
