@@ -304,10 +304,10 @@
                     <input type="text" id="dash-title" oninput="syncTitle()" value="JoanDashboard">
                 </div>
                 <div class="flex-col">
-                    <label>Orientacja ekranu</label>
+                    <label data-i18n="lbl_orientation">Orientacja ekranu</label>
                     <select id="screen-orientation" onchange="handleOrientationChange()">
-                        <option value="portrait">Pion (3 kolumny bazowo)</option>
-                        <option value="landscape">Poziom (szerszy układ)</option>
+                        <option value="portrait" data-i18n="opt_orientation_portrait">Pion (3 kolumny bazowo)</option>
+                        <option value="landscape" data-i18n="opt_orientation_landscape">Poziom (szerszy układ)</option>
                     </select>
                 </div>
                 <div class="flex-col">
@@ -376,7 +376,7 @@
                         <input type="text" id="w-name" placeholder="np. Salon" oninput="checkTitleLimit(); searchEntities(this.value, true)">
                         <div id="char-count" class="char-counter">0/20</div>
                     </div>
-                    <div class="flex-col" style="flex: 1.">
+                    <div class="flex-col" style="flex: 1;">
                         <label data-i18n="lbl_type">Typ Widgetu</label>
                         <select id="w-type" onchange="toggleInputs()">
                             <option value="switch" data-i18n="opt_switch">Switch / Light</option>
@@ -538,6 +538,7 @@
         let globalDefaultSize = {w: 2, h: 1}; 
         let currentLoadedDashName = null;
         let currentIconInputId = null;
+        let copiedRow = null;
         let copiedWidget = null;
 
         const GRID_OPTION_SETS = {
@@ -749,6 +750,9 @@
             pl: {
                 title_main: "Joan 6 E-Ink Generator",
                 sec_settings: "1. Ustawienia Dashboardu", lbl_dash_title: "Tytuł Dashboardu", lbl_grid: "Układ Siatki (Smart Grid)",
+                lbl_orientation: "Orientacja ekranu",
+                opt_orientation_portrait: "Pion (3 kolumny bazowo)",
+                opt_orientation_landscape: "Poziom (szerszy układ)",
                 grid_3x8: "Standard (3 kolumny x 8 wierszy) - DOMYŚLNY", 
                 grid_4x8: "Szeroki (4 kolumny x 8 wierszy)", 
                 grid_4x6: "Luźny (4 kolumny x 6 wierszy)", 
@@ -795,6 +799,9 @@
             en: {
                 title_main: "Joan 6 E-Ink Generator",
                 sec_settings: "1. Dashboard Settings", lbl_dash_title: "Dashboard Title", lbl_grid: "Grid Layout (Smart Grid)",
+                lbl_orientation: "Screen orientation",
+                opt_orientation_portrait: "Portrait (3 cols default)",
+                opt_orientation_landscape: "Landscape (wider layout)",
                 grid_3x8: "Standard (3 cols x 8 rows) - DEFAULT", 
                 grid_4x8: "Wide (4 cols x 8 rows)", 
                 grid_4x6: "Loose (4 cols x 6 rows)", 
@@ -1106,7 +1113,9 @@
             if(w.type === 'spacer') w.id = 'spacer';
 
             fitSizeToGrid(w);
-            w.id = ensureUniqueId(w.id);
+            if (w.type !== 'navigate' && w.type !== 'spacer') {
+                w.id = ensureUniqueId(w.id);
+            }
 
             let targetRowIdx = rows.length - 1;
             if (editIdx) targetRowIdx = editIdx.r;
@@ -1201,7 +1210,7 @@
         function cancelEdit() {
             editIdx = null; blockSmart = false;
             document.getElementById('editor-box').classList.remove('editing');
-            document.getElementById('btn-cancel').classList.remove('hidden');
+            document.getElementById('btn-cancel').classList.add('hidden');
             
             document.getElementById('lbl-add-widget').innerText = TRANSLATIONS[currentLang].sec_add;
             
@@ -1239,7 +1248,7 @@
             if (!ent) return "---";
             const val = String(ent.state); const unit = ent.unit || "";
             if (val === 'on') return isPL ? "WŁĄCZONE" : "ON";
-            if (val === 'off') return isPL ? "WŁĄCZONE" : "OFF";
+            if (val === 'off') return isPL ? "WYŁĄCZONE" : "OFF";
             if (val === 'open') return isPL ? "OTWARTE" : "OPEN";
             if (val === 'closed') return isPL ? "ZAMKNIĘTE" : "CLOSED";
             if (!isNaN(parseFloat(val)) && val.includes('.')) return parseFloat(val).toFixed(1) + " " + unit;
@@ -1354,6 +1363,23 @@
                 const delBtn = document.createElement('button'); delBtn.className = 'btn-tool btn-del-row'; delBtn.innerText = 'X';
                 delBtn.onclick = (e) => { e.stopPropagation(); deleteRow(rI); }; controls.appendChild(delBtn);
 
+                // Kopiuj / Wklej wiersz
+                const copyBtn = document.createElement('button');
+                copyBtn.className = 'btn-tool';
+                copyBtn.innerText = '📄';
+                copyBtn.title = currentLang === 'pl' ? 'Kopiuj wiersz' : 'Copy row';
+                copyBtn.onclick = (e) => { e.stopPropagation(); copyRow(rI); };
+                controls.appendChild(copyBtn);
+
+                const pasteBtn = document.createElement('button');
+                pasteBtn.className = 'btn-tool';
+                pasteBtn.innerText = '📋';
+                pasteBtn.title = currentLang === 'pl' ? 'Wklej do wiersza' : 'Paste into row';
+                pasteBtn.onclick = (e) => { e.stopPropagation(); pasteRow(rI); };
+                pasteBtn.disabled = !copiedRow;
+                pasteBtn.style.opacity = copiedRow ? 1 : 0.5;
+                controls.appendChild(pasteBtn);
+
                 const pasteBtnWidget = document.createElement('button');
                 pasteBtnWidget.className = 'btn-tool';
                 pasteBtnWidget.innerText = '📋+';
@@ -1417,6 +1443,24 @@
             });
             
             if(document.getElementById('grid-preset').value === 'custom') applyGrid();
+        }
+
+        // Kopiuj / wklej wiersz
+        function copyRow(idx) {
+            if (!rows || !rows[idx]) return;
+            copiedRow = JSON.parse(JSON.stringify(rows[idx]));
+            renderPreview();
+        }
+
+        function pasteRow(idx) {
+            if (!copiedRow || !rows) return;
+            const cloneRow = JSON.parse(JSON.stringify(copiedRow)).map(w => {
+                w.id = ensureUniqueId(w.id);
+                fitSizeToGrid(w);
+                return w;
+            });
+            rows[idx] = cloneRow;
+            renderPreview();
         }
 
         function copyWidget(r, w, e) {
