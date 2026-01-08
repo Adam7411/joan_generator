@@ -470,7 +470,7 @@
                     Aby przełączać strony na samym urządzeniu Joan 6, użyj widgetu 'Przycisk Nawigacji' (Navigate).
                 </p>
                 <div class="flex-row" style="align-items: flex-end;">
-                    <div class="flex-col" style="flex: 2.">
+                    <div class="flex-col" style="flex: 2;">
                         <label data-i18n="manager_save_as">Zapisz obecny układ jako:</label>
                         <div style="display:flex; gap: 10px;">
                             <input type="text" id="save-dash-name" placeholder="np. Salon">
@@ -538,8 +538,6 @@
         let globalDefaultSize = {w: 2, h: 1}; 
         let currentLoadedDashName = null;
         let currentIconInputId = null;
-        // Nowy globalny schowek dla kopiowania wierszy
-        let copiedRow = null;
         let copiedWidget = null;
 
         const GRID_OPTION_SETS = {
@@ -871,7 +869,6 @@
                 o.textContent = opt.label;
                 select.appendChild(o);
             });
-            // Jeśli poprzedni wybór jest dostępny - zostaw, inaczej pierwszy
             const found = set.find(o => o.value === current);
             select.value = found ? current : set[0].value;
         }
@@ -990,9 +987,7 @@
             const cols = getLogicalCols();
             const sizeStr = conf.size || '(2x1)';
             let [w,h] = sizeStr.replace(/[()]/g,'').split('x').map(n=>parseInt(n)||1);
-            // jeżeli szerzej niż siatka — przycinamy
             if (w > cols) w = cols;
-            // jeżeli 3 kolumny i widżet typu „długi tytuł” (sensor/number) proponuj 2x1 lub 3x1
             if (cols === 3 && w < 2) w = 2;
             conf.size = `(${w}x${h})`;
         }
@@ -1326,7 +1321,6 @@
                 
                 rowDiv.onclick = (e) => { if(e.target === rowDiv || e.target.className === 'row-label') selectRow(rI); };
 
-                // Kontrolki wiersza (▲ ▼ X) + nowe Kopiuj/Wklej
                 const controls = document.createElement('div');
                 controls.className = 'row-controls';
                 const label = document.createElement('span');
@@ -1344,23 +1338,6 @@
 
                 const delBtn = document.createElement('button'); delBtn.className = 'btn-tool btn-del-row'; delBtn.innerText = 'X';
                 delBtn.onclick = (e) => { e.stopPropagation(); deleteRow(rI); }; controls.appendChild(delBtn);
-
-                // NOWE: Kopiuj / Wklej wiersz
-                const copyBtn = document.createElement('button');
-                copyBtn.className = 'btn-tool';
-                copyBtn.innerText = '📄';
-                copyBtn.title = currentLang === 'pl' ? 'Kopiuj wiersz' : 'Copy row';
-                copyBtn.onclick = (e) => { e.stopPropagation(); copyRow(rI); };
-                controls.appendChild(copyBtn);
-
-                const pasteBtn = document.createElement('button');
-                pasteBtn.className = 'btn-tool';
-                pasteBtn.innerText = '📋';
-                pasteBtn.title = currentLang === 'pl' ? 'Wklej do wiersza' : 'Paste into row';
-                pasteBtn.onclick = (e) => { e.stopPropagation(); pasteRow(rI); };
-                pasteBtn.disabled = !copiedRow;
-                pasteBtn.style.opacity = copiedRow ? 1 : 0.5;
-                controls.appendChild(pasteBtn);
 
                 const pasteBtnWidget = document.createElement('button');
                 pasteBtnWidget.className = 'btn-tool';
@@ -1425,20 +1402,6 @@
             });
             
             if(document.getElementById('grid-preset').value === 'custom') applyGrid();
-        }
-
-        // Funkcje kopiuj/wklej wiersz
-        function copyRow(idx) {
-            if (!rows || !rows[idx]) return;
-            copiedRow = JSON.parse(JSON.stringify(rows[idx]));
-            renderPreview();
-        }
-
-        function pasteRow(idx) {
-            if (!copiedRow || !rows) return;
-            rows[idx] = JSON.parse(JSON.stringify(copiedRow));
-            rows[idx].forEach(w => fitSizeToGrid(w));
-            renderPreview();
         }
 
         function copyWidget(r, w, e) {
@@ -1524,7 +1487,6 @@
                 else if (derivedLogicalCols === 8 && foundRows === 3) preset = '8x3';
             }
 
-            // Dopasuj orientację do presetu
             if (preset === '3x8' || preset === '3x10' || preset === '3x6') {
                 document.getElementById('screen-orientation').value = 'portrait';
             } else if (preset !== 'custom') {
@@ -1701,7 +1663,7 @@
             }
             
             rebuildGridOptions(document.getElementById('screen-orientation').value);
-            handleGridChange(); // Odśwież widok
+            handleGridChange(); 
             loadSavedList();
         }
         
@@ -1778,7 +1740,6 @@
             }
         }
 
-        /* --- JS DLA PICKERA IKON --- */
         function openIconPicker(inputId) {
             currentIconInputId = inputId;
             document.getElementById('icon-modal').style.display = 'block';
@@ -1824,7 +1785,6 @@
             closeIconPicker();
         }
 
-        // --- 1. WALIDACJA ENCJI ---
         function validateEntityInput(val) {
             const el = document.getElementById('w-id');
             if(!val) {
@@ -1840,7 +1800,6 @@
             }
         }
 
-        // --- 2. KOPIOWANIE DO SCHOWKA ---
         function copyToClipboard() {
             const copyText = document.getElementById("output-yaml");
             if (!copyText) return;
@@ -1870,24 +1829,12 @@
         function useExecCommandFallback(element) {
             try {
                 const successful = document.execCommand('copy');
-                if (successful) {
-                    const btn = document.querySelector('.btn-copy');
-                    const originalText = btn.innerText;
-                    btn.innerText = "✅ SKOPIOWANO!";
-                    btn.style.backgroundColor = "#4caf50";
-                    setTimeout(() => {
-                        btn.innerText = originalText;
-                        btn.style.backgroundColor = "";
-                    }, 2000);
-                } else {
-                    alert("❌ Nie udało się skopiować. Zaznacz tekst i użyj Ctrl+C.");
-                }
-            } catch (err) {
+            }
+            catch (err) {
                 alert("❌ Błąd kopiowania: " + err);
             }
         }
 
-        // --- 3. EKSPORT PROJEKTU (JSON) ---
         function downloadProject() {
             const data = {
                 rows: rows,
@@ -1910,7 +1857,6 @@
             document.body.removeChild(a);
         }
 
-        // --- 4. IMPORT PROJEKTU (JSON) ---
         function loadProjectFile(input) {
             const file = input.files[0];
             if(!file) return;
@@ -1949,7 +1895,6 @@
             }
         }
 
-        // inicjalizacja: dostosuj orientację do startowego preset (domyślnie 3x8 -> portrait)
         function initOrientationAndGrid() {
             const sel = document.getElementById('grid-preset');
             const initialGrid = '3x8';
