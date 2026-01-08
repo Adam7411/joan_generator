@@ -304,6 +304,13 @@
                     <input type="text" id="dash-title" oninput="syncTitle()" value="JoanDashboard">
                 </div>
                 <div class="flex-col">
+                    <label>Orientacja ekranu</label>
+                    <select id="screen-orientation" onchange="handleOrientationChange()">
+                        <option value="portrait">Pion (3 kolumny bazowo)</option>
+                        <option value="landscape" selected>Poziom (4 kolumny bazowo)</option>
+                    </select>
+                </div>
+                <div class="flex-col">
                     <label data-i18n="lbl_grid">Układ Siatki (Smart Grid)</label>
                     <select id="grid-preset" onchange="handleGridChange()">
                         <option value="3x8" data-i18n="grid_3x8" selected>Standard (3 kolumny x 8 wierszy) - DOMYŚLNY</option>
@@ -907,6 +914,18 @@
                 conf.size = '(2x1)';
             }
 
+            function fitSizeToGrid(conf) {
+                const cols = getLogicalCols();
+                const sizeStr = conf.size || '(2x1)';
+                let [w,h] = sizeStr.replace(/[()]/g,'').split('x').map(n=>parseInt(n)||1);
+                // jeżeli szerzej niż siatka — przycinamy
+                if (w > cols) w = cols;
+                // jeżeli 3 kolumny i widżet typu „długi tytuł” (sensor/number) proponuj 2x1 lub 3x1
+                if (cols === 3 && w < 2) w = 2;
+                conf.size = `(${w}x${h})`;
+            }
+            fitSizeToGrid(conf);
+
             if (isTitleSearch) {
                 if (manualIconOverride) return;
                 if (conf.iconOn) document.getElementById('w-icon-on').value = conf.iconOn;
@@ -929,6 +948,24 @@
                 updateIconPreview();
             }
             toggleInputs(); updateTitleLimit();
+        }
+
+        function handleOrientationChange() {
+            const o = document.getElementById('screen-orientation').value;
+            const grid = document.getElementById('grid-preset');
+            if (o === 'portrait' && grid.value === '3x8') return; // już OK
+            if (o === 'landscape' && (grid.value === '4x8' || grid.value === '4x6')) return;
+            grid.value = (o === 'portrait') ? '3x8' : '4x6';
+            handleGridChange();
+        }
+
+        function getLogicalCols() {
+            const gridVal = document.getElementById('grid-preset').value;
+            if (gridVal === 'custom') return parseInt(document.getElementById('custom-cols').value) || 3;
+            if (gridVal === '3x8') return 3;
+            if (gridVal === '4x8' || gridVal === '4x6' || gridVal === '4x4') return 4;
+            if (gridVal === '6x8') return 6;
+            return 3;
         }
 
         function handleGridChange() {
@@ -1174,7 +1211,7 @@
             if (!ent) return "---";
             const val = String(ent.state); const unit = ent.unit || "";
             if (val === 'on') return isPL ? "WŁĄCZONE" : "ON";
-            if (val === 'off') return isPL ? "WŁĄCZONE" : "OFF";
+            if (val === 'off') return isPL ? "WYŁĄCZONE" : "OFF";
             if (val === 'open') return isPL ? "OTWARTE" : "OPEN";
             if (val === 'closed') return isPL ? "ZAMKNIĘTE" : "CLOSED";
             if (!isNaN(parseFloat(val)) && val.includes('.')) return parseFloat(val).toFixed(1) + " " + unit;
@@ -1385,6 +1422,7 @@
             if (!copiedRow || !rows) return;
             // Podmień zawartość wskazanego wiersza
             rows[idx] = JSON.parse(JSON.stringify(copiedRow));
+            rows[idx].forEach(w => fitSizeToGrid(w));
             renderPreview();
         }
 
@@ -1399,12 +1437,24 @@
             e.stopPropagation();
             if (!copiedWidget || !rows || !rows[r]) return;
             const clone = JSON.parse(JSON.stringify(copiedWidget));
+            fitSizeToGrid(clone);
             if (getRowUsage(rows[r]) + getSlots(clone) > getMaxSlots()) {
                 alert(TRANSLATIONS[currentLang].alert_full);
                 return;
             }
             rows[r].push(clone);
             renderPreview();
+        }
+
+        function fitSizeToGrid(conf) {
+            const cols = getLogicalCols();
+            const sizeStr = conf.size || '(2x1)';
+            let [w,h] = sizeStr.replace(/[()]/g,'').split('x').map(n=>parseInt(n)||1);
+            // jeżeli szerzej niż siatka — przycinamy
+            if (w > cols) w = cols;
+            // jeżeli 3 kolumny i widżet typu „długi tytuł” (sensor/number) proponuj 2x1 lub 3x1
+            if (cols === 3 && w < 2) w = 2;
+            conf.size = `(${w}x${h})`;
         }
 
         function submitForm(actionType) {
@@ -1582,7 +1632,8 @@
                 defs: rawImportedDefs,
                 title: document.getElementById('dash-title').value,
                 grid: document.getElementById('grid-preset').value,
-                defSize: globalDefaultSize
+                defSize: globalDefaultSize,
+                orientation: document.getElementById('screen-orientation').value
             };
             
             if (saveData.grid === 'custom') {
@@ -1631,6 +1682,7 @@
             syncTitle();
             document.getElementById('grid-preset').value = data.grid || '4x8';
             globalDefaultSize = data.defSize || {w:2, h:1};
+            document.getElementById('screen-orientation').value = data.orientation || 'landscape';
             
             if (data.grid === 'custom') {
                 document.getElementById('custom-cols').value = data.customCols;
@@ -1839,6 +1891,7 @@
                 title: document.getElementById('dash-title').value,
                 grid: document.getElementById('grid-preset').value,
                 defSize: globalDefaultSize,
+                orientation: document.getElementById('screen-orientation').value,
                 customCols: document.getElementById('custom-cols').value,
                 customRows: document.getElementById('custom-rows').value
             };
@@ -1868,6 +1921,7 @@
                     syncTitle();
                     document.getElementById('grid-preset').value = data.grid || '3x8';
                     globalDefaultSize = data.defSize || {w:2, h:1};
+                    document.getElementById('screen-orientation').value = data.orientation || 'landscape';
                     
                     if (data.grid === 'custom') {
                         document.getElementById('custom-cols').value = data.customCols || 4;
