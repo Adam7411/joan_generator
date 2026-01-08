@@ -1421,12 +1421,7 @@
                 else if (derivedLogicalCols === 4 && foundRows === 4) preset = '4x4';
                 else if (derivedLogicalCols === 6 && foundRows === 8) preset = '6x8';
             }
-...
-            if (sel.value === 'custom') {
-                let wCols = derivedLogicalCols || foundCols || 8;
-                document.getElementById('custom-cols').value = wCols;
-                document.getElementById('custom-rows').value = foundRows || 8;
-            }
+
 
             const sel = document.getElementById('grid-preset');
             if(sel.querySelector(`option[value="${preset}"]`)) sel.value = preset;
