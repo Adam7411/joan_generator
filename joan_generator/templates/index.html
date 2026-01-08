@@ -311,7 +311,7 @@
                         </div>
                     </div>
                 </div>
-                <input type="hidden" id="h-cols" value="4">
+                <input type="hidden" id="h-cols" value="3">
                 <input type="hidden" id="h-rows" value="8">
             </div>
         </div>
@@ -330,7 +330,7 @@
             <input type="hidden" name="action" id="form-action" value="generate">
             <input type="hidden" name="title" id="form-title" value="JoanDashboard">
             <input type="hidden" name="ui_language" id="input-lang" value="pl">
-            <input type="hidden" name="grid_columns" id="form-cols" value="4">
+            <input type="hidden" name="grid_columns" id="form-cols" value="3">
             <input type="hidden" name="grid_rows" id="form-rows" value="8">
             <input type="hidden" name="default_widget_size" id="input-def-size" value="2, 1">
             
@@ -995,18 +995,17 @@
 
         function getMaxSlots() {
             const gridVal = document.getElementById('grid-preset').value;
-            
+            let logicalCols = 3;
+
             if (gridVal === 'custom') {
-                const c = parseInt(document.getElementById('custom-cols').value) || 4;
-                return c * 2;
+                logicalCols = parseInt(document.getElementById('custom-cols').value) || 4;
+            } else {
+                if (gridVal === '3x8') logicalCols = 3;
+                else if (gridVal === '4x4' || gridVal === '4x6' || gridVal === '4x8') logicalCols = 4;
+                else if (gridVal === '6x8') logicalCols = 6;
             }
 
-            let maxSlots = 3; 
-            if (gridVal === '3x8') maxSlots = 3; 
-            if (gridVal === '4x4' || gridVal === '4x6' || gridVal === '4x8') maxSlots = 4; 
-            if (gridVal === '6x8') maxSlots = 6;
-            
-            return maxSlots * 2; 
+            return logicalCols * (globalDefaultSize.w || 1);
         }
 
         function getRowUsage(rowArr) {
@@ -1413,15 +1412,20 @@
             syncTitle();
 
             let preset = 'custom'; 
+            let derivedLogicalCols = null;
             if (foundCols && foundRows) {
-                if (importedW === 1) {
-                    if (foundCols === 6 && foundRows === 8) preset = '6x8'; 
-                } else {
-                    if (foundCols === 8 && foundRows === 8) preset = '4x8';
-                    else if (foundCols === 8 && foundRows === 6) preset = '4x6';
-                    else if (foundCols === 8 && foundRows === 4) preset = '4x4';
-                    else if (foundCols === 6 && foundRows === 6) preset = 'custom'; 
-                }
+                derivedLogicalCols = importedW ? Math.max(1, Math.round(foundCols / importedW)) : foundCols;
+                if (derivedLogicalCols === 3 && foundRows === 8) preset = '3x8';
+                else if (derivedLogicalCols === 4 && foundRows === 8) preset = '4x8';
+                else if (derivedLogicalCols === 4 && foundRows === 6) preset = '4x6';
+                else if (derivedLogicalCols === 4 && foundRows === 4) preset = '4x4';
+                else if (derivedLogicalCols === 6 && foundRows === 8) preset = '6x8';
+            }
+...
+            if (sel.value === 'custom') {
+                let wCols = derivedLogicalCols || foundCols || 8;
+                document.getElementById('custom-cols').value = wCols;
+                document.getElementById('custom-rows').value = foundRows || 8;
             }
 
             const sel = document.getElementById('grid-preset');
