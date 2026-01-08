@@ -1458,10 +1458,10 @@
             document.getElementById('dash-title').value = foundTitle;
             syncTitle();
 
-            let preset = 'custom'; 
-            let derivedLogicalCols = null;
+            // Uproszczone i bez duplikacji: obliczamy preset (jeśli możliwe) i ustawiamy select oraz custom-cols/rows
+            let preset = 'custom';
             if (foundCols && foundRows) {
-                derivedLogicalCols = importedW ? Math.max(1, Math.round(foundCols / importedW)) : foundCols;
+                const derivedLogicalCols = importedW ? Math.max(1, Math.round(foundCols / importedW)) : foundCols;
                 if (derivedLogicalCols === 3 && foundRows === 8) preset = '3x8';
                 else if (derivedLogicalCols === 4 && foundRows === 8) preset = '4x8';
                 else if (derivedLogicalCols === 4 && foundRows === 6) preset = '4x6';
