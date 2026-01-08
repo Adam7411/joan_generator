@@ -376,7 +376,7 @@
                         <input type="text" id="w-name" placeholder="np. Salon" oninput="checkTitleLimit(); searchEntities(this.value, true)">
                         <div id="char-count" class="char-counter">0/20</div>
                     </div>
-                    <div class="flex-col" style="flex: 1;">
+                    <div class="flex-col" style="flex: 1.">
                         <label data-i18n="lbl_type">Typ Widgetu</label>
                         <select id="w-type" onchange="toggleInputs()">
                             <option value="switch" data-i18n="opt_switch">Switch / Light</option>
@@ -1239,7 +1239,7 @@
             if (!ent) return "---";
             const val = String(ent.state); const unit = ent.unit || "";
             if (val === 'on') return isPL ? "WŁĄCZONE" : "ON";
-            if (val === 'off') return isPL ? "WYŁĄCZONE" : "OFF";
+            if (val === 'off') return isPL ? "WŁĄCZONE" : "OFF";
             if (val === 'open') return isPL ? "OTWARTE" : "OPEN";
             if (val === 'closed') return isPL ? "ZAMKNIĘTE" : "CLOSED";
             if (!isNaN(parseFloat(val)) && val.includes('.')) return parseFloat(val).toFixed(1) + " " + unit;
@@ -1463,6 +1463,7 @@
             let foundRows = null;
             let foundTitle = "JoanDashboard";
             let titleSet = false;
+            let layoutMaxWidgetsPerRow = 0;
             
             lines.forEach(line => {
                 const t = line.trim();
@@ -1485,6 +1486,11 @@
                 }
                 if (t.startsWith('columns:')) foundCols = parseInt(t.split(':')[1]);
                 if (t.startsWith('rows:')) foundRows = parseInt(t.split(':')[1]);
+
+                if (t.startsWith('-')) {
+                    const widgets = t.substring(1).split(',').map(s => s.trim()).filter(Boolean);
+                    layoutMaxWidgetsPerRow = Math.max(layoutMaxWidgetsPerRow, widgets.length);
+                }
             });
 
             document.getElementById('dash-title').value = foundTitle;
@@ -1492,7 +1498,10 @@
 
             let preset = 'custom';
             if (foundCols && foundRows) {
-                const derivedLogicalCols = importedW ? Math.max(1, Math.round(foundCols / importedW)) : foundCols;
+                let derivedLogicalCols = importedW ? Math.max(1, Math.round(foundCols / importedW)) : foundCols;
+                if (layoutMaxWidgetsPerRow > 0 && layoutMaxWidgetsPerRow <= 3 && derivedLogicalCols > layoutMaxWidgetsPerRow) {
+                    derivedLogicalCols = layoutMaxWidgetsPerRow;
+                }
                 if (derivedLogicalCols === 3 && foundRows === 8) preset = '3x8';
                 else if (derivedLogicalCols === 3 && foundRows === 10) preset = '3x10';
                 else if (derivedLogicalCols === 3 && foundRows === 6) preset = '3x6';
@@ -1501,13 +1510,14 @@
                 else if (derivedLogicalCols === 4 && foundRows === 4) preset = '4x4';
                 else if (derivedLogicalCols === 6 && foundRows === 4) preset = '6x4';
                 else if (derivedLogicalCols === 8 && foundRows === 3) preset = '8x3';
+
+                if (derivedLogicalCols <= 3) {
+                    document.getElementById('screen-orientation').value = 'portrait';
+                } else if (preset !== 'custom') {
+                    document.getElementById('screen-orientation').value = 'landscape';
+                }
             }
 
-            if (preset === '3x8' || preset === '3x10' || preset === '3x6') {
-                document.getElementById('screen-orientation').value = 'portrait';
-            } else if (preset !== 'custom') {
-                document.getElementById('screen-orientation').value = 'landscape';
-            }
             rebuildGridOptions(document.getElementById('screen-orientation').value);
 
             const sel = document.getElementById('grid-preset');
