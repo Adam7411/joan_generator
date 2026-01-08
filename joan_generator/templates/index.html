@@ -1411,7 +1411,7 @@
             document.getElementById('dash-title').value = foundTitle;
             syncTitle();
 
-            let preset = 'custom'; 
+             let preset = 'custom'; 
             let derivedLogicalCols = null;
             if (foundCols && foundRows) {
                 derivedLogicalCols = importedW ? Math.max(1, Math.round(foundCols / importedW)) : foundCols;
@@ -1421,7 +1421,6 @@
                 else if (derivedLogicalCols === 4 && foundRows === 4) preset = '4x4';
                 else if (derivedLogicalCols === 6 && foundRows === 8) preset = '6x8';
             }
-
 
             const sel = document.getElementById('grid-preset');
             if(sel.querySelector(`option[value="${preset}"]`)) sel.value = preset;
