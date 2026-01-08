@@ -1076,6 +1076,20 @@
             return u;
         }
 
+        function getAllWidgetIds() {
+            const ids = new Set();
+            rows.forEach(r => r.forEach(w => ids.add(w.id)));
+            return ids;
+        }
+
+        function ensureUniqueId(baseId) {
+            const ids = getAllWidgetIds();
+            if (!ids.has(baseId)) return baseId;
+            let i = 1;
+            while (ids.has(`${baseId}_copy${i}`)) i++;
+            return `${baseId}_copy${i}`;
+        }
+
         function saveWidget() {
             const w = {
                 type: document.getElementById('w-type').value,
@@ -1092,6 +1106,7 @@
             if(w.type === 'spacer') w.id = 'spacer';
 
             fitSizeToGrid(w);
+            w.id = ensureUniqueId(w.id);
 
             let targetRowIdx = rows.length - 1;
             if (editIdx) targetRowIdx = editIdx.r;
@@ -1416,6 +1431,7 @@
             if (!copiedWidget || !rows || !rows[r]) return;
             const clone = JSON.parse(JSON.stringify(copiedWidget));
             fitSizeToGrid(clone);
+            clone.id = ensureUniqueId(clone.id);
             if (getRowUsage(rows[r]) + getSlots(clone) > getMaxSlots()) {
                 alert(TRANSLATIONS[currentLang].alert_full);
                 return;
