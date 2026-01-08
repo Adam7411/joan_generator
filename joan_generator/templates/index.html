@@ -179,10 +179,23 @@
         .ew-del { position: absolute; top: -8px; right: -8px; background: red; color: white; width: 20px; height: 20px; border-radius: 50%; text-align: center; line-height: 20px; font-weight: bold; display: none; cursor: pointer; z-index: 30; }
         .eink-widget:hover .ew-del { display: block; }
         
-        .eink-widget.is-small { padding: 4px; }
-        .eink-widget.is-small .ew-title { font-size: 11px; margin-top: 4px; margin-bottom: 0; -webkit-line-clamp: 1; }
-        .eink-widget.is-small .ew-icon { font-size: 24px; margin: 2px 0; }
-        .eink-widget.is-small .ew-value { font-size: 12px; padding-top: 2px; margin-bottom: 2px; }
+        .ew-copy {
+            position: absolute; 
+            top: -8px; 
+            left: -8px; 
+            background: #4caf50; 
+            color: white; 
+            width: 20px; 
+            height: 20px; 
+            border-radius: 50%; 
+            text-align: center; 
+            line-height: 20px; 
+            font-weight: bold; 
+            display: none; 
+            cursor: pointer; 
+            z-index: 30;
+        }
+        .eink-widget:hover .ew-copy { display: block; }
 
         .icon-preview { font-size: 32px; display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-input); }
         .hidden { display: none !important; }
@@ -524,6 +537,7 @@
         let currentIconInputId = null;
         // Nowy globalny schowek dla kopiowania wierszy
         let copiedRow = null;
+        let copiedWidget = null;
 
         const POPULAR_ICONS = [
     // === DOM / POKOJE ===
@@ -1289,10 +1303,18 @@
                 pasteBtn.innerText = '📋';
                 pasteBtn.title = currentLang === 'pl' ? 'Wklej do wiersza' : 'Paste into row';
                 pasteBtn.onclick = (e) => { e.stopPropagation(); pasteRow(rI); };
-                // Jeśli nie ma nic w schowku, wyłącz przycisk (lepsze UX)
                 pasteBtn.disabled = !copiedRow;
                 pasteBtn.style.opacity = copiedRow ? 1 : 0.5;
                 controls.appendChild(pasteBtn);
+
+                const pasteBtnWidget = document.createElement('button');
+                pasteBtnWidget.className = 'btn-tool';
+                pasteBtnWidget.innerText = '📋+';
+                pasteBtnWidget.title = currentLang === 'pl' ? 'Wklej skopiowany przycisk do wiersza' : 'Paste copied button into row';
+                pasteBtnWidget.onclick = (e) => pasteWidget(rI, e);
+                pasteBtnWidget.disabled = !copiedWidget;
+                pasteBtnWidget.style.opacity = copiedWidget ? 1 : 0.5;
+                controls.appendChild(pasteBtnWidget);
 
                 rowDiv.appendChild(controls);
 
@@ -1333,7 +1355,13 @@
                         const showIcon = (w.type !== 'sensor') && icon;
                         const iconHtml = showIcon ? `<i class="mdi ${icon} ew-icon"></i>` : `<div style="height:38px;"></div>`;
                         
-                        div.innerHTML = `<div class="ew-title">${w.name || w.id}</div>${iconHtml}<div class="ew-value">${realState}</div><div class="ew-del" onclick="deleteWidget(${rI}, ${wI}, event)">X</div>`;
+                        div.innerHTML = `
+                            <div class="ew-title">${w.name || w.id}</div>
+                            ${iconHtml}
+                            <div class="ew-value">${realState}</div>
+                            <div class="ew-del" onclick="deleteWidget(${rI}, ${wI}, event)">X</div>
+                            <div class="ew-copy" onclick="copyWidget(${rI}, ${wI}, event)">📄</div>
+                        `;
                     }
                     div.onclick = (e) => { e.stopPropagation(); editWidget(rI, wI); };
                     wrapper.appendChild(div); rowDiv.appendChild(wrapper);
@@ -1357,6 +1385,25 @@
             if (!copiedRow || !rows) return;
             // Podmień zawartość wskazanego wiersza
             rows[idx] = JSON.parse(JSON.stringify(copiedRow));
+            renderPreview();
+        }
+
+        function copyWidget(r, w, e) {
+            e.stopPropagation();
+            if (!rows || !rows[r] || !rows[r][w]) return;
+            copiedWidget = JSON.parse(JSON.stringify(rows[r][w]));
+            renderPreview();
+        }
+
+        function pasteWidget(r, e) {
+            e.stopPropagation();
+            if (!copiedWidget || !rows || !rows[r]) return;
+            const clone = JSON.parse(JSON.stringify(copiedWidget));
+            if (getRowUsage(rows[r]) + getSlots(clone) > getMaxSlots()) {
+                alert(TRANSLATIONS[currentLang].alert_full);
+                return;
+            }
+            rows[r].push(clone);
             renderPreview();
         }
 
@@ -1411,7 +1458,7 @@
             document.getElementById('dash-title').value = foundTitle;
             syncTitle();
 
-             let preset = 'custom'; 
+            let preset = 'custom'; 
             let derivedLogicalCols = null;
             if (foundCols && foundRows) {
                 derivedLogicalCols = importedW ? Math.max(1, Math.round(foundCols / importedW)) : foundCols;
