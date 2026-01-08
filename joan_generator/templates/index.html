@@ -522,6 +522,8 @@
         let globalDefaultSize = {w: 2, h: 1}; 
         let currentLoadedDashName = null;
         let currentIconInputId = null;
+        // Nowy globalny schowek dla kopiowania wierszy
+        let copiedRow = null;
 
         const POPULAR_ICONS = [
     // === DOM / POKOJE ===
@@ -1159,7 +1161,7 @@
             if (!ent) return "---";
             const val = String(ent.state); const unit = ent.unit || "";
             if (val === 'on') return isPL ? "WŁĄCZONE" : "ON";
-            if (val === 'off') return isPL ? "WYŁĄCZONE" : "OFF";
+            if (val === 'off') return isPL ? "WŁĄCZONE" : "OFF";
             if (val === 'open') return isPL ? "OTWARTE" : "OPEN";
             if (val === 'closed') return isPL ? "ZAMKNIĘTE" : "CLOSED";
             if (!isNaN(parseFloat(val)) && val.includes('.')) return parseFloat(val).toFixed(1) + " " + unit;
@@ -1256,8 +1258,11 @@
                 
                 rowDiv.onclick = (e) => { if(e.target === rowDiv || e.target.className === 'row-label') selectRow(rI); };
 
-                const controls = document.createElement('div'); controls.className = 'row-controls';
-                const label = document.createElement('span'); label.className = 'row-label';
+                // Kontrolki wiersza (▲ ▼ X) + nowe Kopiuj/Wklej
+                const controls = document.createElement('div');
+                controls.className = 'row-controls';
+                const label = document.createElement('span');
+                label.className = 'row-label';
                 label.innerText = (currentLang === 'pl' ? 'WIERSZ ' : 'ROW ') + (rI + 1);
                 controls.appendChild(label);
 
@@ -1271,6 +1276,24 @@
 
                 const delBtn = document.createElement('button'); delBtn.className = 'btn-tool btn-del-row'; delBtn.innerText = 'X';
                 delBtn.onclick = (e) => { e.stopPropagation(); deleteRow(rI); }; controls.appendChild(delBtn);
+
+                // NOWE: Kopiuj / Wklej wiersz
+                const copyBtn = document.createElement('button');
+                copyBtn.className = 'btn-tool';
+                copyBtn.innerText = '📄';
+                copyBtn.title = currentLang === 'pl' ? 'Kopiuj wiersz' : 'Copy row';
+                copyBtn.onclick = (e) => { e.stopPropagation(); copyRow(rI); };
+                controls.appendChild(copyBtn);
+
+                const pasteBtn = document.createElement('button');
+                pasteBtn.className = 'btn-tool';
+                pasteBtn.innerText = '📋';
+                pasteBtn.title = currentLang === 'pl' ? 'Wklej do wiersza' : 'Paste into row';
+                pasteBtn.onclick = (e) => { e.stopPropagation(); pasteRow(rI); };
+                // Jeśli nie ma nic w schowku, wyłącz przycisk (lepsze UX)
+                pasteBtn.disabled = !copiedRow;
+                pasteBtn.style.opacity = copiedRow ? 1 : 0.5;
+                controls.appendChild(pasteBtn);
 
                 rowDiv.appendChild(controls);
 
@@ -1321,6 +1344,21 @@
             
             const val = document.getElementById('grid-preset').value;
             if(val === 'custom') applyGrid();
+        }
+
+        // Funkcje kopiuj/wklej wiersz
+        function copyRow(idx) {
+            if (!rows || !rows[idx]) return;
+            copiedRow = JSON.parse(JSON.stringify(rows[idx]));
+            // Odśwież kontrolki, by włączyć przyciski wklejania
+            renderPreview();
+        }
+
+        function pasteRow(idx) {
+            if (!copiedRow || !rows) return;
+            // Podmień zawartość wskazanego wiersza
+            rows[idx] = JSON.parse(JSON.stringify(copiedRow));
+            renderPreview();
         }
 
         function submitForm(actionType) {
