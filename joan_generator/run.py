@@ -185,7 +185,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs):
     # 3. Budowanie nagłówka
     output = []
     output.append(f"title: {title}")
-    output.append("widget_dimensions: [117, 124]")
+    output.append("widget_dimensions: [117, 123]")
     output.append(f"widget_size: [{grid_params['def_w']}, {grid_params['def_h']}]")
     output.append("widget_margins: [8, 4]")
     output.append(f"columns: {ad_columns}")
