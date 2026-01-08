@@ -180,7 +180,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs):
     dic = TRANS.get(lang_code, TRANS['pl'])
 
     # 2. Obliczenia kolumn AppDaemon
-    ad_columns = grid_params['cols'] if grid_params['def_w'] == 1 else grid_params['cols'] * 2
+    ad_columns = grid_params['cols'] * grid_params['def_w']
 
     # 3. Budowanie nagłówka
     output = []
