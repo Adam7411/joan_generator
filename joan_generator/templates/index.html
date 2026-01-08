@@ -375,7 +375,7 @@
                 </div>
 
                 <div class="flex-row">
-                    <div class="flex-col" style="flex: 2;">
+                    <div class="flex-col" style="flex: 2.">
                         <label data-i18n="lbl_name">Tytuł na ekranie</label>
                         <input type="text" id="w-name" placeholder="np. Salon" oninput="checkTitleLimit(); searchEntities(this.value, true)">
                         <div id="char-count" class="char-counter">0/20</div>
@@ -914,16 +914,6 @@
                 conf.size = '(2x1)';
             }
 
-            function fitSizeToGrid(conf) {
-                const cols = getLogicalCols();
-                const sizeStr = conf.size || '(2x1)';
-                let [w,h] = sizeStr.replace(/[()]/g,'').split('x').map(n=>parseInt(n)||1);
-                // jeżeli szerzej niż siatka — przycinamy
-                if (w > cols) w = cols;
-                // jeżeli 3 kolumny i widżet typu „długi tytuł” (sensor/number) proponuj 2x1 lub 3x1
-                if (cols === 3 && w < 2) w = 2;
-                conf.size = `(${w}x${h})`;
-            }
             fitSizeToGrid(conf);
 
             if (isTitleSearch) {
@@ -953,9 +943,10 @@
         function handleOrientationChange() {
             const o = document.getElementById('screen-orientation').value;
             const grid = document.getElementById('grid-preset');
-            if (o === 'portrait' && grid.value === '3x8') return; // już OK
-            if (o === 'landscape' && (grid.value === '4x8' || grid.value === '4x6')) return;
+            if (o === 'portrait' && grid.value === '3x8') { reflowAllWidgets(); handleGridChange(); return; }
+            if (o === 'landscape' && (grid.value === '4x8' || grid.value === '4x6')) { reflowAllWidgets(); handleGridChange(); return; }
             grid.value = (o === 'portrait') ? '3x8' : '4x6';
+            reflowAllWidgets();
             handleGridChange();
         }
 
@@ -966,6 +957,21 @@
             if (gridVal === '4x8' || gridVal === '4x6' || gridVal === '4x4') return 4;
             if (gridVal === '6x8') return 6;
             return 3;
+        }
+
+        function fitSizeToGrid(conf) {
+            const cols = getLogicalCols();
+            const sizeStr = conf.size || '(2x1)';
+            let [w,h] = sizeStr.replace(/[()]/g,'').split('x').map(n=>parseInt(n)||1);
+            // jeżeli szerzej niż siatka — przycinamy
+            if (w > cols) w = cols;
+            // jeżeli 3 kolumny i widżet typu „długi tytuł” (sensor/number) proponuj 2x1 lub 3x1
+            if (cols === 3 && w < 2) w = 2;
+            conf.size = `(${w}x${h})`;
+        }
+
+        function reflowAllWidgets() {
+            rows.forEach(row => row.forEach(w => fitSizeToGrid(w)));
         }
 
         function handleGridChange() {
@@ -993,6 +999,7 @@
                 }
             }
 
+            reflowAllWidgets();
             applyGrid();
             renderPreview();
         }
@@ -1079,6 +1086,8 @@
             };
             if(w.type === 'navigate') w.id = 'navigate.' + w.dash;
             if(w.type === 'spacer') w.id = 'spacer';
+
+            fitSizeToGrid(w);
 
             let targetRowIdx = rows.length - 1;
             if (editIdx) targetRowIdx = editIdx.r;
@@ -1446,17 +1455,6 @@
             renderPreview();
         }
 
-        function fitSizeToGrid(conf) {
-            const cols = getLogicalCols();
-            const sizeStr = conf.size || '(2x1)';
-            let [w,h] = sizeStr.replace(/[()]/g,'').split('x').map(n=>parseInt(n)||1);
-            // jeżeli szerzej niż siatka — przycinamy
-            if (w > cols) w = cols;
-            // jeżeli 3 kolumny i widżet typu „długi tytuł” (sensor/number) proponuj 2x1 lub 3x1
-            if (cols === 3 && w < 2) w = 2;
-            conf.size = `(${w}x${h})`;
-        }
-
         function submitForm(actionType) {
             document.getElementById('form-action').value = actionType;
 
@@ -1600,7 +1598,7 @@
                                 else if (id.startsWith('sensor.')) type = 'sensor';
                             }
 
-                            rowData.push({
+                            const widgetObj = {
                                 id,
                                 type,
                                 size,
@@ -1609,7 +1607,9 @@
                                 icon_on,
                                 icon_off,
                                 was_edited: false
-                            });
+                            };
+                            fitSizeToGrid(widgetObj);
+                            rowData.push(widgetObj);
                         });
                         newRows.push(rowData);
                     } else if (tr.match(/^[a-z0-9_]+:/i)) {
@@ -1618,7 +1618,7 @@
                 }
             });
             
-            if(newRows.length > 0) { rows = newRows; renderPreview(); alert(currentLang === 'pl' ? "Pomyślnie zaimportowano układ." : "Import successful."); } 
+            if(newRows.length > 0) { rows = newRows; reflowAllWidgets(); renderPreview(); alert(currentLang === 'pl' ? "Pomyślnie zaimportowano układ." : "Import successful."); } 
             else alert(currentLang === 'pl' ? "Błąd: Nie znaleziono layoutu." : "Error: Layout not found.");
             setTimeout(() => blockSmart = false, 1000);
         }
@@ -1928,6 +1928,7 @@
                         document.getElementById('custom-rows').value = data.customRows || 8;
                     }
                     
+                    reflowAllWidgets();
                     handleGridChange(); // Odśwież widok
                     alert("Pomyślnie wczytano projekt z pliku JSON!");
                 } catch(err) {
