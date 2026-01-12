@@ -78,10 +78,12 @@ Utwórz nowy plik z rozszerzeniem `.dash` w folderze konfiguracyjnym AppDaemon:
 \\TWOJE_IP_HA\addon_configs\appdaemon\dashboards\joan_salon.dash
 ```
 ***
-<img width="758" height="1024" alt="snapshot_camera_kuchnia_podglad_ekranu_15 12 2025, 08_05_58" src="https://github.com/user-attachments/assets/d02d7a10-f1e0-4208-8119-9b1e1810e4bd" />
+<img width="1620" height="2421" alt="image" src="https://github.com/user-attachments/assets/c3d4aeb4-2740-43fc-aded-a4f8b15c11fe" />
+
 
 ***
-<img width="1768" height="2888" alt="image" src="https://github.com/user-attachments/assets/c71bcffa-c6a4-47df-ab1c-8006bb2260de" />
+<img width="1920" height="4054" alt="image" src="https://github.com/user-attachments/assets/0959cc8c-5a03-4cf4-af26-b9fa24ca15da" />
+
 
 ***
 ***
