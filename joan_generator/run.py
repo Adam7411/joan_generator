@@ -32,7 +32,7 @@ try:
             opt_slug = options.get('appdaemon_slug')
             if opt_slug:
                 APPDAEMON_SLUG = opt_slug
-except Exception as e: 
+except Exception as e:
     print(f"ℹ️ Info: Nie udało się odczytać pliku opcji: {e}")
 
 if not TOKEN:
@@ -66,7 +66,7 @@ def get_ha_entities():
                 entities.append(entity_obj)
             entities.sort(key=lambda x: x['id'])
             return entities
-    except Exception as e: 
+    except Exception as e:
         print(f"❌ Wyjątek podczas pobierania encji: {e}")
     return []
 
@@ -77,15 +77,13 @@ def restart_appdaemon_addon():
     """Restartuje AppDaemon używając dostępnego tokena (Manual lub System)."""
     if not TOKEN:
         return False, "Błąd: Brak tokena API (uzupełnij manual_token w konfiguracji)."
-    
+
     target_slug = APPDAEMON_SLUG
-    
     headers = {
         "Authorization": f"Bearer {TOKEN}",
         "Content-Type": "application/json"
     }
 
-    # Manual token -> API homeassistant:8123; inaczej supervisor
     if "homeassistant" in API_URL or "8123" in API_URL:
         url = f"{API_URL}/services/hassio/addon_restart"
         payload = {"addon": target_slug}
@@ -126,7 +124,7 @@ STYLE_STATE_TEXT = "color: #000000 !important; font-weight: 700 !important; font
 # 4. NORMALIZACJA FORMATU IKON
 # -------------------------------------------------------------------------
 def normalize_icon_format(icon_name):
-    if not icon_name: 
+    if not icon_name:
         return icon_name
     icon_name = icon_name.strip()
     if icon_name.startswith('mdi:'):
@@ -141,17 +139,17 @@ def normalize_icon_format(icon_name):
 def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs):
     TRANS = {
         'pl': {
-            'on': 'WŁĄCZONE', 'off': 'WYŁĄCZONE', 
-            'open': 'OTWARTE', 'closed': 'ZAMKNIĘTE', 
-            'opening': 'OTWIERANIE', 'closing': 'ZAMYKANIE', 
-            'locked': 'ZAMKNIĘTE', 'unlocked': 'OTWARTE', 
+            'on': 'WŁĄCZONE', 'off': 'WYŁĄCZONE',
+            'open': 'OTWARTE', 'closed': 'ZAMKNIĘTE',
+            'opening': 'OTWIERANIE', 'closing': 'ZAMYKANIE',
+            'locked': 'ZAMKNIĘTE', 'unlocked': 'OTWARTE',
             'home': 'W DOMU', 'not_home': 'POZA'
         },
         'en': {
-            'on': 'ON', 'off': 'OFF', 
-            'open': 'OPEN', 'closed': 'CLOSED', 
-            'opening': 'OPENING', 'closing': 'CLOSING', 
-            'locked': 'LOCKED', 'unlocked': 'UNLOCKED', 
+            'on': 'ON', 'off': 'OFF',
+            'open': 'OPEN', 'closed': 'CLOSED',
+            'opening': 'OPENING', 'closing': 'CLOSING',
+            'locked': 'LOCKED', 'unlocked': 'UNLOCKED',
             'home': 'HOME', 'not_home': 'AWAY'
         }
     }
@@ -183,38 +181,38 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs):
 
     try:
         processed_widgets = []
-        
+
         if rows:
             output.append("layout:")
             for row in rows:
-                if not row: 
+                if not row:
                     continue
                 row_parts = []
                 for w in row:
                     if w['type'] == 'spacer':
                         row_parts.append("spacer")
                         continue
-                    
+
                     widget_id = w['id']
                     size_str = w.get('size', '')
                     is_default = False
-                    
+
                     if size_str == f"({grid_params['def_w']}x{grid_params['def_h']})":
                         is_default = True
                     elif size_str == "(2x1)" and grid_params['def_w'] == 2 and grid_params['def_h'] == 1:
                         is_default = True
                     elif size_str == "(1x1)" and grid_params['def_w'] == 1 and grid_params['def_h'] == 1:
                         is_default = True
-                        
+
                     if not is_default and size_str:
                         if not size_str.startswith('('):
                             size_str = f"({size_str})"
                         widget_id += size_str
-                     
+
                     row_parts.append(widget_id)
                     processed_widgets.append(w)
                 output.append(f"  - {', '.join(row_parts)}")
-            
+
             output.append("")
             output.append("# -------------------")
             output.append("# DEFINICJE WIDŻETÓW")
@@ -222,13 +220,13 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs):
             output.append("")
 
             seen_ids = set()
-            
-            for w in processed_widgets: 
+
+            for w in processed_widgets:
                 w_id = w['id']
-                if w_id in seen_ids: 
+                if w_id in seen_ids:
                     continue
                 seen_ids.add(w_id)
-                
+
                 if w_id in custom_defs and not w.get('was_edited', False):
                     output.append(f"{w_id}:")
                     for line in custom_defs[w_id].split('\n'):
@@ -242,9 +240,9 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs):
                 w_icon = normalize_icon_format(w['icon'])
                 i_on = normalize_icon_format(w.get('icon_on'))
                 i_off = normalize_icon_format(w.get('icon_off'))
-                
+
                 output.append(f"{w_id}:")
-                
+
                 if w_type == 'navigate':
                     dash_target = w_id.replace('navigate.', '')
                     nav_icon = w_icon or 'mdi-arrow-right-circle'
@@ -301,7 +299,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs):
                     if i_on: output.append(f"  icon_on: {i_on}")
                     if i_off: output.append(f"  icon_off: {i_off}")
                     if w_icon and not i_on: output.append(f"  icon: {w_icon}")
-                    
+
                     output.append("  low_speed: 33")
                     output.append("  medium_speed: 66")
                     output.append("  high_speed: 100")
@@ -310,7 +308,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs):
                     output.append(f"  widget_style: \"{STYLE_WIDGET}\"")
                     output.append(f"  icon_style_active: \"{STYLE_ICON}\"")
                     output.append(f"  icon_style_inactive: \"{STYLE_ICON}; opacity: 0.5;\"")
-                    
+
                     output.append(f"  speed1_icon_style_active: \"{STYLE_ICON}\"")
                     output.append(f"  speed1_icon_style_inactive: \"{STYLE_ICON}; opacity: 0.3;\"")
                     output.append(f"  speed2_icon_style_active: \"{STYLE_ICON}\"")
@@ -324,7 +322,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs):
                     output.append(f"  title: \"{w_name}\"")
                     if w_icon: output.append(f"  icon: {w_icon}")
                     elif i_on: output.append(f"  icon: {i_on}")
-                    
+
                     output.append(f"  title_style: \"{STYLE_TITLE}\"")
                     output.append(f"  widget_style: \"{STYLE_WIDGET}\"")
                     output.append(f"  icon_style_active: \"{STYLE_ICON}\"")
@@ -340,47 +338,56 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs):
                 elif w_type == 'label':
                     output.append(f"  widget_type: label")
                     output.append(f"  text: \"{w_name}\"")
-                    if w_icon: 
+                    if w_icon:
                         output.append(f"  icon: {w_icon}")
                     output.append(f"  text_style: \"{STYLE_TITLE}\"")
-                
+
                 else:
                     ad_type = w_type
-                    if w_type == 'binary_sensor': ad_type = 'binary_sensor'
-                    if w_type == 'input_boolean': ad_type = 'switch'
-                    if w_type == 'person': ad_type = 'device_tracker'
-                    if w_type == 'light': ad_type = 'switch'
-                    if w_type == 'lock': ad_type = 'lock'
-                    if w_type == 'input_select': ad_type = 'input_select'
-                    if w_type == 'input_number': ad_type = 'input_number'
-                    if w_type == 'script': ad_type = 'script'
-                    if w_type == 'input_button': ad_type = 'script'
-                    
+                    if w_type == 'binary_sensor':
+                        ad_type = 'binary_sensor'
+                    if w_type == 'input_boolean':
+                        ad_type = 'switch'
+                    if w_type == 'person':
+                        ad_type = 'device_tracker'
+                    if w_type == 'light':
+                        ad_type = 'switch'
+                    if w_type == 'lock':
+                        ad_type = 'lock'
+                    if w_type == 'input_select':
+                        ad_type = 'input_select'
+                    if w_type == 'input_number':
+                        ad_type = 'input_number'
+                    if w_type == 'script':
+                        ad_type = 'script'
+                    if w_type == 'input_button':
+                        ad_type = 'script'
+
                     output.append(f"  widget_type: {ad_type}")
                     output.append(f"  entity: {w_id}")
                     output.append(f"  title: \"{w_name}\"")
-                    
+
                     if i_on: output.append(f"  icon_on: {i_on}")
                     if i_off: output.append(f"  icon_off: {i_off}")
-                    
+
                     if ad_type == 'lock':
                         if i_off: output.append(f"  icon_locked: {i_off}")
                         if i_on: output.append(f"  icon_unlocked: {i_on}")
-                    
-                    if w_icon and not i_on: 
+
+                    if w_icon and not i_on:
                         output.append(f"  icon: {w_icon}")
-                    
+
                     output.append(f"  state_text: 1")
                     output.append(f"  title_style: \"{STYLE_TITLE}\"")
                     output.append(f"  text_style: \"{STYLE_TEXT}\"")
                     output.append(f"  widget_style: \"{STYLE_WIDGET}\"")
                     output.append(f"  icon_style_active: \"{STYLE_ICON}\"")
                     output.append(f"  icon_style_inactive: \"{STYLE_ICON}\"")
-                    
-                    if ad_type in ['cover', 'binary_sensor', 'switch', 'light', 'lock']: 
+
+                    if ad_type in ['cover', 'binary_sensor', 'switch', 'light', 'lock']:
                         output.append("  state_map:")
                         if ad_type == 'cover':
-                            for s in ['open', 'closed', 'opening', 'closing']: 
+                            for s in ['open', 'closed', 'opening', 'closing']:
                                 output.append(f"    \"{s}\": \"{dic.get(s, s)}\"")
                         elif ad_type == 'binary_sensor':
                             output.append(f"    \"on\": \"{dic['open']}\"")
@@ -393,7 +400,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs):
                             output.append(f"    \"off\": \"{dic['off']}\"")
 
                 output.append("")
-    except Exception as e: 
+    except Exception as e:
         print(f"❌ Error generating YAML: {e}")
         return f"# ERROR GENERATING YAML: {e}"
 
@@ -428,17 +435,16 @@ def index():
                 save_message = f"✅ Sukces: {msg}"
             else:
                 save_message = f"❌ Błąd: {msg}"
-        
         else:
             try:
                 title = request.form.get('title', 'JoanDashboard')
                 dashboard_slug = title.lower().replace(" ", "_")
                 dashboard_filename = dashboard_slug + ".dash"
-                
+
                 cols = int(request.form.get('grid_columns', '4'))
                 rows_grid = int(request.form.get('grid_rows', '8'))
                 lang = request.form.get('ui_language', 'pl')
-                
+
                 default_size_str = request.form.get('default_widget_size', '2, 1')
                 def_size_parts = default_size_str.split(',')
                 def_w = int(def_size_parts[0].strip())
@@ -446,22 +452,22 @@ def index():
 
                 layout_data = json.loads(request.form.get('layout_data_json', '[]'))
                 custom_defs = json.loads(request.form.get('custom_definitions_json', '{}'))
-                
+
                 grid_params = {
                     'cols': cols,
                     'rows_grid': rows_grid,
                     'def_w': def_w,
                     'def_h': def_h
                 }
-                
+
                 generated_yaml = generate_joan_dash_yaml(
-                    layout_data, 
+                    layout_data,
                     title,
                     grid_params,
                     lang,
                     custom_defs
                 )
-            except Exception as e: 
+            except Exception as e:
                 print(f"❌ Error generating YAML: {e}")
                 generated_yaml = f"# ERROR GENERATING YAML: {e}"
 
