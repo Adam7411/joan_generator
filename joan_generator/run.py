@@ -12,11 +12,11 @@ app = Flask(__name__)
 # -------------------------------------------------------------------------
 TOKEN = os.environ.get('SUPERVISOR_TOKEN')
 API_URL = "http://supervisor/core/api"
-SUPERVISOR_URL = "http://supervisor"  # <--- DODAJ TO
+SUPERVISOR_URL = "http://supervisor"
 TOKEN_SOURCE = "System (Supervisor)"
 
-# Tutaj wpisz slug swojego AppDaemona (folderu z addon_configs)
-APPDAEMON_SLUG = "a0d7b954_appdaemon" # <--- DODAJ TO
+# Slug AppDaemona (konfigurowalny: env APPDAEMON_SLUG lub options.json)
+APPDAEMON_SLUG = os.environ.get('APPDAEMON_SLUG', "a0d7b954_appdaemon")
 
 try:
     options_path = '/data/options.json'
@@ -26,10 +26,12 @@ try:
             manual_token = options.get('manual_token')
             if manual_token and len(manual_token) > 10:
                 TOKEN = manual_token
-                # Adres lokalny HA
                 API_URL = "http://homeassistant:8123/api"
                 TOKEN_SOURCE = "Manual (Konfiguracja)"
                 print(f"🔧 Wykryto manualny token. Przełączam API na: {API_URL}")
+            opt_slug = options.get('appdaemon_slug')
+            if opt_slug:
+                APPDAEMON_SLUG = opt_slug
 except Exception as e: 
     print(f"ℹ️ Info: Nie udało się odczytać pliku opcji: {e}")
 
@@ -72,46 +74,36 @@ def get_ha_entities():
 # FUNKCJA RESTARTU APPDAEMON
 # -------------------------------------------------------------------------
 def restart_appdaemon_addon():
-    """Restartuje AppDaemon używając dostępnego tokena (Manual lub Supervisor)"""
-    
-    # 1. Sprawdź czy mamy JAKIKOLWIEK token (Manualny lub Systemowy)
+    """Restartuje AppDaemon używając dostępnego tokena (Manual lub System)."""
     if not TOKEN:
         return False, "Błąd: Brak tokena API (uzupełnij manual_token w konfiguracji)."
     
-    # Zdefiniuj slug Twojego AppDaemona
-    target_slug = "a0d7b954_appdaemon"
+    target_slug = APPDAEMON_SLUG
     
     headers = {
         "Authorization": f"Bearer {TOKEN}",
         "Content-Type": "application/json"
     }
 
-    # 2. Wybierz metodę restartu w zależności od wykrytego API
-    # Jeśli API_URL zawiera "homeassistant" lub port "8123", to używamy Manual Tokena
+    # Manual token -> API homeassistant:8123; inaczej supervisor
     if "homeassistant" in API_URL or "8123" in API_URL:
-        # Metoda 1: Service Call (dla Manual Token)
         url = f"{API_URL}/services/hassio/addon_restart"
         payload = {"addon": target_slug}
         print(f"🔄 Restart przez Service Call (Manual Token): {url}")
-        
         try:
             response = requests.post(url, headers=headers, json=payload, timeout=30)
         except Exception as e:
             print(f"❌ Wyjątek połączenia: {e}")
             return False, str(e)
-
     else:
-        # Metoda 2: Supervisor API (dla Tokena Systemowego)
         url = f"http://supervisor/addons/{target_slug}/restart"
         print(f"🔄 Restart przez Supervisor API: {url}")
-        
         try:
             response = requests.post(url, headers=headers, timeout=30)
         except Exception as e:
             print(f"❌ Wyjątek połączenia: {e}")
             return False, str(e)
 
-    # 3. Sprawdź wynik
     if response.status_code in [200, 201, 202]:
         print("✅ Restart udany.")
         return True, "Zrestartowano AppDaemon."
@@ -122,7 +114,6 @@ def restart_appdaemon_addon():
 # -------------------------------------------------------------------------
 # 3. STYLE (E-INK OPTIMIZED & TWEAKED)
 # -------------------------------------------------------------------------
-# Style wymuszające wysoki kontrast (czarny na białym) dla ekranów E-Ink
 STYLE_TITLE = "color: #000000; font-size: 20px; font-weight: 700; text-align: center; padding-top: 5px; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif;"
 STYLE_WIDGET = "color: #000000 !important; background-color: #FFFFFF !important;"
 STYLE_TEXT = "color: #000000 !important; font-weight: 700 !important;"
@@ -132,35 +123,22 @@ STYLE_ICON = "color: #000000 !important;"
 STYLE_STATE_TEXT = "color: #000000 !important; font-weight: 700 !important; font-size: 16px !important;"
 
 # -------------------------------------------------------------------------
-# 4. NORMALIZACJA FORMATU IKON DLA APPDAEMON
+# 4. NORMALIZACJA FORMATU IKON
 # -------------------------------------------------------------------------
 def normalize_icon_format(icon_name):
-    """
-    Normalizuje format ikon do formatu 'mdi-nazwa'.
-    """
     if not icon_name: 
         return icon_name
-    
     icon_name = icon_name.strip()
-    
     if icon_name.startswith('mdi:'):
         return 'mdi-' + icon_name[4:]
-    
     if icon_name.startswith('mdi-'):
         return icon_name
-    
     return icon_name
 
 # -------------------------------------------------------------------------
-# 5. LOGIKA GENEROWANIA YAML (Wydzielona funkcja)
+# 5. LOGIKA GENEROWANIA YAML
 # -------------------------------------------------------------------------
 def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs):
-    """
-    Generuje wynikowy plik .dash na podstawie parametrów.
-    grid_params: słownik z kluczami 'cols', 'rows_grid', 'def_w', 'def_h'
-    """
-    
-    # 1. Tłumaczenia (przeniesione do środka lub jako stała globalna)
     TRANS = {
         'pl': {
             'on': 'WŁĄCZONE', 'off': 'WYŁĄCZONE', 
@@ -179,10 +157,8 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs):
     }
     dic = TRANS.get(lang_code, TRANS['pl'])
 
-    # 2. Obliczenia kolumn AppDaemon
     ad_columns = grid_params['cols'] * grid_params['def_w']
 
-    # 3. Budowanie nagłówka
     output = []
     output.append(f"title: {title}")
     output.append("widget_dimensions: [117, 123]")
@@ -206,14 +182,8 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs):
     output.append("")
 
     try:
-        layout_data_str = json.dumps(rows)  # Zakładamy, że rows jest listą, ale używamy do generowania
-        custom_defs_str = json.dumps(custom_defs)
-        
         processed_widgets = []
         
-        # -------------------------------------------------
-        # GENEROWANIE SEKCJI LAYOUT
-        # -------------------------------------------------
         if rows:
             output.append("layout:")
             for row in rows:
@@ -229,7 +199,6 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs):
                     size_str = w.get('size', '')
                     is_default = False
                     
-                    # Sprawdzanie czy rozmiar jest domyślny
                     if size_str == f"({grid_params['def_w']}x{grid_params['def_h']})":
                         is_default = True
                     elif size_str == "(2x1)" and grid_params['def_w'] == 2 and grid_params['def_h'] == 1:
@@ -254,16 +223,12 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs):
 
             seen_ids = set()
             
-            # -------------------------------------------------
-            # GENEROWANIE SZCZEGÓŁÓW KAŻDEGO WIDGETU
-            # -------------------------------------------------
             for w in processed_widgets: 
                 w_id = w['id']
                 if w_id in seen_ids: 
                     continue
                 seen_ids.add(w_id)
                 
-                # Importowane widgety bez edycji zachowują swój kod
                 if w_id in custom_defs and not w.get('was_edited', False):
                     output.append(f"{w_id}:")
                     for line in custom_defs[w_id].split('\n'):
@@ -280,7 +245,6 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs):
                 
                 output.append(f"{w_id}:")
                 
-                # --- NAVIGATE ---
                 if w_type == 'navigate':
                     dash_target = w_id.replace('navigate.', '')
                     nav_icon = w_icon or 'mdi-arrow-right-circle'
@@ -294,7 +258,6 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs):
                     output.append(f"  icon_active_style: \"{STYLE_ICON}\"")
                     output.append(f"  icon_inactive_style: \"{STYLE_ICON}\"")
 
-                # --- SENSOR ---
                 elif w_type == 'sensor':
                     output.append(f"  widget_type: sensor")
                     output.append(f"  entity: {w_id}")
@@ -309,7 +272,6 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs):
                     else:
                         output.append("  precision: 1")
 
-                # --- MEDIA PLAYER ---
                 elif w_type == 'media_player':
                     output.append(f"  widget_type: media_player")
                     output.append(f"  entity: {w_id}")
@@ -322,7 +284,6 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs):
                     output.append("  truncate_name: 20")
                     output.append("  step: 5")
 
-                # --- CLIMATE (TERMOSTAT) ---
                 elif w_type == 'climate':
                     output.append(f"  widget_type: climate")
                     output.append(f"  entity: {w_id}")
@@ -333,7 +294,6 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs):
                     output.append(f"  widget_style: \"{STYLE_WIDGET}\"")
                     output.append(f"  icon_style: \"{STYLE_ICON}\"")
 
-                # --- FAN (WENTYLATOR) ---
                 elif w_type == 'fan':
                     output.append(f"  widget_type: fan")
                     output.append(f"  entity: {w_id}")
@@ -358,7 +318,6 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs):
                     output.append(f"  speed3_icon_style_active: \"{STYLE_ICON}\"")
                     output.append(f"  speed3_icon_style_inactive: \"{STYLE_ICON}; opacity: 0.3;\"")
 
-                # --- SCENE (SCENA) ---
                 elif w_type == 'scene':
                     output.append(f"  widget_type: scene")
                     output.append(f"  entity: {w_id}")
@@ -371,7 +330,6 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs):
                     output.append(f"  icon_style_active: \"{STYLE_ICON}\"")
                     output.append(f"  icon_style_inactive: \"{STYLE_ICON}\"")
 
-                # --- CLOCK ---
                 elif w_type == 'clock':
                     output.append(f"  widget_type: clock")
                     output.append(f"  time_format: 24hr")
@@ -379,7 +337,6 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs):
                     output.append(f"  date_style: \"{STYLE_TEXT}\"")
                     output.append(f"  time_style: \"{STYLE_VALUE}\"")
 
-                # --- LABEL ---
                 elif w_type == 'label':
                     output.append(f"  widget_type: label")
                     output.append(f"  text: \"{w_name}\"")
@@ -387,7 +344,6 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs):
                         output.append(f"  icon: {w_icon}")
                     output.append(f"  text_style: \"{STYLE_TITLE}\"")
                 
-                # --- GENERIC (Switch, Cover, Script, Light, Lock, Input Button etc.) ---
                 else:
                     ad_type = w_type
                     if w_type == 'binary_sensor': ad_type = 'binary_sensor'
@@ -443,6 +399,9 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs):
 
     return "\n".join(output)
 
+# -------------------------------------------------------------------------
+# ROUTY
+# -------------------------------------------------------------------------
 @app.route('/', methods=['GET', 'POST'])
 def index():
     generated_yaml = ""
@@ -451,6 +410,14 @@ def index():
     dashboard_slug = "joandashboard"
     has_token = bool(TOKEN)
     save_message = None
+
+    # Informacje środowiskowe do wyświetlenia na froncie (druga linia statusu)
+    connection_info = {
+        "token_source": TOKEN_SOURCE,
+        "api_url": API_URL,
+        "entity_count": len(ha_entities),
+        "appdaemon_slug": APPDAEMON_SLUG
+    }
 
     if request.method == 'POST':
         action = request.form.get('action', 'generate')
@@ -477,7 +444,6 @@ def index():
                 def_w = int(def_size_parts[0].strip())
                 def_h = int(def_size_parts[1].strip()) if len(def_size_parts) > 1 else 1
 
-                # PRZYGOTOWANIE DANYCH
                 layout_data = json.loads(request.form.get('layout_data_json', '[]'))
                 custom_defs = json.loads(request.form.get('custom_definitions_json', '{}'))
                 
@@ -488,7 +454,6 @@ def index():
                     'def_h': def_h
                 }
                 
-                # WYWOŁANIE FUNKCJI
                 generated_yaml = generate_joan_dash_yaml(
                     layout_data, 
                     title,
@@ -500,7 +465,16 @@ def index():
                 print(f"❌ Error generating YAML: {e}")
                 generated_yaml = f"# ERROR GENERATING YAML: {e}"
 
-    return render_template('index.html', generated_yaml=generated_yaml, entities=ha_entities, filename=dashboard_filename, dash_name=dashboard_slug, has_token=has_token, save_message=save_message)
+    return render_template(
+        'index.html',
+        generated_yaml=generated_yaml,
+        entities=ha_entities,
+        filename=dashboard_filename,
+        dash_name=dashboard_slug,
+        has_token=has_token,
+        save_message=save_message,
+        connection_info=connection_info
+    )
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000, debug=True)
