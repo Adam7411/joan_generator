@@ -9,7 +9,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap" rel="stylesheet">
     
     <script>
-        // 1. Natychmiast ustaw klasę dark-mode (zanim pojawi się białe tło)
         (function() {
             try {
                 const savedTheme = localStorage.getItem('joan_theme') || 'light';
@@ -19,7 +18,6 @@
             } catch(e) { console.error(e); }
         })();
 
-        // 2. Gdy strona się załaduje, ustaw odpowiednią ikonkę (Słońce/Księżyc)
         document.addEventListener("DOMContentLoaded", function() {
             const isDark = document.documentElement.classList.contains('dark-mode');
             const btn = document.getElementById('btn-theme');
@@ -56,9 +54,11 @@
         .header-top { width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         h1 { margin: 0; color: var(--accent); font-size: 28px; font-weight: 900; text-transform: uppercase; }
         
-        .status-bar { width: 100%; padding: 12px; margin-bottom: 20px; border-radius: 6px; font-weight: bold; text-align: center; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .status-bar { width: 100%; padding: 12px; margin-bottom: 8px; border-radius: 6px; font-weight: bold; text-align: center; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .status-ok { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
         .status-err { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+        .status-details { font-size: 0.9em; color: #0d47a1; margin-bottom: 20px; }
 
         .small-status { 
             font-size: 0.6em; color: #009688; font-weight: normal; 
@@ -85,15 +85,12 @@
         .flex-col { flex: 1; min-width: 160px; }
         input, select, textarea { width: 100%; padding: 12px; border: 1px solid var(--border); background: var(--bg-input); color: var(--text-main); border-radius: 4px; box-sizing: border-box; }
         
-        /* --- NOWE STYLE (Wklej to) --- */
         .input-valid { border: 2px solid #4caf50 !important; }
         .input-invalid { border: 2px solid #f44336 !important; }
 
-        /* Jasny motyw */
         html:not(.dark-mode) .input-valid { background-color: #e8f5e9 !important; color: #1b5e20 !important; }
         html:not(.dark-mode) .input-invalid { background-color: #ffebee !important; color: #b71c1c !important; }
 
-        /* Ciemny motyw - ciemniejsze tło walidacji */
         html.dark-mode .input-valid { background-color: #1b5e20 !important; color: #ffffff !important; }
         html.dark-mode .input-invalid { background-color: #7f1d1d !important; color: #ffffff !important; }
 
@@ -119,7 +116,6 @@
 
         .preview-area { background: var(--preview-bg); padding: 20px; border: 2px solid var(--border); border-radius: 8px; overflow-x: auto; min-height: 400px; transition: width 0.3s; }
 
-        /* Grid aligned to widget cells (117 + 8 gap = 125) */
         .eink-row { 
             display: flex; gap: 8px; margin-bottom: 15px; margin-top: 40px; padding: 10px; 
             border: 2px dashed var(--grid-border); border-radius: 6px; min-height: 140px; 
@@ -229,7 +225,6 @@
         }
         .dash-item.active button { background: white; color: #d32f2f; }
 
-        /* --- STYL DLA PICKERA IKON --- */
         .input-group { display: flex; gap: 5px; }
         .picker-btn { cursor: pointer; padding: 0 10px; font-size: 18px; border: 1px solid var(--border); background: var(--bg-section); border-radius: 4px; display: flex; align-items: center; justify-content: center; }
         .picker-btn:hover { background: var(--highlight); }
@@ -276,11 +271,13 @@
                 <i class="mdi mdi-check-circle"></i> 
                 <span data-i18n="status_ok">Połączono z Home Assistant (Token OK)</span>
             </div>
+            <div class="status-details" id="status-details"></div>
             {% else %}
             <div class="status-bar status-err">
                 <i class="mdi mdi-alert-circle"></i> 
                 <span data-i18n="status_err">Brak tokena API! Lista encji jest pusta. Sprawdź konfigurację dodatku.</span>
             </div>
+            <div class="status-details" id="status-details"></div>
             {% endif %}
 
             <div class="header-top">
@@ -313,7 +310,6 @@
                 <div class="flex-col">
                     <label data-i18n="lbl_grid">Układ Siatki (Smart Grid)</label>
                     <select id="grid-preset" onchange="handleGridChange()">
-                        <!-- Opcje są dynamicznie nadpisywane w rebuildGridOptions() -->
                     </select>
                     
                     <div id="custom-grid-settings" style="display:none; margin-top: 10px; gap: 10px; flex-wrap: wrap;">
@@ -454,7 +450,7 @@
                     <span data-i18n="sec_preview">3. Podgląd Dashboardu</span>
                     <span id="status-sec-3" class="small-status"></span>
                 </div>
-                <p style="font-size:0.85em; margin-bottom: 10px; color: #666;">Możesz przeciągać przyciski między wierszami oraz zmieniać ich kolejność w wierszu (Drag&Drop).</p>
+                <p style="font-size:0.85em; margin-bottom: 10px; color: #666;" data-i18n="preview_hint">Możesz przeciągać przyciski między wierszami oraz zmieniać ich kolejność w wierszu (Drag&Drop).</p>
                 <div class="preview-area" id="preview-container"></div>
                 <button type="button" class="btn btn-row" onclick="addRow()" data-i18n="btn_row">+ Dodaj Wiersz</button>
             </div>
@@ -484,7 +480,6 @@
                 </div>
             </div>
 
-        <!-- NOWE MIEJSCE: SEKCJA ZARZĄDZANIA PROJEKTEM (JSON) -->
         <div class="project-box" style="margin-top: 20px;">
             <h3 style="margin-top:0;" data-i18n="sec_backup">📂 Zarządzanie Projektem (Backup na Dysk)</h3>
             <p style="font-size:0.9em; margin-bottom:15px;" data-i18n="backup_desc">
@@ -499,7 +494,7 @@
             <input type="hidden" name="custom_definitions_json" id="custom_defs">
             <div style="display:flex; gap:10px; margin-top:20px;">
                 <button type="button" class="btn btn-gen" style="flex:1;" onclick="submitForm('generate')" data-i18n="btn_gen">GENERUJ KOD .DASH</button>
-                <button type="button" class="btn btn-gen" style="flex:1; background-color: #d32f2f;" onclick="submitForm('restart')">RESTART APPDAEMON</button>
+                <button type="button" class="btn btn-gen" style="flex:1; background-color: #d32f2f;" onclick="submitForm('restart')" data-i18n="btn_restart">RESTART APPDAEMON</button>
             </div>
         </form>
 
@@ -511,16 +506,15 @@
                     <strong data-i18n="save_info_title">Zapisz wygenerowany kod</strong>
                     <span style="font-size:0.9em; font-weight:700; color: var(--text-main);" data-i18n="save_info_path_label">Ścieżka do pliku .dash:</span>
                     <code id="path-code" data-path-template="\addon_configs\appdaemon\dashboards\{{ filename }}">\addon_configs\appdaemon\dashboards\{{ filename }}</code>
-                    <small style="display:block; margin-top:8px; color:#555;" data-i18n="save_info_host_notice">HA_HOST (adres IP/nazwa hosta Home Assistanta) zostanie wstawiony automatycznie przez dodatek.</small>
+                    <small style="display:block; margin-top:8px; color:#555;" data-i18n="save_info_host_notice">Ścieżka jest względna względem HA_HOST (adres IP/nazwa hosta Home Assistanta).</small>
                 </div>
             </div>
-            <button type="button" class="btn btn-copy" onclick="copyToClipboard()">📋 KOPIUJ KOD DO SCHOWKA</button>
+            <button type="button" class="btn btn-copy" onclick="copyToClipboard()" data-i18n="btn_copy">📋 KOPIUJ KOD DO SCHOWKA</button>
             <textarea class="output" id="output-yaml" readonly>{{ generated_yaml }}</textarea>
         </div>
         {% endif %}
     </div>
 
-    <!-- MODAL PICKER IKON -->
     <div id="icon-modal" class="icon-picker-modal">
         <div class="icon-picker-content">
             <div class="ip-header">
@@ -535,6 +529,7 @@
     <script>
         const entitiesData = {{ entities | tojson | safe }};
         const validEntityIds = new Set(entitiesData.map(e => e.id));
+        const connectionInfo = {{ connection_info | tojson | safe }};
         let rows = [[]]; 
         let editIdx = null; 
         let selectedRowIdx = null; 
@@ -566,7 +561,6 @@
         };
 
         const POPULAR_ICONS = [
-    // === DOM / POKOJE ===
     "mdi-home", "mdi-home-outline", "mdi-home-floor-1", "mdi-home-floor-2", "mdi-home-floor-3",
     "mdi-sofa", "mdi-sofa-outline", "mdi-bed", "mdi-bed-outline", "mdi-bunk-bed", "mdi-bunk-bed-outline",
     "mdi-silverware-fork-knife", "mdi-stove", "mdi-fridge", "mdi-fridge-outline", "mdi-microwave",
@@ -575,8 +569,6 @@
     "mdi-desk", "mdi-desk-lamp", "mdi-chair-rolling", "mdi-bookshelf",
     "mdi-baby-carriage", "mdi-baby-face", "mdi-baby-face-outline", "mdi-teddy-bear", "mdi-hanger", "mdi-wardrobe", "mdi-wardrobe-outline",
     "mdi-stairs", "mdi-stairs-up", "mdi-stairs-down", "mdi-elevator", "mdi-elevator-passenger",
-    
-    // === OŚWIETLENIE ===
     "mdi-lightbulb", "mdi-lightbulb-on", "mdi-lightbulb-on-outline", "mdi-lightbulb-outline", "mdi-lightbulb-off", "mdi-lightbulb-off-outline",
     "mdi-lightbulb-group", "mdi-lightbulb-group-outline", "mdi-lightbulb-group-off", "mdi-lightbulb-group-off-outline",
     "mdi-lamp", "mdi-lamps", "mdi-lamps-outline", "mdi-floor-lamp", "mdi-floor-lamp-dual", "mdi-floor-lamp-outline",
@@ -587,16 +579,12 @@
     "mdi-spotlight", "mdi-spotlight-beam", "mdi-light-recessed",
     "mdi-chandelier", "mdi-coach-lamp", "mdi-coach-lamp-variant", "mdi-lava-lamp",
     "mdi-brightness-5", "mdi-brightness-6", "mdi-brightness-7", "mdi-brightness-auto",
-    
-    // === WŁĄCZNIKI / ZASILANIE ===
     "mdi-power", "mdi-power-off", "mdi-power-on", "mdi-power-plug", "mdi-power-plug-off", "mdi-power-plug-outline",
     "mdi-power-socket", "mdi-power-socket-eu", "mdi-power-socket-us", "mdi-power-socket-uk", "mdi-power-socket-de",
     "mdi-toggle-switch", "mdi-toggle-switch-off", "mdi-toggle-switch-outline", "mdi-toggle-switch-off-outline",
     "mdi-electric-switch", "mdi-electric-switch-closed", "mdi-light-switch",
     "mdi-lightning-bolt", "mdi-lightning-bolt-outline", "mdi-flash", "mdi-flash-off", "mdi-flash-outline",
     "mdi-battery", "mdi-battery-charging", "mdi-battery-outline", "mdi-battery-50", "mdi-battery-low", "mdi-battery-alert",
-    
-    // === DRZWI / OKNA / BRAMY ===
     "mdi-door", "mdi-door-open", "mdi-door-closed", "mdi-door-closed-lock",
     "mdi-door-sliding", "mdi-door-sliding-open", "mdi-door-sliding-lock",
     "mdi-gate", "mdi-gate-open", "mdi-gate-arrow-right", "mdi-boom-gate", "mdi-boom-gate-up", "mdi-boom-gate-outline",
@@ -605,8 +593,6 @@
     "mdi-window-shutter", "mdi-window-shutter-open", "mdi-window-shutter-alert", "mdi-window-shutter-cog",
     "mdi-blinds", "mdi-blinds-open", "mdi-blinds-horizontal", "mdi-blinds-horizontal-closed", "mdi-blinds-vertical", "mdi-blinds-vertical-closed",
     "mdi-curtains", "mdi-curtains-closed", "mdi-roller-shade", "mdi-roller-shade-closed",
-    
-    // === ZAMKI / BEZPIECZEŃSTWO ===
     "mdi-lock", "mdi-lock-open", "mdi-lock-open-outline", "mdi-lock-outline", "mdi-lock-off", "mdi-lock-off-outline",
     "mdi-lock-alert", "mdi-lock-alert-outline", "mdi-lock-clock", "mdi-lock-check", "mdi-lock-reset",
     "mdi-shield", "mdi-shield-home", "mdi-shield-home-outline", "mdi-shield-lock", "mdi-shield-lock-outline",
@@ -616,8 +602,6 @@
     "mdi-cctv", "mdi-cctv-off", "mdi-webcam", "mdi-webcam-off", "mdi-video", "mdi-video-off", "mdi-video-outline",
     "mdi-motion-sensor", "mdi-motion-sensor-off", "mdi-run", "mdi-run-fast", "mdi-walk",
     "mdi-eye", "mdi-eye-off", "mdi-eye-outline", "mdi-eye-off-outline",
-    
-    // === KLIMATYZACJA / TEMPERATURA ===
     "mdi-thermometer", "mdi-thermometer-lines", "mdi-thermometer-high", "mdi-thermometer-low", "mdi-thermometer-alert",
     "mdi-temperature-celsius", "mdi-temperature-fahrenheit", "mdi-temperature-kelvin",
     "mdi-thermostat", "mdi-thermostat-box", "mdi-home-thermometer", "mdi-home-thermometer-outline",
@@ -629,8 +613,6 @@
     "mdi-snowflake", "mdi-snowflake-variant", "mdi-snowflake-off", "mdi-snowflake-alert", "mdi-snowflake-thermometer",
     "mdi-water-percent", "mdi-water-thermometer", "mdi-water-thermometer-outline",
     "mdi-sun-thermometer", "mdi-sun-thermometer-outline",
-    
-    // === POGODA ===
     "mdi-weather-sunny", "mdi-weather-night", "mdi-weather-partly-cloudy", "mdi-weather-cloudy",
     "mdi-weather-rainy", "mdi-weather-pouring", "mdi-weather-lightning", "mdi-weather-lightning-rainy",
     "mdi-weather-snowy", "mdi-weather-snowy-heavy", "mdi-weather-snowy-rainy",
@@ -639,8 +621,6 @@
     "mdi-cloud", "mdi-cloud-outline", "mdi-clouds",
     "mdi-sun-wireless", "mdi-sun-wireless-outline", "mdi-moon-waning-crescent", "mdi-moon-full",
     "mdi-umbrella", "mdi-umbrella-outline", "mdi-umbrella-closed", "mdi-umbrella-closed-outline",
-    
-    // === WODA / PODLEWANIE ===
     "mdi-water", "mdi-water-outline", "mdi-water-off", "mdi-water-off-outline",
     "mdi-water-pump", "mdi-water-pump-off", "mdi-water-well", "mdi-water-well-outline",
     "mdi-watering-can", "mdi-watering-can-outline", "mdi-sprinkler", "mdi-sprinkler-variant", "mdi-sprinkler-fire",
@@ -648,8 +628,6 @@
     "mdi-pipe", "mdi-pipe-leak", "mdi-pipe-disconnected", "mdi-pipe-valve",
     "mdi-valve", "mdi-valve-open", "mdi-valve-closed",
     "mdi-faucet", "mdi-faucet-variant", "mdi-water-boiler", "mdi-water-boiler-alert",
-    
-    // === MULTIMEDIA / RTV ===
     "mdi-television", "mdi-television-off", "mdi-television-classic", "mdi-television-classic-off",
     "mdi-monitor", "mdi-monitor-speaker", "mdi-monitor-speaker-off", "mdi-projector", "mdi-projector-screen",
     "mdi-speaker", "mdi-speaker-off", "mdi-speaker-wireless", "mdi-speaker-multiple",
@@ -661,8 +639,6 @@
     "mdi-headphones", "mdi-headphones-off", "mdi-headphones-bluetooth", "mdi-earbuds", "mdi-earbuds-outline",
     "mdi-cast", "mdi-cast-connected", "mdi-cast-off", "mdi-chromecast",
     "mdi-gamepad", "mdi-gamepad-variant", "mdi-controller-classic",
-    
-    // === OSOBY / OBECNOŚĆ ===
     "mdi-account", "mdi-account-outline", "mdi-account-circle", "mdi-account-circle-outline",
     "mdi-account-multiple", "mdi-account-multiple-outline", "mdi-account-group", "mdi-account-group-outline",
     "mdi-account-check", "mdi-account-check-outline", "mdi-account-off", "mdi-account-off-outline",
@@ -673,8 +649,6 @@
     "mdi-car", "mdi-car-outline", "mdi-car-side", "mdi-car-electric", "mdi-car-connected",
     "mdi-motorbike", "mdi-bicycle", "mdi-bike", "mdi-scooter", "mdi-bus", "mdi-train",
     "mdi-map-marker", "mdi-map-marker-outline", "mdi-map-marker-radius", "mdi-crosshairs-gps",
-    
-    // === URZĄDZENIA SMART HOME ===
     "mdi-robot-vacuum", "mdi-robot-vacuum-variant", "mdi-robot-mower", "mdi-robot-mower-outline",
     "mdi-google-home", "mdi-amazon-alexa", "mdi-assistant",
     "mdi-wifi", "mdi-wifi-off", "mdi-wifi-strength-4", "mdi-wifi-strength-3", "mdi-wifi-strength-2", "mdi-wifi-strength-1",
@@ -685,8 +659,6 @@
     "mdi-server", "mdi-server-network", "mdi-nas", "mdi-harddisk",
     "mdi-printer", "mdi-printer-3d", "mdi-printer-wireless",
     "mdi-remote", "mdi-remote-tv", "mdi-remote-off",
-    
-    // === CZUJNIKI ===
     "mdi-smoke-detector", "mdi-smoke-detector-alert", "mdi-smoke-detector-variant", "mdi-smoke-detector-variant-alert",
     "mdi-fire-alert", "mdi-fire-extinguisher",
     "mdi-leak", "mdi-water-alert", "mdi-water-alert-outline",
@@ -695,16 +667,12 @@
     "mdi-counter", "mdi-numeric", "mdi-percent", "mdi-percent-outline",
     "mdi-sine-wave", "mdi-pulse", "mdi-chart-line", "mdi-chart-bar", "mdi-chart-areaspline",
     "mdi-signal", "mdi-signal-variant", "mdi-antenna",
-    
-    // === ENERGIA / SOLAR ===
     "mdi-solar-panel", "mdi-solar-panel-large", "mdi-solar-power", "mdi-solar-power-variant",
     "mdi-wind-turbine", "mdi-transmission-tower",
     "mdi-ev-station", "mdi-ev-plug-type2", "mdi-car-electric-outline",
     "mdi-home-battery", "mdi-home-battery-outline", "mdi-battery-heart", "mdi-battery-heart-outline",
     "mdi-meter-electric", "mdi-meter-electric-outline", "mdi-meter-gas", "mdi-meter-gas-outline",
     "mdi-current-ac", "mdi-current-dc",
-    
-    // === OGRÓD / ZEWNĄTRZ ===
     "mdi-flower", "mdi-flower-outline", "mdi-flower-tulip", "mdi-flower-tulip-outline",
     "mdi-tree", "mdi-tree-outline", "mdi-pine-tree", "mdi-palm-tree",
     "mdi-grass", "mdi-sprout", "mdi-sprout-outline", "mdi-leaf", "mdi-leaf-maple",
@@ -713,16 +681,12 @@
     "mdi-fence", "mdi-fence-electric", "mdi-greenhouse",
     "mdi-mailbox", "mdi-mailbox-open", "mdi-mailbox-outline", "mdi-mailbox-open-outline",
     "mdi-trash-can", "mdi-trash-can-outline", "mdi-recycle", "mdi-recycle-variant",
-    
-    // === CZAS / ZEGAR ===
     "mdi-clock", "mdi-clock-outline", "mdi-clock-digital", "mdi-clock-alert", "mdi-clock-alert-outline",
     "mdi-timer", "mdi-timer-outline", "mdi-timer-sand", "mdi-timer-sand-empty",
     "mdi-alarm", "mdi-alarm-check", "mdi-alarm-off", "mdi-alarm-plus",
     "mdi-calendar", "mdi-calendar-today", "mdi-calendar-clock", "mdi-calendar-check", "mdi-calendar-alert",
     "mdi-calendar-month", "mdi-calendar-week", "mdi-calendar-blank",
     "mdi-update", "mdi-sync", "mdi-refresh", "mdi-reload", "mdi-autorenew",
-    
-    // === NAWIGACJA / STRZAŁKI ===
     "mdi-arrow-up", "mdi-arrow-down", "mdi-arrow-left", "mdi-arrow-right",
     "mdi-arrow-up-bold", "mdi-arrow-down-bold", "mdi-arrow-left-bold", "mdi-arrow-right-bold",
     "mdi-arrow-up-circle", "mdi-arrow-down-circle", "mdi-arrow-left-circle", "mdi-arrow-right-circle",
@@ -732,8 +696,6 @@
     "mdi-menu", "mdi-menu-open", "mdi-menu-up", "mdi-menu-down", "mdi-menu-left", "mdi-menu-right",
     "mdi-dots-horizontal", "mdi-dots-vertical", "mdi-plus", "mdi-minus", "mdi-close",
     "mdi-check", "mdi-check-circle", "mdi-check-circle-outline", "mdi-checkbox-marked", "mdi-checkbox-blank-outline",
-    
-    // === INFORMACJE / STATUSY ===
     "mdi-information", "mdi-information-outline", "mdi-help", "mdi-help-circle", "mdi-help-circle-outline",
     "mdi-alert", "mdi-alert-outline", "mdi-alert-circle", "mdi-alert-circle-outline",
     "mdi-alert-octagon", "mdi-alert-octagram", "mdi-alert-decagram",
@@ -742,8 +704,6 @@
     "mdi-star", "mdi-star-outline", "mdi-star-half", "mdi-star-off",
     "mdi-heart", "mdi-heart-outline", "mdi-heart-off", "mdi-heart-pulse",
     "mdi-emoticon-happy", "mdi-emoticon-sad", "mdi-emoticon-neutral", "mdi-emoticon-cool",
-    
-    // === KSZTAŁTY / SYMBOLE ===
     "mdi-circle", "mdi-circle-outline", "mdi-circle-double", "mdi-circle-half-full",
     "mdi-square", "mdi-square-outline", "mdi-square-rounded", "mdi-square-rounded-outline",
     "mdi-triangle", "mdi-triangle-outline", "mdi-hexagon", "mdi-hexagon-outline",
@@ -798,14 +758,27 @@
                 status_ok: "Połączono z Home Assistant (Token OK)",
                 status_err: "Brak tokena API! Lista encji jest pusta. Sprawdź konfigurację dodatku.",
                 modal_title: "Wybierz Ikonę",
-                // NOWE TŁUMACZENIA:
                 sec_backup: "📂 Zarządzanie Projektem (Backup na Dysk)",
                 backup_desc: "Pobierz plik .json na dysk swojego komputera. To pełna kopia zapasowa, która pozwala przenieść projekt na inne urządzenie.",
                 btn_download: "⬇️ POBIERZ PROJEKT (.JSON)",
                 btn_upload: "⬆️ WGRAJ PROJEKT Z DYSKU",
                 save_info_title: "Zapisz wygenerowany kod",
                 save_info_path_label: "Ścieżka do pliku .dash:",
-                save_info_host_notice: "HA_HOST (adres IP/nazwa hosta Home Assistanta) zostanie wstawiony automatycznie przez dodatek."
+                save_info_host_notice: "Ścieżka jest względna względem HA_HOST (adres IP/nazwa hosta Home Assistanta).",
+                preview_hint: "Możesz przeciągać przyciski między wierszami oraz zmieniać ich kolejność w wierszu (Drag&Drop).",
+                btn_restart: "RESTART APPDAEMON",
+                btn_copy: "📋 KOPIUJ KOD DO SCHOWKA",
+                status_details: "Token: {token_source} • API: {api_url} • Encje: {entity_count} • AppDaemon: {appdaemon_slug}",
+                status_details_missing: "Brak danych połączenia.",
+                import_success: "Pomyślnie zaimportowano układ.",
+                import_error_layout: "Błąd: Nie znaleziono layoutu.",
+                confirm_load_dash: "Wczytać dashboard? Niezapisane zmiany przepadną.",
+                alert_name_required: "Wpisz nazwę!",
+                json_load_success: "Pomyślnie wczytano projekt z pliku JSON!",
+                json_load_error: "Błąd pliku JSON: ",
+                confirm_restart: "Czy na pewno zrestartować AppDaemon?",
+                copy_success: "✅ SKOPIOWANO!",
+                copy_error: "❌ Błąd kopiowania: "
             },
             en: {
                 title_main: "Joan 6 E-Ink Generator",
@@ -850,14 +823,27 @@
                 status_ok: "Connected to Home Assistant (Token OK)",
                 status_err: "No API Token! Entity list is empty. Check add-on configuration.",
                 modal_title: "Select Icon",
-                // NOWE TŁUMACZENIA:
                 sec_backup: "📂 Project Management (Disk Backup)",
                 backup_desc: "Download the .json file to your computer drive. This is a full backup that allows you to transfer the project to another device.",
                 btn_download: "⬇️ DOWNLOAD PROJECT (.JSON)",
                 btn_upload: "⬆️ UPLOAD PROJECT FROM DISK",
                 save_info_title: "Save the generated code",
                 save_info_path_label: "Path to the .dash file:",
-                save_info_host_notice: "HA_HOST (Home Assistant host/IP) will be inserted automatically by the add-on."
+                save_info_host_notice: "Path is relative to HA_HOST (Home Assistant host/IP).",
+                preview_hint: "You can drag buttons between rows and reorder them within a row (Drag & Drop).",
+                btn_restart: "RESTART APPDAEMON",
+                btn_copy: "📋 COPY CODE TO CLIPBOARD",
+                status_details: "Token: {token_source} • API: {api_url} • Entities: {entity_count} • AppDaemon: {appdaemon_slug}",
+                status_details_missing: "No connection info.",
+                import_success: "Import successful.",
+                import_error_layout: "Error: Layout not found.",
+                confirm_load_dash: "Load dashboard? Unsaved changes will be lost.",
+                alert_name_required: "Enter a name!",
+                json_load_success: "Project loaded from JSON!",
+                json_load_error: "JSON file error: ",
+                confirm_restart: "Restart AppDaemon?",
+                copy_success: "✅ COPIED!",
+                copy_error: "❌ Copy error: "
             }
         };
 
@@ -1239,7 +1225,7 @@
         }
 
         function deleteWidget(r, w, e) { e.stopPropagation(); rows[r].splice(w, 1); if(editIdx && editIdx.r === r && editIdx.w === w) cancelEdit(); renderPreview(); }
-        function deleteRow(r) { if(confirm("Usunąć cały wiersz?")) { rows.splice(r, 1); if(rows.length === 0) rows.push([]); if(editIdx && editIdx.r === r) cancelEdit(); if(selectedRowIdx === r) selectedRowIdx = null; renderPreview(); } }
+        function deleteRow(r) { if(confirm(currentLang === 'pl' ? "Usunąć cały wiersz?" : "Delete entire row?")) { rows.splice(r, 1); if(rows.length === 0) rows.push([]); if(editIdx && editIdx.r === r) cancelEdit(); if(selectedRowIdx === r) selectedRowIdx = null; renderPreview(); } }
         
         function moveRow(idx, direction) {
             if (direction === -1 && idx > 0) { [rows[idx], rows[idx - 1]] = [rows[idx - 1], rows[idx]]; if(selectedRowIdx === idx) selectedRowIdx = idx - 1; } 
@@ -1377,7 +1363,6 @@
                 const delBtn = document.createElement('button'); delBtn.className = 'btn-tool btn-del-row'; delBtn.innerText = 'X';
                 delBtn.onclick = (e) => { e.stopPropagation(); deleteRow(rI); }; controls.appendChild(delBtn);
 
-                // Kopiuj / Wklej wiersz
                 const copyBtn = document.createElement('button');
                 copyBtn.className = 'btn-tool';
                 copyBtn.innerText = '📄';
@@ -1459,7 +1444,6 @@
             if(document.getElementById('grid-preset').value === 'custom') applyGrid();
         }
 
-        // Kopiuj / wklej wiersz
         function copyRow(idx) {
             if (!rows || !rows[idx]) return;
             copiedRow = JSON.parse(JSON.stringify(rows[idx]));
@@ -1502,7 +1486,7 @@
             document.getElementById('form-action').value = actionType;
 
             if (actionType === 'restart') {
-                if(!confirm("Czy na pewno zrestartować AppDaemon?")) return;
+                if(!confirm(TRANSLATIONS[currentLang].confirm_restart)) return;
                 document.getElementById('main-form').submit();
                 return;
             }
@@ -1675,14 +1659,14 @@
                 }
             });
             
-            if(newRows.length > 0) { rows = newRows; reflowAllWidgets(); renderPreview(); alert(currentLang === 'pl' ? "Pomyślnie zaimportowano układ." : "Import successful."); } 
-            else alert(currentLang === 'pl' ? "Błąd: Nie znaleziono layoutu." : "Error: Layout not found.");
+            if(newRows.length > 0) { rows = newRows; reflowAllWidgets(); renderPreview(); alert(TRANSLATIONS[currentLang].import_success); } 
+            else alert(TRANSLATIONS[currentLang].import_error_layout);
             setTimeout(() => blockSmart = false, 1000);
         }
 
         function saveToBrowser() {
             const name = document.getElementById('save-dash-name').value;
-            if(!name) return alert("Wpisz nazwę!");
+            if(!name) return alert(TRANSLATIONS[currentLang].alert_name_required);
             
             const saveData = {
                 rows: rows,
@@ -1702,7 +1686,7 @@
             all[name] = saveData;
             localStorage.setItem('joan_dashboards', JSON.stringify(all));
             loadSavedList();
-            alert("Zapisano w przeglądarce: " + name);
+            alert((currentLang === 'pl' ? "Zapisano w przeglądarce: " : "Saved in browser: ") + name);
         }
 
         function loadSavedList() {
@@ -1728,7 +1712,7 @@
         }
         
         function loadFromBrowser(key) {
-            if(!confirm("Wczytać dashboard? Niezapisane zmiany przepadną.")) return;
+            if(!confirm(TRANSLATIONS[currentLang].confirm_load_dash)) return;
             const all = JSON.parse(localStorage.getItem('joan_dashboards') || '{}');
             const data = all[key];
             if(!data) return;
@@ -1752,7 +1736,7 @@
         }
         
         function deleteFromBrowser(key) {
-            if(!confirm("Usunąć?")) return;
+            if(!confirm(currentLang === 'pl' ? "Usunąć?" : "Delete?")) return;
             const all = JSON.parse(localStorage.getItem('joan_dashboards') || '{}');
             delete all[key];
             localStorage.setItem('joan_dashboards', JSON.stringify(all));
@@ -1783,8 +1767,10 @@
                         el.innerText = TRANSLATIONS[l][k];
                     } else if(el.tagName === 'INPUT' && (el.type === 'button' || el.type === 'submit')) {
                         el.value = TRANSLATIONS[l][k];
-                    } else {
+                    } else if(el.tagName === 'BUTTON') {
                         el.innerText = TRANSLATIONS[l][k];
+                    } else {
+                        el.innerHTML = TRANSLATIONS[l][k];
                     }
                 }
             });
@@ -1796,11 +1782,15 @@
                 document.getElementById('w-name').placeholder = "np. Salon";
                 document.getElementById('w-dash').placeholder = "np. main";
                 document.getElementById('save-dash-name').placeholder = "np. Salon";
+                const iconSearch = document.getElementById('icon-search');
+                if (iconSearch) iconSearch.placeholder = "Szukaj ikony...";
             } else {
                 document.getElementById('w-id').placeholder = "e.g. kitchen speaker...";
                 document.getElementById('w-name').placeholder = "e.g. Living Room";
                 document.getElementById('w-dash').placeholder = "e.g. main";
                 document.getElementById('save-dash-name').placeholder = "e.g. Living Room";
+                const iconSearch = document.getElementById('icon-search');
+                if (iconSearch) iconSearch.placeholder = "Search icon...";
             }
             const hintEl = document.getElementById('nav-hint');
             if(hintEl) hintEl.innerHTML = TRANSLATIONS[l].hint_nav;
@@ -1808,6 +1798,8 @@
             toggleInputs(); 
             renderPreview();
             loadSavedList();
+            updateStatusDetails();
+            updateCopyButtonText();
         }
 
         function updateResultPathsToHost() {
@@ -1893,18 +1885,21 @@
             copyText.select();
             copyText.setSelectionRange(0, 99999);
 
+            const btn = document.querySelector('.btn-copy');
+            const successText = TRANSLATIONS[currentLang].copy_success;
             if (navigator.clipboard && window.isSecureContext) {
                 navigator.clipboard.writeText(copyText.value).then(() => {
-                    const btn = document.querySelector('.btn-copy');
-                    const originalText = btn.innerText;
-                    btn.innerText = "✅ SKOPIOWANO!";
-                    btn.style.backgroundColor = "#4caf50";
-                    setTimeout(() => {
-                        btn.innerText = originalText;
-                        btn.style.backgroundColor = "";
-                    }, 2000);
+                    if (btn) {
+                        const originalText = btn.innerText;
+                        btn.innerText = successText;
+                        btn.style.backgroundColor = "#4caf50";
+                        setTimeout(() => {
+                            btn.innerText = originalText;
+                            btn.style.backgroundColor = "";
+                        }, 2000);
+                    }
                 }).catch(err => {
-                    console.error("Błąd API Clipboard, próbuję fallbacku...", err);
+                    console.error("Clipboard API error, fallback...", err);
                     useExecCommandFallback(copyText);
                 });
             } else {
@@ -1915,9 +1910,10 @@
         function useExecCommandFallback(element) {
             try {
                 const successful = document.execCommand('copy');
+                if (!successful) throw new Error("execCommand copy failed");
             }
             catch (err) {
-                alert("❌ Błąd kopiowania: " + err);
+                alert(TRANSLATIONS[currentLang].copy_error + err);
             }
         }
 
@@ -1966,9 +1962,9 @@
                     rebuildGridOptions(document.getElementById('screen-orientation').value);
                     reflowAllWidgets();
                     handleGridChange();
-                    alert("Pomyślnie wczytano projekt z pliku JSON!");
+                    alert(TRANSLATIONS[currentLang].json_load_success);
                 } catch(err) {
-                    alert("Błąd pliku JSON: " + err);
+                    alert(TRANSLATIONS[currentLang].json_load_error + err);
                 }
             };
             reader.readAsText(file);
@@ -1991,6 +1987,28 @@
             handleGridChange();
         }
 
+        function updateStatusDetails() {
+            const el = document.getElementById('status-details');
+            if (!el) return;
+            const t = TRANSLATIONS[currentLang];
+            if (connectionInfo && Object.keys(connectionInfo).length) {
+                el.textContent = t.status_details
+                    .replace('{token_source}', connectionInfo.token_source || '-')
+                    .replace('{api_url}', connectionInfo.api_url || '-')
+                    .replace('{entity_count}', connectionInfo.entity_count ?? '-')
+                    .replace('{appdaemon_slug}', connectionInfo.appdaemon_slug || '-');
+            } else {
+                el.textContent = t.status_details_missing;
+            }
+        }
+
+        function updateCopyButtonText() {
+            const btn = document.querySelector('.btn-copy');
+            if (btn && TRANSLATIONS[currentLang].btn_copy) {
+                btn.innerText = TRANSLATIONS[currentLang].btn_copy;
+            }
+        }
+
         initOrientationAndGrid();
         applyGrid();
         loadSavedList();
@@ -2002,6 +2020,7 @@
         for(const k in saved) { const op = document.createElement('option'); op.value = k; dashDl.appendChild(op); }
 
         updateResultPathsToHost();
+        updateStatusDetails();
     </script>
 </body>
 </html>
