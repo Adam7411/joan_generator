@@ -506,6 +506,14 @@
         {% if generated_yaml %}
         <div class="section" style="margin-top:30px;">
             <div class="section-title" data-i18n="sec_result">Wynikowy Kod YAML</div>
+            <div class="file-path-info">
+                <div class="file-info-block">
+                    <strong data-i18n="save_info_title">Zapisz wygenerowany kod</strong>
+                    <span style="font-size:0.9em; font-weight:700; color: var(--text-main);" data-i18n="save_info_path_label">Ścieżka do pliku .dash:</span>
+                    <code id="path-code" data-path-template="\\[HA_HOST]\\addon_configs\\appdaemon\\dashboards\\{{ filename }}">\\[HA_HOST]\\addon_configs\\appdaemon\\dashboards\\{{ filename }}</code>
+                    <small style="display:block; margin-top:8px; color:#555;" data-i18n="save_info_host_notice">HA_HOST (adres IP/nazwa hosta Home Assistanta) zostanie wstawiony automatycznie przez dodatek.</small>
+                </div>
+            </div>
             <button type="button" class="btn btn-copy" onclick="copyToClipboard()">📋 KOPIUJ KOD DO SCHOWKA</button>
             <textarea class="output" id="output-yaml" readonly>{{ generated_yaml }}</textarea>
         </div>
@@ -794,7 +802,10 @@
                 sec_backup: "📂 Zarządzanie Projektem (Backup na Dysk)",
                 backup_desc: "Pobierz plik .json na dysk swojego komputera. To pełna kopia zapasowa, która pozwala przenieść projekt na inne urządzenie.",
                 btn_download: "⬇️ POBIERZ PROJEKT (.JSON)",
-                btn_upload: "⬆️ WGRAJ PROJEKT Z DYSKU"
+                btn_upload: "⬆️ WGRAJ PROJEKT Z DYSKU",
+                save_info_title: "Zapisz wygenerowany kod",
+                save_info_path_label: "Ścieżka do pliku .dash:",
+                save_info_host_notice: "HA_HOST (adres IP/nazwa hosta Home Assistanta) zostanie wstawiony automatycznie przez dodatek."
             },
             en: {
                 title_main: "Joan 6 E-Ink Generator",
@@ -843,7 +854,10 @@
                 sec_backup: "📂 Project Management (Disk Backup)",
                 backup_desc: "Download the .json file to your computer drive. This is a full backup that allows you to transfer the project to another device.",
                 btn_download: "⬇️ DOWNLOAD PROJECT (.JSON)",
-                btn_upload: "⬆️ UPLOAD PROJECT FROM DISK"
+                btn_upload: "⬆️ UPLOAD PROJECT FROM DISK",
+                save_info_title: "Save the generated code",
+                save_info_path_label: "Path to the .dash file:",
+                save_info_host_notice: "HA_HOST (Home Assistant host/IP) will be inserted automatically by the add-on."
             }
         };
 
@@ -1801,12 +1815,14 @@
             const pathEl = document.getElementById('path-code');
             const linkEl = document.getElementById('dashboard-link');
             if (pathEl) {
-                pathEl.textContent = pathEl.textContent.replace('[HA_HOST]', host);
+                const tmpl = pathEl.dataset.pathTemplate || pathEl.textContent;
+                pathEl.textContent = tmpl.replace('[HA_HOST]', host);
             }
             if (linkEl) {
-                const newHref = linkEl.getAttribute('href').replace('[HA_HOST]', host);
+                const tmplHref = linkEl.getAttribute('data-link-template') || linkEl.getAttribute('href');
+                const newHref = (tmplHref || '').replace('[HA_HOST]', host);
                 linkEl.setAttribute('href', newHref);
-                linkEl.textContent = linkEl.textContent.replace('[HA_HOST]', host);
+                linkEl.textContent = (linkEl.textContent || '').replace('[HA_HOST]', host);
             }
         }
 
