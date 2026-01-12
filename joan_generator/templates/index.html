@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap" rel="stylesheet">
     
     <script>
+        // 1. Natychmiast ustaw klasę dark-mode (zanim pojawi się białe tło)
         (function() {
             try {
                 const savedTheme = localStorage.getItem('joan_theme') || 'light';
@@ -18,6 +19,7 @@
             } catch(e) { console.error(e); }
         })();
 
+        // 2. Gdy strona się załaduje, ustaw odpowiednią ikonkę (Słońce/Księżyc)
         document.addEventListener("DOMContentLoaded", function() {
             const isDark = document.documentElement.classList.contains('dark-mode');
             const btn = document.getElementById('btn-theme');
@@ -58,7 +60,7 @@
         .status-ok { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
         .status-err { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
 
-        .status-details { font-size: 0.9em; color: #0d47a1; margin-bottom: 20px; }
+        .status-details { font-size: 0.85em; color: var(--link-color); margin-bottom: 20px; font-family: monospace; opacity: 0.8; }
 
         .small-status { 
             font-size: 0.6em; color: #009688; font-weight: normal; 
@@ -74,8 +76,10 @@
         
         .file-path-info { background-color: var(--link-bg); color: var(--link-color); border: 1px solid var(--border); padding: 20px; margin-bottom: 20px; border-radius: 6px; font-family: monospace; }
         .file-info-block { margin-bottom: 15px; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 15px; }
-        .file-path-info strong { display: block; margin-bottom: 5px; color: var(--text-main); }
-        .file-path-info code { display: block; background: rgba(255,255,255,0.4); padding: 8px; border-radius: 4px; font-weight: bold; }
+        .file-info-block:last-child { margin-bottom: 0; border-bottom: none; padding-bottom: 0; }
+        
+        .file-path-info strong { display: block; margin-bottom: 5px; color: var(--text-main); font-size: 1.1em; }
+        .file-path-info code { display: block; background: rgba(255,255,255,0.4); padding: 8px; border-radius: 4px; font-weight: bold; margin-top: 5px; color: #000; }
         .link-box { background-color: #ffffff; border: 2px solid var(--accent); padding: 10px; border-radius: 4px; display: inline-block; color: #000000; font-weight: bold; margin-top: 5px; }
         .link-box a { color: #0277bd; text-decoration: underline; font-size: 16px; }
 
@@ -85,12 +89,15 @@
         .flex-col { flex: 1; min-width: 160px; }
         input, select, textarea { width: 100%; padding: 12px; border: 1px solid var(--border); background: var(--bg-input); color: var(--text-main); border-radius: 4px; box-sizing: border-box; }
         
+        /* --- NOWE STYLE --- */
         .input-valid { border: 2px solid #4caf50 !important; }
         .input-invalid { border: 2px solid #f44336 !important; }
 
+        /* Jasny motyw */
         html:not(.dark-mode) .input-valid { background-color: #e8f5e9 !important; color: #1b5e20 !important; }
         html:not(.dark-mode) .input-invalid { background-color: #ffebee !important; color: #b71c1c !important; }
 
+        /* Ciemny motyw */
         html.dark-mode .input-valid { background-color: #1b5e20 !important; color: #ffffff !important; }
         html.dark-mode .input-invalid { background-color: #7f1d1d !important; color: #ffffff !important; }
 
@@ -116,6 +123,7 @@
 
         .preview-area { background: var(--preview-bg); padding: 20px; border: 2px solid var(--border); border-radius: 8px; overflow-x: auto; min-height: 400px; transition: width 0.3s; }
 
+        /* Grid aligned to widget cells (117 + 8 gap = 125) */
         .eink-row { 
             display: flex; gap: 8px; margin-bottom: 15px; margin-top: 40px; padding: 10px; 
             border: 2px dashed var(--grid-border); border-radius: 6px; min-height: 140px; 
@@ -225,6 +233,7 @@
         }
         .dash-item.active button { background: white; color: #d32f2f; }
 
+        /* --- STYL DLA PICKERA IKON --- */
         .input-group { display: flex; gap: 5px; }
         .picker-btn { cursor: pointer; padding: 0 10px; font-size: 18px; border: 1px solid var(--border); background: var(--bg-section); border-radius: 4px; display: flex; align-items: center; justify-content: center; }
         .picker-btn:hover { background: var(--highlight); }
@@ -310,6 +319,7 @@
                 <div class="flex-col">
                     <label data-i18n="lbl_grid">Układ Siatki (Smart Grid)</label>
                     <select id="grid-preset" onchange="handleGridChange()">
+                        <!-- Opcje są dynamicznie nadpisywane w rebuildGridOptions() -->
                     </select>
                     
                     <div id="custom-grid-settings" style="display:none; margin-top: 10px; gap: 10px; flex-wrap: wrap;">
@@ -480,6 +490,7 @@
                 </div>
             </div>
 
+        <!-- NOWE MIEJSCE: SEKCJA ZARZĄDZANIA PROJEKTEM (JSON) -->
         <div class="project-box" style="margin-top: 20px;">
             <h3 style="margin-top:0;" data-i18n="sec_backup">📂 Zarządzanie Projektem (Backup na Dysk)</h3>
             <p style="font-size:0.9em; margin-bottom:15px;" data-i18n="backup_desc">
@@ -501,20 +512,38 @@
         {% if generated_yaml %}
         <div class="section" style="margin-top:30px;">
             <div class="section-title" data-i18n="sec_result">Wynikowy Kod YAML</div>
+            
             <div class="file-path-info">
+                <!-- Step 1: Save -->
                 <div class="file-info-block">
-                    <strong data-i18n="save_info_title">Zapisz wygenerowany kod</strong>
-                    <span style="font-size:0.9em; font-weight:700; color: var(--text-main);" data-i18n="save_info_path_label">Ścieżka do pliku .dash:</span>
+                    <strong data-i18n="res_step1">1. Zapisz wygenerowany kod w pliku:</strong>
                     <code id="path-code" data-path-template="\addon_configs\appdaemon\dashboards\{{ filename }}">\addon_configs\appdaemon\dashboards\{{ filename }}</code>
-                    <small style="display:block; margin-top:8px; color:#555;" data-i18n="save_info_host_notice">Ścieżka jest względna względem HA_HOST (adres IP/nazwa hosta Home Assistanta).</small>
+                </div>
+
+                <!-- Step 2: Restart -->
+                <div class="file-info-block">
+                    <strong data-i18n="res_step2">2. Zrestartuj dodatek AppDaemon:</strong>
+                    <span style="display:block; margin-top:5px; color:#555;" data-i18n="res_step2_desc">(Wymagane, aby nowy plik został wczytany)</span>
+                </div>
+
+                <!-- Step 3: Link -->
+                <div class="file-info-block" style="border-bottom: none;">
+                    <strong data-i18n="res_step3">3. Sprawdź w przeglądarce:</strong>
+                    <div class="link-box">
+                        <a id="dashboard-link" href="#" target="_blank" data-link-template="http://[HA_HOST]:5050/{{ dash_name }}">
+                            http://[HA_HOST]:5050/{{ dash_name }}
+                        </a>
+                    </div>
                 </div>
             </div>
+
             <button type="button" class="btn btn-copy" onclick="copyToClipboard()" data-i18n="btn_copy">📋 KOPIUJ KOD DO SCHOWKA</button>
             <textarea class="output" id="output-yaml" readonly>{{ generated_yaml }}</textarea>
         </div>
         {% endif %}
     </div>
 
+    <!-- MODAL PICKER IKON -->
     <div id="icon-modal" class="icon-picker-modal">
         <div class="icon-picker-content">
             <div class="ip-header">
@@ -561,6 +590,7 @@
         };
 
         const POPULAR_ICONS = [
+    // === DOM / POKOJE ===
     "mdi-home", "mdi-home-outline", "mdi-home-floor-1", "mdi-home-floor-2", "mdi-home-floor-3",
     "mdi-sofa", "mdi-sofa-outline", "mdi-bed", "mdi-bed-outline", "mdi-bunk-bed", "mdi-bunk-bed-outline",
     "mdi-silverware-fork-knife", "mdi-stove", "mdi-fridge", "mdi-fridge-outline", "mdi-microwave",
@@ -569,6 +599,8 @@
     "mdi-desk", "mdi-desk-lamp", "mdi-chair-rolling", "mdi-bookshelf",
     "mdi-baby-carriage", "mdi-baby-face", "mdi-baby-face-outline", "mdi-teddy-bear", "mdi-hanger", "mdi-wardrobe", "mdi-wardrobe-outline",
     "mdi-stairs", "mdi-stairs-up", "mdi-stairs-down", "mdi-elevator", "mdi-elevator-passenger",
+    
+    // === OŚWIETLENIE ===
     "mdi-lightbulb", "mdi-lightbulb-on", "mdi-lightbulb-on-outline", "mdi-lightbulb-outline", "mdi-lightbulb-off", "mdi-lightbulb-off-outline",
     "mdi-lightbulb-group", "mdi-lightbulb-group-outline", "mdi-lightbulb-group-off", "mdi-lightbulb-group-off-outline",
     "mdi-lamp", "mdi-lamps", "mdi-lamps-outline", "mdi-floor-lamp", "mdi-floor-lamp-dual", "mdi-floor-lamp-outline",
@@ -579,12 +611,16 @@
     "mdi-spotlight", "mdi-spotlight-beam", "mdi-light-recessed",
     "mdi-chandelier", "mdi-coach-lamp", "mdi-coach-lamp-variant", "mdi-lava-lamp",
     "mdi-brightness-5", "mdi-brightness-6", "mdi-brightness-7", "mdi-brightness-auto",
+    
+    // === WŁĄCZNIKI / ZASILANIE ===
     "mdi-power", "mdi-power-off", "mdi-power-on", "mdi-power-plug", "mdi-power-plug-off", "mdi-power-plug-outline",
     "mdi-power-socket", "mdi-power-socket-eu", "mdi-power-socket-us", "mdi-power-socket-uk", "mdi-power-socket-de",
     "mdi-toggle-switch", "mdi-toggle-switch-off", "mdi-toggle-switch-outline", "mdi-toggle-switch-off-outline",
     "mdi-electric-switch", "mdi-electric-switch-closed", "mdi-light-switch",
     "mdi-lightning-bolt", "mdi-lightning-bolt-outline", "mdi-flash", "mdi-flash-off", "mdi-flash-outline",
     "mdi-battery", "mdi-battery-charging", "mdi-battery-outline", "mdi-battery-50", "mdi-battery-low", "mdi-battery-alert",
+    
+    // === DRZWI / OKNA / BRAMY ===
     "mdi-door", "mdi-door-open", "mdi-door-closed", "mdi-door-closed-lock",
     "mdi-door-sliding", "mdi-door-sliding-open", "mdi-door-sliding-lock",
     "mdi-gate", "mdi-gate-open", "mdi-gate-arrow-right", "mdi-boom-gate", "mdi-boom-gate-up", "mdi-boom-gate-outline",
@@ -593,6 +629,8 @@
     "mdi-window-shutter", "mdi-window-shutter-open", "mdi-window-shutter-alert", "mdi-window-shutter-cog",
     "mdi-blinds", "mdi-blinds-open", "mdi-blinds-horizontal", "mdi-blinds-horizontal-closed", "mdi-blinds-vertical", "mdi-blinds-vertical-closed",
     "mdi-curtains", "mdi-curtains-closed", "mdi-roller-shade", "mdi-roller-shade-closed",
+    
+    // === ZAMKI / BEZPIECZEŃSTWO ===
     "mdi-lock", "mdi-lock-open", "mdi-lock-open-outline", "mdi-lock-outline", "mdi-lock-off", "mdi-lock-off-outline",
     "mdi-lock-alert", "mdi-lock-alert-outline", "mdi-lock-clock", "mdi-lock-check", "mdi-lock-reset",
     "mdi-shield", "mdi-shield-home", "mdi-shield-home-outline", "mdi-shield-lock", "mdi-shield-lock-outline",
@@ -602,6 +640,8 @@
     "mdi-cctv", "mdi-cctv-off", "mdi-webcam", "mdi-webcam-off", "mdi-video", "mdi-video-off", "mdi-video-outline",
     "mdi-motion-sensor", "mdi-motion-sensor-off", "mdi-run", "mdi-run-fast", "mdi-walk",
     "mdi-eye", "mdi-eye-off", "mdi-eye-outline", "mdi-eye-off-outline",
+    
+    // === KLIMATYZACJA / TEMPERATURA ===
     "mdi-thermometer", "mdi-thermometer-lines", "mdi-thermometer-high", "mdi-thermometer-low", "mdi-thermometer-alert",
     "mdi-temperature-celsius", "mdi-temperature-fahrenheit", "mdi-temperature-kelvin",
     "mdi-thermostat", "mdi-thermostat-box", "mdi-home-thermometer", "mdi-home-thermometer-outline",
@@ -613,6 +653,8 @@
     "mdi-snowflake", "mdi-snowflake-variant", "mdi-snowflake-off", "mdi-snowflake-alert", "mdi-snowflake-thermometer",
     "mdi-water-percent", "mdi-water-thermometer", "mdi-water-thermometer-outline",
     "mdi-sun-thermometer", "mdi-sun-thermometer-outline",
+    
+    // === POGODA ===
     "mdi-weather-sunny", "mdi-weather-night", "mdi-weather-partly-cloudy", "mdi-weather-cloudy",
     "mdi-weather-rainy", "mdi-weather-pouring", "mdi-weather-lightning", "mdi-weather-lightning-rainy",
     "mdi-weather-snowy", "mdi-weather-snowy-heavy", "mdi-weather-snowy-rainy",
@@ -621,6 +663,8 @@
     "mdi-cloud", "mdi-cloud-outline", "mdi-clouds",
     "mdi-sun-wireless", "mdi-sun-wireless-outline", "mdi-moon-waning-crescent", "mdi-moon-full",
     "mdi-umbrella", "mdi-umbrella-outline", "mdi-umbrella-closed", "mdi-umbrella-closed-outline",
+    
+    // === WODA / PODLEWANIE ===
     "mdi-water", "mdi-water-outline", "mdi-water-off", "mdi-water-off-outline",
     "mdi-water-pump", "mdi-water-pump-off", "mdi-water-well", "mdi-water-well-outline",
     "mdi-watering-can", "mdi-watering-can-outline", "mdi-sprinkler", "mdi-sprinkler-variant", "mdi-sprinkler-fire",
@@ -628,6 +672,8 @@
     "mdi-pipe", "mdi-pipe-leak", "mdi-pipe-disconnected", "mdi-pipe-valve",
     "mdi-valve", "mdi-valve-open", "mdi-valve-closed",
     "mdi-faucet", "mdi-faucet-variant", "mdi-water-boiler", "mdi-water-boiler-alert",
+    
+    // === MULTIMEDIA / RTV ===
     "mdi-television", "mdi-television-off", "mdi-television-classic", "mdi-television-classic-off",
     "mdi-monitor", "mdi-monitor-speaker", "mdi-monitor-speaker-off", "mdi-projector", "mdi-projector-screen",
     "mdi-speaker", "mdi-speaker-off", "mdi-speaker-wireless", "mdi-speaker-multiple",
@@ -639,6 +685,8 @@
     "mdi-headphones", "mdi-headphones-off", "mdi-headphones-bluetooth", "mdi-earbuds", "mdi-earbuds-outline",
     "mdi-cast", "mdi-cast-connected", "mdi-cast-off", "mdi-chromecast",
     "mdi-gamepad", "mdi-gamepad-variant", "mdi-controller-classic",
+    
+    // === OSOBY / OBECNOŚĆ ===
     "mdi-account", "mdi-account-outline", "mdi-account-circle", "mdi-account-circle-outline",
     "mdi-account-multiple", "mdi-account-multiple-outline", "mdi-account-group", "mdi-account-group-outline",
     "mdi-account-check", "mdi-account-check-outline", "mdi-account-off", "mdi-account-off-outline",
@@ -649,6 +697,8 @@
     "mdi-car", "mdi-car-outline", "mdi-car-side", "mdi-car-electric", "mdi-car-connected",
     "mdi-motorbike", "mdi-bicycle", "mdi-bike", "mdi-scooter", "mdi-bus", "mdi-train",
     "mdi-map-marker", "mdi-map-marker-outline", "mdi-map-marker-radius", "mdi-crosshairs-gps",
+    
+    // === URZĄDZENIA SMART HOME ===
     "mdi-robot-vacuum", "mdi-robot-vacuum-variant", "mdi-robot-mower", "mdi-robot-mower-outline",
     "mdi-google-home", "mdi-amazon-alexa", "mdi-assistant",
     "mdi-wifi", "mdi-wifi-off", "mdi-wifi-strength-4", "mdi-wifi-strength-3", "mdi-wifi-strength-2", "mdi-wifi-strength-1",
@@ -659,6 +709,8 @@
     "mdi-server", "mdi-server-network", "mdi-nas", "mdi-harddisk",
     "mdi-printer", "mdi-printer-3d", "mdi-printer-wireless",
     "mdi-remote", "mdi-remote-tv", "mdi-remote-off",
+    
+    // === CZUJNIKI ===
     "mdi-smoke-detector", "mdi-smoke-detector-alert", "mdi-smoke-detector-variant", "mdi-smoke-detector-variant-alert",
     "mdi-fire-alert", "mdi-fire-extinguisher",
     "mdi-leak", "mdi-water-alert", "mdi-water-alert-outline",
@@ -667,12 +719,16 @@
     "mdi-counter", "mdi-numeric", "mdi-percent", "mdi-percent-outline",
     "mdi-sine-wave", "mdi-pulse", "mdi-chart-line", "mdi-chart-bar", "mdi-chart-areaspline",
     "mdi-signal", "mdi-signal-variant", "mdi-antenna",
+    
+    // === ENERGIA / SOLAR ===
     "mdi-solar-panel", "mdi-solar-panel-large", "mdi-solar-power", "mdi-solar-power-variant",
     "mdi-wind-turbine", "mdi-transmission-tower",
     "mdi-ev-station", "mdi-ev-plug-type2", "mdi-car-electric-outline",
     "mdi-home-battery", "mdi-home-battery-outline", "mdi-battery-heart", "mdi-battery-heart-outline",
     "mdi-meter-electric", "mdi-meter-electric-outline", "mdi-meter-gas", "mdi-meter-gas-outline",
     "mdi-current-ac", "mdi-current-dc",
+    
+    // === OGRÓD / ZEWNĄTRZ ===
     "mdi-flower", "mdi-flower-outline", "mdi-flower-tulip", "mdi-flower-tulip-outline",
     "mdi-tree", "mdi-tree-outline", "mdi-pine-tree", "mdi-palm-tree",
     "mdi-grass", "mdi-sprout", "mdi-sprout-outline", "mdi-leaf", "mdi-leaf-maple",
@@ -681,12 +737,16 @@
     "mdi-fence", "mdi-fence-electric", "mdi-greenhouse",
     "mdi-mailbox", "mdi-mailbox-open", "mdi-mailbox-outline", "mdi-mailbox-open-outline",
     "mdi-trash-can", "mdi-trash-can-outline", "mdi-recycle", "mdi-recycle-variant",
+    
+    // === CZAS / ZEGAR ===
     "mdi-clock", "mdi-clock-outline", "mdi-clock-digital", "mdi-clock-alert", "mdi-clock-alert-outline",
     "mdi-timer", "mdi-timer-outline", "mdi-timer-sand", "mdi-timer-sand-empty",
     "mdi-alarm", "mdi-alarm-check", "mdi-alarm-off", "mdi-alarm-plus",
     "mdi-calendar", "mdi-calendar-today", "mdi-calendar-clock", "mdi-calendar-check", "mdi-calendar-alert",
     "mdi-calendar-month", "mdi-calendar-week", "mdi-calendar-blank",
     "mdi-update", "mdi-sync", "mdi-refresh", "mdi-reload", "mdi-autorenew",
+    
+    // === NAWIGACJA / STRZAŁKI ===
     "mdi-arrow-up", "mdi-arrow-down", "mdi-arrow-left", "mdi-arrow-right",
     "mdi-arrow-up-bold", "mdi-arrow-down-bold", "mdi-arrow-left-bold", "mdi-arrow-right-bold",
     "mdi-arrow-up-circle", "mdi-arrow-down-circle", "mdi-arrow-left-circle", "mdi-arrow-right-circle",
@@ -696,6 +756,8 @@
     "mdi-menu", "mdi-menu-open", "mdi-menu-up", "mdi-menu-down", "mdi-menu-left", "mdi-menu-right",
     "mdi-dots-horizontal", "mdi-dots-vertical", "mdi-plus", "mdi-minus", "mdi-close",
     "mdi-check", "mdi-check-circle", "mdi-check-circle-outline", "mdi-checkbox-marked", "mdi-checkbox-blank-outline",
+    
+    // === INFORMACJE / STATUSY ===
     "mdi-information", "mdi-information-outline", "mdi-help", "mdi-help-circle", "mdi-help-circle-outline",
     "mdi-alert", "mdi-alert-outline", "mdi-alert-circle", "mdi-alert-circle-outline",
     "mdi-alert-octagon", "mdi-alert-octagram", "mdi-alert-decagram",
@@ -704,6 +766,8 @@
     "mdi-star", "mdi-star-outline", "mdi-star-half", "mdi-star-off",
     "mdi-heart", "mdi-heart-outline", "mdi-heart-off", "mdi-heart-pulse",
     "mdi-emoticon-happy", "mdi-emoticon-sad", "mdi-emoticon-neutral", "mdi-emoticon-cool",
+    
+    // === KSZTAŁTY / SYMBOLE ===
     "mdi-circle", "mdi-circle-outline", "mdi-circle-double", "mdi-circle-half-full",
     "mdi-square", "mdi-square-outline", "mdi-square-rounded", "mdi-square-rounded-outline",
     "mdi-triangle", "mdi-triangle-outline", "mdi-hexagon", "mdi-hexagon-outline",
@@ -762,9 +826,14 @@
                 backup_desc: "Pobierz plik .json na dysk swojego komputera. To pełna kopia zapasowa, która pozwala przenieść projekt na inne urządzenie.",
                 btn_download: "⬇️ POBIERZ PROJEKT (.JSON)",
                 btn_upload: "⬆️ WGRAJ PROJEKT Z DYSKU",
-                save_info_title: "Zapisz wygenerowany kod",
-                save_info_path_label: "Ścieżka do pliku .dash:",
+                
+                // --- SEKCJA WYNIKÓW ---
+                res_step1: "1. Zapisz wygenerowany kod w pliku:",
+                res_step2: "2. Zrestartuj dodatek AppDaemon:",
+                res_step2_desc: "(Wymagane, aby nowy plik został wczytany)",
+                res_step3: "3. Sprawdź w przeglądarce:",
                 save_info_host_notice: "Ścieżka jest względna względem HA_HOST (adres IP/nazwa hosta Home Assistanta).",
+                
                 preview_hint: "Możesz przeciągać przyciski między wierszami oraz zmieniać ich kolejność w wierszu (Drag&Drop).",
                 btn_restart: "RESTART APPDAEMON",
                 btn_copy: "📋 KOPIUJ KOD DO SCHOWKA",
@@ -827,9 +896,14 @@
                 backup_desc: "Download the .json file to your computer drive. This is a full backup that allows you to transfer the project to another device.",
                 btn_download: "⬇️ DOWNLOAD PROJECT (.JSON)",
                 btn_upload: "⬆️ UPLOAD PROJECT FROM DISK",
-                save_info_title: "Save the generated code",
-                save_info_path_label: "Path to the .dash file:",
+                
+                // --- RESULT SECTION ---
+                res_step1: "1. Save generated code to file:",
+                res_step2: "2. Restart AppDaemon add-on:",
+                res_step2_desc: "(Required for the new file to load)",
+                res_step3: "3. Check in browser:",
                 save_info_host_notice: "Path is relative to HA_HOST (Home Assistant host/IP).",
+                
                 preview_hint: "You can drag buttons between rows and reorder them within a row (Drag & Drop).",
                 btn_restart: "RESTART APPDAEMON",
                 btn_copy: "📋 COPY CODE TO CLIPBOARD",
