@@ -2185,7 +2185,9 @@
         // Restore language: first check localStorage, then backend, default to 'pl'
         const savedLang = localStorage.getItem('joan_lang');
         const backendLang = '{{ current_lang|default("pl") }}';
-        const initialLang = savedLang || (backendLang === 'en' ? 'en' : 'pl');
+        // Validate savedLang to ensure it's a supported language
+        const validLang = (savedLang === 'en' || savedLang === 'pl') ? savedLang : null;
+        const initialLang = validLang || (backendLang === 'en' ? 'en' : 'pl');
         setLang(initialLang);
         const iconDl = document.getElementById('icon-list');
         POPULAR_ICONS.forEach(i => { const op = document.createElement('option'); op.value = i; iconDl.appendChild(op); });
