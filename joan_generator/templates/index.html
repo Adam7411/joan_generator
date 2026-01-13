@@ -468,6 +468,19 @@
             background-color: rgba(0, 0, 0, 0.02);
         }
 
+        .battery-warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+            padding: 10px;
+            margin-top: 5px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
         .eink-row.row-selected {
             border: 2px solid #2196f3;
             background-color: rgba(33, 150, 243, 0.1);
@@ -980,6 +993,9 @@
                         <input list="entity-list" id="w-id" placeholder="np. switch.salon"
                             oninput="searchEntities(this.value); validateEntityInput(this.value)" autocomplete="off">
                         <datalist id="entity-list"></datalist>
+                        <div class="battery-warning" data-i18n="battery_warning">⚠️ <b>Uwaga Bateria:</b> Unikaj encji
+                            zmieniających się bardzo często (np. napięcie w czasie rzeczywistym). Częste odświeżanie
+                            ekranu szybko zużywa baterię!</div>
                     </div>
                     <div class="flex-col hidden" id="grp-nav" style="flex: 100%;">
                         <label data-i18n="lbl_dash_name">Nazwa Dashboardu (target)</label>
@@ -1508,6 +1524,7 @@
                 btn_download_file: "⬇️ POBIERZ PLIK .DASH",
                 status_details: "Token: {token_source} • API: {api_url} • Encje: {entity_count} • AppDaemon: {appdaemon_slug}",
                 status_details_missing: "Brak danych połączenia.",
+                battery_warning: "⚠️ <b>Uwaga Bateria:</b> Unikaj encji zmieniających się bardzo często (np. napięcie w czasie rzeczywistym). Częste odświeżanie ekranu szybko zużywa baterię!",
                 import_success: "Pomyślnie zaimportowano układ.",
                 import_error_layout: "Błąd: Nie znaleziono layoutu.",
                 confirm_load_dash: "Wczytać dashboard? Niezapisane zmiany przepadną.",
@@ -1585,6 +1602,7 @@
                 btn_download_file: "⬇️ DOWNLOAD .DASH FILE",
                 status_details: "Token: {token_source} • API: {api_url} • Entities: {entity_count} • AppDaemon: {appdaemon_slug}",
                 status_details_missing: "No connection info.",
+                battery_warning: "⚠️ <b>Battery Tip:</b> Avoid entities that update very frequently (e.g., real-time power/voltage). Frequent screen refreshes drain the battery quickly!",
                 import_success: "Import successful.",
                 import_error_layout: "Error: Layout not found.",
                 confirm_load_dash: "Load dashboard? Unsaved changes will be lost.",
