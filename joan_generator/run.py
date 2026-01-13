@@ -371,6 +371,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
 
                 elif w_type == 'fan':
                     output.append(f"  widget_type: fan")
+                    output.append("  fan_type: percentage")
                     output.append(f"  entity: {w_id}")
                     output.append(f"  title: \"{w_name}\"")
                     if i_on: output.append(f"  icon_on: {i_on}")
