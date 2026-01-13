@@ -149,6 +149,13 @@ STYLE_WIDGET = "color: #000000 !important; background-color: #FFFFFF !important;
 STYLE_TEXT = "color: #000000 !important; font-weight: 700 !important;"
 STYLE_VALUE = "color: #000000 !important; font-size: 54px !important; font-weight: 700 !important; padding-top: 60px !important; line-height: 1.1 !important; display: inline-block !important;"
 STYLE_UNIT = "color: #000000 !important; padding-top: 60px !important; display: inline-block !important;"
+
+# Style dla dużych wartości sensorów (powyżej 999. 9)
+STYLE_VALUE_MEDIUM = "color: #000000 !important; font-size: 40px !important; font-weight: 700 !important; padding-top: 60px !important; line-height: 1.1 !important; display: inline-block !important;"
+STYLE_VALUE_SMALL = "color: #000000 !important; font-size:  32px !important; font-weight:  700 !important; padding-top: 60px !important; line-height: 1.1 !important; display: inline-block !important;"
+STYLE_UNIT_MEDIUM = "color: #000000 !important; font-size:  14px !important; padding-top: 60px !important; display: inline-block !important;"
+STYLE_UNIT_SMALL = "color: #000000 !important; font-size: 12px !important; padding-top: 60px !important; display: inline-block !important;"
+
 STYLE_ICON = "color: #000000 !important;"
 STYLE_STATE_TEXT = "color: #000000 !important; font-weight: 700 !important; font-size: 16px !important;"
 
@@ -168,6 +175,29 @@ def normalize_icon_format(icon_name):
 # -------------------------------------------------------------------------
 # 5. LOGIKA GENEROWANIA YAML
 # -------------------------------------------------------------------------
+def get_sensor_style_for_value(entity_id, entities_data):
+    """
+    Sprawdza aktualną wartość sensora i zwraca odpowiedni styl. 
+    - Wartości >= 10000 -> bardzo mała czcionka
+    - Wartości >= 1000 -> średnia czcionka  
+    - Wartości < 1000 -> standardowa czcionka
+    """
+    for ent in entities_data:
+        if ent.get('id') == entity_id:
+            state = ent.get('state', '')
+            try:
+                # Zamień przecinek na kropkę (format polski)
+                state_clean = state.replace(',', '. ').replace(' ', '')
+                value = float(state_clean)
+                if value >= 10000:
+                    return 'small'
+                elif value >= 1000:
+                    return 'medium'
+            except (ValueError, TypeError):
+                pass
+            break
+    return 'normal'
+
 def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs):
     TRANS = {
         'pl': {
@@ -294,8 +324,19 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs):
                     output.append(f"  title: \"{w_name}\"")
                     output.append(f"  title_style: \"{STYLE_TITLE}\"")
                     output.append(f"  text_style: \"{STYLE_TEXT}\"")
-                    output.append(f"  value_style: \"{STYLE_VALUE}\"")
-                    output.append(f"  unit_style: \"{STYLE_UNIT}\"")
+                    
+                    # Dynamiczny styl dla dużych wartości
+                    size_hint = w.get('value_size_hint', 'normal')
+                    if size_hint == 'small':
+                        output.append(f"  value_style: \"{STYLE_VALUE_SMALL}\"")
+                        output.append(f"  unit_style: \"{STYLE_UNIT_SMALL}\"")
+                    elif size_hint == 'medium': 
+                        output.append(f"  value_style: \"{STYLE_VALUE_MEDIUM}\"")
+                        output.append(f"  unit_style: \"{STYLE_UNIT_MEDIUM}\"")
+                    else:
+                        output.append(f"  value_style: \"{STYLE_VALUE}\"")
+                        output.append(f"  unit_style: \"{STYLE_UNIT}\"")
+                    
                     output.append(f"  widget_style: \"{STYLE_WIDGET}\"")
                     if any(k in w_id for k in ['battery', 'bateria', 'level']):
                         output.append("  precision: 0")
@@ -448,7 +489,6 @@ def index():
     dashboard_filename = "joandashboard.dash"
     dashboard_slug = "joandashboard"
     has_token = bool(TOKEN)
-    save_message = None
 
     # Informacje środowiskowe do wyświetlenia na froncie (druga linia statusu)
     connection_info = {
