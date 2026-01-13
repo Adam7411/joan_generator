@@ -416,15 +416,6 @@
                             <option value="(3x2)" data-i18n="size_3x2">3x2 (Ogromny)</option>
                         </select>
                     </div>
-                    <div class="flex-col" id="grp-value-size" style="display: none;">
-                        <label data-i18n="lbl_value_size">Rozmiar czcionki wartości</label>
-                        <select id="w-value-size">
-                            <option value="auto" data-i18n="opt_auto">Auto (na podstawie wartości)</option>
-                            <option value="normal" data-i18n="opt_normal">Normalny (54px)</option>
-                            <option value="medium" data-i18n="opt_medium">Średni (40px) - dla 1000+</option>
-                            <option value="small" data-i18n="opt_small">Mały (32px) - dla 10000+</option>
-                        </select>
-                    </div>
                     <div class="flex-col" style="flex: 0 0 60px;">
                         <label data-i18n="lbl_preview">Podgląd</label>
                         <div style="display:flex; justify-content:center;">
@@ -860,12 +851,7 @@
                 json_load_error: "Błąd pliku JSON: ",
                 confirm_restart: "Czy na pewno zrestartować AppDaemon?",
                 copy_success: "✅ SKOPIOWANO!",
-                copy_error: "❌ Błąd kopiowania: ",
-                lbl_value_size: "Rozmiar czcionki wartości",
-                opt_auto: "Auto (na podstawie wartości)",
-                opt_normal: "Normalny (54px)",
-                opt_medium: "Średni (40px) - dla 1000+",
-                opt_small: "Mały (32px) - dla 10000+"
+                copy_error: "❌ Błąd kopiowania: "
             },
             en: {
                 title_main: "Joan 6 E-Ink Generator",
@@ -936,12 +922,7 @@
                 json_load_error: "JSON file error: ",
                 confirm_restart: "Restart AppDaemon?",
                 copy_success: "✅ COPIED!",
-                copy_error: "❌ Copy error: ",
-                lbl_value_size: "Value font size",
-                opt_auto: "Auto (based on value)",
-                opt_normal: "Normal (54px)",
-                opt_medium: "Medium (40px) - for 1000+",
-                opt_small: "Small (32px) - for 10000+"
+                copy_error: "❌ Copy error: "
             }
         };
 
@@ -1015,18 +996,27 @@
                 
                 if (SMART_MAP[domain]) conf = { ...SMART_MAP[domain] };
                 
+                // Rozszerzone mapowanie device_class (na podstawie visionect_joan integration)
                 if (dClass === 'garage') conf = { type: 'cover', size: '(2x1)', iconOn: 'mdi-garage-open', iconOff: 'mdi-garage' };
                 if (dClass === 'door') conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-door-open', iconOff: 'mdi-door-closed' };
+                if (dClass === 'window') conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-window-open-variant', iconOff: 'mdi-window-closed-variant' };
                 if (dClass === 'battery') conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-battery' };
                 if (dClass === 'temperature') conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-thermometer' };
                 if (dClass === 'humidity') conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-water-percent' };
+                if (dClass === 'moisture' || dClass === 'water' || dClass === 'leak') conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-water-alert', iconOff: 'mdi-water' };
+                if (dClass === 'smoke') conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-smoke-detector-alert', iconOff: 'mdi-smoke-detector' };
+                if (dClass === 'gas') conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-fire-alert', iconOff: 'mdi-fire' };
+                if (dClass === 'safety') conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-shield-check', iconOff: 'mdi-shield-off' };
+                if (dClass === 'timestamp') conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-clock' };
+                if (dClass === 'power' || dClass === 'plug') conf = { type: 'switch', size: '(2x1)', iconOn: 'mdi-power-plug', iconOff: 'mdi-power-plug-off' };
             }
             
             const check = (keywords) => keywords.some(k => inputNorm.includes(k));
             
-            if (check(['glosnik', 'speaker', 'audio', 'tv', 'odtwarzacz', 'radio'])) conf = SMART_MAP['media_player'];
-            else if (check(['swiatlo', 'lamp', 'kinkiet', 'led', 'zarowka'])) conf = SMART_MAP['light'];
-            else if (check(['gniazdko', 'wtyczka', 'outlet', 'plug'])) conf = SMART_MAP['switch'];
+            // Rozszerzone rozpoznawanie na podstawie słów kluczowych (z visionect_joan integration)
+            if (check(['glosnik', 'speaker', 'audio', 'tv', 'odtwarzacz', 'radio', 'telewizor'])) conf = SMART_MAP['media_player'];
+            else if (check(['swiatlo', 'lamp', 'kinkiet', 'led', 'zarowka', 'lampa'])) conf = SMART_MAP['light'];
+            else if (check(['gniazdko', 'wtyczka', 'outlet', 'plug', 'socket'])) conf = SMART_MAP['switch'];
             else if (check(['wiatrak', 'wentylator', 'fan', 'nawiew', 'cyrkulacja'])) conf = SMART_MAP['fan'];
             else if (check(['scena', 'tryb', 'kino', 'wieczór', 'scene'])) conf = SMART_MAP['scene'];
             else if (check(['przycisk', 'button', 'klik'])) conf = SMART_MAP['input_button'];
@@ -1035,8 +1025,28 @@
             else if (check(['zamek', 'lock', 'rygiel'])) conf = SMART_MAP['lock'];
             else if (check(['drzwi', 'door', 'furtka'])) conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-door-open', iconOff: 'mdi-door-closed' };
             else if (check(['okno', 'window'])) conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-window-open-variant', iconOff: 'mdi-window-closed-variant' };
-            else if (check(['temp', 'therm'])) conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-thermometer' };
-            else if (check(['wilg', 'humid'])) conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-water-percent' };
+            else if (check(['temp', 'therm', 'temperatur'])) conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-thermometer' };
+            else if (check(['wilg', 'humid', 'wilgotnosc'])) conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-water-percent' };
+            else if (check(['ruch', 'motion', 'pirs'])) conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-motion-sensor', iconOff: 'mdi-motion-sensor-off' };
+            else if (check(['pralka', 'washing', 'washer'])) conf = { type: 'switch', size: '(2x1)', iconOn: 'mdi-washing-machine', iconOff: 'mdi-washing-machine' };
+            else if (check(['suszarka', 'dryer', 'tumble'])) conf = { type: 'switch', size: '(2x1)', iconOn: 'mdi-tumble-dryer', iconOff: 'mdi-tumble-dryer' };
+            else if (check(['zmywarka', 'dishwasher'])) conf = { type: 'switch', size: '(2x1)', iconOn: 'mdi-dishwasher', iconOff: 'mdi-dishwasher' };
+            else if (check(['piec', 'kociol', 'boiler', 'heating'])) conf = { type: 'switch', size: '(2x1)', iconOn: 'mdi-fire', iconOff: 'mdi-fire-off' };
+            else if (check(['klima', 'ac', 'klimatyzacja', 'air-conditioner'])) conf = SMART_MAP['climate'];
+            else if (check(['rekuperator', 'reku', 'air-filter'])) conf = { type: 'switch', size: '(2x1)', iconOn: 'mdi-air-filter', iconOff: 'mdi-air-filter' };
+            else if (check(['grzejnik', 'radiator'])) conf = { type: 'switch', size: '(2x1)', iconOn: 'mdi-radiator', iconOff: 'mdi-radiator-off' };
+            else if (check(['zawor', 'valve'])) conf = { type: 'switch', size: '(2x1)', iconOn: 'mdi-valve-open', iconOff: 'mdi-valve-closed' };
+            else if (check(['pompa', 'pump'])) conf = { type: 'switch', size: '(2x1)', iconOn: 'mdi-pump', iconOff: 'mdi-pump-off' };
+            else if (check(['hydrofor', 'woda', 'water'])) conf = { type: 'switch', size: '(2x1)', iconOn: 'mdi-water-pump', iconOff: 'mdi-water-pump-off' };
+            else if (check(['gaz', 'gas'])) conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-fire-alert', iconOff: 'mdi-fire' };
+            else if (check(['dym', 'smoke'])) conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-smoke-detector-alert', iconOff: 'mdi-smoke-detector' };
+            else if (check(['zalanie', 'wyciek', 'leak', 'moisture'])) conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-water-alert', iconOff: 'mdi-water' };
+            else if (check(['alarm', 'bezpieczenstwo', 'safety'])) conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-shield-check', iconOff: 'mdi-shield-off' };
+            else if (check(['energia', 'energy', 'fazy', 'power'])) conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-lightning-bolt' };
+            else if (check(['licznik', 'counter'])) conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-counter' };
+            else if (check(['czas', 'time', 'timestamp'])) conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-clock' };
+            else if (check(['kamera', 'camera'])) conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-camera' };
+            else if (check(['wifi', 'zigbee'])) conf = { type: 'sensor', size: '(2x1)', icon: inputNorm.includes('zigbee') ? 'mdi-zigbee' : 'mdi-wifi' };
             
             const currentGrid = document.getElementById('grid-preset').value;
             if ((currentGrid === '3x8' || currentGrid === '4x8' || currentGrid === '4x6') && conf.size === '(1x1)' && conf.type !== 'binary_sensor') {
@@ -1205,7 +1215,7 @@
                 icon: document.getElementById('w-icon').value,
                 icon_on: document.getElementById('w-icon-on').value,
                 icon_off: document.getElementById('w-icon-off').value,
-                value_size_hint: document.getElementById('w-value-size')?.value || 'auto'
+                was_edited: true
             };
             if(w.type === 'navigate') w.id = 'navigate.' + w.dash;
             if(w.type === 'spacer') w.id = 'spacer';
@@ -1267,12 +1277,6 @@
                 document.getElementById('div-icon-on').style.display = 'none';
                 document.getElementById('div-icon-off').style.display = 'none';
             }
-
-            // Pokaż opcję rozmiaru czcionki tylko dla sensorów
-            const grpValueSize = document.getElementById('grp-value-size');
-            if (grpValueSize) {
-                grpValueSize.style.display = (type === 'sensor') ? 'block' : 'none';
-            }
         }
 
         function updateTitleLimit() {
@@ -1306,7 +1310,6 @@
             document.getElementById('w-icon').value = data.icon || '';
             document.getElementById('w-icon-on').value = data.icon_on || '';
             document.getElementById('w-icon-off').value = data.icon_off || '';
-            document.getElementById('w-value-size').value = data.value_size_hint || 'auto';
             manualIconOverride = true;
             updateIconPreview(); updateTitleLimit();
             setTimeout(() => blockSmart = false, 500); renderPreview(); 
@@ -1326,7 +1329,6 @@
         function clearForm() {
             document.getElementById('w-id').value = ''; document.getElementById('w-name').value = '';
             document.getElementById('w-icon').value = ''; document.getElementById('w-icon-on').value = ''; document.getElementById('w-icon-off').value = '';
-            document.getElementById('w-value-size').value = 'auto';
             manualIconOverride = false; updateIconPreview(); updateTitleLimit();
         }
 
@@ -2155,6 +2157,7 @@
                     .replace('{appdaemon_slug}', connectionInfo.appdaemon_slug || '-');
             } else {
                 el.textContent = t.status_details_missing;
+            }
         }
 
         function updateCopyButtonText() {
@@ -2185,4 +2188,3 @@
     </script>
 </body>
 </html>
-</code></pre>
