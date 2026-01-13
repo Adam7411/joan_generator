@@ -82,10 +82,6 @@ def save_dash_file(filename, content):
     
     Funkcja informuje użytkownika, że musi zapisać plik ręcznie.
     """
-    # W Home Assistant Supervisor, addony mają dostęp tylko do swoich własnych katalogów
-    # Nie możemy bezpośrednio zapisać do katalogu innego addona
-    
-    # Zwracamy informację z instrukcją ręcznego zapisu
     network_path = f"\\\\[HA_IP]\\addon_configs\\{APPDAEMON_SLUG}\\dashboards\\{filename}"
     unix_path = f"/addon_configs/{APPDAEMON_SLUG}/dashboards/{filename}"
     
@@ -147,7 +143,7 @@ def restart_appdaemon_addon():
 STYLE_TITLE = "color: #000000; font-size: 20px; font-weight: 700; text-align: center; padding-top: 5px; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif;"
 STYLE_WIDGET = "color: #000000 !important; background-color: #FFFFFF !important;"
 STYLE_TEXT = "color: #000000 !important; font-weight: 700 !important;"
-STYLE_VALUE = "color: #000000 !important; font-size: 54px !important; font-weight: 700 !important; padding-top: 60px !important; line-height: 1.1 !important; display: inline-block !important;"
+STYLE_VALUE_TEMPLATE = "color: #000000 !important; font-size: {px}px !important; font-weight: 700 !important; padding-top: 60px !important; line-height: 1.1 !important; display: inline-block !important;"
 STYLE_UNIT = "color: #000000 !important; padding-top: 60px !important; display: inline-block !important;"
 STYLE_ICON = "color: #000000 !important;"
 STYLE_STATE_TEXT = "color: #000000 !important; font-weight: 700 !important; font-size: 16px !important;"
@@ -156,16 +152,47 @@ def build_value_style(size_hint: str) -> str:
     """
     Zwraca styl dla wartości na podstawie wskazówki:
     - normal -> 54px
-    - medium -> 40px (dla ~1000+)
-    - small  -> 32px (dla ~10000+)
-    - auto   -> 54px (domyślnie, bez heurystyk runtime)
+    - medium -> 48px
+    - small  -> 40px
+    - auto   -> 54px (zostanie dobrane wcześniej)
     """
-    base_px = {
+    px = {
         "normal": 54,
-        "medium": 40,
-        "small": 32
+        "medium": 48,
+        "small": 40
     }.get(size_hint, 54)
-    return STYLE_VALUE.replace("54px", f"{base_px}px")
+    return STYLE_VALUE_TEMPLATE.format(px=px)
+
+def pick_auto_size(value_size_hint: str, entity_id: str, entities_map: dict) -> str:
+    """
+    Jeśli hint == 'auto', na podstawie bieżącej wartości encji dobiera rozmiar:
+      >10000  -> small (40px)
+      >1000   -> medium (48px)
+      else    -> normal (54px)
+    Jeśli nie uda się sparsować liczby, fallback na długość tekstu:
+      len>9 -> small, len>6 -> medium, inaczej normal.
+    """
+    if value_size_hint != "auto":
+        return value_size_hint
+
+    ent = entities_map.get(entity_id)
+    if ent:
+        raw = str(ent.get("state", "")).replace(",", ".").strip()
+        try:
+            val = float(raw)
+            if abs(val) > 10000:
+                return "small"
+            if abs(val) > 1000:
+                return "medium"
+            return "normal"
+        except Exception:
+            pass
+        length = len(raw)
+        if length > 9:
+            return "small"
+        if length > 6:
+            return "medium"
+    return "normal"
 
 # -------------------------------------------------------------------------
 # 4. NORMALIZACJA FORMATU IKON
@@ -183,7 +210,7 @@ def normalize_icon_format(icon_name):
 # -------------------------------------------------------------------------
 # 5. LOGIKA GENEROWANIA YAML
 # -------------------------------------------------------------------------
-def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs):
+def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, entities_map):
     TRANS = {
         'pl': {
             'on': 'WŁĄCZONE', 'off': 'WYŁĄCZONE',
@@ -288,6 +315,8 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs):
                 i_on = normalize_icon_format(w.get('icon_on'))
                 i_off = normalize_icon_format(w.get('icon_off'))
                 value_size_hint = w.get('value_size_hint', 'auto')
+                # Obliczamy realny hint (auto -> medium/small/normal wg stanu)
+                final_size_hint = pick_auto_size(value_size_hint, w_id, entities_map)
 
                 output.append(f"{w_id}:")
 
@@ -310,7 +339,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs):
                     output.append(f"  title: \"{w_name}\"")
                     output.append(f"  title_style: \"{STYLE_TITLE}\"")
                     output.append(f"  text_style: \"{STYLE_TEXT}\"")
-                    output.append(f"  value_style: \"{build_value_style(value_size_hint)}\"")
+                    output.append(f"  value_style: \"{build_value_style(final_size_hint)}\"")
                     output.append(f"  unit_style: \"{STYLE_UNIT}\"")
                     output.append(f"  widget_style: \"{STYLE_WIDGET}\"")
                     if any(k in w_id for k in ['battery', 'bateria', 'level']):
@@ -381,7 +410,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs):
                     output.append(f"  time_format: 24hr")
                     output.append(f"  show_seconds: 0")
                     output.append(f"  date_style: \"{STYLE_TEXT}\"")
-                    output.append(f"  time_style: \"{STYLE_VALUE}\"")
+                    output.append(f"  time_style: \"{STYLE_VALUE_TEMPLATE.format(px=54)}\"")
 
                 elif w_type == 'label':
                     output.append(f"  widget_type: label")
@@ -461,12 +490,12 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs):
 def index():
     generated_yaml = ""
     ha_entities = get_ha_entities()
+    entities_map = {e['id']: e for e in ha_entities}
     dashboard_filename = "joandashboard.dash"
     dashboard_slug = "joandashboard"
     has_token = bool(TOKEN)
     save_message = None
 
-    # Informacje środowiskowe do wyświetlenia na froncie (druga linia statusu)
     connection_info = {
         "token_source": TOKEN_SOURCE,
         "api_url": API_URL,
@@ -474,7 +503,6 @@ def index():
         "appdaemon_slug": APPDAEMON_SLUG
     }
 
-    # Pobieramy aktualny język z formularza (jeśli był wysłany) lub ustawiamy domyślny
     current_ui_lang = request.form.get('ui_language', 'pl') if request.method == 'POST' else request.args.get('lang', 'pl')
 
     if request.method == 'POST':
@@ -487,11 +515,9 @@ def index():
             else:
                 save_message = f"❌ Błąd: {msg}"
         elif action == 'download_file':
-            # Pobierz plik .dash do zapisania lokalnie
             yaml_content = request.form.get('yaml_content', '')
             filename = request.form.get('filename', 'joandashboard.dash')
             if yaml_content and filename:
-                # Tworzymy plik w pamięci i zwracamy jako download
                 file_obj = io.BytesIO(yaml_content.encode('utf-8'))
                 return send_file(
                     file_obj,
@@ -510,7 +536,7 @@ def index():
                 cols = int(request.form.get('grid_columns', '4'))
                 rows_grid = int(request.form.get('grid_rows', '8'))
                 lang = request.form.get('ui_language', 'pl')
-                current_ui_lang = lang  # Zapamiętujemy język dla UI
+                current_ui_lang = lang
 
                 default_size_str = request.form.get('default_widget_size', '2, 1')
                 def_size_parts = default_size_str.split(',')
@@ -532,7 +558,8 @@ def index():
                     title,
                     grid_params,
                     lang,
-                    custom_defs
+                    custom_defs,
+                    entities_map
                 )
             except Exception as e:
                 print(f"❌ Error generating YAML: {e}")
