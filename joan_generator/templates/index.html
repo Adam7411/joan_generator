@@ -517,7 +517,7 @@
                 <!-- Step 1: Save -->
                 <div class="file-info-block">
                     <strong data-i18n="res_step1">1. Zapisz wygenerowany kod w pliku:</strong>
-                    <code id="path-code" data-path-template="\addon_configs\appdaemon\dashboards\{{ filename }}">\addon_configs\appdaemon\dashboards\{{ filename }}</code>
+                    <code id="path-code" data-path-template="[HA_IP]\addon_configs\{{ connection_info.appdaemon_slug }}\dashboards\{{ filename }}">[HA_IP]\addon_configs\{{ connection_info.appdaemon_slug }}\dashboards\{{ filename }}</code>
                 </div>
 
                 <!-- Step 2: Restart -->
@@ -530,14 +530,17 @@
                 <div class="file-info-block" style="border-bottom: none;">
                     <strong data-i18n="res_step3">3. Sprawdź w przeglądarce:</strong>
                     <div class="link-box">
-                        <a id="dashboard-link" href="#" target="_blank" data-link-template="http://[HA_HOST]:5050/{{ dash_name }}">
-                            http://[HA_HOST]:5050/{{ dash_name }}
+                        <a id="dashboard-link" href="#" target="_blank" data-link-template="http://[HA_IP]:5050/{{ dash_name }}">
+                            http://[HA_IP]:5050/{{ dash_name }}
                         </a>
                     </div>
                 </div>
             </div>
 
-            <button type="button" class="btn btn-copy" onclick="copyToClipboard()" data-i18n="btn_copy">📋 KOPIUJ KOD DO SCHOWKA</button>
+            <div style="display:flex; gap:10px; margin-bottom:10px;">
+                <button type="button" class="btn btn-copy" onclick="copyToClipboard()" data-i18n="btn_copy" style="flex:1;">📋 KOPIUJ KOD DO SCHOWKA</button>
+                <button type="button" class="btn btn-save-file" onclick="saveDashFile()" data-i18n="btn_save_file" style="flex:1; background-color: #4caf50;">💾 ZAPISZ PLIK .DASH</button>
+            </div>
             <textarea class="output" id="output-yaml" readonly>{{ generated_yaml }}</textarea>
         </div>
         {% endif %}
@@ -837,6 +840,7 @@
                 preview_hint: "Możesz przeciągać przyciski między wierszami oraz zmieniać ich kolejność w wierszu (Drag&Drop).",
                 btn_restart: "RESTART APPDAEMON",
                 btn_copy: "📋 KOPIUJ KOD DO SCHOWKA",
+                btn_save_file: "💾 ZAPISZ PLIK .DASH",
                 status_details: "Token: {token_source} • API: {api_url} • Encje: {entity_count} • AppDaemon: {appdaemon_slug}",
                 status_details_missing: "Brak danych połączenia.",
                 import_success: "Pomyślnie zaimportowano układ.",
@@ -847,7 +851,10 @@
                 json_load_error: "Błąd pliku JSON: ",
                 confirm_restart: "Czy na pewno zrestartować AppDaemon?",
                 copy_success: "✅ SKOPIOWANO!",
-                copy_error: "❌ Błąd kopiowania: "
+                copy_error: "❌ Błąd kopiowania: ",
+                save_file_error_empty: "Brak kodu do zapisania. Najpierw wygeneruj kod.",
+                save_file_success: "✅ Plik zapisany pomyślnie!",
+                save_file_error: "❌ Błąd zapisu pliku: "
             },
             en: {
                 title_main: "Joan 6 E-Ink Generator",
@@ -907,6 +914,7 @@
                 preview_hint: "You can drag buttons between rows and reorder them within a row (Drag & Drop).",
                 btn_restart: "RESTART APPDAEMON",
                 btn_copy: "📋 COPY CODE TO CLIPBOARD",
+                btn_save_file: "💾 SAVE .DASH FILE",
                 status_details: "Token: {token_source} • API: {api_url} • Entities: {entity_count} • AppDaemon: {appdaemon_slug}",
                 status_details_missing: "No connection info.",
                 import_success: "Import successful.",
@@ -917,7 +925,10 @@
                 json_load_error: "JSON file error: ",
                 confirm_restart: "Restart AppDaemon?",
                 copy_success: "✅ COPIED!",
-                copy_error: "❌ Copy error: "
+                copy_error: "❌ Copy error: ",
+                save_file_error_empty: "No code to save. Generate code first.",
+                save_file_success: "✅ File saved successfully!",
+                save_file_error: "❌ File save error: "
             }
         };
 
@@ -1877,18 +1888,25 @@
         }
 
         function updateResultPathsToHost() {
-            const host = window.location.hostname || '[HA_HOST]';
+            // Pobiera IP/Hosta z paska adresu przeglądarki
+            const host = window.location.hostname || '[HA_IP]';
             const pathEl = document.getElementById('path-code');
             const linkEl = document.getElementById('dashboard-link');
+            
             if (pathEl) {
-                const tmpl = pathEl.dataset.pathTemplate || pathEl.textContent;
-                pathEl.textContent = tmpl.replace('[HA_HOST]', host);
+                // Pobiera szablon i podmienia [HA_IP] na wykryty host
+                let tmpl = pathEl.dataset.pathTemplate || pathEl.textContent;
+                pathEl.textContent = tmpl.replace('[HA_IP]', host);
             }
+            
             if (linkEl) {
                 const tmplHref = linkEl.getAttribute('data-link-template') || linkEl.getAttribute('href');
-                const newHref = (tmplHref || '').replace('[HA_HOST]', host);
+                // Podmienia [HA_IP] w linku (np. http://[HA_IP]:5050/...)
+                const newHref = (tmplHref || '').replace('[HA_IP]', host);
                 linkEl.setAttribute('href', newHref);
-                linkEl.textContent = (linkEl.textContent || '').replace('[HA_HOST]', host);
+                
+                // Podmienia tekst linku
+                linkEl.textContent = (linkEl.textContent || '').replace('[HA_IP]', host);
             }
         }
 
@@ -1991,6 +2009,42 @@
             }
         }
 
+        function saveDashFile() {
+            const yamlTextarea = document.getElementById("output-yaml");
+            if (!yamlTextarea || !yamlTextarea.value) {
+                alert(TRANSLATIONS[currentLang].save_file_error_empty || "Brak kodu do zapisania. Najpierw wygeneruj kod.");
+                return;
+            }
+
+            const pathCode = document.getElementById("path-code");
+            const filename = pathCode ? pathCode.textContent.split('\\').pop() : "joandashboard.dash";
+            
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '';
+            
+            const actionInput = document.createElement('input');
+            actionInput.type = 'hidden';
+            actionInput.name = 'action';
+            actionInput.value = 'save_file';
+            form.appendChild(actionInput);
+            
+            const yamlInput = document.createElement('input');
+            yamlInput.type = 'hidden';
+            yamlInput.name = 'yaml_content';
+            yamlInput.value = yamlTextarea.value;
+            form.appendChild(yamlInput);
+            
+            const filenameInput = document.createElement('input');
+            filenameInput.type = 'hidden';
+            filenameInput.name = 'filename';
+            filenameInput.value = filename;
+            form.appendChild(filenameInput);
+            
+            document.body.appendChild(form);
+            form.submit();
+        }
+
         function downloadProject() {
             const data = {
                 rows: rows,
@@ -2080,6 +2134,10 @@
             const btn = document.querySelector('.btn-copy');
             if (btn && TRANSLATIONS[currentLang].btn_copy) {
                 btn.innerText = TRANSLATIONS[currentLang].btn_copy;
+            }
+            const saveBtn = document.querySelector('.btn-save-file');
+            if (saveBtn && TRANSLATIONS[currentLang].btn_save_file) {
+                saveBtn.innerText = TRANSLATIONS[currentLang].btn_save_file;
             }
         }
 
