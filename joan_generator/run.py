@@ -144,6 +144,7 @@ STYLE_TITLE = "color: #000000; font-size: 20px; font-weight: 700; text-align: ce
 STYLE_WIDGET = "color: #000000 !important; background-color: #FFFFFF !important;"
 STYLE_TEXT = "color: #000000 !important; font-weight: 700 !important;"
 STYLE_VALUE_TEMPLATE = "color: #000000 !important; font-size: {px}px !important; font-weight: 700 !important; padding-top: 60px !important; line-height: 1.1 !important; display: inline-block !important;"
+STYLE_GAUGE_VALUE = "color: #000000 !important; font-size: 30px !important; font-weight: 700 !important; line-height: 1.1 !important; display: inline-block !important;"
 STYLE_UNIT = "color: #000000 !important; padding-top: 60px !important; display: inline-block !important;"
 STYLE_ICON = "color: #000000 !important;"
 STYLE_STATE_TEXT = "color: #000000 !important; font-weight: 700 !important; font-size: 16px !important;"
@@ -415,14 +416,21 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append(f"  widget_type: gauge")
                     output.append(f"  entity: {w_id}")
                     output.append(f"  title: \"{w_name}\"")
-                    output.append(f"  min: 0")
-                    output.append(f"  max: 100")
+                    output.append(f"  title: \"{w_name}\"")
+                    
+                    g_min = w.get('min', '').strip()
+                    g_max = w.get('max', '').strip()
+                    if not g_min: g_min = "0"
+                    if not g_max: g_max = "100"
+
+                    output.append(f"  min: {g_min}")
+                    output.append(f"  max: {g_max}")
                     output.append(f"  low_color: gray")
                     output.append(f"  med_color: dimgray")
                     output.append(f"  high_color: black")
                     output.append(f"  title_style: \"{STYLE_TITLE}\"")
                     output.append(f"  widget_style: \"{STYLE_WIDGET}\"")
-                    output.append(f"  value_style: \"{build_value_style(final_size_hint)}\"")
+                    output.append(f"  value_style: \"{STYLE_GAUGE_VALUE}\"")
                     
                     # Try to fetch unit from map
                     unit = ""
