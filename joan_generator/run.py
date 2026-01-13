@@ -371,17 +371,11 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
 
                 elif w_type == 'fan':
                     output.append(f"  widget_type: fan")
-                    output.append("  fan_type: percentage")
-                    output.append("  low_speed: 33")
-                    output.append("  medium_speed: 66")
-                    output.append("  high_speed: 100")
                     output.append(f"  entity: {w_id}")
                     output.append(f"  title: \"{w_name}\"")
                     if i_on: output.append(f"  icon_on: {i_on}")
                     if i_off: output.append(f"  icon_off: {i_off}")
                     if w_icon and not i_on: output.append(f"  icon: {w_icon}")
-
-
 
                     output.append(f"  title_style: \"{STYLE_TITLE}\"")
                     output.append(f"  widget_style: \"{STYLE_WIDGET}\"")
