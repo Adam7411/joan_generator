@@ -1872,6 +1872,16 @@
         
         function setLang(l) {
             currentLang = l;
+            
+            // Save language to localStorage for persistence
+            localStorage.setItem('joan_lang', l);
+            
+            // Update hidden form field for server-side persistence
+            const langInput = document.getElementById('input-lang');
+            if (langInput) {
+                langInput.value = l;
+            }
+            
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const k = el.getAttribute('data-i18n');
                 if(TRANSLATIONS[l][k]) {
@@ -2155,6 +2165,7 @@
                     .replace('{appdaemon_slug}', connectionInfo.appdaemon_slug || '-');
             } else {
                 el.textContent = t.status_details_missing;
+            }
         }
 
         function updateCopyButtonText() {
@@ -2171,9 +2182,11 @@
         initOrientationAndGrid();
         applyGrid();
         loadSavedList();
-        // Ustawiamy język na podstawie wartości z backendu (jeśli dostępna)
+        // Restore language: first check localStorage, then backend, default to 'pl'
+        const savedLang = localStorage.getItem('joan_lang');
         const backendLang = '{{ current_lang|default("pl") }}';
-        setLang(backendLang === 'en' ? 'en' : 'pl');
+        const initialLang = savedLang || (backendLang === 'en' ? 'en' : 'pl');
+        setLang(initialLang);
         const iconDl = document.getElementById('icon-list');
         POPULAR_ICONS.forEach(i => { const op = document.createElement('option'); op.value = i; iconDl.appendChild(op); });
         const dashDl = document.getElementById('nav-dash-suggestions');
