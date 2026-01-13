@@ -999,7 +999,7 @@
                     </div>
                     <div class="flex-col" style="flex: 1;">
                         <label data-i18n="lbl_type">Typ Widgetu</label>
-                        <select id="w-type" onchange="toggleInputs()">
+                        <select id="w-type" onchange="handleTypeChange()">
                             <option value="switch" data-i18n="opt_switch">Switch / Light</option>
                             <option value="cover" data-i18n="opt_cover">Cover / Gate</option>
                             <option value="sensor" data-i18n="opt_sensor">Sensor</option>
@@ -1923,6 +1923,16 @@
             const i3 = document.getElementById('w-icon-off').value;
             const final = i1 || i2 || i3 || 'mdi-help-circle-outline';
             document.getElementById('preview-icon').className = `mdi ${final} icon-preview`;
+        }
+
+        function handleTypeChange() {
+            toggleInputs();
+            const type = document.getElementById('w-type').value;
+            if (type === 'gauge') {
+                document.getElementById('w-icon').value = 'mdi-gauge';
+                manualIconOverride = true;
+                updateIconPreview();
+            }
         }
 
         function toggleInputs() {
