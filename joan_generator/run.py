@@ -152,6 +152,21 @@ STYLE_UNIT = "color: #000000 !important; padding-top: 60px !important; display: 
 STYLE_ICON = "color: #000000 !important;"
 STYLE_STATE_TEXT = "color: #000000 !important; font-weight: 700 !important; font-size: 16px !important;"
 
+def build_value_style(size_hint: str) -> str:
+    """
+    Zwraca styl dla wartości na podstawie wskazówki:
+    - normal -> 54px
+    - medium -> 40px (dla ~1000+)
+    - small  -> 32px (dla ~10000+)
+    - auto   -> 54px (domyślnie, bez heurystyk runtime)
+    """
+    base_px = {
+        "normal": 54,
+        "medium": 40,
+        "small": 32
+    }.get(size_hint, 54)
+    return STYLE_VALUE.replace("54px", f"{base_px}px")
+
 # -------------------------------------------------------------------------
 # 4. NORMALIZACJA FORMATU IKON
 # -------------------------------------------------------------------------
@@ -269,9 +284,10 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs):
 
                 w_type = w['type']
                 w_name = w['name']
-                w_icon = normalize_icon_format(w['icon'])
+                w_icon = normalize_icon_format(w.get('icon'))
                 i_on = normalize_icon_format(w.get('icon_on'))
                 i_off = normalize_icon_format(w.get('icon_off'))
+                value_size_hint = w.get('value_size_hint', 'auto')
 
                 output.append(f"{w_id}:")
 
@@ -294,7 +310,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs):
                     output.append(f"  title: \"{w_name}\"")
                     output.append(f"  title_style: \"{STYLE_TITLE}\"")
                     output.append(f"  text_style: \"{STYLE_TEXT}\"")
-                    output.append(f"  value_style: \"{STYLE_VALUE}\"")
+                    output.append(f"  value_style: \"{build_value_style(value_size_hint)}\"")
                     output.append(f"  unit_style: \"{STYLE_UNIT}\"")
                     output.append(f"  widget_style: \"{STYLE_WIDGET}\"")
                     if any(k in w_id for k in ['battery', 'bateria', 'level']):
