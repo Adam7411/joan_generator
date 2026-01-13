@@ -411,6 +411,20 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append(f"  date_style: \"{STYLE_TEXT}\"")
                     output.append(f"  time_style: \"{STYLE_VALUE_TEMPLATE.format(px=54)}\"")
 
+                elif w_type == 'gauge':
+                    output.append(f"  widget_type: gauge")
+                    output.append(f"  entity: {w_id}")
+                    output.append(f"  title: \"{w_name}\"")
+                    output.append(f"  min: 0")
+                    output.append(f"  max: 100")
+                    output.append(f"  low_color: gray")
+                    output.append(f"  med_color: dimgray")
+                    output.append(f"  high_color: black")
+                    output.append(f"  title_style: \"{STYLE_TITLE}\"")
+                    output.append(f"  widget_style: \"{STYLE_WIDGET}\"")
+                    output.append(f"  value_style: \"{build_value_style(final_size_hint)}\"")
+                    output.append(f"  unit_style: \"{STYLE_UNIT}\"")
+
                 elif w_type == 'label':
                     output.append(f"  widget_type: label")
                     output.append(f"  text: \"{w_name}\"")
