@@ -539,7 +539,8 @@
 
             <div style="display:flex; gap:10px; margin-bottom:10px;">
                 <button type="button" class="btn btn-copy" onclick="copyToClipboard()" data-i18n="btn_copy" style="flex:1;">📋 KOPIUJ KOD DO SCHOWKA</button>
-                <button type="button" class="btn btn-save-file" onclick="saveDashFile()" data-i18n="btn_save_file" style="flex:1; background-color: #4caf50;">💾 ZAPISZ PLIK .DASH</button>
+                <button type="button" class="btn btn-download-file" onclick="downloadDashFile()" data-i18n="btn_download_file" style="flex:1; background-color: #2196f3;">⬇️ POBIERZ PLIK .DASH</button>
+                <button type="button" class="btn btn-save-file" onclick="saveDashFile()" data-i18n="btn_save_file" style="flex:1; background-color: #4caf50;">💾 ZAPISZ DO HA (SPRÓBUJ)</button>
             </div>
             <textarea class="output" id="output-yaml" readonly>{{ generated_yaml }}</textarea>
         </div>
@@ -840,7 +841,9 @@
                 preview_hint: "Możesz przeciągać przyciski między wierszami oraz zmieniać ich kolejność w wierszu (Drag&Drop).",
                 btn_restart: "RESTART APPDAEMON",
                 btn_copy: "📋 KOPIUJ KOD DO SCHOWKA",
-                btn_save_file: "💾 ZAPISZ PLIK .DASH",
+                btn_download_file: "⬇️ POBIERZ PLIK .DASH",
+                btn_save_file: "💾 ZAPISZ DO HA (SPRÓBUJ)",
+                save_file_warning: "UWAGA: W Home Assistant addony działają w izolowanych kontenerach. Bezpośredni zapis może nie zadziałać.\n\nLepiej użyj przycisku POBIERZ i zapisz plik ręcznie przez Samba/SSH.\n\nKontynuować próbę zapisu?",
                 status_details: "Token: {token_source} • API: {api_url} • Encje: {entity_count} • AppDaemon: {appdaemon_slug}",
                 status_details_missing: "Brak danych połączenia.",
                 import_success: "Pomyślnie zaimportowano układ.",
@@ -914,7 +917,9 @@
                 preview_hint: "You can drag buttons between rows and reorder them within a row (Drag & Drop).",
                 btn_restart: "RESTART APPDAEMON",
                 btn_copy: "📋 COPY CODE TO CLIPBOARD",
-                btn_save_file: "💾 SAVE .DASH FILE",
+                btn_download_file: "⬇️ DOWNLOAD .DASH FILE",
+                btn_save_file: "💾 SAVE TO HA (TRY)",
+                save_file_warning: "WARNING: In Home Assistant, addons run in isolated containers. Direct save may not work.\n\nBetter use DOWNLOAD button and save file manually via Samba/SSH.\n\nContinue with save attempt?",
                 status_details: "Token: {token_source} • API: {api_url} • Entities: {entity_count} • AppDaemon: {appdaemon_slug}",
                 status_details_missing: "No connection info.",
                 import_success: "Import successful.",
@@ -2009,6 +2014,42 @@
             }
         }
 
+        function downloadDashFile() {
+            const yamlTextarea = document.getElementById("output-yaml");
+            if (!yamlTextarea || !yamlTextarea.value) {
+                alert(TRANSLATIONS[currentLang].save_file_error_empty || "Brak kodu do pobrania. Najpierw wygeneruj kod.");
+                return;
+            }
+
+            const pathCode = document.getElementById("path-code");
+            const filename = pathCode ? pathCode.textContent.split('\\').pop() : "joandashboard.dash";
+            
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '';
+            
+            const actionInput = document.createElement('input');
+            actionInput.type = 'hidden';
+            actionInput.name = 'action';
+            actionInput.value = 'download_file';
+            form.appendChild(actionInput);
+            
+            const yamlInput = document.createElement('input');
+            yamlInput.type = 'hidden';
+            yamlInput.name = 'yaml_content';
+            yamlInput.value = yamlTextarea.value;
+            form.appendChild(yamlInput);
+            
+            const filenameInput = document.createElement('input');
+            filenameInput.type = 'hidden';
+            filenameInput.name = 'filename';
+            filenameInput.value = filename;
+            form.appendChild(filenameInput);
+            
+            document.body.appendChild(form);
+            form.submit();
+        }
+
         function saveDashFile() {
             const yamlTextarea = document.getElementById("output-yaml");
             if (!yamlTextarea || !yamlTextarea.value) {
@@ -2018,6 +2059,14 @@
 
             const pathCode = document.getElementById("path-code");
             const filename = pathCode ? pathCode.textContent.split('\\').pop() : "joandashboard.dash";
+            
+            // Ostrzeżenie o możliwych problemach
+            const confirmMsg = TRANSLATIONS[currentLang].save_file_warning || 
+                "UWAGA: W Home Assistant addony działają w izolowanych kontenerach. Bezpośredni zapis może nie zadziałać.\n\nLepiej użyj przycisku POBIERZ i zapisz plik ręcznie przez Samba/SSH.\n\nKontynuować próbę zapisu?";
+            
+            if (!confirm(confirmMsg)) {
+                return;
+            }
             
             const form = document.createElement('form');
             form.method = 'POST';
@@ -2134,6 +2183,10 @@
             const btn = document.querySelector('.btn-copy');
             if (btn && TRANSLATIONS[currentLang].btn_copy) {
                 btn.innerText = TRANSLATIONS[currentLang].btn_copy;
+            }
+            const downloadBtn = document.querySelector('.btn-download-file');
+            if (downloadBtn && TRANSLATIONS[currentLang].btn_download_file) {
+                downloadBtn.innerText = TRANSLATIONS[currentLang].btn_download_file;
             }
             const saveBtn = document.querySelector('.btn-save-file');
             if (saveBtn && TRANSLATIONS[currentLang].btn_save_file) {
