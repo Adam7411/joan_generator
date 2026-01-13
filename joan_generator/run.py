@@ -28,7 +28,7 @@ try:
             manual_token = options.get('manual_token')
             if manual_token and len(manual_token) > 10:
                 TOKEN = manual_token
-                API_URL = "http://homeassistant: 8123/api"
+                API_URL = "http://homeassistant:8123/api"
                 TOKEN_SOURCE = "Manual (Konfiguracja)"
                 print(f"🔧 Wykryto manualny token.  Przełączam API na: {API_URL}")
             opt_slug = options.get('appdaemon_slug')
