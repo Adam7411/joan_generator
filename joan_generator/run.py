@@ -1,8 +1,9 @@
 import os
 import json
 import requests
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, send_file, Response
 from pathlib import Path
+import io
 
 # Inicjalizacja aplikacji
 print("📦 1. Inicjalizacja aplikacji Joan 6 Generator...")
@@ -75,47 +76,31 @@ def get_ha_entities():
 # FUNKCJA ZAPISU PLIKU .DASH
 # -------------------------------------------------------------------------
 def save_dash_file(filename, content):
-    """Zapisuje plik .dash do katalogu dashboards AppDaemon."""
-    try:
-        # Budujemy ścieżkę do katalogu dashboards
-        dashboards_path = f"/addon_configs/{APPDAEMON_SLUG}/dashboards"
-        
-        # Sprawdzamy czy katalog istnieje, jeśli nie - tworzymy
-        path_obj = Path(dashboards_path)
-        if not path_obj.exists():
-            try:
-                path_obj.mkdir(parents=True, exist_ok=True)
-                print(f"📁 Utworzono katalog: {dashboards_path}")
-            except PermissionError:
-                # Jeśli brak uprawnień do bezpośredniego zapisu, próbujemy przez Supervisor API
-                return save_dash_file_via_api(filename, content)
-            except Exception as e:
-                print(f"⚠️ Błąd tworzenia katalogu: {e}")
-                return False, f"Nie można utworzyć katalogu: {e}"
-        
-        # Zapisujemy plik
-        file_path = path_obj / filename
-        try:
-            with open(file_path, 'w', encoding='utf-8') as f:
-                f.write(content)
-            print(f"✅ Zapisano plik: {file_path}")
-            return True, f"Plik zapisany: {file_path}"
-        except PermissionError:
-            # Fallback do Supervisor API
-            return save_dash_file_via_api(filename, content)
-        except Exception as e:
-            print(f"❌ Błąd zapisu pliku: {e}")
-            return False, f"Błąd zapisu pliku: {e}"
-            
-    except Exception as e:
-        print(f"❌ Wyjątek podczas zapisu: {e}")
-        return False, f"Błąd: {e}"
-
-def save_dash_file_via_api(filename, content):
-    """Alternatywna metoda zapisu przez Supervisor Filesystem API (jeśli dostępne)."""
-    # W Home Assistant Supervisor nie ma bezpośredniego API do zapisu plików
-    # do katalogów innych addonów, więc zwracamy informację, że trzeba zapisać ręcznie
-    return False, f"Brak uprawnień do bezpośredniego zapisu. Zapisz plik ręcznie w: /addon_configs/{APPDAEMON_SLUG}/dashboards/{filename}"
+    """
+    UWAGA: W Home Assistant Supervisor addony działają w izolowanych kontenerach Docker.
+    Bezpośredni zapis do katalogu innego addona nie jest możliwy bez specjalnej konfiguracji.
+    
+    Funkcja informuje użytkownika, że musi zapisać plik ręcznie.
+    """
+    # W Home Assistant Supervisor, addony mają dostęp tylko do swoich własnych katalogów
+    # Nie możemy bezpośrednio zapisać do katalogu innego addona
+    
+    # Zwracamy informację z instrukcją ręcznego zapisu
+    network_path = f"\\\\[HA_IP]\\addon_configs\\{APPDAEMON_SLUG}\\dashboards\\{filename}"
+    unix_path = f"/addon_configs/{APPDAEMON_SLUG}/dashboards/{filename}"
+    
+    message = (
+        f"⚠️ BEZPOŚREDNI ZAPIS NIEMOŻLIWY\n\n"
+        f"Addony w Home Assistant działają w izolowanych kontenerach Docker. "
+        f"Nie można bezpośrednio zapisać pliku do katalogu innego addona.\n\n"
+        f"Zapisz plik ręcznie:\n"
+        f"• Przez Samba: {network_path}\n"
+        f"• Przez SSH: {unix_path}\n\n"
+        f"Lub skopiuj wygenerowany kod i zapisz go ręcznie."
+    )
+    
+    print(f"⚠️ {message}")
+    return False, message
 
 # -------------------------------------------------------------------------
 # FUNKCJA RESTARTU APPDAEMON
@@ -483,7 +468,7 @@ def index():
             else:
                 save_message = f"❌ Błąd: {msg}"
         elif action == 'save_file':
-            # Zapisz plik .dash
+            # Zapisz plik .dash (próbujemy bezpośredni zapis)
             yaml_content = request.form.get('yaml_content', '')
             filename = request.form.get('filename', 'joandashboard.dash')
             if yaml_content and filename:
@@ -494,6 +479,21 @@ def index():
                     save_message = f"❌ {msg}"
             else:
                 save_message = "❌ Błąd: Brak danych do zapisu"
+        elif action == 'download_file':
+            # Pobierz plik .dash do zapisania lokalnie
+            yaml_content = request.form.get('yaml_content', '')
+            filename = request.form.get('filename', 'joandashboard.dash')
+            if yaml_content and filename:
+                # Tworzymy plik w pamięci i zwracamy jako download
+                file_obj = io.BytesIO(yaml_content.encode('utf-8'))
+                return send_file(
+                    file_obj,
+                    mimetype='text/plain',
+                    as_attachment=True,
+                    download_name=filename
+                )
+            else:
+                save_message = "❌ Błąd: Brak danych do pobrania"
         else:
             try:
                 title = request.form.get('title', 'JoanDashboard')
