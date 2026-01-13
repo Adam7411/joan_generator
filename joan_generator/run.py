@@ -423,6 +423,17 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append(f"  title_style: \"{STYLE_TITLE}\"")
                     output.append(f"  widget_style: \"{STYLE_WIDGET}\"")
                     output.append(f"  value_style: \"{build_value_style(final_size_hint)}\"")
+                    
+                    # Try to fetch unit from map
+                    unit = ""
+                    if w_id in entities_map:
+                        unit = entities_map[w_id].get('attributes', {}).get('unit_of_measurement', '') or entities_map[w_id].get('unit', '')
+                    
+                    if unit:
+                        output.append(f"  units: \"{unit}\"")
+                    else:
+                        output.append(f"  units: \"\"")
+                        
                     output.append(f"  unit_style: \"{STYLE_UNIT}\"")
 
                 elif w_type == 'label':
