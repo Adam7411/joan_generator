@@ -458,6 +458,9 @@ def index():
         "appdaemon_slug": APPDAEMON_SLUG
     }
 
+    # Pobieramy aktualny język z formularza (jeśli był wysłany) lub ustawiamy domyślny
+    current_ui_lang = request.form.get('ui_language', 'pl') if request.method == 'POST' else request.args.get('lang', 'pl')
+
     if request.method == 'POST':
         action = request.form.get('action', 'generate')
 
@@ -467,18 +470,6 @@ def index():
                 save_message = f"✅ Sukces: {msg}"
             else:
                 save_message = f"❌ Błąd: {msg}"
-        elif action == 'save_file':
-            # Zapisz plik .dash (próbujemy bezpośredni zapis)
-            yaml_content = request.form.get('yaml_content', '')
-            filename = request.form.get('filename', 'joandashboard.dash')
-            if yaml_content and filename:
-                success, msg = save_dash_file(filename, yaml_content)
-                if success:
-                    save_message = f"✅ {msg}"
-                else:
-                    save_message = f"❌ {msg}"
-            else:
-                save_message = "❌ Błąd: Brak danych do zapisu"
         elif action == 'download_file':
             # Pobierz plik .dash do zapisania lokalnie
             yaml_content = request.form.get('yaml_content', '')
@@ -503,6 +494,7 @@ def index():
                 cols = int(request.form.get('grid_columns', '4'))
                 rows_grid = int(request.form.get('grid_rows', '8'))
                 lang = request.form.get('ui_language', 'pl')
+                current_ui_lang = lang  # Zapamiętujemy język dla UI
 
                 default_size_str = request.form.get('default_widget_size', '2, 1')
                 def_size_parts = default_size_str.split(',')
@@ -538,7 +530,8 @@ def index():
         dash_name=dashboard_slug,
         has_token=has_token,
         save_message=save_message,
-        connection_info=connection_info
+        connection_info=connection_info,
+        current_lang=current_ui_lang
     )
 
 if __name__ == "__main__":
