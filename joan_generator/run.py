@@ -416,7 +416,6 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append(f"  widget_type: gauge")
                     output.append(f"  entity: {w_id}")
                     output.append(f"  title: \"{w_name}\"")
-                    output.append(f"  title: \"{w_name}\"")
                     
                     g_min = w.get('min', '').strip()
                     g_max = w.get('max', '').strip()
@@ -425,9 +424,9 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
 
                     output.append(f"  min: {g_min}")
                     output.append(f"  max: {g_max}")
-                    output.append(f"  low_color: gray")
-                    output.append(f"  med_color: dimgray")
-                    output.append(f"  high_color: black")
+                    output.append(f"  low_color: \"#aaaaaa\"")
+                    output.append(f"  med_color: \"#555555\"")
+                    output.append(f"  high_color: \"#000000\"")
                     output.append(f"  title_style: \"{STYLE_TITLE}\"")
                     output.append(f"  widget_style: \"{STYLE_WIDGET}\"")
                     output.append(f"  value_style: \"{STYLE_GAUGE_VALUE}\"")
@@ -439,8 +438,6 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     
                     if unit:
                         output.append(f"  units: \"{unit}\"")
-                    else:
-                        output.append(f"  units: \"\"")
                         
                     output.append(f"  unit_style: \"{STYLE_UNIT}\"")
 
