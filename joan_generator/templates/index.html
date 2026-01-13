@@ -416,6 +416,15 @@
                             <option value="(3x2)" data-i18n="size_3x2">3x2 (Ogromny)</option>
                         </select>
                     </div>
+                    <div class="flex-col" id="grp-value-size" style="display: none;">
+                        <label data-i18n="lbl_value_size">Rozmiar czcionki wartości</label>
+                        <select id="w-value-size">
+                            <option value="auto" data-i18n="opt_auto">Auto (na podstawie wartości)</option>
+                            <option value="normal" data-i18n="opt_normal">Normalny (54px)</option>
+                            <option value="medium" data-i18n="opt_medium">Średni (40px) - dla 1000+</option>
+                            <option value="small" data-i18n="opt_small">Mały (32px) - dla 10000+</option>
+                        </select>
+                    </div>
                     <div class="flex-col" style="flex: 0 0 60px;">
                         <label data-i18n="lbl_preview">Podgląd</label>
                         <div style="display:flex; justify-content:center;">
@@ -798,6 +807,11 @@
                 lbl_type: "Typ Widgetu", lbl_entity: "Encja (Wyszukaj po nazwie lub ID)", lbl_dash_name: "Nazwa Dashboardu (target)",
                 lbl_name: "Tytuł na ekranie", lbl_size: "Rozmiar", lbl_preview: "Podgląd",
                 lbl_icon: "Ikona (Standard)", lbl_icon_on: "Ikona ON", lbl_icon_off: "Ikona OFF",
+                lbl_value_size: "Rozmiar czcionki wartości",
+                opt_auto: "Auto (na podstawie wartości)",
+                opt_normal: "Normalny (54px)",
+                opt_medium:  "Średni (40px) - dla 1000+",
+                opt_small: "Mały (32px) - dla 10000+",
                 opt_switch: "Przełącznik / Światło", opt_cover: "Roleta / Brama", opt_sensor: "Sensor",
                 opt_binary: "Sensor Binarny (On/Off)", opt_lock: "Zamek", opt_person: "Osoba / Tracker",
                 opt_media: "Media Player", opt_climate: "Termostat", opt_input_select: "Lista Wyboru",
@@ -869,6 +883,11 @@
                 lbl_type: "Widget Type", lbl_entity: "Entity (Search by name/ID)", lbl_dash_name: "Dashboard Name (target)",
                 lbl_name: "Title on Screen", lbl_size: "Size", lbl_preview: "Preview",
                 lbl_icon: "Icon (Standard)", lbl_icon_on: "Icon ON", lbl_icon_off: "Icon OFF",
+                lbl_value_size: "Value font size",
+                opt_auto: "Auto (based on value)",
+                opt_normal: "Normal (54px)",
+                opt_medium:  "Medium (40px) - for 1000+",
+                opt_small: "Small (32px) - for 10000+",
                 opt_switch: "Switch / Light", opt_cover: "Cover / Gate", opt_sensor: "Sensor",
                 opt_binary: "Binary Sensor", opt_lock: "Lock", opt_person: "Person / Tracker",
                 opt_media: "Media Player", opt_climate: "Climate", opt_input_select: "Input Select",
@@ -1215,6 +1234,7 @@
                 icon: document.getElementById('w-icon').value,
                 icon_on: document.getElementById('w-icon-on').value,
                 icon_off: document.getElementById('w-icon-off').value,
+                value_size_hint: document.getElementById('w-value-size')?.value || 'auto',
                 was_edited: true
             };
             if(w.type === 'navigate') w.id = 'navigate.' + w.dash;
@@ -1277,6 +1297,12 @@
                 document.getElementById('div-icon-on').style.display = 'none';
                 document.getElementById('div-icon-off').style.display = 'none';
             }
+
+            // Pokaż opcję rozmiaru czcionki tylko dla sensorów
+            const grpValueSize = document.getElementById('grp-value-size');
+            if (grpValueSize) {
+                grpValueSize.style.display = (type === 'sensor') ? 'block' : 'none';
+            }
         }
 
         function updateTitleLimit() {
@@ -1310,6 +1336,7 @@
             document.getElementById('w-icon').value = data.icon || '';
             document.getElementById('w-icon-on').value = data.icon_on || '';
             document.getElementById('w-icon-off').value = data.icon_off || '';
+            document.getElementById('w-value-size').value = data.value_size_hint || 'auto';
             manualIconOverride = true;
             updateIconPreview(); updateTitleLimit();
             setTimeout(() => blockSmart = false, 500); renderPreview(); 
@@ -1329,6 +1356,8 @@
         function clearForm() {
             document.getElementById('w-id').value = ''; document.getElementById('w-name').value = '';
             document.getElementById('w-icon').value = ''; document.getElementById('w-icon-on').value = ''; document.getElementById('w-icon-off').value = '';
+            const valueSizeSelect = document.getElementById('w-value-size');
+            if (valueSizeSelect) valueSizeSelect.value = 'auto';
             manualIconOverride = false; updateIconPreview(); updateTitleLimit();
         }
 
@@ -1761,6 +1790,7 @@
                                 icon,
                                 icon_on,
                                 icon_off,
+                                value_size_hint: 'auto',
                                 was_edited: false
                             };
                             fitSizeToGrid(widgetObj);
