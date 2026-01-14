@@ -424,8 +424,8 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
 
                     output.append(f"  min: {g_min}")
                     output.append(f"  max: {g_max}")
-                    output.append(f"  low_color: \"#333333\"")
-                    output.append(f"  med_color: \"#1A1A1A\"")
+                    output.append(f"  low_color: \"#000000\"")
+                    output.append(f"  med_color: \"#000000\"")
                     output.append(f"  high_color: \"#000000\"")
                     output.append(f"  title_style: \"{STYLE_TITLE}\"")
                     output.append(f"  widget_style: \"{STYLE_WIDGET}\"")
@@ -440,6 +440,80 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                         output.append(f"  units: \"{unit}\"")
                         
                     output.append(f"  unit_style: \"{STYLE_UNIT}\"")
+
+                elif w_type == 'light':
+                    output.append(f"  widget_type: light")
+                    output.append(f"  entity: {w_id}")
+                    output.append(f"  title: \"{w_name}\"")
+                    if i_on: output.append(f"  icon_on: {i_on}")
+                    if i_off: output.append(f"  icon_off: {i_off}")
+                    if w_icon and not i_on: output.append(f"  icon: {w_icon}")
+                    output.append(f"  title_style: \"{STYLE_TITLE}\"")
+                    output.append(f"  widget_style: \"{STYLE_WIDGET}\"")
+                    output.append(f"  icon_style_active: \"{STYLE_ICON}\"")
+                    output.append(f"  icon_style_inactive: \"{STYLE_ICON}; opacity: 0.5;\"")
+
+                elif w_type == 'group':
+                    output.append(f"  widget_type: group")
+                    output.append(f"  entity: {w_id}")
+                    output.append(f"  title: \"{w_name}\"")
+                    if i_on: output.append(f"  icon_on: {i_on}")
+                    if i_off: output.append(f"  icon_off: {i_off}")
+                    if w_icon and not i_on: output.append(f"  icon: {w_icon}")
+                    output.append(f"  title_style: \"{STYLE_TITLE}\"")
+                    output.append(f"  widget_style: \"{STYLE_WIDGET}\"")
+                    output.append(f"  icon_style_active: \"{STYLE_ICON}\"")
+                    output.append(f"  icon_style_inactive: \"{STYLE_ICON}; opacity: 0.5;\"")
+
+                elif w_type == 'input_boolean':
+                    output.append(f"  widget_type: input_boolean")
+                    output.append(f"  entity: {w_id}")
+                    output.append(f"  title: \"{w_name}\"")
+                    if i_on: output.append(f"  icon_on: {i_on}")
+                    if i_off: output.append(f"  icon_off: {i_off}")
+                    if w_icon and not i_on: output.append(f"  icon: {w_icon}")
+                    output.append(f"  state_text: 1")
+                    output.append(f"  title_style: \"{STYLE_TITLE}\"")
+                    output.append(f"  widget_style: \"{STYLE_WIDGET}\"")
+                    output.append(f"  icon_style_active: \"{STYLE_ICON}\"")
+                    output.append(f"  icon_style_inactive: \"{STYLE_ICON}; opacity: 0.5;\"")
+
+                elif w_type == 'person':
+                    output.append(f"  widget_type: person")
+                    output.append(f"  entity: {w_id}")
+                    output.append(f"  title: \"{w_name}\"")
+                    if i_on: output.append(f"  icon_on: {i_on}")
+                    if i_off: output.append(f"  icon_off: {i_off}")
+                    if w_icon and not i_on: output.append(f"  icon: {w_icon}")
+                    output.append(f"  state_text: 1")
+                    output.append(f"  title_style: \"{STYLE_TITLE}\"")
+                    output.append(f"  widget_style: \"{STYLE_WIDGET}\"")
+                    output.append(f"  icon_style_active: \"{STYLE_ICON}\"")
+                    output.append(f"  icon_style_inactive: \"{STYLE_ICON}; opacity: 0.5;\"")
+
+                elif w_type == 'lock':
+                    output.append(f"  widget_type: lock")
+                    output.append(f"  entity: {w_id}")
+                    output.append(f"  title: \"{w_name}\"")
+                    if i_on: output.append(f"  icon_on: {i_on}")
+                    if i_off: output.append(f"  icon_off: {i_off}")
+                    if w_icon and not i_on: output.append(f"  icon: {w_icon}")
+                    output.append(f"  state_text: 1")
+                    output.append(f"  title_style: \"{STYLE_TITLE}\"")
+                    output.append(f"  widget_style: \"{STYLE_WIDGET}\"")
+                    output.append(f"  icon_style_active: \"{STYLE_ICON}\"")
+                    output.append(f"  icon_style_inactive: \"{STYLE_ICON}; opacity: 0.5;\"")
+
+                elif w_type == 'reload':
+                    output.append(f"  widget_type: reload")
+                    output.append(f"  title: \"{w_name}\"")
+                    if w_icon: output.append(f"  icon_active: {w_icon}")
+                    elif i_on: output.append(f"  icon_active: {i_on}")
+                    else: output.append(f"  icon_active: mdi-refresh")
+                    output.append(f"  title_style: \"{STYLE_TITLE}\"")
+                    output.append(f"  widget_style: \"{STYLE_WIDGET}\"")
+                    output.append(f"  icon_active_style: \"{STYLE_ICON}\"")
+                    output.append(f"  icon_inactive_style: \"{STYLE_ICON}; opacity: 0.5;\"")
 
                 elif w_type == 'label':
                     output.append(f"  widget_type: label")
