@@ -878,8 +878,40 @@
 
         .grid-icon-item span {
             font-size: 10px;
-            text-align: center;
             word-break: break-all;
+        }
+
+        .freq-badge {
+            margin-top: 5px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .freq-badge.hidden {
+            display: none;
+        }
+
+        .freq-ok {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .freq-warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+
+        .freq-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
         }
     </style>
 </head>
@@ -991,9 +1023,18 @@
                     <div class="flex-col" id="grp-entity" style="flex: 100%;">
                         <label data-i18n="lbl_entity">Encja (Wyszukaj po nazwie lub ID)</label>
                         <input list="entity-list" id="w-id" placeholder="np. switch.salon"
-                            oninput="searchEntities(this.value); validateEntityInput(this.value)" autocomplete="off">
+                            oninput="searchEntities(this.value); validateEntityInput(this.value); checkEntityFrequency(this.value)"
+                            autocomplete="off">
                         <datalist id="entity-list"></datalist>
-                        <div class="battery-warning" data-i18n="battery_warning">⚠️ <b>Uwaga Bateria:</b> Unikaj encji
+
+                        <!-- Frequency Badge -->
+                        <div id="freq-badge" class="freq-badge hidden">
+                            <span id="freq-icon"></span>
+                            <span id="freq-text"></span>
+                        </div>
+
+                        <div class="battery-warning" data-i18n="battery_warning" style="display: none;">⚠️ <b>Uwaga
+                                Bateria:</b> Unikaj encji
                             zmieniających się bardzo często (np. napięcie w czasie rzeczywistym). Częste odświeżanie
                             ekranu szybko zużywa baterię!</div>
                     </div>
@@ -1538,7 +1579,12 @@
                 json_load_error: "Błąd pliku JSON: ",
                 confirm_restart: "Czy na pewno zrestartować AppDaemon?",
                 copy_success: "✅ SKOPIOWANO!",
-                copy_error: "❌ Błąd kopiowania: "
+                copy_success: "✅ SKOPIOWANO!",
+                copy_error: "❌ Błąd kopiowania: ",
+                freq_ok: "✅ Bateria OK (rzadkie zmiany: {0}/h)",
+                freq_warning: "⚠️ Średnie zużycie (zmiany: {0}/h)",
+                freq_danger: "🔴 Wybój baterii! ({0}/h) Rozważ inną encję.",
+                freq_analyzing: "⏳ Analiza częstotliwości..."
             },
             en: {
                 title_main: "Joan 6 E-Ink Generator",
@@ -1617,7 +1663,12 @@
                 json_load_error: "JSON file error: ",
                 confirm_restart: "Restart AppDaemon?",
                 copy_success: "✅ COPIED!",
-                copy_error: "❌ Copy error: "
+                copy_success: "✅ COPIED!",
+                copy_error: "❌ Copy error: ",
+                freq_ok: "✅ Battery OK (rare updates: {0}/h)",
+                freq_warning: "⚠️ Medium drain (updates: {0}/h)",
+                freq_danger: "🔴 Battery drain! ({0}/h) Consider alternative.",
+                freq_analyzing: "⏳ Analyzing frequency..."
             }
         };
 
@@ -2505,6 +2556,74 @@
             if (newRows.length > 0) { rows = newRows; reflowAllWidgets(); renderPreview(); alert(TRANSLATIONS[currentLang].import_success); }
             else alert(TRANSLATIONS[currentLang].import_error_layout);
             setTimeout(() => blockSmart = false, 1000);
+        }
+
+        // -------------------------------------------------------------------------
+        // ENTITY FREQUENCY ANALYZER
+        // -------------------------------------------------------------------------
+        let freqDebounceTimer;
+
+        function checkEntityFrequency(entityId) {
+            const badge = document.getElementById('freq-badge');
+            const icon = document.getElementById('freq-icon');
+            const text = document.getElementById('freq-text');
+
+            // Ukryj jeśli puste
+            if (!badge || !entityId || entityId.length < 3) {
+                if (badge) badge.classList.add('hidden');
+                return;
+            }
+
+            // Walidacja formatu encji (kropka)
+            if (!entityId.includes('.')) {
+                badge.classList.add('hidden');
+                return;
+            }
+
+            // Debounce - czekaj 500ms po ostatnim wpisaniu
+            clearTimeout(freqDebounceTimer);
+
+            freqDebounceTimer = setTimeout(() => {
+                // Pokaż stan ładowania
+                badge.className = 'freq-badge freq-warning';
+                badge.classList.remove('hidden');
+                icon.innerText = '⏳';
+                text.innerText = TRANSLATIONS[currentLang] ? TRANSLATIONS[currentLang].freq_analyzing : "Analiza...";
+
+                fetch(`/api/entity_frequency/${entityId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            badge.classList.add('hidden');
+                            return;
+                        }
+
+                        // Formatowanie tekstu
+                        const changes = data.changes_per_hour;
+                        let msgKey = 'freq_ok';
+                        let cssClass = 'freq-ok';
+                        let iconChar = '✅';
+
+                        if (data.level === 'danger') {
+                            msgKey = 'freq_danger';
+                            cssClass = 'freq-danger';
+                            iconChar = '🔴';
+                        } else if (data.level === 'warning') {
+                            msgKey = 'freq_warning';
+                            cssClass = 'freq-warning';
+                            iconChar = '⚠️';
+                        }
+
+                        badge.className = `freq-badge ${cssClass}`;
+                        icon.innerText = iconChar;
+                        text.innerText = TRANSLATIONS[currentLang][msgKey].replace('{0}', changes);
+                        badge.classList.remove('hidden');
+                    })
+                    .catch(err => {
+                        console.error("Frequency check error:", err);
+                        badge.classList.add('hidden');
+                    });
+            }, 500);
         }
 
         function saveToBrowser() {
