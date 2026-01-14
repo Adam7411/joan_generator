@@ -172,10 +172,13 @@ def get_entity_frequency(entity_id, hours=24):
                 
                 changes_per_hour = total_changes / hours if hours > 0 else 0
                 
-                # Poziom ostrzeżenia
-                if changes_per_hour > 10:
+                # Poziom ostrzeżenia (Złagodzone progi)
+                # < 10/h = OK
+                # 10-60/h = Ostrzeżenie (co 1-6 min)
+                # > 60/h = Danger (częściej niż co minutę)
+                if changes_per_hour > 60:
                     level = 'danger'
-                elif changes_per_hour > 1:
+                elif changes_per_hour > 10:
                     level = 'warning'
                 else:
                     level = 'ok'
