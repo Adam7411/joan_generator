@@ -1017,9 +1017,12 @@
                         <label data-i18n="lbl_type">Typ Widgetu</label>
                         <select id="w-type" onchange="handleTypeChange()">
                             <option value="switch" data-i18n="opt_switch">Switch / Light</option>
+                            <option value="light" data-i18n="opt_light">Light (Dimmable)</option>
+                            <option value="group" data-i18n="opt_group">Group (Lights)</option>
                             <option value="cover" data-i18n="opt_cover">Cover / Gate</option>
                             <option value="sensor" data-i18n="opt_sensor">Sensor</option>
                             <option value="binary_sensor" data-i18n="opt_binary">Binary Sensor (On/Off)</option>
+                            <option value="input_boolean" data-i18n="opt_input_boolean">Input Boolean</option>
                             <option value="lock" data-i18n="opt_lock">Lock</option>
                             <option value="person" data-i18n="opt_person">Person / Tracker</option>
                             <option value="media_player" data-i18n="opt_media">Media Player</option>
@@ -1031,6 +1034,7 @@
                             <option value="input_button" data-i18n="opt_input_button">Input Button / Przycisk</option>
                             <option value="script" data-i18n="opt_script">Script</option>
                             <option value="navigate" data-i18n="opt_navigate">Navigate / Button</option>
+                            <option value="reload" data-i18n="opt_reload">Reload Dashboard</option>
                             <option value="gauge" data-i18n="opt_gauge">Gauge / Wskaźnik</option>
                         </select>
                     </div>
@@ -1483,6 +1487,7 @@
                 opt_input_number: "Suwak", opt_script: "Skrypt", opt_navigate: "Przycisk Nawigacji",
                 opt_fan: "Wentylator", opt_scene: "Scena", opt_input_button: "Input Button / Przycisk",
                 opt_fan: "Wentylator", opt_scene: "Scena", opt_input_button: "Input Button / Przycisk",
+                opt_light: "Światło (Ściemniane)", opt_group: "Grupa (Świateł)", opt_input_boolean: "Przełącznik Boolean", opt_reload: "Odśwież Dashboard",
                 opt_label: "Etykieta (Tekst)", opt_clock: "Zegar", opt_spacer: "Odstęp (Pusty)",
                 opt_gauge: "Wskaźnik (Gauge)",
                 size_2x1: "2x1 (Szeroki Przycisk)", size_1x1: "1x1 (Mały)", size_2x2: "2x2 (Duży)",
@@ -1561,6 +1566,7 @@
                 opt_media: "Media Player", opt_climate: "Climate", opt_input_select: "Input Select",
                 opt_input_number: "Input Number", opt_script: "Script", opt_navigate: "Navigation Button",
                 opt_fan: "Fan", opt_scene: "Scene", opt_input_button: "Input Button",
+                opt_light: "Light (Dimmable)", opt_group: "Group (Lights)", opt_input_boolean: "Input Boolean", opt_reload: "Reload Dashboard",
                 opt_label: "Label (Text)", opt_clock: "Clock", opt_spacer: "Spacer (Empty)",
                 opt_gauge: "Gauge",
                 size_2x1: "2x1 (Wide Button)", size_1x1: "1x1 (Small)", size_2x2: "2x2 (Large)",
