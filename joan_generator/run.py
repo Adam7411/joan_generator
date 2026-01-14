@@ -515,6 +515,33 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append(f"  icon_active_style: \"{STYLE_ICON}\"")
                     output.append(f"  icon_inactive_style: \"{STYLE_ICON}; opacity: 0.5;\"")
 
+                elif w_type == 'input_number':
+                    output.append(f"  widget_type: input_number")
+                    output.append(f"  entity: {w_id}")
+                    output.append(f"  title: \"{w_name}\"")
+                    
+                    # Fetch units from entity if available
+                    unit = ""
+                    if w_id in entities_map:
+                        unit = entities_map[w_id].get('attributes', {}).get('unit_of_measurement', '') or entities_map[w_id].get('unit', '')
+                    if unit:
+                        output.append(f"  units: \"{unit}\"")
+                    
+                    output.append(f"  title_style: \"{STYLE_TITLE}\"")
+                    output.append(f"  widget_style: \"{STYLE_WIDGET}\"")
+                    output.append(f"  value_style: \"color: #000000 !important; font-size: 24px !important; font-weight: 700 !important;\"")
+                    output.append(f"  slider_style: \"background-color: #cccccc !important;\"")
+                    output.append(f"  slidercontainer_style: \"background-color: #ffffff !important;\"")
+
+                elif w_type == 'input_select':
+                    output.append(f"  widget_type: input_select")
+                    output.append(f"  entity: {w_id}")
+                    output.append(f"  title: \"{w_name}\"")
+                    output.append(f"  title_style: \"{STYLE_TITLE}\"")
+                    output.append(f"  widget_style: \"{STYLE_WIDGET}\"")
+                    output.append(f"  select_style: \"color: #000000 !important; font-size: 18px !important; background: #ffffff !important; border: 1px solid #999999 !important;\"")
+                    output.append(f"  selectcontainer_style: \"background-color: #ffffff !important;\"")
+
                 elif w_type == 'label':
                     output.append(f"  widget_type: label")
                     output.append(f"  text: \"{w_name}\"")
