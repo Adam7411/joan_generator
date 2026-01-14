@@ -138,6 +138,72 @@ def restart_appdaemon_addon():
         return False, f"Błąd API: {response.status_code} {response.text}"
 
 # -------------------------------------------------------------------------
+# FUNKCJA ANALIZY CZĘSTOTLIWOŚCI ENCJI (Entity Frequency Analyzer)
+# -------------------------------------------------------------------------
+def get_entity_frequency(entity_id, hours=24):
+    """
+    Pobiera historię zmian encji z ostatnich X godzin i oblicza częstotliwość aktualizacji.
+    Zwraca: {'changes_per_hour': float, 'total_changes': int, 'level': 'ok'|'warning'|'danger'}
+    """
+    if not TOKEN:
+        return {'error': 'Brak tokena API', 'changes_per_hour': 0, 'total_changes': 0, 'level': 'unknown'}
+    
+    from datetime import datetime, timedelta
+    
+    # Oblicz timestamp startu (X godzin wstecz)
+    end_time = datetime.utcnow()
+    start_time = end_time - timedelta(hours=hours)
+    start_iso = start_time.strftime('%Y-%m-%dT%H:%M:%SZ')
+    
+    headers = {"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json"}
+    
+    try:
+        # HA History API endpoint
+        url = f"{API_URL}/history/period/{start_iso}?filter_entity_id={entity_id}&minimal_response"
+        response = requests.get(url, headers=headers, timeout=15)
+        
+        if response.status_code == 200:
+            data = response.json()
+            if data and len(data) > 0 and len(data[0]) > 0:
+                history = data[0]
+                total_changes = len(history) - 1  # -1 bo pierwszy wpis to stan początkowy
+                if total_changes < 0:
+                    total_changes = 0
+                
+                changes_per_hour = total_changes / hours if hours > 0 else 0
+                
+                # Poziom ostrzeżenia
+                if changes_per_hour > 10:
+                    level = 'danger'
+                elif changes_per_hour > 1:
+                    level = 'warning'
+                else:
+                    level = 'ok'
+                
+                return {
+                    'entity_id': entity_id,
+                    'changes_per_hour': round(changes_per_hour, 2),
+                    'total_changes': total_changes,
+                    'hours_analyzed': hours,
+                    'level': level
+                }
+            else:
+                # Brak historii - encja nowa lub bez zmian
+                return {
+                    'entity_id': entity_id,
+                    'changes_per_hour': 0,
+                    'total_changes': 0,
+                    'hours_analyzed': hours,
+                    'level': 'ok'
+                }
+        else:
+            print(f"❌ Błąd History API: {response.status_code}")
+            return {'error': f'API error: {response.status_code}', 'changes_per_hour': 0, 'total_changes': 0, 'level': 'unknown'}
+    except Exception as e:
+        print(f"❌ Wyjątek podczas analizy częstotliwości: {e}")
+        return {'error': str(e), 'changes_per_hour': 0, 'total_changes': 0, 'level': 'unknown'}
+
+# -------------------------------------------------------------------------
 # 3. STYLE (E-INK OPTIMIZED & TWEAKED)
 # -------------------------------------------------------------------------
 STYLE_TITLE = "color: #000000; font-size: 20px; font-weight: 700; text-align: center; padding-top: 5px; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif;"
@@ -706,6 +772,16 @@ def index():
         connection_info=connection_info,
         current_lang=current_ui_lang
     )
+
+# -------------------------------------------------------------------------
+# API ENDPOINT: Entity Frequency Analyzer
+# -------------------------------------------------------------------------
+@app.route('/api/entity_frequency/<path:entity_id>')
+def api_entity_frequency(entity_id):
+    """Zwraca analizę częstotliwości aktualizacji encji (JSON)."""
+    from flask import jsonify
+    result = get_entity_frequency(entity_id, hours=24)
+    return jsonify(result)
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000, debug=True)
