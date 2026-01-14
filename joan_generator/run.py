@@ -424,8 +424,8 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
 
                     output.append(f"  min: {g_min}")
                     output.append(f"  max: {g_max}")
-                    output.append(f"  low_color: \"#000000\"")
-                    output.append(f"  med_color: \"#000000\"")
+                    output.append(f"  low_color: \"#666666\"")
+                    output.append(f"  med_color: \"#333333\"")
                     output.append(f"  high_color: \"#000000\"")
                     output.append(f"  title_style: \"{STYLE_TITLE}\"")
                     output.append(f"  widget_style: \"{STYLE_WIDGET}\"")
