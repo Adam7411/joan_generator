@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width" , initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Joan 6 E-Ink Generator</title>
 
     <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css" rel="stylesheet">
@@ -1550,7 +1550,7 @@
                 manager_saved_list: "Twoje zapisane dashboardy:",
 
                 status_ok: "Połączono z Home Assistant (Token OK)",
-                status_err: "Brak tokena API! Lista encji jest pusta. Sprawdź konfigurację dodatku.",
+                status_err: "Brak tokena API! Lista encji jest pusta. Sprawd�� konfigurację dodatku.",
                 modal_title: "Wybierz Ikonę",
                 sec_backup: "📂 Zarządzanie Projektem (Backup na Dysk)",
                 backup_desc: "Pobierz plik .json na dysk swojego komputera. To pełna kopia zapasowa, która pozwala przenieść projekt na inne urządzenie.",
@@ -1689,7 +1689,14 @@
             'gauge': { type: 'gauge', size: '(2x1)', icon: 'mdi-gauge' }
         };
 
-        function normalizeString(str) { return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase(); }
+        // Ulepszona normalizacja (usuwa polskie znaki, małe litery, usuwa zbędne spacje)
+        function normalizeString(str) { 
+            if (!str) return "";
+            return str.toString().toLowerCase()
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .trim();
+        }
 
         function rebuildGridOptions(orientation) {
             const select = document.getElementById('grid-preset');
@@ -1706,23 +1713,52 @@
             select.value = found ? current : set[0].value;
         }
 
+        // Ulepszone wyszukiwanie (rozbijanie identyfikatorów na słowa, lepsze dopasowania)
         function searchEntities(val, forceSmartTitle = false) {
+            const dl = document.getElementById('entity-list');
+            if (!dl) return;
+            dl.innerHTML = ''; // Czyścimy listę
+
             if (!val && !forceSmartTitle) return;
-            if (forceSmartTitle) { runSmartLogic(val, true); return; }
-            runSmartLogic(val, false);
-            const dl = document.getElementById('entity-list'); dl.innerHTML = '';
-            if (val.length < 2) return;
-            const terms = normalizeString(val).split(" ").filter(t => t);
-            let count = 0;
-            for (const e in entitiesData) {
-                const obj = entitiesData[e]; if (count > 50) break;
-                const searchStr = normalizeString(obj.id + " " + (obj.attributes.friendly_name || ""));
-                if (terms.every(term => searchStr.includes(term))) {
-                    const opt = document.createElement('option'); opt.value = obj.id;
-                    opt.label = obj.attributes.friendly_name ? `${obj.attributes.friendly_name} (${obj.id})` : obj.id;
-                    dl.appendChild(opt); count++;
-                }
+
+            // Logika "Smart" dla ikon i typów (zostaje bez zmian)
+            if (forceSmartTitle) { 
+                runSmartLogic(val, true); 
+                return; 
             }
+            runSmartLogic(val, false);
+
+            // Wyszukiwanie zaczynamy już od 1 znaku dla lepszej responsywności
+            if (val.length < 1) return;
+
+            const inputNormalized = normalizeString(val);
+            const searchTerms = inputNormalized.split(/\s+/); // Rozbijamy wpisany tekst na słowa
+
+            let matches = [];
+            
+            for (const obj of entitiesData) {
+                const id = obj.id.toLowerCase();
+                const friendlyName = (obj.attributes.friendly_name || "").toLowerCase();
+                
+                // Klucz do sukcesu: szukamy w ID, w przyjaznej nazwie ORAZ w ID, gdzie '_' zamieniono na spacje
+                const searchableText = normalizeString(id + " " + friendlyName + " " + id.replace(/_/g, ' '));
+
+                // Sprawdzamy czy WSZYSTKIE wpisane słowa znajdują się w tekście encji
+                const allTermsMatch = searchTerms.every(term => searchableText.includes(term));
+
+                if (allTermsMatch) {
+                    matches.push(obj);
+                }
+                if (matches.length > 100) break; // Zwiększony limit wyników
+            }
+
+            matches.forEach(obj => {
+                const opt = document.createElement('option');
+                opt.value = obj.id;
+                const friendly = obj.attributes.friendly_name || "";
+                opt.label = friendly ? `${friendly} (${obj.id})` : obj.id;
+                dl.appendChild(opt);
+            });
         }
 
         function runSmartLogic(val, isTitleSearch) {
@@ -1950,7 +1986,6 @@
                 icon: document.getElementById('w-icon').value,
                 icon_on: document.getElementById('w-icon-on').value,
                 icon_off: document.getElementById('w-icon-off').value,
-                icon_off: document.getElementById('w-icon-off').value,
                 value_size_hint: document.getElementById('w-value-size')?.value || 'auto',
                 min: document.getElementById('w-min')?.value || '',
                 max: document.getElementById('w-max')?.value || '',
@@ -2081,7 +2116,7 @@
         function cancelEdit() {
             editIdx = null; blockSmart = false;
             document.getElementById('editor-box').classList.remove('editing');
-            document.getElementById('btn-cancel').classList.remove('hidden');
+            document.getElementById('btn-cancel').classList.add('hidden');
 
             document.getElementById('lbl-add-widget').innerText = TRANSLATIONS[currentLang].sec_add;
 
@@ -2578,7 +2613,7 @@ function checkEntityFrequency(entityId) {
                 text.innerHTML = TRANSLATIONS[currentLang] ? TRANSLATIONS[currentLang].freq_analyzing : "Analiza...";
 
                 // Fetch bez początkowego ukośnika "/" dla poprawnego działania w Ingress
-                fetch(`api/entity_frequency/${entityId}`)
+                fetch(`api/entity_frequency/${encodeURIComponent(entityId)}`)
                     .then(response => {
                         if (!response.ok) throw new Error('Błąd połączenia');
                         return response.json();
@@ -2826,13 +2861,18 @@ function checkEntityFrequency(entityId) {
             closeIconPicker();
         }
 
+        // Poprawiona walidacja (żeby wklejanie działało)
         function validateEntityInput(val) {
             const el = document.getElementById('w-id');
             if (!val) {
                 el.classList.remove('input-valid', 'input-invalid');
                 return;
             }
-            if (validEntityIds.has(val) || val.startsWith('navigate.') || val === 'spacer') {
+
+            // Sprawdzamy bezpośrednio w zestawie ID lub czy to specjalny typ
+            const isValid = validEntityIds.has(val) || val.startsWith('navigate.') || val === 'spacer';
+
+            if (isValid) {
                 el.classList.add('input-valid');
                 el.classList.remove('input-invalid');
             } else {
@@ -2872,6 +2912,8 @@ function checkEntityFrequency(entityId) {
 
         function useExecCommandFallback(element) {
             try {
+                element.select();
+                element.setSelectionRange(0, 99999);
                 const successful = document.execCommand('copy');
                 if (!successful) throw new Error("execCommand copy failed");
             }
