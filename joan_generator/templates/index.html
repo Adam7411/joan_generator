@@ -1582,8 +1582,8 @@
                 copy_success: "✅ SKOPIOWANO!",
                 copy_error: "❌ Błąd kopiowania: ",
                 freq_ok: "✅ Bateria OK (rzadkie zmiany: {0}/h). Bezpieczne dla e-ink.",
-                freq_warning: "⚠️ Średnie zużycie (zmiany: {0}/h). Może wpływać na czas pracy.",
-                freq_danger: "🦖 POŻERACZ BATERII! ({0}/h). Ta encja zmienia się bardzo często. Rozważ stworzenie sensora uśredniającego (np. średnia z 15 min), aby wydłużyć czas pracy baterii.",
+                freq_danger: "🦖 POŻERACZ BATERII! ({0}/h). Ta encja zmienia się zbyt często. <a href='#' onclick='openBatteryHelp()' style='color:inherit; font-weight:bold; text-decoration:underline;'>Jak to naprawić?</a>",
+                freq_warning: "⚠️ Średnie zużycie ({0}/h). Może wpływać na baterię. <a href='#' onclick='openBatteryHelp()' style='color:inherit; text-decoration:underline;'>Instrukcja uśredniania</a>",
                 freq_analyzing: "⏳ Analiza historii zmian encji (ostatnie 24h)..."
             },
             en: {
@@ -1666,8 +1666,8 @@
                 copy_success: "✅ COPIED!",
                 copy_error: "❌ Copy error: ",
                 freq_ok: "✅ Battery OK (rare updates: {0}/h). Safe for e-ink.",
-                freq_warning: "⚠️ Medium drain (updates: {0}/h). May impact runtime.",
-                freq_danger: "🦖 BATTERY EATER! ({0}/h). This entity updates very frequently. Consider creating an average sensor (e.g. 15 min avg) to extend battery life.",
+                freq_danger: "🦖 BATTERY EATER! ({0}/h). This entity updates too often. <a href='#' onclick='openBatteryHelp()' style='color:inherit; font-weight:bold; text-decoration:underline;'>How to fix it?</a>",
+                freq_warning: "⚠️ Medium drain ({0}/h). May impact battery life. <a href='#' onclick='openBatteryHelp()' style='color:inherit; text-decoration:underline;'>Smoothing guide</a>",
                 freq_analyzing: "⏳ Analyzing entity history (last 24h)..."
             }
         };
@@ -1732,33 +1732,21 @@
 
             let conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-eye' };
 
-            if (globalDefaultSize.w === 1 && globalDefaultSize.h === 1) {
-                conf.size = '(1x1)';
-            }
-
-            if (!isTitleSearch) {
-                const ent = entitiesData.find(e => e.id === input) || { attributes: {} };
-                const dClass = (ent.attributes.device_class || '').toLowerCase();
-                const domain = input.split('.')[0];
-
-                if (SMART_MAP[domain]) conf = { ...SMART_MAP[domain] };
-
-                // Rozszerzone mapowanie device_class (na podstawie visionect_joan integration)
-                if (dClass === 'garage') conf = { type: 'cover', size: '(2x1)', iconOn: 'mdi-garage-open', iconOff: 'mdi-garage' };
-                if (dClass === 'door') conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-door-open', iconOff: 'mdi-door-closed' };
-                if (dClass === 'window') conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-window-open-variant', iconOff: 'mdi-window-closed-variant' };
-                if (dClass === 'battery') conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-battery' };
-                if (dClass === 'temperature') conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-thermometer' };
-                if (dClass === 'humidity') conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-water-percent' };
-                if (dClass === 'moisture' || dClass === 'water' || dClass === 'leak') conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-water-alert', iconOff: 'mdi-water' };
-                if (dClass === 'smoke') conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-smoke-detector-alert', iconOff: 'mdi-smoke-detector' };
-                if (dClass === 'gas') conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-fire-alert', iconOff: 'mdi-fire' };
-                if (dClass === 'safety') conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-shield-check', iconOff: 'mdi-shield-off' };
-                if (dClass === 'timestamp') conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-clock' };
-                if (dClass === 'power' || dClass === 'plug') conf = { type: 'switch', size: '(2x1)', iconOn: 'mdi-power-plug', iconOff: 'mdi-power-plug-off' };
-            }
-
-            const check = (keywords) => keywords.some(k => inputNorm.includes(k));
+            // Rozszerzone mapowanie device_class (na podstawie visionect_joan integration)
+            if (dClass === 'garage') conf = { type: 'cover', size: '(2x1)', iconOn: 'mdi-garage-open', iconOff: 'mdi-garage' };
+            if (dClass === 'door') conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-door-open', iconOff: 'mdi-door-closed' };
+            if (dClass === 'window') conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-window-open-variant', iconOff: 'mdi-window-closed-variant' };
+            if (dClass === 'battery') conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-battery' };
+            if (dClass === 'temperature') conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-thermometer' };
+            if (dClass === 'humidity') conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-water-percent' };
+            if (dClass === 'moisture' || dClass === 'water' || dClass === 'leak') conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-water-alert', iconOff: 'mdi-water' };
+            if (dClass === 'smoke') conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-smoke-detector-alert', iconOff: 'mdi-smoke-detector' };
+            if (dClass === 'gas') conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-fire-alert', iconOff: 'mdi-fire' };
+            if (dClass === 'safety') conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-shield-check', iconOff: 'mdi-shield-off' };
+            if (dClass === 'timestamp') conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-clock' };
+            if (dClass === 'power' || dClass === 'plug') conf = { type: 'switch', size: '(2x1)', iconOn: 'mdi-power-plug', iconOff: 'mdi-power-plug-off' };
+            if (dClass === 'energy') conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-lightning-bolt' };
+            if (dClass === 'current') conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-current-ac' };
 
             // Rozszerzone rozpoznawanie na podstawie słów kluczowych (z visionect_joan integration)
             if (check(['glosnik', 'speaker', 'audio', 'tv', 'odtwarzacz', 'radio', 'telewizor'])) conf = SMART_MAP['media_player'];
@@ -2093,7 +2081,7 @@
         function cancelEdit() {
             editIdx = null; blockSmart = false;
             document.getElementById('editor-box').classList.remove('editing');
-            document.getElementById('btn-cancel').classList.add('hidden');
+            document.getElementById('btn-cancel').classList.remove('hidden');
 
             document.getElementById('lbl-add-widget').innerText = TRANSLATIONS[currentLang].sec_add;
 
@@ -2587,7 +2575,7 @@ function checkEntityFrequency(entityId) {
                 badge.className = 'freq-badge freq-warning';
                 badge.classList.remove('hidden');
                 icon.innerText = '⏳';
-                text.innerText = TRANSLATIONS[currentLang] ? TRANSLATIONS[currentLang].freq_analyzing : "Analiza...";
+                text.innerHTML = TRANSLATIONS[currentLang] ? TRANSLATIONS[currentLang].freq_analyzing : "Analiza...";
 
                 // Fetch bez początkowego ukośnika "/" dla poprawnego działania w Ingress
                 fetch(`api/entity_frequency/${entityId}`)
@@ -2621,7 +2609,7 @@ function checkEntityFrequency(entityId) {
                         // Zaktualizuj interfejs
                         badge.className = `freq-badge ${cssClass}`;
                         icon.innerText = iconChar;
-                        text.innerText = TRANSLATIONS[currentLang][msgKey].replace('{0}', changes);
+                        text.innerHTML = TRANSLATIONS[currentLang][msgKey].replace('{0}', changes);
                         badge.classList.remove('hidden');
                     })
                     .catch(err => {
@@ -2698,6 +2686,7 @@ function checkEntityFrequency(entityId) {
             }
 
             rebuildGridOptions(document.getElementById('screen-orientation').value);
+            reflowAllWidgets();
             handleGridChange();
             loadSavedList();
         }
@@ -3042,3 +3031,57 @@ function checkEntityFrequency(entityId) {
 </body>
 
 </html>
+
+<!-- MODAL INSTRUKCJI BATERII -->
+<div id="battery-help-modal" class="icon-picker-modal">
+    <div class="icon-picker-content" style="max-width: 600px; height: auto; max-height: 85vh;">
+        <div class="ip-header">
+            <h2 id="help-title">Jak oszczędzać baterię Joan 6?</h2>
+            <span class="ip-close" onclick="closeBatteryHelp()">&times;</span>
+        </div>
+        <div style="overflow-y: auto; padding-right: 10px; font-size: 0.95em; line-height: 1.5;">
+            <p>Twoja encja zmienia się bardzo często, co wymusza na ekranie E-Ink ciągłe odświeżanie. Aby Joan 6 działał miesiącami na baterii, stwórz <b>Sensor Statystyk</b>:</p>
+            <ol>
+                <li>W Home Assistant przejdź do: <b>Ustawienia</b> → <b>Urządzenia oraz usługi</b>.</li>
+                <li>Kliknij <b>Dodaj integrację</b> i wyszukaj <b>Statystyki</b> (Statistics).</li>
+                <li>Wypełnij formularz:
+                    <ul>
+                        <li><b>Encja wejściowa:</b> Twoja szybka encja (pożeracz).</li>
+                        <li><b>Charakterystyka:</b> Średnia (Mean).</li>
+                        <li><b>Wielkość próby:</b> 100.</li>
+                        <li><b>Maksymalny wiek:</b> 00:15:00 (15 minut).</li>
+                        <li><b>Precyzja:</b> 1 (Kluczowe! Zaokrągla do 0.1).</li>
+                    </ul>
+                </li>
+                <li>Zapisz i użyj nowej encji (np. <i>sensor.mean_...</i>) w tym generatorze.</li>
+            </ol>
+            <p>Oficjalna dokumentacja: <a href="https://www.home-assistant.io/integrations/statistics/" target="_blank">Home Assistant Statistics</a></p>
+        </div>
+        <button type="button" class="btn btn-gen" onclick="closeBatteryHelp()" style="margin-top:20px;">ROZUMIEM</button>
+    </div>
+</div>
+
+<script>
+    function openBatteryHelp() {
+        // Zmiana tytułu zależnie od języka
+        const title = document.getElementById('help-title');
+        if (currentLang === 'pl') {
+            title.innerText = "Jak oszczędzać baterię Joan 6?";
+        } else {
+            title.innerText = "How to save Joan 6 battery?";
+        }
+        document.getElementById('battery-help-modal').style.display = 'block';
+    }
+
+    function closeBatteryHelp() {
+        document.getElementById('battery-help-modal').style.display = 'none';
+    }
+
+    // Opcjonalnie: Zamknij okno po kliknięciu poza nim
+    window.addEventListener('click', function(event) {
+        const helpModal = document.getElementById('battery-help-modal');
+        if (event.target == helpModal) {
+            closeBatteryHelp();
+        }
+    });
+</script>
