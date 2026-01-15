@@ -1468,7 +1468,7 @@
             "mdi-calendar-month", "mdi-calendar-week", "mdi-calendar-blank",
             "mdi-update", "mdi-sync", "mdi-refresh", "mdi-reload", "mdi-autorenew",
 
-            // === NAWIGACJA / STRZAŁKI ===
+            // === NAWIGACJA / STRZAŁKY ===
             "mdi-arrow-up", "mdi-arrow-down", "mdi-arrow-left", "mdi-arrow-right",
             "mdi-arrow-up-bold", "mdi-arrow-down-bold", "mdi-arrow-left-bold", "mdi-arrow-right-bold",
             "mdi-arrow-up-circle", "mdi-arrow-down-circle", "mdi-arrow-left-circle", "mdi-arrow-right-circle",
@@ -1721,24 +1721,28 @@
 
             if (!val && !forceSmartTitle) return;
 
-            // Logika "Smart" dla ikon i typów (zostaje bez zmian)
-            if (forceSmartTitle) { 
-                runSmartLogic(val, true); 
-                return; 
+            // Wywołaj logikę smart (try/catch, bo runSmartLogic może teraz bezpiecznie działać)
+            try {
+                if (forceSmartTitle) { 
+                    runSmartLogic(val, true); 
+                    return; 
+                }
+                runSmartLogic(val, false);
+            } catch (e) {
+                console.error("Błąd w runSmartLogic:", e);
             }
-            runSmartLogic(val, false);
 
             // Wyszukiwanie zaczynamy już od 1 znaku dla lepszej responsywności
-            if (val.length < 1) return;
+            if (!val || val.length < 1) return;
 
             const inputNormalized = normalizeString(val);
-            const searchTerms = inputNormalized.split(/\s+/); // Rozbijamy wpisany tekst na słowa
+            const searchTerms = inputNormalized.split(/\s+/).filter(t => t.length > 0);
 
             let matches = [];
             
             for (const obj of entitiesData) {
-                const id = obj.id.toLowerCase();
-                const friendlyName = (obj.attributes.friendly_name || "").toLowerCase();
+                const id = (obj.id || "").toLowerCase();
+                const friendlyName = (obj.attributes && obj.attributes.friendly_name ? obj.attributes.friendly_name : "").toLowerCase();
                 
                 // Klucz do sukcesu: szukamy w ID, w przyjaznej nazwie ORAZ w ID, gdzie '_' zamieniono na spacje
                 const searchableText = normalizeString(id + " " + friendlyName + " " + id.replace(/_/g, ' '));
@@ -1755,7 +1759,7 @@
             matches.forEach(obj => {
                 const opt = document.createElement('option');
                 opt.value = obj.id;
-                const friendly = obj.attributes.friendly_name || "";
+                const friendly = obj.attributes && obj.attributes.friendly_name ? obj.attributes.friendly_name : "";
                 opt.label = friendly ? `${friendly} (${obj.id})` : obj.id;
                 dl.appendChild(opt);
             });
@@ -1763,28 +1767,57 @@
 
         function runSmartLogic(val, isTitleSearch) {
             if (blockSmart) return;
-            const input = val.toLowerCase(); const inputNorm = normalizeString(input);
+            if (!val) return;
+            const input = String(val).toLowerCase();
+            const inputNorm = normalizeString(input);
+            
+            // Blokada - poniżej 3 znaków nie zgadujemy typu ikony
             if (input.length < 3) return;
 
             let conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-eye' };
 
-            // Rozszerzone mapowanie device_class (na podstawie visionect_joan integration)
-            if (dClass === 'garage') conf = { type: 'cover', size: '(2x1)', iconOn: 'mdi-garage-open', iconOff: 'mdi-garage' };
-            if (dClass === 'door') conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-door-open', iconOff: 'mdi-door-closed' };
-            if (dClass === 'window') conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-window-open-variant', iconOff: 'mdi-window-closed-variant' };
-            if (dClass === 'battery') conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-battery' };
-            if (dClass === 'temperature') conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-thermometer' };
-            if (dClass === 'humidity') conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-water-percent' };
-            if (dClass === 'moisture' || dClass === 'water' || dClass === 'leak') conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-water-alert', iconOff: 'mdi-water' };
-            if (dClass === 'smoke') conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-smoke-detector-alert', iconOff: 'mdi-smoke-detector' };
-            if (dClass === 'gas') conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-fire-alert', iconOff: 'mdi-fire' };
-            if (dClass === 'safety') conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-shield-check', iconOff: 'mdi-shield-off' };
-            if (dClass === 'timestamp') conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-clock' };
-            if (dClass === 'power' || dClass === 'plug') conf = { type: 'switch', size: '(2x1)', iconOn: 'mdi-power-plug', iconOff: 'mdi-power-plug-off' };
-            if (dClass === 'energy') conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-lightning-bolt' };
-            if (dClass === 'current') conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-current-ac' };
+            // --- POPRAWKA: Pobieramy dane o encji, żeby sprawdzić jej klasę (device_class) ---
+            // Sprawdzamy najpierw czy wpis przypomina id encji (zawiera kropkę), w przeciwnym razie
+            // próbujemy znaleźć encję zawierającą wpis w id lub friendly_name.
+            let targetEntity = null;
+            if (input.includes('.')) {
+                targetEntity = entitiesData.find(e => e.id === input);
+            }
+            if (!targetEntity) {
+                // jeśli nie ma dokładnego dopasowania, spróbuj znaleźć entitis pasującą częściowo
+                const searchTerms = inputNorm.split(/\s+/).filter(Boolean);
+                targetEntity = entitiesData.find(e => {
+                    const id = (e.id || "").toLowerCase();
+                    const friendly = (e.attributes && e.attributes.friendly_name ? e.attributes.friendly_name : "").toLowerCase();
+                    const searchable = normalizeString(id + " " + friendly + " " + id.replace(/_/g, ' '));
+                    return searchTerms.every(t => searchable.includes(t));
+                });
+            }
 
-            // Rozszerzone rozpoznawanie na podstawie słów kluczowych (z visionect_joan integration)
+            const dClass = (targetEntity && targetEntity.attributes && targetEntity.attributes.device_class) 
+                           ? String(targetEntity.attributes.device_class).toLowerCase() 
+                           : "";
+            // --------------------------------------------------------------------------------
+
+            // Rozszerzone mapowanie na podstawie klasy urządzenia (device_class)
+            if (dClass === 'garage') conf = { type: 'cover', size: '(2x1)', iconOn: 'mdi-garage-open', iconOff: 'mdi-garage' };
+            else if (dClass === 'door') conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-door-open', iconOff: 'mdi-door-closed' };
+            else if (dClass === 'window') conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-window-open-variant', iconOff: 'mdi-window-closed-variant' };
+            else if (dClass === 'battery') conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-battery' };
+            else if (dClass === 'temperature') conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-thermometer' };
+            else if (dClass === 'humidity') conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-water-percent' };
+            else if (dClass === 'moisture' || dClass === 'water' || dClass === 'leak') conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-water-alert', iconOff: 'mdi-water' };
+            else if (dClass === 'smoke') conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-smoke-detector-alert', iconOff: 'mdi-smoke-detector' };
+            else if (dClass === 'gas') conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-fire-alert', iconOff: 'mdi-fire' };
+            else if (dClass === 'safety') conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-shield-check', iconOff: 'mdi-shield-off' };
+            else if (dClass === 'timestamp') conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-clock' };
+            else if (dClass === 'power' || dClass === 'plug') conf = { type: 'switch', size: '(2x1)', iconOn: 'mdi-power-plug', iconOff: 'mdi-power-plug-off' };
+            else if (dClass === 'energy') conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-lightning-bolt' };
+            else if (dClass === 'current') conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-current-ac' };
+
+            const check = (keywords) => keywords.some(k => inputNorm.includes(k));
+
+            // Rozpoznawanie na podstawie słów kluczowych
             if (check(['glosnik', 'speaker', 'audio', 'tv', 'odtwarzacz', 'radio', 'telewizor'])) conf = SMART_MAP['media_player'];
             else if (check(['swiatlo', 'lamp', 'kinkiet', 'led', 'zarowka', 'lampa'])) conf = SMART_MAP['light'];
             else if (check(['gniazdko', 'wtyczka', 'outlet', 'plug', 'socket'])) conf = SMART_MAP['switch'];
