@@ -1655,10 +1655,11 @@
                 modal_battery_body: `
                     <p>Twoja encja zmienia się bardzo często, co wymusza na ekranie E-Ink ciągłe odświeżanie. Aby Joan 6 działał dłużej na baterii, stwórz <b>Sensor Statystyk</b>:</p>
                     <ol>
-                        <li>W Home Assistant przejdź do: <b>Ustawienia</b> → <b>Urządzenia oraz usługi</b>.</li>
-                        <li>Kliknij <b>Dodaj integrację</b> i wyszukaj <b>Statystyki</b> (Statistics).</li>
+                        <li>W Home Assistant przejdź do: <b>Ustawienia</b> → <b>Urządzenia oraz usługi</b> → <b>Pomocnicy</b> → <b>Utwórz pomocnika</b>.</li>
+                        <li>Wyszukaj <b>Statystyki</b> (Statistics).</li>
                         <li>Wypełnij formularz:
                             <ul>
+                                <li><b>Nazwa:</b> Wpisz nazwę pomocnika.</li>
                                 <li><b>Encja wejściowa:</b> Twoja szybka encja (pożeracz).</li>
                                 <li><b>Charakterystyka:</b> Średnia (Mean).</li>
                                 <li><b>Wielkość próby:</b> 100.</li>
@@ -1666,6 +1667,7 @@
                                 <li><b>Precyzja:</b> 1 (Kluczowe! Zaokrągla do 0.1).</li>
                             </ul>
                         </li>
+                        <li>Kliknij <b>Zatwierdź</b>.</li>
                         <li>Zapisz i użyj nowej encji (np. <i>sensor.mean_...</i>) w tym generatorze.</li>
                     </ol>
                     <p>Oficjalna dokumentacja: <a href="https://www.home-assistant.io/integrations/statistics/" target="_blank">Home Assistant Statistics</a></p>
@@ -1756,19 +1758,21 @@
                 modal_battery_title: "How to save Joan 6 battery?",
                 modal_battery_understand: "I UNDERSTAND",
                 modal_battery_body: `
-                    <p>Your entity updates very frequently, forcing constant E-Ink screen refreshes. To keep Joan 6 runs longer on battery, create a <b>Statistics Sensor</b>:</p>
+                    <p>Your entity updates very frequently, forcing constant E-Ink screen refreshes. To keep Joan 6 running longer on battery, create a <b>Statistics Sensor</b>:</p>
                     <ol>
-                        <li>In Home Assistant, go to: <b>Settings</b> → <b>Devices & Services</b>.</li>
-                        <li>Click <b>Add Integration</b> and search for <b>Statistics</b>.</li>
+                        <li>In Home Assistant, go to: <b>Settings</b> → <b>Devices & Services</b> → <b>Helpers</b> → <b>Create Helper</b>.</li>
+                        <li>Search for <b>Statistics</b>.</li>
                         <li>Fill out the form:
                             <ul>
+                                <li><b>Name:</b> Enter a name for the helper.</li>
                                 <li><b>Input entity:</b> Your fast entity (battery eater).</li>
-                                <li><b>Statistic characteristic:</b> Mean.</li>
+                                <li><b>Characteristic:</b> Mean.</li>
                                 <li><b>Sampling size:</b> 100.</li>
                                 <li><b>Max age:</b> 00:15:00 (15 minutes).</li>
                                 <li><b>Precision:</b> 1 (Crucial! Rounds to 0.1).</li>
                             </ul>
                         </li>
+                        <li>Click <b>Submit</b>.</li>
                         <li>Save and use the new entity (e.g., <i>sensor.mean_...</i>) in this generator.</li>
                     </ol>
                     <p>Official documentation: <a href="https://www.home-assistant.io/integrations/statistics/" target="_blank">Home Assistant Statistics</a></p>
