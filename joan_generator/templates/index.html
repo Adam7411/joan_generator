@@ -2562,8 +2562,7 @@
         // ENTITY FREQUENCY ANALYZER
         // -------------------------------------------------------------------------
         let freqDebounceTimer;
-
-        function checkEntityFrequency(entityId) {
+function checkEntityFrequency(entityId) {
             const badge = document.getElementById('freq-badge');
             const icon = document.getElementById('freq-icon');
             const text = document.getElementById('freq-text');
@@ -2574,36 +2573,41 @@
                 return;
             }
 
-            // Walidacja formatu encji (kropka)
+            // Walidacja formatu encji (musi zawierać kropkę, np. sensor.temperature)
             if (!entityId.includes('.')) {
                 badge.classList.add('hidden');
                 return;
             }
 
-            // Debounce - czekaj 500ms po ostatnim wpisaniu
+            // Debounce - czekaj 500ms po ostatnim wpisaniu, aby nie przeciążać API
             clearTimeout(freqDebounceTimer);
 
             freqDebounceTimer = setTimeout(() => {
-                // Pokaż stan ładowania
+                // Pokaż stan ładowania (Analiza...)
                 badge.className = 'freq-badge freq-warning';
                 badge.classList.remove('hidden');
                 icon.innerText = '⏳';
                 text.innerText = TRANSLATIONS[currentLang] ? TRANSLATIONS[currentLang].freq_analyzing : "Analiza...";
 
-                fetch(`/api/entity_frequency/${entityId}`)
-                    .then(response => response.json())
+                // Fetch bez początkowego ukośnika "/" dla poprawnego działania w Ingress
+                fetch(`api/entity_frequency/${entityId}`)
+                    .then(response => {
+                        if (!response.ok) throw new Error('Błąd połączenia');
+                        return response.json();
+                    })
                     .then(data => {
                         if (data.error) {
                             badge.classList.add('hidden');
                             return;
                         }
 
-                        // Formatowanie tekstu
+                        // Pobierz dane z API
                         const changes = data.changes_per_hour;
                         let msgKey = 'freq_ok';
                         let cssClass = 'freq-ok';
                         let iconChar = '✅';
 
+                        // Dobierz styl i ikonę na podstawie poziomu zagrożenia
                         if (data.level === 'danger') {
                             msgKey = 'freq_danger';
                             cssClass = 'freq-danger';
@@ -2614,6 +2618,7 @@
                             iconChar = '⚠️';
                         }
 
+                        // Zaktualizuj interfejs
                         badge.className = `freq-badge ${cssClass}`;
                         icon.innerText = iconChar;
                         text.innerText = TRANSLATIONS[currentLang][msgKey].replace('{0}', changes);
@@ -2625,7 +2630,7 @@
                     });
             }, 500);
         }
-
+        
         function saveToBrowser() {
             const name = document.getElementById('save-dash-name').value;
             if (!name) return alert(TRANSLATIONS[currentLang].alert_name_required);
