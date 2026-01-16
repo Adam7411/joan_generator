@@ -1652,6 +1652,7 @@
                 freq_analyzing: "⏳ Analiza historii zmian encji (ostatnie 24h)...",
                 modal_battery_title: "Jak oszczędzać baterię Joan 6?",
                 modal_battery_understand: "ROZUMIEM",
+                confirm_duplicate: "Ta encja (ID) już istnieje na dashboardzie.\n\nCzy chcesz dodać jej KOPIĘ (z końcówką _copy)?\nKliknij OK, aby dodać kopię.\nKliknij Anuluj, aby przerwać.",
                 modal_battery_body: `
                     <p>Twoja encja zmienia się bardzo często, co wymusza na ekranie E-Ink ciągłe odświeżanie. Aby Joan 6 działał dłużej na baterii, stwórz <b>Sensor Statystyk</b>:</p>
                     <ol>
@@ -1757,6 +1758,7 @@
                 freq_analyzing: "⏳ Analyzing entity history (last 24h)...",
                 modal_battery_title: "How to save Joan 6 battery?",
                 modal_battery_understand: "I UNDERSTAND",
+                confirm_duplicate: "This entity (ID) already exists on the dashboard.\n\nDo you want to add a COPY (with _copy suffix)?\nClick OK to add a copy.\nClick Cancel to abort.",
                 modal_battery_body: `
                     <p>Your entity updates very frequently, forcing constant E-Ink screen refreshes. To keep Joan 6 running longer on battery, create a <b>Statistics Sensor</b>:</p>
                     <ol>
@@ -2136,8 +2138,36 @@
             if (w.type === 'spacer') w.id = 'spacer';
 
             fitSizeToGrid(w);
+            
+            // LOGIKA UNIKANIA DUPLIKATÓW
             if (w.type !== 'navigate' && w.type !== 'spacer') {
-                w.id = ensureUniqueId(w.id);
+                if (editIdx) {
+                    // EDYCJA: Sprawdzamy czy zmieniliśmy ID. Jeśli ID jest takie samo jak oryginał, NIE robimy _copy.
+                    const originalRow = rows[editIdx.r];
+                    if (originalRow && originalRow[editIdx.w]) {
+                        const originalId = originalRow[editIdx.w].id;
+                        // Jeśli ID się nie zmieniło, zachowujemy je (nie generujemy _copy)
+                        if (w.id !== originalId) {
+                            w.id = ensureUniqueId(w.id);
+                        }
+                        // Jeśli ID jest to samo, zostawiamy w.id bez zmian (czyli nadpiszemy ten sam widget)
+                    } else {
+                        // Fallback gdyby coś poszło nie tak z indeksem
+                        w.id = ensureUniqueId(w.id);
+                    }
+                } else {
+                    // NOWY WIDGET: Sprawdzamy czy już istnieje
+                    const existingIds = getAllWidgetIds();
+                    if (existingIds.has(w.id)) {
+                        const msg = TRANSLATIONS[currentLang].confirm_duplicate || "Entity exists. Create copy?";
+                        if (!confirm(msg)) {
+                            return; // Anuluj dodawanie
+                        }
+                        // Jeśli użytkownik potwierdził, robimy unikalne ID (kopię)
+                        w.id = ensureUniqueId(w.id);
+                    }
+                    // Jeśli nie istnieje, w.id zostaje oryginalne
+                }
             }
 
             let targetRowIdx = rows.length - 1;
@@ -2269,7 +2299,7 @@
             document.getElementById('w-id').value = ''; document.getElementById('w-name').value = '';
             document.getElementById('w-icon').value = ''; document.getElementById('w-icon-on').value = ''; document.getElementById('w-icon-off').value = '';
             const valueSizeSelect = document.getElementById('w-value-size');
-            if (valueSizeSelect) valueSizeSelect.value = 'auto';
+            if (valueSizeSelect) valueSizeSelect.value = 'normal'; // Domyślnie normal
             if (document.getElementById('w-min')) document.getElementById('w-min').value = '';
             if (document.getElementById('w-max')) document.getElementById('w-max').value = '';
             manualIconOverride = false; updateIconPreview(); updateTitleLimit();
