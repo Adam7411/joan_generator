@@ -2101,7 +2101,7 @@
         }
 
         function syncTitle() { document.getElementById('form-title').value = document.getElementById('dash-title').value; }
-        function autoNameNav() { if (blockSmart) return; document.getElementById('w-name').value = document.getElementById('w-dash').value.toUpperCase(); }
+        function autoNameNav() { if (blockSmart) return; document.getElementById('w-name').value = document.getElementById('w-dash').value; }
         function selectRow(rI) { if (editIdx) cancelEdit(); selectedRowIdx = rI; renderPreview(); }
 
         function getSlots(w) {
@@ -2221,6 +2221,9 @@
                 document.getElementById('w-icon').value = 'mdi-gauge';
                 manualIconOverride = true;
                 updateIconPreview();
+            }
+            if (type === 'navigate') {
+                autoNameNav();
             }
         }
 
