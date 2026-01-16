@@ -2389,7 +2389,9 @@
 
         function getRealState(w) {
             if (w.type === 'navigate') return w.dash || "";
-            const isPL = currentLang === 'pl'; const id = (w.id || ''); const ent = entitiesData.find(e => e.id === id);
+            const isPL = currentLang === 'pl';
+            const baseId = (w.id || '').replace(/_copy\d+$/, '');
+            const ent = entitiesData.find(e => e.id === baseId);
             if (!ent) return "---";
             const val = String(ent.state); const unit = ent.unit || "";
             if (val === 'on') return isPL ? "WŁĄCZONE" : "ON";
@@ -2401,7 +2403,8 @@
         }
 
         function getRealIcon(w) {
-            const id = (w.id || ''); const ent = entitiesData.find(e => e.id === id);
+            const baseId = (w.id || '').replace(/_copy\d+$/, '');
+            const ent = entitiesData.find(e => e.id === baseId);
             let defaultIcon = w.icon || w.icon_on || '';
             if (!ent) return defaultIcon;
             const s = String(ent.state).toLowerCase();
