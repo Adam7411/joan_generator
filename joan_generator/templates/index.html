@@ -2348,6 +2348,7 @@
         }
 
         function getRealState(w) {
+            if (w.type === 'navigate') return w.dash || "";
             const isPL = currentLang === 'pl'; const id = (w.id || ''); const ent = entitiesData.find(e => e.id === id);
             if (!ent) return "---";
             const val = String(ent.state); const unit = ent.unit || "";
