@@ -1910,6 +1910,9 @@
             // --------------------------------------------------------------------------------
 
             // Rozszerzone mapowanie na podstawie klasy urządzenia (device_class)
+            // oraz DOMENY (jeśli device_class puste lub niejednoznaczne)
+
+            // 1. Najpierw Device Class (najdokładniejsze)
             if (dClass === 'garage') conf = { type: 'cover', size: '(2x1)', iconOn: 'mdi-garage-open', iconOff: 'mdi-garage' };
             else if (dClass === 'door') conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-door-open', iconOff: 'mdi-door-closed' };
             else if (dClass === 'window') conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-window-open-variant', iconOff: 'mdi-window-closed-variant' };
@@ -1924,6 +1927,23 @@
             else if (dClass === 'power' || dClass === 'plug') conf = { type: 'switch', size: '(2x1)', iconOn: 'mdi-power-plug', iconOff: 'mdi-power-plug-off' };
             else if (dClass === 'energy') conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-lightning-bolt' };
             else if (dClass === 'current') conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-current-ac' };
+
+            // 2. Jeśli brak device_class, sprawdzamy domenę z ID (np. switch.x, light.x)
+            else if (input.startsWith('switch.')) conf = SMART_MAP['switch'];
+            else if (input.startsWith('light.')) conf = SMART_MAP['light'];
+            else if (input.startsWith('cover.')) conf = SMART_MAP['cover'];
+            else if (input.startsWith('fan.')) conf = SMART_MAP['fan'];
+            else if (input.startsWith('media_player.')) conf = SMART_MAP['media_player'];
+            else if (input.startsWith('lock.')) conf = SMART_MAP['lock'];
+            else if (input.startsWith('climate.')) conf = SMART_MAP['climate'];
+            else if (input.startsWith('person.') || input.startsWith('device_tracker.')) conf = { type: 'person', size: '(2x1)', iconOn: 'mdi-account', iconOff: 'mdi-account-outline' };
+            else if (input.startsWith('input_boolean.')) conf = SMART_MAP['input_boolean'];
+            else if (input.startsWith('input_select.')) conf = { type: 'input_select', size: '(2x1)', icon: 'mdi-form-dropdown' };
+            else if (input.startsWith('input_number.')) conf = { type: 'input_number', size: '(2x1)', icon: 'mdi-ruler' };
+            else if (input.startsWith('input_button.')) conf = SMART_MAP['input_button'];
+            else if (input.startsWith('script.')) conf = SMART_MAP['script'];
+            else if (input.startsWith('scene.')) conf = SMART_MAP['scene'];
+            else if (input.startsWith('binary_sensor.')) conf = SMART_MAP['binary_sensor'];
 
             const check = (keywords) => keywords.some(k => inputNorm.includes(k));
 
@@ -2138,7 +2158,7 @@
             if (w.type === 'spacer') w.id = 'spacer';
 
             fitSizeToGrid(w);
-            
+
             // LOGIKA UNIKANIA DUPLIKATÓW
             if (w.type !== 'navigate' && w.type !== 'spacer') {
                 if (editIdx) {
