@@ -648,6 +648,41 @@
             display: block;
         }
 
+        .ew-copy-tag {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            font-size: 10px;
+            color: #666;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 0 2px;
+            border: 1px solid #ccc;
+            border-radius: 2px;
+            pointer-events: none;
+            line-height: 1;
+        }
+
+        .ew-copy {
+            position: absolute;
+            top: -8px;
+            left: -8px;
+            background: #eee;
+            border: 1px solid #999;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 18px;
+            font-size: 10px;
+            display: none;
+            cursor: pointer;
+            z-index: 30;
+        }
+
+        .eink-widget:hover .ew-copy {
+            display: block;
+        }
+
         .ew-copy {
             position: absolute;
             top: -8px;
@@ -2162,17 +2197,23 @@
             // LOGIKA UNIKANIA DUPLIKATÓW
             if (w.type !== 'navigate' && w.type !== 'spacer') {
                 if (editIdx) {
-                    // EDYCJA: Sprawdzamy czy zmieniliśmy ID. Jeśli ID jest takie samo jak oryginał, NIE robimy _copy.
+                    // EDYCJA: Sprawdzamy czy zmieniliśmy "bazowe" ID
                     const originalRow = rows[editIdx.r];
                     if (originalRow && originalRow[editIdx.w]) {
                         const originalId = originalRow[editIdx.w].id;
-                        // Jeśli ID się nie zmieniło, zachowujemy je (nie generujemy _copy)
-                        if (w.id !== originalId) {
+                        const originalBase = originalId.replace(/_copy\d+$/, '');
+
+                        // Jeśli teraz wpisaliśmy coś innego niż bazowe ID oryginału, traktujemy to jako zmianę encji
+                        if (w.id !== originalBase) {
+                            // Jeśli nowe ID już istnieje gdzieś indziej, dodaj suffix
                             w.id = ensureUniqueId(w.id);
+                        } else {
+                            // Użytkownik zachował bazową encję. 
+                            // Musimy przywrócić originalId (czyli np. z suffixem), 
+                            // aby nie stworzyć konfliktu z innym widgetem o tym samym base.
+                            w.id = originalId;
                         }
-                        // Jeśli ID jest to samo, zostawiamy w.id bez zmian (czyli nadpiszemy ten sam widget)
                     } else {
-                        // Fallback gdyby coś poszło nie tak z indeksem
                         w.id = ensureUniqueId(w.id);
                     }
                 } else {
@@ -2180,13 +2221,9 @@
                     const existingIds = getAllWidgetIds();
                     if (existingIds.has(w.id)) {
                         const msg = TRANSLATIONS[currentLang].confirm_duplicate || "Entity exists. Create copy?";
-                        if (!confirm(msg)) {
-                            return; // Anuluj dodawanie
-                        }
-                        // Jeśli użytkownik potwierdził, robimy unikalne ID (kopię)
+                        if (!confirm(msg)) return;
                         w.id = ensureUniqueId(w.id);
                     }
-                    // Jeśli nie istnieje, w.id zostaje oryginalne
                 }
             }
 
@@ -2295,7 +2332,10 @@
             document.getElementById('w-type').value = data.type;
             toggleInputs();
             if (data.type === 'navigate') document.getElementById('w-dash').value = data.id.replace('navigate.', '');
-            else document.getElementById('w-id').value = data.id;
+            else {
+                // Strip _copy\d+ for user readability as requested
+                document.getElementById('w-id').value = data.id.replace(/_copy\d+$/, '');
+            }
             document.getElementById('w-name').value = data.name;
             document.getElementById('w-size').value = data.size || '(2x1)';
             document.getElementById('w-icon').value = data.icon || '';
@@ -2532,12 +2572,20 @@
                         const showIcon = (w.type !== 'sensor') && icon;
                         const iconHtml = showIcon ? `<i class="mdi ${icon} ew-icon"></i>` : `<div style="height:38px;"></div>`;
 
+                        // Check for copy suffix to show a subtle indicator
+                        let copyTagHtml = "";
+                        const copyMatch = w.id.match(/_copy(\d+)$/);
+                        if (copyMatch) {
+                            copyTagHtml = `<div class="ew-copy-tag">copy${copyMatch[1]}</div>`;
+                        }
+
                         div.innerHTML = `
                             <div class="ew-title">${w.name || w.id}</div>
                             ${iconHtml}
                             <div class="ew-value">${realState}</div>
                             <div class="ew-del" onclick="deleteWidget(${rI}, ${wI}, event)">X</div>
                             <div class="ew-copy" onclick="copyWidget(${rI}, ${wI}, event)">📄</div>
+                            ${copyTagHtml}
                         `;
                     }
                     div.onclick = (e) => { e.stopPropagation(); editWidget(rI, wI); };
