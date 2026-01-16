@@ -378,6 +378,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                 if w_id in seen_ids:
                     continue
                 seen_ids.add(w_id)
+                real_entity_id = get_real_entity(w_id)
 
                 if w_id in custom_defs and not w.get('was_edited', False):
                     output.append(f"{w_id}:")
@@ -394,7 +395,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                 i_off = normalize_icon_format(w.get('icon_off'))
                 value_size_hint = w.get('value_size_hint', 'auto')
                 # Obliczamy realny hint (auto -> medium/small/normal wg stanu)
-                final_size_hint = pick_auto_size(value_size_hint, w_id, entities_map)
+                final_size_hint = pick_auto_size(value_size_hint, real_entity_id, entities_map)
 
                 output.append(f"{w_id}:")
 
@@ -413,7 +414,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
 
                 elif w_type == 'switch':
                     output.append(f"  widget_type: switch")
-                    output.append(f"  entity: {get_real_entity(w_id)}")
+                    output.append(f"  entity: {real_entity_id}")
                     output.append(f"  title: \"{w_name}\"")
                     if i_on: output.append(f"  icon_on: {i_on}")
                     if i_off: output.append(f"  icon_off: {i_off}")
@@ -426,7 +427,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
 
                 elif w_type == 'sensor':
                     output.append(f"  widget_type: sensor")
-                    output.append(f"  entity: {get_real_entity(w_id)}")
+                    output.append(f"  entity: {real_entity_id}")
                     output.append(f"  title: \"{w_name}\"")
 
                     output.append(f"  title_style: \"{STYLE_TITLE}\"")
@@ -441,7 +442,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
 
                 elif w_type == 'media_player':
                     output.append(f"  widget_type: media_player")
-                    output.append(f"  entity: {get_real_entity(w_id)}")
+                    output.append(f"  entity: {real_entity_id}")
                     output.append(f"  title: \"{w_name}\"")
 
                     if w_icon:
@@ -454,7 +455,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
 
                 elif w_type == 'climate':
                     output.append(f"  widget_type: climate")
-                    output.append(f"  entity: {get_real_entity(w_id)}")
+                    output.append(f"  entity: {real_entity_id}")
                     output.append(f"  title: \"{w_name}\"")
 
                     output.append(f"  step: 1")
@@ -468,7 +469,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append("  low_speed: 33")
                     output.append("  medium_speed: 66")
                     output.append("  high_speed: 100")
-                    output.append(f"  entity: {get_real_entity(w_id)}")
+                    output.append(f"  entity: {real_entity_id}")
                     output.append(f"  title: \"{w_name}\"")
 
                     if i_on: output.append(f"  icon_on: {i_on}")
@@ -489,7 +490,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
 
                 elif w_type == 'scene':
                     output.append(f"  widget_type: scene")
-                    output.append(f"  entity: {get_real_entity(w_id)}")
+                    output.append(f"  entity: {real_entity_id}")
                     output.append(f"  title: \"{w_name}\"")
 
                     if w_icon: output.append(f"  icon: {w_icon}")
@@ -509,7 +510,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
 
                 elif w_type == 'gauge':
                     output.append(f"  widget_type: gauge")
-                    output.append(f"  entity: {get_real_entity(w_id)}")
+                    output.append(f"  entity: {real_entity_id}")
                     output.append(f"  title: \"{w_name}\"")
 
                     
@@ -539,7 +540,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
 
                 elif w_type == 'light':
                     output.append(f"  widget_type: light")
-                    output.append(f"  entity: {get_real_entity(w_id)}")
+                    output.append(f"  entity: {real_entity_id}")
                     output.append(f"  title: \"{w_name}\"")
 
                     if i_on: output.append(f"  icon_on: {i_on}")
@@ -552,7 +553,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
 
                 elif w_type == 'group':
                     output.append(f"  widget_type: group")
-                    output.append(f"  entity: {get_real_entity(w_id)}")
+                    output.append(f"  entity: {real_entity_id}")
                     output.append(f"  title: \"{w_name}\"")
 
                     if i_on: output.append(f"  icon_on: {i_on}")
@@ -565,7 +566,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
 
                 elif w_type == 'input_boolean':
                     output.append(f"  widget_type: input_boolean")
-                    output.append(f"  entity: {get_real_entity(w_id)}")
+                    output.append(f"  entity: {real_entity_id}")
                     output.append(f"  title: \"{w_name}\"")
 
                     if i_on: output.append(f"  icon_on: {i_on}")
@@ -579,7 +580,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
 
                 elif w_type == 'person':
                     output.append(f"  widget_type: person")
-                    output.append(f"  entity: {get_real_entity(w_id)}")
+                    output.append(f"  entity: {real_entity_id}")
                     output.append(f"  title: \"{w_name}\"")
 
                     if i_on: output.append(f"  icon_on: {i_on}")
@@ -593,7 +594,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
 
                 elif w_type == 'lock':
                     output.append(f"  widget_type: lock")
-                    output.append(f"  entity: {get_real_entity(w_id)}")
+                    output.append(f"  entity: {real_entity_id}")
                     output.append(f"  title: \"{w_name}\"")
 
                     if i_on: output.append(f"  icon_on: {i_on}")
@@ -618,14 +619,14 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
 
                 elif w_type == 'input_number':
                     output.append(f"  widget_type: input_number")
-                    output.append(f"  entity: {get_real_entity(w_id)}")
+                    output.append(f"  entity: {real_entity_id}")
                     output.append(f"  title: \"{w_name}\"")
 
                     
                     # Fetch units from entity if available
                     unit = ""
-                    if w_id in entities_map:
-                        unit = entities_map[w_id].get('attributes', {}).get('unit_of_measurement', '') or entities_map[w_id].get('unit', '')
+                    if real_entity_id in entities_map:
+                        unit = entities_map[real_entity_id].get('attributes', {}).get('unit_of_measurement', '') or entities_map[real_entity_id].get('unit', '')
                     if unit:
                         output.append(f"  units: \"{unit}\"")
                     
@@ -637,7 +638,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
 
                 elif w_type == 'input_select':
                     output.append(f"  widget_type: input_select")
-                    output.append(f"  entity: {get_real_entity(w_id)}")
+                    output.append(f"  entity: {real_entity_id}")
                     output.append(f"  title: \"{w_name}\"")
 
                     output.append(f"  title_style: \"{STYLE_TITLE}\"")
@@ -674,7 +675,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                         ad_type = 'script'
 
                     output.append(f"  widget_type: {ad_type}")
-                    output.append(f"  entity: {get_real_entity(w_id)}")
+                    output.append(f"  entity: {real_entity_id}")
                     output.append(f"  title: \"{w_name}\"")
 
                     if i_on: output.append(f"  icon_on: {i_on}")
