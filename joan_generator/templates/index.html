@@ -1335,15 +1335,16 @@
 
             <input type="hidden" name="layout_data_json" id="layout_json">
             <input type="hidden" name="custom_definitions_json" id="custom_defs">
+
             <div style="display:flex; gap:10px; margin-top:20px;">
+                {% if not generated_yaml %}
                 <button type="button" class="btn btn-gen" style="flex:1;" onclick="submitForm('generate')"
                     data-i18n="btn_gen">GENERUJ KOD .DASH</button>
                 <button type="button" class="btn btn-gen" style="flex:1; background-color: #d32f2f;"
                     onclick="submitForm('restart')" data-i18n="btn_restart">RESTART APPDAEMON</button>
-                {% if not connection_info.bridge_active %}
-                <button type="button" class="btn btn-gen" style="flex:1; background-color: #ff9800;"
-                    onclick="openAdConfig()" data-i18n="btn_ad_config">⚙️ KONFIGURACJA ZAPISU</button>
                 {% endif %}
+                <button type="button" class="btn btn-gen" style="flex:1; background-color: #607d8b;"
+                    onclick="clearAll()" data-i18n="btn_clear">🧹 WYCZYŚĆ WSZYSTKO</button>
             </div>
         </form>
 
@@ -1392,6 +1393,17 @@
                 {% if connection_info.bridge_active %}
                 <button type="button" class="btn btn-save-ad" onclick="submitForm('save_ad')" data-i18n="btn_save_ad"
                     style="flex:1; background-color: #e91e63;">🚀 ZAPISZ BEZPOŚREDNIO W APPDAEMON</button>
+                {% endif %}
+            </div>
+
+            <div style="display:flex; gap:10px; margin-bottom:20px;">
+                <button type="button" class="btn btn-gen" style="flex:1;" onclick="submitForm('generate')"
+                    data-i18n="btn_gen_again">GENERUJ PONOWNIE</button>
+                <button type="button" class="btn btn-gen" style="flex:1; background-color: #d32f2f;"
+                    onclick="submitForm('restart')" data-i18n="btn_restart">RESTART APPDAEMON</button>
+                {% if not connection_info.bridge_active %}
+                <button type="button" class="btn btn-gen" style="flex:1; background-color: #ff9800;"
+                    onclick="openAdConfig()" data-i18n="btn_ad_config">⚙️ KONFIGURACJA ZAPISU</button>
                 {% endif %}
             </div>
             <textarea class="output" id="output-yaml" readonly>{{ generated_yaml }}</textarea>
@@ -1724,6 +1736,9 @@
                 btn_copy_code: "Kopiuj kod",
                 copy_success: "✅ SKOPIOWANO!",
                 copy_error: "❌ Błąd kopiowania: ",
+                btn_clear: "🧹 WYCZYŚĆ WSZYSTKO",
+                confirm_clear: "Czy na pewno chcesz WYCZYŚĆ WSZYSTKO? Skasuje to obecny układ i zrestartuje generator (nie dotyczy plików na dysku/serwerze).",
+                btn_gen_again: "GENERUJ PONOWNIE (ODŚWIEŻ)",
                 freq_ok: "✅ Bateria OK (rzadkie zmiany: {0}/h). Bezpieczne dla e-ink.",
                 freq_danger: "🦖 POŻERACZ BATERII! ({0}/h). Ta encja zmienia się zbyt często. <a href='#' onclick='openBatteryHelp()' style='color:inherit; font-weight:bold; text-decoration:underline;'>Niezbędna naprawa KLIKNIJ?</a>",
                 freq_warning: "⚠️ Średnie zużycie ({0}/h). Może wpływać na baterię. <a href='#' onclick='openBatteryHelp()' style='color:inherit; text-decoration:underline;'>Opcjonalna naprawa KLIKNIJ</a>",
@@ -1839,6 +1854,9 @@
                 btn_copy_code: "Copy code",
                 copy_success: "✅ COPIED!",
                 copy_error: "❌ Copy error: ",
+                btn_clear: "🧹 CLEAR EVERYTHING",
+                confirm_clear: "Are you sure you want to CLEAR EVERYTHING? This will reset the current layout (does not affect files on disk/server).",
+                btn_gen_again: "GENERATE AGAIN (REFRESH)",
                 freq_ok: "✅ Battery OK (rare updates: {0}/h). Safe for e-ink.",
                 freq_danger: "🦖 BATTERY EATER! ({0}/h). This entity updates too often. <a href='#' onclick='openBatteryHelp()' style='color:inherit; font-weight:bold; text-decoration:underline;'>Click to Fix</a>",
                 freq_warning: "⚠️ Medium drain ({0}/h). May impact battery life. <a href='#' onclick='openBatteryHelp()' style='color:inherit; text-decoration:underline;'>Optional Click to Fix</a>",
@@ -3532,6 +3550,12 @@ class DashSaver(hass.Hass):
 
     function closeBatteryHelp() {
         document.getElementById('battery-help-modal').style.display = 'none';
+    }
+
+    function clearAll() {
+        if (confirm(TRANSLATIONS[currentLang].confirm_clear)) {
+            window.location.href = '/';
+        }
     }
 
     function openAdConfig() {
