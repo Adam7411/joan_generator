@@ -481,6 +481,9 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append(f"  widget_style: \"{STYLE_WIDGET}\"")
                     output.append(f"  icon_style_active: \"{STYLE_ICON}\"")
                     output.append(f"  icon_style_inactive: \"{STYLE_ICON}; opacity: 0.5;\"")
+                    output.append("  state_map:")
+                    output.append(f"    \"on\": \"{dic['on']}\"")
+                    output.append(f"    \"off\": \"{dic['off']}\"")
 
                 elif w_type == 'sensor':
                     output.append(f"  widget_type: sensor")
@@ -607,6 +610,9 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append(f"  widget_style: \"{STYLE_WIDGET}\"")
                     output.append(f"  icon_style_active: \"{STYLE_ICON}\"")
                     output.append(f"  icon_style_inactive: \"{STYLE_ICON}; opacity: 0.5;\"")
+                    output.append("  state_map:")
+                    output.append(f"    \"on\": \"{dic['on']}\"")
+                    output.append(f"    \"off\": \"{dic['off']}\"")
 
                 elif w_type == 'group':
                     output.append(f"  widget_type: group")
@@ -620,6 +626,9 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append(f"  widget_style: \"{STYLE_WIDGET}\"")
                     output.append(f"  icon_style_active: \"{STYLE_ICON}\"")
                     output.append(f"  icon_style_inactive: \"{STYLE_ICON}; opacity: 0.5;\"")
+                    output.append("  state_map:")
+                    output.append(f"    \"on\": \"{dic['on']}\"")
+                    output.append(f"    \"off\": \"{dic['off']}\"")
 
                 elif w_type == 'input_boolean':
                     output.append(f"  widget_type: input_boolean")
@@ -634,6 +643,9 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append(f"  widget_style: \"{STYLE_WIDGET}\"")
                     output.append(f"  icon_style_active: \"{STYLE_ICON}\"")
                     output.append(f"  icon_style_inactive: \"{STYLE_ICON}; opacity: 0.5;\"")
+                    output.append("  state_map:")
+                    output.append(f"    \"on\": \"{dic['on']}\"")
+                    output.append(f"    \"off\": \"{dic['off']}\"")
 
                 elif w_type == 'person':
                     output.append(f"  widget_type: person")
@@ -648,6 +660,9 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append(f"  widget_style: \"{STYLE_WIDGET}\"")
                     output.append(f"  icon_style_active: \"{STYLE_ICON}\"")
                     output.append(f"  icon_style_inactive: \"{STYLE_ICON}; opacity: 0.5;\"")
+                    output.append("  state_map:")
+                    output.append(f"    \"home\": \"{dic['home']}\"")
+                    output.append(f"    \"not_home\": \"{dic['not_home']}\"")
 
                 elif w_type == 'lock':
                     output.append(f"  widget_type: lock")
@@ -662,6 +677,9 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append(f"  widget_style: \"{STYLE_WIDGET}\"")
                     output.append(f"  icon_style_active: \"{STYLE_ICON}\"")
                     output.append(f"  icon_style_inactive: \"{STYLE_ICON}; opacity: 0.5;\"")
+                    output.append("  state_map:")
+                    output.append(f"    \"locked\": \"{dic['locked']}\"")
+                    output.append(f"    \"unlocked\": \"{dic['unlocked']}\"")
 
                 elif w_type == 'reload':
                     output.append(f"  widget_type: reload")
