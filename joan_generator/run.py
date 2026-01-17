@@ -799,100 +799,55 @@ def index():
 
     if request.method == 'POST':
         action = request.form.get('action', 'generate')
+        
+        # Pobieranie wspólnych danych dla większości akcji
+        title = request.form.get('title', 'JoanDashboard')
+        cols = int(request.form.get('grid_columns', 3))
+        rows_grid = int(request.form.get('grid_rows', 8))
+        def_size_str = request.form.get('default_widget_size', '2, 1')
+        layout_json = request.form.get('layout_data_json', '[]')
+        custom_defs_json = request.form.get('custom_definitions_json', '{}')
+        lang = request.form.get('ui_language', 'pl')
+        current_ui_lang = lang
+
+        # Aktualizacja globalnych parametrów widoku
+        dashboard_slug = title.lower().replace(" ", "_")
+        dashboard_filename = dashboard_slug + ".dash"
+        
+        try:
+            layout_data = json.loads(layout_json)
+            custom_defs = json.loads(custom_defs_json)
+            def_w, def_h = map(int, [x.strip() for x in def_size_str.split(',')])
+            grid_params = {'cols': cols, 'rows_grid': rows_grid, 'def_w': def_w, 'def_h': def_h}
+        except:
+            layout_data = []
+            custom_defs = {}
+            grid_params = {'cols': 3, 'rows_grid': 8, 'def_w': 2, 'def_h': 1}
 
         if action == 'restart':
             success, msg = restart_appdaemon_addon()
-            if success:
-                save_message = f"✅ Sukces: {msg}"
-            else:
-                save_message = f"❌ Błąd: {msg}"
-        elif action == 'save_ad':
-            # 1. Najpierw wygeneruj YAML (tak samo jak akcja 'generate')
-            title = request.form.get('title', 'JoanDashboard')
-            cols = int(request.form.get('grid_columns', 3))
-            rows_count = int(request.form.get('grid_rows', 8))
-            def_size_str = request.form.get('default_widget_size', '2, 1')
-            layout_json = request.form.get('layout_data_json', '[]')
-            custom_defs_json = request.form.get('custom_definitions_json', '{}')
-            
-            try:
-                layout_data = json.loads(layout_json)
-                custom_defs = json.loads(custom_defs_json)
-                def_w, def_h = map(int, [x.strip() for x in def_size_str.split(',')])
-                
-                grid_params = {
-                    'cols': cols,
-                    'rows_grid': rows_count,
-                    'def_w': def_w,
-                    'def_h': def_h
-                }
+            save_message = f"{'✅' if success else '❌'} {msg}"
 
+        elif action == 'save_ad':
+            try:
                 generated_yaml = generate_joan_dash_yaml(
-                    layout_data,
-                    title,
-                    grid_params,
-                    current_ui_lang,
-                    custom_defs,
-                    entities_map
+                    layout_data, title, grid_params, lang, custom_defs, entities_map
                 )
-                filename = title.lower().replace(" ", "_") + ".dash"
-                
-                # 2. Teraz spróbuj zapisać przez API mostka
-                success, msg = save_dash_file_via_api(filename, generated_yaml)
-                if success:
-                    save_message = f"✅ {msg}"
-                else:
-                    save_message = f"❌ {msg}"
-                    
+                success, msg = save_dash_file_via_api(dashboard_filename, generated_yaml)
+                save_message = f"{'✅' if success else '❌'} {msg}"
             except Exception as e:
-                save_message = f"❌ Błąd generowania/zapisu: {e}"
-        
+                save_message = f"❌ Błąd zapisu: {e}"
+
         elif action == 'download_file':
             yaml_content = request.form.get('yaml_content', '')
-            filename = request.form.get('filename', 'joandashboard.dash')
-            if yaml_content and filename:
+            if yaml_content:
                 file_obj = io.BytesIO(yaml_content.encode('utf-8'))
-                return send_file(
-                    file_obj,
-                    mimetype='text/plain',
-                    as_attachment=True,
-                    download_name=filename
-                )
-            else:
-                save_message = "❌ Błąd: Brak danych do pobrania"
-        else:
+                return send_file(file_obj, mimetype='text/plain', as_attachment=True, download_name=dashboard_filename)
+        
+        else: # generate
             try:
-                title = request.form.get('title', 'JoanDashboard')
-                dashboard_slug = title.lower().replace(" ", "_")
-                dashboard_filename = dashboard_slug + ".dash"
-
-                cols = int(request.form.get('grid_columns', '4'))
-                rows_grid = int(request.form.get('grid_rows', '8'))
-                lang = request.form.get('ui_language', 'pl')
-                current_ui_lang = lang
-
-                default_size_str = request.form.get('default_widget_size', '2, 1')
-                def_size_parts = default_size_str.split(',')
-                def_w = int(def_size_parts[0].strip())
-                def_h = int(def_size_parts[1].strip()) if len(def_size_parts) > 1 else 1
-
-                layout_data = json.loads(request.form.get('layout_data_json', '[]'))
-                custom_defs = json.loads(request.form.get('custom_definitions_json', '{}'))
-
-                grid_params = {
-                    'cols': cols,
-                    'rows_grid': rows_grid,
-                    'def_w': def_w,
-                    'def_h': def_h
-                }
-
                 generated_yaml = generate_joan_dash_yaml(
-                    layout_data,
-                    title,
-                    grid_params,
-                    lang,
-                    custom_defs,
-                    entities_map
+                    layout_data, title, grid_params, lang, custom_defs, entities_map
                 )
             except Exception as e:
                 print(f"❌ Error generating YAML: {e}")
@@ -907,7 +862,13 @@ def index():
         has_token=has_token,
         save_message=save_message,
         connection_info=connection_info,
-        current_lang=current_ui_lang
+        current_lang=current_ui_lang,
+        layout_data=layout_data if 'layout_data' in locals() else [],
+        custom_defs=custom_defs if 'custom_defs' in locals() else {},
+        title=title if 'title' in locals() else "JoanDashboard",
+        cols=cols if 'cols' in locals() else 3,
+        rows_grid=rows_grid if 'rows_grid' in locals() else 8,
+        def_size=def_size_str if 'def_size_str' in locals() else "2, 1"
     )
 
 # -------------------------------------------------------------------------
