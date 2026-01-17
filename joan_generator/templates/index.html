@@ -1061,7 +1061,7 @@
             <div class="flex-row">
                 <div class="flex-col">
                     <label data-i18n="lbl_dash_title">Tytuł Dashboardu</label>
-                    <input type="text" id="dash-title" oninput="syncTitle()" value="JoanDashboard">
+                    <input type="text" id="dash-title" oninput="syncTitle()" value="{{ title }}">
                 </div>
                 <div class="flex-col">
                     <label data-i18n="lbl_orientation">Orientacja ekranu</label>
@@ -1088,8 +1088,8 @@
                         </div>
                     </div>
                 </div>
-                <input type="hidden" id="h-cols" value="3">
-                <input type="hidden" id="h-rows" value="8">
+                <input type="hidden" id="h-cols" value="{{ cols }}">
+                <input type="hidden" id="h-rows" value="{{ rows_grid }}">
             </div>
         </div>
 
@@ -1386,13 +1386,14 @@
         const entitiesData = {{ entities | tojson | safe }};
         const validEntityIds = new Set(entitiesData.map(e => e.id));
         const connectionInfo = {{ connection_info | tojson | safe }};
-        let rows = [[]];
+        let initialRows = {{ layout_data | tojson | safe }};
+        let rows = (initialRows && initialRows.length > 0) ? initialRows : [[]];
         let editIdx = null;
         let selectedRowIdx = null;
         let blockSmart = false;
         let manualIconOverride = false;
         let currentLang = 'pl';
-        let rawImportedDefs = {};
+        let rawImportedDefs = {{ custom_defs | tojson | safe }} || {};
         let dragSrc = null;
         let globalDefaultSize = { w: 2, h: 1 };
         let currentLoadedDashName = null;
@@ -3276,7 +3277,7 @@
 
         function initOrientationAndGrid() {
             const sel = document.getElementById('grid-preset');
-            const initialGrid = '3x8';
+            const initialGrid = '{{ cols }}x{{ rows_grid }}';
             sel.value = initialGrid;
             document.getElementById('screen-orientation').value = 'portrait';
             rebuildGridOptions('portrait');
@@ -3313,6 +3314,15 @@
         initOrientationAndGrid();
         applyGrid();
         loadSavedList();
+
+        // Inicjalizacja domyślnego rozmiaru z backendu
+        const defSizeStr = '{{ def_size|default("2, 1") }}';
+        const parts = defSizeStr.split(',');
+        if (parts.length === 2) {
+            globalDefaultSize.w = parseInt(parts[0].strip ? parts[0].strip() : parts[0]) || 2;
+            globalDefaultSize.h = parseInt(parts[1].strip ? parts[1].strip() : parts[1]) || 1;
+        }
+
         // Ustawiamy język na podstawie wartości z backendu (jeśli dostępna)
         const backendLang = '{{ current_lang|default("pl") }}';
         setLang(backendLang === 'en' ? 'en' : 'pl');
