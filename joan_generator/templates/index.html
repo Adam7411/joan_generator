@@ -2718,14 +2718,16 @@
             document.getElementById('input-def-size').value = `${globalDefaultSize.w}, ${globalDefaultSize.h}`;
             document.getElementById('input-lang').value = currentLang;
 
+            // Layout i definicje muszą być zawsze zsynchronizowane, nawet przy restarcie!
+            document.getElementById('layout_json').value = JSON.stringify(rows);
+            document.getElementById('custom_defs').value = JSON.stringify(rawImportedDefs);
+
             if (actionType === 'restart') {
                 if (!confirm(TRANSLATIONS[currentLang].confirm_restart)) return;
                 document.getElementById('main-form').submit();
                 return;
             }
 
-            document.getElementById('layout_json').value = JSON.stringify(rows);
-            document.getElementById('custom_defs').value = JSON.stringify(rawImportedDefs);
             document.getElementById('main-form').submit();
         }
 
@@ -3554,7 +3556,7 @@ class DashSaver(hass.Hass):
 
     function clearAll() {
         if (confirm(TRANSLATIONS[currentLang].confirm_clear)) {
-            window.location.href = '/';
+            window.location.href = window.location.pathname;
         }
     }
 
