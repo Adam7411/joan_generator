@@ -820,8 +820,20 @@ def index():
                 custom_defs = json.loads(custom_defs_json)
                 def_w, def_h = map(int, [x.strip() for x in def_size_str.split(',')])
                 
-                generated_yaml = generate_appdaemon_yaml(
-                    title, cols, rows_count, (def_w, def_h), layout_data, custom_defs
+                grid_params = {
+                    'cols': cols,
+                    'rows_grid': rows_count,
+                    'def_w': def_w,
+                    'def_h': def_h
+                }
+
+                generated_yaml = generate_joan_dash_yaml(
+                    layout_data,
+                    title,
+                    grid_params,
+                    current_ui_lang,
+                    custom_defs,
+                    entities_map
                 )
                 filename = title.lower().replace(" ", "_") + ".dash"
                 
