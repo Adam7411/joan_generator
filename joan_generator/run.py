@@ -143,25 +143,30 @@ def restart_appdaemon_addon():
 def check_appdaemon_bridge():
     """Sprawdza czy skrypt dash_saver.py jest zainstalowany i aktywny w AppDaemon."""
     host = APPDAEMON_SLUG.replace('_', '-')
-    url = f"http://{host}:5050/api/appdaemon/save_dash"
+    url = f"http://{host}:5050/api/save_dash"
     
     print(f"🔍 Sprawdzanie dostępności mostka AppDaemon: {url}")
     try:
         # Krótki timeout, żeby nie blokować ładowania strony
-        response = requests.get(url, timeout=2)
+        response = requests.get(url, timeout=3)
         if response.status_code in [200, 405]: # 405 bo może akceptować tylko POST
             print("✅ Mostek AppDaemon wykryty!")
             return True
-    except Exception:
-        pass
+        else:
+            print(f"ℹ️ Mostek odpowiedział statusem: {response.status_code}")
+    except requests.exceptions.Timeout:
+        print("❌ Timeout podczas łączenia z AppDaemon (czy port 5050 jest otwarty?)")
+    except requests.exceptions.ConnectionError as e:
+        print(f"❌ Błąd połączenia z AppDaemon ({host}): {e}\n   Upewnij się, że slug ({APPDAEMON_SLUG}) jest poprawny i API w AppDaemon jest włączone.")
+    except Exception as e:
+        print(f"❌ Nieoczekiwany błąd mostka: {e}")
     
-    print("ℹ️ Mostek AppDaemon nieodnaleziony/nieaktywny.")
     return False
 
 def save_dash_file_via_api(filename, content):
     """Wysyła plik do AppDaemona przez endpoint API mostka."""
     host = APPDAEMON_SLUG.replace('_', '-')
-    url = f"http://{host}:5050/api/appdaemon/save_dash"
+    url = f"http://{host}:5050/api/save_dash"
     
     payload = {
         "filename": filename,
