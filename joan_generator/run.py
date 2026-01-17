@@ -143,30 +143,32 @@ def restart_appdaemon_addon():
 def check_appdaemon_bridge():
     """Sprawdza czy skrypt dash_saver.py jest zainstalowany i aktywny w AppDaemon."""
     host = APPDAEMON_SLUG.replace('_', '-')
-    url = f"http://{host}:5050/api/save_dash"
+    paths = ["/api/save_dash", "/api/appdaemon/save_dash"]
     
-    print(f"🔍 Sprawdzanie dostępności mostka AppDaemon: {url}")
-    try:
-        # Krótki timeout, żeby nie blokować ładowania strony
-        response = requests.get(url, timeout=3)
-        if response.status_code in [200, 405]: # 405 bo może akceptować tylko POST
-            print("✅ Mostek AppDaemon wykryty!")
-            return True
-        else:
-            print(f"ℹ️ Mostek odpowiedział statusem: {response.status_code}")
-    except requests.exceptions.Timeout:
-        print("❌ Timeout podczas łączenia z AppDaemon (czy port 5050 jest otwarty?)")
-    except requests.exceptions.ConnectionError as e:
-        print(f"❌ Błąd połączenia z AppDaemon ({host}): {e}\n   Upewnij się, że slug ({APPDAEMON_SLUG}) jest poprawny i API w AppDaemon jest włączone.")
-    except Exception as e:
-        print(f"❌ Nieoczekiwany błąd mostka: {e}")
+    for path in paths:
+        url = f"http://{host}:5050{path}"
+        print(f"🔍 Sprawdzanie ścieżki: {url}")
+        try:
+            response = requests.get(url, timeout=3)
+            if response.status_code in [200, 405]:
+                print(f"✅ Mostek AppDaemon wykryty pod adresem: {url}")
+                # Zapisujemy działającą ścieżkę w zmiennej globalnej dla funkcji save
+                global ACTIVE_BRIDGE_PATH
+                ACTIVE_BRIDGE_PATH = path
+                return True
+            else:
+                print(f"ℹ️ Ścieżka {path} zwróciła status: {response.status_code}")
+        except Exception as e:
+            print(f"❌ Błąd dla ścieżki {path}: {e}")
     
     return False
+
+ACTIVE_BRIDGE_PATH = "/api/save_dash" # Fallback
 
 def save_dash_file_via_api(filename, content):
     """Wysyła plik do AppDaemona przez endpoint API mostka."""
     host = APPDAEMON_SLUG.replace('_', '-')
-    url = f"http://{host}:5050/api/save_dash"
+    url = f"http://{host}:5050{ACTIVE_BRIDGE_PATH}"
     
     payload = {
         "filename": filename,
