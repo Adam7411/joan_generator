@@ -138,6 +138,53 @@ def restart_appdaemon_addon():
         return False, f"Błąd API: {response.status_code} {response.text}"
 
 # -------------------------------------------------------------------------
+# FUNKCJE MOSTEK API APPDAEMON (Direct Save)
+# -------------------------------------------------------------------------
+def check_appdaemon_bridge():
+    """Sprawdza czy skrypt dash_saver.py jest zainstalowany i aktywny w AppDaemon."""
+    host = APPDAEMON_SLUG.replace('_', '-')
+    url = f"http://{host}:5050/api/appdaemon/save_dash"
+    
+    print(f"🔍 Sprawdzanie dostępności mostka AppDaemon: {url}")
+    try:
+        # Krótki timeout, żeby nie blokować ładowania strony
+        response = requests.get(url, timeout=2)
+        if response.status_code in [200, 405]: # 405 bo może akceptować tylko POST
+            print("✅ Mostek AppDaemon wykryty!")
+            return True
+    except Exception:
+        pass
+    
+    print("ℹ️ Mostek AppDaemon nieodnaleziony/nieaktywny.")
+    return False
+
+def save_dash_file_via_api(filename, content):
+    """Wysyła plik do AppDaemona przez endpoint API mostka."""
+    host = APPDAEMON_SLUG.replace('_', '-')
+    url = f"http://{host}:5050/api/appdaemon/save_dash"
+    
+    payload = {
+        "filename": filename,
+        "content": content
+    }
+    
+    print(f"🚀 Próba wysyłki dashboardu do: {url}")
+    try:
+        headers = {"Content-Type": "application/json"}
+        # Jeśli mamy token HA, AppDaemon może go wymagać w zależności od konfiguracji
+        if TOKEN:
+             headers["Authorization"] = f"Bearer {TOKEN}"
+
+        response = requests.post(url, json=payload, headers=headers, timeout=10)
+        
+        if response.status_code == 200:
+            return True, "Sukces: Plik został zapisany bezpośrednio w AppDaemonie!"
+        else:
+            return False, f"Błąd API AppDaemon: {response.status_code} - {response.text}"
+    except Exception as e:
+        return False, f"Błąd połączenia z AppDaemon: {e}"
+
+# -------------------------------------------------------------------------
 # FUNKCJA ANALIZY CZĘSTOTLIWOŚCI ENCJI (Entity Frequency Analyzer)
 # -------------------------------------------------------------------------
 def get_entity_frequency(entity_id, hours=24):
@@ -734,7 +781,8 @@ def index():
         "token_source": TOKEN_SOURCE,
         "api_url": API_URL,
         "entity_count": len(ha_entities),
-        "appdaemon_slug": APPDAEMON_SLUG
+        "appdaemon_slug": APPDAEMON_SLUG,
+        "bridge_active": check_appdaemon_bridge()
     }
 
     current_ui_lang = request.form.get('ui_language', 'pl') if request.method == 'POST' else request.args.get('lang', 'pl')
@@ -812,7 +860,7 @@ def index():
     )
 
 # -------------------------------------------------------------------------
-# API ENDPOINT: Entity Frequency Analyzer
+# API ENDPOINTS
 # -------------------------------------------------------------------------
 @app.route('/api/entity_frequency/<path:entity_id>')
 def api_entity_frequency(entity_id):
@@ -820,6 +868,25 @@ def api_entity_frequency(entity_id):
     from flask import jsonify
     result = get_entity_frequency(entity_id, hours=24)
     return jsonify(result)
+
+@app.route('/api/save_dash', methods=['POST'])
+def api_save_dash():
+    """Obsługuje żądanie zapisu przez API z frontendu."""
+    try:
+        data = request.json
+        filename = data.get('filename')
+        content = data.get('content')
+        
+        if not filename or not content:
+            from flask import jsonify
+            return jsonify({"success": False, "message": "Brak nazwy pliku lub zawartości"}), 400
+        
+        success, message = save_dash_file_via_api(filename, content)
+        from flask import jsonify
+        return jsonify({"success": success, "message": message})
+    except Exception as e:
+        from flask import jsonify
+        return jsonify({"success": False, "message": str(e)}), 500
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000, debug=True)
