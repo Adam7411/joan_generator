@@ -3236,7 +3236,9 @@
 
         function sendToAppDaemon() {
             const yaml = document.getElementById('output-yaml').value;
-            const filename = connectionInfo.filename || 'joandashboard.dash';
+            // Pobieramy tytuł z pola tekstowego i robimy z niego nazwę pliku
+            const title = document.getElementById('dash-title').value || 'joandashboard';
+            const filename = title.toLowerCase().replace(/ /g, '_') + '.dash';
             const btn = document.querySelector('.btn-save-ad');
 
             if (!yaml) return;
