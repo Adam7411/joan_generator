@@ -210,6 +210,26 @@
             color: var(--text-main);
         }
 
+        /* Bloki kodu w modalach */
+        pre {
+            background: #f4f4f4;
+            color: #333;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 13px;
+            border: 1px solid #ddd;
+            text-align: left;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            line-height: 1.4;
+        }
+
+        html.dark-mode pre {
+            background: #000000 !important;
+            color: #81d4fa !important;
+            border-color: #444 !important;
+        }
+
         .file-path-info {
             background-color: var(--link-bg);
             color: var(--link-color);
@@ -1334,9 +1354,14 @@
             <div class="file-path-info">
                 <!-- Step 1: Save -->
                 <div class="file-info-block">
-                    <strong data-i18n="res_step1">1. Zapisz wygenerowany kod w pliku:</strong>
+                    {% if connection_info.bridge_active %}
+                    <strong data-i18n="res_step1_bridge">1. Zapisz bezpośrednio w AppDaemon:</strong>
+                    {% else %}
+                    <strong data-i18n="res_step1">1. Zapisz wygenerowany kod w pliku albo skonfiguruj konfigurację
+                        zapisu:</strong>
                     <code id="path-code"
                         data-path-template="[HA_IP]\addon_configs\{{ connection_info.appdaemon_slug }}\dashboards\{{ filename }}">[HA_IP]\addon_configs\{{ connection_info.appdaemon_slug }}\dashboards\{{ filename }}</code>
+                    {% endif %}
                 </div>
 
                 <!-- Step 2: Restart -->
@@ -1668,7 +1693,8 @@
                 btn_upload: "⬆️ WGRAJ PROJEKT Z DYSKU",
 
                 // --- SEKCJA WYNIKÓW ---
-                res_step1: "1. Zapisz wygenerowany kod w pliku:",
+                res_step1: "1. Zapisz wygenerowany kod w pliku albo skonfiguruj konfigurację zapisu:",
+                res_step1_bridge: "1. Zapisz bezpośrednio w AppDaemon:",
                 res_step2: "2. Zrestartuj dodatek AppDaemon:",
                 res_step2_desc: "(Wymagane, aby nowy plik został wczytany)",
                 res_step3: "3. Sprawdź w przeglądarce:",
@@ -1782,7 +1808,8 @@
                 btn_upload: "⬆️ UPLOAD PROJECT FROM DISK",
 
                 // --- RESULT SECTION ---
-                res_step1: "1. Save generated code to file:",
+                res_step1: "1. Save code to file or configure save settings:",
+                res_step1_bridge: "1. Save directly in AppDaemon:",
                 res_step2: "2. Restart AppDaemon add-on:",
                 res_step2_desc: "(Required for the new file to load)",
                 res_step3: "3. Check in browser:",
@@ -3427,8 +3454,7 @@
 
             <p data-i18n="ad_config_step2">2. Stwórz plik <code>dash_saver.py</code> i wklej poniższą zawartość:</p>
             <div style="position: relative;">
-                <pre id="code-dash-saver"
-                    style="background: #f4f4f4; padding: 15px; border-radius: 5px; overflow-x: auto; font-size: 12px; border: 1px solid #ddd; text-align: left;">import hassapi as hass
+                <pre id="code-dash-saver">import hassapi as hass
 import os
 
 class DashSaver(hass.Hass):
@@ -3473,8 +3499,7 @@ class DashSaver(hass.Hass):
 
             <p data-i18n="ad_config_step3" style="margin-top:20px;">3. W pliku <code>apps.yaml</code> dopisz:</p>
             <div style="position: relative;">
-                <pre id="code-apps-yaml"
-                    style="background: #f4f4f4; padding: 15px; border-radius: 5px; overflow-x: auto; font-size: 12px; border: 1px solid #ddd; text-align: left;">dash_saver_app:
+                <pre id="code-apps-yaml">dash_saver_app:
   module: dash_saver
   class: DashSaver</pre>
                 <button type="button" class="btn"
