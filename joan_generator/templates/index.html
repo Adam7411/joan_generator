@@ -1320,6 +1320,10 @@
                     data-i18n="btn_gen">GENERUJ KOD .DASH</button>
                 <button type="button" class="btn btn-gen" style="flex:1; background-color: #d32f2f;"
                     onclick="submitForm('restart')" data-i18n="btn_restart">RESTART APPDAEMON</button>
+                {% if not connection_info.bridge_active %}
+                <button type="button" class="btn btn-gen" style="flex:1; background-color: #ff9800;"
+                    onclick="openAdConfig()" data-i18n="btn_ad_config">⚙️ KONFIGURACJA ZAPISU</button>
+                {% endif %}
             </div>
         </form>
 
@@ -1685,6 +1689,13 @@
                 json_load_success: "Pomyślnie wczytano projekt z pliku JSON!",
                 json_load_error: "Błąd pliku JSON: ",
                 confirm_restart: "Czy na pewno zrestartować AppDaemon?",
+                btn_ad_config: "⚙️ KONFIGURACJA ZAPISU",
+                modal_ad_config_title: "Konfiguracja bezpośredniego zapisu",
+                ad_config_step1: "1. Wejdź w katalog <code>/addon_configs/a0d7b954_appdaemon/apps/</code> (np. przez File Editor).",
+                ad_config_step2: "2. Stwórz plik <code>dash_saver.py</code> i wklej poniższą zawartość:",
+                ad_config_step3: "3. W pliku <code>apps.yaml</code> w tym samym folderze dopisz:",
+                ad_config_step4: "4. Zrestartuj AppDaemon i odśwież tę stronę.",
+                btn_copy_code: "Kopiuj kod",
                 copy_success: "✅ SKOPIOWANO!",
                 copy_error: "❌ Błąd kopiowania: ",
                 freq_ok: "✅ Bateria OK (rzadkie zmiany: {0}/h). Bezpieczne dla e-ink.",
@@ -1792,6 +1803,13 @@
                 json_load_success: "Project loaded from JSON!",
                 json_load_error: "JSON file error: ",
                 confirm_restart: "Restart AppDaemon?",
+                btn_ad_config: "⚙️ SAVE CONFIGURATION",
+                modal_ad_config_title: "Direct Save Configuration",
+                ad_config_step1: "1. Go to <code>/addon_configs/a0d7b954_appdaemon/apps/</code> (e.g. via File Editor).",
+                ad_config_step2: "2. Create <code>dash_saver.py</code> file and paste the content below:",
+                ad_config_step3: "3. In <code>apps.yaml</code> file (same folder) add:",
+                ad_config_step4: "4. Restart AppDaemon and refresh this page.",
+                btn_copy_code: "Copy code",
                 copy_success: "✅ COPIED!",
                 copy_error: "❌ Copy error: ",
                 freq_ok: "✅ Battery OK (rare updates: {0}/h). Safe for e-ink.",
@@ -3397,6 +3415,80 @@
     </div>
 </div>
 
+<!-- MODAL KONFIGURACJI APPDAEMON (Bridge) -->
+<div id="ad-config-modal" class="icon-picker-modal">
+    <div class="icon-picker-content" style="max-width: 800px; height: auto; max-height: 90vh;">
+        <div class="ip-header">
+            <h2 id="ad-config-title" data-i18n="modal_ad_config_title">Konfiguracja bezpośredniego zapisu</h2>
+            <span class="ip-close" onclick="closeAdConfig()">&times;</span>
+        </div>
+        <div style="overflow-y: auto; padding: 20px; font-size: 0.95em; line-height: 1.6;">
+            <p data-i18n="ad_config_step1">1. Wejdź w katalog <code>/addon_configs/a0d7b954_appdaemon/apps/</code>.</p>
+
+            <p data-i18n="ad_config_step2">2. Stwórz plik <code>dash_saver.py</code> i wklej poniższą zawartość:</p>
+            <div style="position: relative;">
+                <pre id="code-dash-saver"
+                    style="background: #f4f4f4; padding: 15px; border-radius: 5px; overflow-x: auto; font-size: 12px; border: 1px solid #ddd; text-align: left;">import hassapi as hass
+import os
+
+class DashSaver(hass.Hass):
+    def initialize(self):
+        self.register_endpoint(self.save_dashboard_file, "save_dash")
+        self.log("Mostek DashSaver zainicjalizowany i gotowy.")
+
+    def save_dashboard_file(self, data, *args, **kwargs):
+        if isinstance(data, dict) and data.get("method") == "GET" or not data:
+            return {"status": "success", "message": "DashSaver bridge is active"}, 200
+
+        filename = data.get("filename")
+        content = data.get("content")
+        
+        if not filename or not content:
+            return {"status": "error", "message": "Brak nazwy pliku lub zawartości"}, 400
+
+        base_dir = "/config/dashboards"
+        if not os.path.exists(base_dir):
+            base_dir = os.path.join(self.config_dir, "dashboards")
+
+        if not os.path.exists(base_dir):
+            try:
+                os.makedirs(base_dir, exist_ok=True)
+            except Exception as e:
+                return {"status": "error", "message": f"Nie można utworzyć folderu: {e}"}, 500
+
+        filepath = os.path.join(base_dir, filename)
+
+        try:
+            with open(filepath, "w", encoding="utf-8") as f:
+                f.write(content)
+            self.log(f"Zapisano dashboard przez API: {filepath}")
+            return {"status": "success", "message": f"Zapisano {filename}"}, 200
+        except Exception as e:
+            self.error(f"Blad zapisu dashboardu: {e}")
+            return {"status": "error", "message": str(e)}, 500</pre>
+                <button type="button" class="btn"
+                    style="position: absolute; top: 10px; right: 10px; font-size: 12px; background: #2196f3; color: white;"
+                    onclick="copyToClipboardText('code-dash-saver')" data-i18n="btn_copy_code">Kopiuj kod</button>
+            </div>
+
+            <p data-i18n="ad_config_step3" style="margin-top:20px;">3. W pliku <code>apps.yaml</code> dopisz:</p>
+            <div style="position: relative;">
+                <pre id="code-apps-yaml"
+                    style="background: #f4f4f4; padding: 15px; border-radius: 5px; overflow-x: auto; font-size: 12px; border: 1px solid #ddd; text-align: left;">dash_saver_app:
+  module: dash_saver
+  class: DashSaver</pre>
+                <button type="button" class="btn"
+                    style="position: absolute; top: 10px; right: 10px; font-size: 12px; background: #2196f3; color: white;"
+                    onclick="copyToClipboardText('code-apps-yaml')" data-i18n="btn_copy_code">Kopiuj kod</button>
+            </div>
+
+            <p data-i18n="ad_config_step4" style="margin-top:20px; font-weight: bold; color: #e91e63;">4. Zrestartuj
+                AppDaemon i odśwież tę stronę.</p>
+        </div>
+        <button type="button" class="btn btn-gen" onclick="closeAdConfig()" style="margin:20px;">OK</button>
+    </div>
+</div>
+
 <script>
     function openBatteryHelp() {
         const t = TRANSLATIONS[currentLang];
@@ -3417,11 +3509,26 @@
         document.getElementById('battery-help-modal').style.display = 'none';
     }
 
+    function openAdConfig() {
+        document.getElementById('ad-config-modal').style.display = 'block';
+    }
+    function closeAdConfig() {
+        document.getElementById('ad-config-modal').style.display = 'none';
+    }
+    function copyToClipboardText(elementId) {
+        const text = document.getElementById(elementId).innerText;
+        navigator.clipboard.writeText(text).then(() => {
+            showToast(TRANSLATIONS[currentLang].copy_success, 'success');
+        }).catch(err => {
+            showToast(TRANSLATIONS[currentLang].copy_error + err, 'error');
+        });
+    }
+
     // Opcjonalnie: Zamknij okno po kliknięciu poza nim
     window.addEventListener('click', function (event) {
         const helpModal = document.getElementById('battery-help-modal');
-        if (event.target == helpModal) {
-            closeBatteryHelp();
-        }
+        const configModal = document.getElementById('ad-config-modal');
+        if (event.target == helpModal) closeBatteryHelp();
+        if (event.target == configModal) closeAdConfig();
     });
 </script>
