@@ -806,6 +806,35 @@ def index():
                 save_message = f"✅ Sukces: {msg}"
             else:
                 save_message = f"❌ Błąd: {msg}"
+        elif action == 'save_ad':
+            # 1. Najpierw wygeneruj YAML (tak samo jak akcja 'generate')
+            title = request.form.get('title', 'JoanDashboard')
+            cols = int(request.form.get('grid_columns', 3))
+            rows_count = int(request.form.get('grid_rows', 8))
+            def_size_str = request.form.get('default_widget_size', '2, 1')
+            layout_json = request.form.get('layout_data_json', '[]')
+            custom_defs_json = request.form.get('custom_definitions_json', '{}')
+            
+            try:
+                layout_data = json.loads(layout_json)
+                custom_defs = json.loads(custom_defs_json)
+                def_w, def_h = map(int, [x.strip() for x in def_size_str.split(',')])
+                
+                generated_yaml = generate_appdaemon_yaml(
+                    title, cols, rows_count, (def_w, def_h), layout_data, custom_defs
+                )
+                filename = title.lower().replace(" ", "_") + ".dash"
+                
+                # 2. Teraz spróbuj zapisać przez API mostka
+                success, msg = save_dash_file_via_api(filename, generated_yaml)
+                if success:
+                    save_message = f"✅ {msg}"
+                else:
+                    save_message = f"❌ {msg}"
+                    
+            except Exception as e:
+                save_message = f"❌ Błąd generowania/zapisu: {e}"
+        
         elif action == 'download_file':
             yaml_content = request.form.get('yaml_content', '')
             filename = request.form.get('filename', 'joandashboard.dash')
@@ -879,24 +908,6 @@ def api_entity_frequency(entity_id):
     result = get_entity_frequency(entity_id, hours=24)
     return jsonify(result)
 
-@app.route('/api/save_dash', methods=['POST'])
-def api_save_dash():
-    """Obsługuje żądanie zapisu przez API z frontendu."""
-    try:
-        data = request.json
-        filename = data.get('filename')
-        content = data.get('content')
-        
-        if not filename or not content:
-            from flask import jsonify
-            return jsonify({"success": False, "message": "Brak nazwy pliku lub zawartości"}), 400
-        
-        success, message = save_dash_file_via_api(filename, content)
-        from flask import jsonify
-        return jsonify({"success": success, "message": message})
-    except Exception as e:
-        from flask import jsonify
-        return jsonify({"success": False, "message": str(e)}), 500
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000, debug=True)
