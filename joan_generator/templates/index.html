@@ -1361,7 +1361,7 @@
                     data-i18n="btn_download_file" style="flex:1; background-color: #2196f3;">⬇️ POBIERZ PLIK
                     .DASH</button>
                 {% if connection_info.bridge_active %}
-                <button type="button" class="btn btn-save-ad" onclick="sendToAppDaemon()" data-i18n="btn_save_ad"
+                <button type="button" class="btn btn-save-ad" onclick="submitForm('save_ad')" data-i18n="btn_save_ad"
                     style="flex:1; background-color: #e91e63;">🚀 ZAPISZ BEZPOŚREDNIO W APPDAEMON</button>
                 {% endif %}
             </div>
@@ -2647,11 +2647,12 @@
         function submitForm(actionType) {
             document.getElementById('form-action').value = actionType;
 
-            // Upewniamy się, że aktualny język jest zapisany przed wysłaniem formularza
-            const langInput = document.getElementById('input-lang');
-            if (langInput) {
-                langInput.value = currentLang;
-            }
+            // Synchronizacja wszystkich pól przed wysłaniem
+            document.getElementById('form-title').value = document.getElementById('dash-title').value;
+            document.getElementById('form-cols').value = document.getElementById('h-cols').value;
+            document.getElementById('form-rows').value = document.getElementById('h-rows').value;
+            document.getElementById('input-def-size').value = `${globalDefaultSize.w}, ${globalDefaultSize.h}`;
+            document.getElementById('input-lang').value = currentLang;
 
             if (actionType === 'restart') {
                 if (!confirm(TRANSLATIONS[currentLang].confirm_restart)) return;
@@ -3234,51 +3235,6 @@
             document.body.removeChild(a);
         }
 
-        function sendToAppDaemon() {
-            const yaml = document.getElementById('output-yaml').value;
-            // Pobieramy tytuł z pola tekstowego i robimy z niego nazwę pliku
-            const title = document.getElementById('dash-title').value || 'joandashboard';
-            const filename = title.toLowerCase().replace(/ /g, '_') + '.dash';
-            const btn = document.querySelector('.btn-save-ad');
-
-            if (!yaml) return;
-
-            const originalText = btn.innerHTML;
-            btn.disabled = true;
-            btn.innerHTML = "⏳ WYSYŁANIE...";
-
-            fetch('/api/save_dash', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    filename: filename,
-                    content: yaml
-                }),
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        showToast(data.message, "success");
-                        btn.innerHTML = "✅ ZAPISANO!";
-                        setTimeout(() => {
-                            btn.innerHTML = originalText;
-                            btn.disabled = false;
-                        }, 3000);
-                    } else {
-                        showToast("Błąd: " + data.message, "error");
-                        btn.innerHTML = originalText;
-                        btn.disabled = false;
-                    }
-                })
-                .catch((error) => {
-                    console.error('Error:', error);
-                    showToast("Błąd połączenia z API generatora", "error");
-                    btn.innerHTML = originalText;
-                    btn.disabled = false;
-                });
-        }
 
         function loadProjectFile(input) {
             const file = input.files[0];
