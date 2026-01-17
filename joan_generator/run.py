@@ -845,6 +845,13 @@ def index():
         if action == 'restart':
             success, msg = restart_appdaemon_addon()
             save_message = f"{'✅' if success else '❌'} {msg}"
+            # Regenerujemy YAML, aby nie znikał po odświeżeniu strony przy restarcie
+            try:
+                generated_yaml = generate_joan_dash_yaml(
+                    layout_data, title, grid_params, lang, custom_defs, entities_map
+                )
+            except Exception as e:
+                print(f"❌ Error regenerating YAML during restart: {e}")
 
         elif action == 'save_ad':
             try:
