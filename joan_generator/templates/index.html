@@ -1360,6 +1360,10 @@
                 <button type="button" class="btn btn-download-file" onclick="downloadDashFile()"
                     data-i18n="btn_download_file" style="flex:1; background-color: #2196f3;">⬇️ POBIERZ PLIK
                     .DASH</button>
+                {% if connection_info.bridge_active %}
+                <button type="button" class="btn btn-save-ad" onclick="sendToAppDaemon()" data-i18n="btn_save_ad"
+                    style="flex:1; background-color: #e91e63;">🚀 ZAPISZ BEZPOŚREDNIO W APPDAEMON</button>
+                {% endif %}
             </div>
             <textarea class="output" id="output-yaml" readonly>{{ generated_yaml }}</textarea>
         </div>
@@ -1669,6 +1673,7 @@
                 btn_restart: "RESTART APPDAEMON",
                 btn_copy: "📋 KOPIUJ KOD DO SCHOWKA",
                 btn_download_file: "⬇️ POBIERZ PLIK .DASH",
+                btn_save_ad: "🚀 ZAPISZ BEZPOŚREDNIO W APPDAEMON",
                 status_details: "Token: {token_source} • API: {api_url} • Encje: {entity_count} • AppDaemon: {appdaemon_slug}",
                 status_details_missing: "Brak danych połączenia.",
                 battery_warning: "⚠️ <b>Uwaga Bateria:</b> Unikaj encji zmieniających się bardzo często (np. napięcie w czasie rzeczywistym). Częste odświeżanie ekranu szybko zużywa baterię!",
@@ -1775,6 +1780,7 @@
                 btn_restart: "RESTART APPDAEMON",
                 btn_copy: "📋 COPY CODE TO CLIPBOARD",
                 btn_download_file: "⬇️ DOWNLOAD .DASH FILE",
+                btn_save_ad: "🚀 SAVE DIRECTLY TO APPDAEMON",
                 status_details: "Token: {token_source} • API: {api_url} • Entities: {entity_count} • AppDaemon: {appdaemon_slug}",
                 status_details_missing: "No connection info.",
                 battery_warning: "⚠️ <b>Battery Tip:</b> Avoid entities that update very frequently (e.g., real-time power/voltage). Frequent screen refreshes drain the battery quickly!",
@@ -3226,6 +3232,50 @@
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
+        }
+
+        function sendToAppDaemon() {
+            const yaml = document.getElementById('output-yaml').value;
+            const filename = connectionInfo.filename || 'joandashboard.dash';
+            const btn = document.querySelector('.btn-save-ad');
+
+            if (!yaml) return;
+
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = "⏳ WYSYŁANIE...";
+
+            fetch('/api/save_dash', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    filename: filename,
+                    content: yaml
+                }),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast(data.message, "success");
+                        btn.innerHTML = "✅ ZAPISANO!";
+                        setTimeout(() => {
+                            btn.innerHTML = originalText;
+                            btn.disabled = false;
+                        }, 3000);
+                    } else {
+                        showToast("Błąd: " + data.message, "error");
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                    }
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                    showToast("Błąd połączenia z API generatora", "error");
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                });
         }
 
         function loadProjectFile(input) {
