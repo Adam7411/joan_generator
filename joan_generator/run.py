@@ -166,30 +166,33 @@ def check_appdaemon_bridge():
 ACTIVE_BRIDGE_PATH = "/api/save_dash" # Fallback
 
 def save_dash_file_via_api(filename, content):
-    """Wysyła plik do AppDaemona przez endpoint API mostka."""
+    """Wysyła plik do AppDaemona próbując różnych możliwych ścieżek API."""
     host = APPDAEMON_SLUG.replace('_', '-')
-    url = f"http://{host}:5050{ACTIVE_BRIDGE_PATH}"
+    paths = ["/api/appdaemon/save_dash", "/api/save_dash"]
     
-    payload = {
-        "filename": filename,
-        "content": content
-    }
-    
-    print(f"🚀 Próba wysyłki dashboardu do: {url}")
-    try:
-        headers = {"Content-Type": "application/json"}
-        # Jeśli mamy token HA, AppDaemon może go wymagać w zależności od konfiguracji
-        if TOKEN:
-             headers["Authorization"] = f"Bearer {TOKEN}"
-
-        response = requests.post(url, json=payload, headers=headers, timeout=10)
+    last_error = "Nieznany błąd"
+    for path in paths:
+        url = f"http://{host}:5050{path}"
+        payload = {"filename": filename, "content": content}
         
-        if response.status_code == 200:
-            return True, "Sukces: Plik został zapisany bezpośrednio w AppDaemonie!"
-        else:
-            return False, f"Błąd API AppDaemon: {response.status_code} - {response.text}"
-    except Exception as e:
-        return False, f"Błąd połączenia z AppDaemon: {e}"
+        print(f"🚀 Próba wysyłki dashboardu na: {url}")
+        try:
+            headers = {"Content-Type": "application/json"}
+            if TOKEN:
+                 headers["Authorization"] = f"Bearer {TOKEN}"
+
+            response = requests.post(url, json=payload, headers=headers, timeout=10)
+            
+            if response.status_code == 200:
+                return True, f"Sukces: Plik {filename} został zapisany!"
+            
+            last_error = f"Status {response.status_code}: {response.text}"
+            print(f"ℹ️ Ścieżka {path} nie zadziałała ({last_error})")
+        except Exception as e:
+            last_error = str(e)
+            print(f"❌ Błąd połączenia ze ścieżką {path}: {e}")
+
+    return False, f"Błąd zapisu (próbowano wszystkich ścieżek). Ostatni błąd: {last_error}"
 
 # -------------------------------------------------------------------------
 # FUNKCJA ANALIZY CZĘSTOTLIWOŚCI ENCJI (Entity Frequency Analyzer)
