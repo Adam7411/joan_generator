@@ -352,7 +352,8 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
             'open': 'OTWARTE', 'closed': 'ZAMKNIĘTE',
             'opening': 'OTWIERANIE', 'closing': 'ZAMYKANIE',
             'locked': 'ZAMKNIĘTE', 'unlocked': 'OTWARTE',
-            'home': 'W DOMU', 'not_home': 'POZA'
+            'home': 'W DOMU', 'not_home': 'POZA',
+            'cover_open': 'OTWARTA', 'cover_closed': 'ZAMKNIĘTA'
         },
         'en': {
             'on': 'ON', 'off': 'OFF',
@@ -680,6 +681,23 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append("  state_map:")
                     output.append(f"    \"locked\": \"{dic['locked']}\"")
                     output.append(f"    \"unlocked\": \"{dic['unlocked']}\"")
+
+                elif w_type == 'cover':
+                    output.append(f"  widget_type: cover")
+                    output.append(f"  entity: {real_entity_id}")
+                    output.append(f"  title: \"{w_name}\"")
+                    if i_on: output.append(f"  icon_on: {i_on}")
+                    if i_off: output.append(f"  icon_off: {i_off}")
+                    if w_icon and not i_on: output.append(f"  icon: {w_icon}")
+                    output.append(f"  title_style: \"{STYLE_TITLE}\"")
+                    output.append(f"  widget_style: \"{STYLE_WIDGET}\"")
+                    output.append(f"  icon_style_active: \"{STYLE_ICON}\"")
+                    output.append(f"  icon_style_inactive: \"{STYLE_ICON}; opacity: 0.5;\"")
+                    output.append("  state_map:")
+                    output.append(f"    \"open\": \"{dic.get('cover_open', dic['open'])}\"")
+                    output.append(f"    \"closed\": \"{dic.get('cover_closed', dic['closed'])}\"")
+                    output.append(f"    \"opening\": \"{dic['opening']}\"")
+                    output.append(f"    \"closing\": \"{dic['closing']}\"")
 
                 elif w_type == 'reload':
                     output.append(f"  widget_type: reload")
