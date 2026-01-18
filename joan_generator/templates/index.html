@@ -1050,22 +1050,13 @@
 
             {% if has_token %}
             <div class="status-bar status-ok"
-                style="display: flex; flex-direction: column; align-items: flex-start; gap: 5px; padding: 12px;">
+                style="display: flex; justify-content: center; align-items: center; gap: 10px; padding: 12px; position: relative;">
                 <div style="display: flex; align-items: center; gap: 8px; font-weight: bold;">
                     <i class="mdi mdi-check-circle" style="font-size: 1.2em;"></i>
                     <span data-i18n="status_ok">Połączono z Home Assistant (Token OK)</span>
                 </div>
-                <div
-                    style="display: grid; grid-template-columns: auto auto; gap: 4px 20px; font-size: 0.85em; opacity: 0.9; width: 100%; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 5px; margin-top: 2px;">
-                    <div>Encji: <b>{{ connection_info.entity_count }}</b></div>
-                    <div>AppDaemon: <b>{{ connection_info.appdaemon_slug }}</b></div>
-                    <div>API Source: {{ connection_info.token_source }}</div>
-                    <div style="grid-column: 1 / -1; word-break: break-all;">
-                        Path: <span class="path-display" style="font-family: monospace; user-select: text;"
-                            data-path-template="\\[HA_IP]\addon_configs\{{ connection_info.appdaemon_slug }}\">\\[HA_IP]\addon_configs\{{
-                            connection_info.appdaemon_slug }}\</span>
-                    </div>
-                </div>
+                <i class="mdi mdi-information-outline click-icon" onclick="showInfoModal()"
+                    style="font-size: 1.4em; cursor: pointer; opacity: 0.8;" title="Szczegóły połączenia"></i>
             </div>
             <div class="status-details" id="status-details"></div>
             {% else %}
@@ -1613,7 +1604,7 @@
             "mdi-calendar-month", "mdi-calendar-week", "mdi-calendar-blank",
             "mdi-update", "mdi-sync", "mdi-refresh", "mdi-reload", "mdi-autorenew",
 
-            // === NAWIGACJA / STRZAŁKY ===
+            // === NAWIGACJA / STRZAŁKI ===
             "mdi-arrow-up", "mdi-arrow-down", "mdi-arrow-left", "mdi-arrow-right",
             "mdi-arrow-up-bold", "mdi-arrow-down-bold", "mdi-arrow-left-bold", "mdi-arrow-right-bold",
             "mdi-arrow-up-circle", "mdi-arrow-down-circle", "mdi-arrow-left-circle", "mdi-arrow-right-circle",
@@ -1702,9 +1693,9 @@
                 manager_saved_list: "Twoje zapisane dashboardy:",
 
                 status_ok: "Połączono z Home Assistant (Token OK)",
-                status_err: "Brak tokena API! Lista encji jest pusta. Sprawd�� konfigurację dodatku.",
+                status_err: "Brak tokena API! Lista encji jest pusta. Sprawdź konfigurację dodatku.",
                 modal_title: "Wybierz Ikonę",
-                sec_backup: "📂 Zarządzanie Projektem (Backup na Dysk)",
+                sec_backup: "📂 Project Management (Disk Backup)",
                 backup_desc: "Pobierz plik .json na dysk swojego komputera. To pełna kopia zapasowa, która pozwala przenieść projekt na inne urządzenie.",
                 btn_download: "⬇️ POBIERZ PROJEKT (.JSON)",
                 btn_upload: "⬆️ WGRAJ PROJEKT Z DYSKU",
@@ -3861,7 +3852,71 @@ class DashSaver(hass.Hass):
             updateResultPathsToHost();
         }
     });
+    // Info Modal Logic
+    function showInfoModal() {
+        const m = document.getElementById('info-modal');
+        if (!m) return;
+
+        // Populate fields
+        document.getElementById('info-entities').innerText = typeof connectionInfo !== 'undefined' ? connectionInfo.entity_count : '-';
+        document.getElementById('info-ad-slug').innerText = typeof connectionInfo !== 'undefined' ? connectionInfo.appdaemon_slug : '-';
+        document.getElementById('info-api-source').innerText = typeof connectionInfo !== 'undefined' ? connectionInfo.token_source : '-';
+
+        const bridgeActive = typeof connectionInfo !== 'undefined' && connectionInfo.bridge_active;
+        document.getElementById('info-bridge').innerText = bridgeActive ? 'TAK (Aktywny)' : 'NIE / BRAK';
+        document.getElementById('info-bridge').style.color = bridgeActive ? 'green' : 'red';
+
+        const dashCount = typeof dashboardsList !== 'undefined' ? dashboardsList.length : 0;
+        document.getElementById('info-dash-count').innerText = dashCount;
+
+        // Update dynamic path
+        const pathEl = document.getElementById('info-path');
+        if (pathEl) {
+            const host = window.location.hostname || '[HA_IP]';
+            pathEl.textContent = pathEl.getAttribute('data-template').replace(/\[HA_IP\]/g, host);
+        }
+        m.style.display = 'block';
+    }
+    function closeInfoModal() { document.getElementById('info-modal').style.display = 'none'; }
 </script>
 </body>
+
+<!-- INFO MODAL -->
+<div id="info-modal" class="modal">
+    <div class="modal-content" style="max-width: 500px;">
+        <div class="modal-header">
+            <h2>Szczegóły Systemu</h2>
+            <span class="close" onclick="closeInfoModal()">&times;</span>
+        </div>
+        <div class="modal-body" style="font-size: 0.95em; line-height: 1.6;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div><strong>Liczba Encji:</strong></div>
+                <div id="info-entities">...</div>
+
+                <div><strong>AppDaemon Slug:</strong></div>
+                <div id="info-ad-slug">...</div>
+
+                <div><strong>API Source:</strong></div>
+                <div id="info-api-source">...</div>
+
+                <div><strong>Plik dash_saver.py:</strong></div>
+                <div id="info-bridge" style="font-weight: bold;">...</div>
+
+                <div><strong>Liczba Dashboardów:</strong></div>
+                <div id="info-dash-count">...</div>
+            </div>
+            <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #ddd;">
+                <div><strong>Ścieżka Config AppDaemon:</strong></div>
+                <div id="info-path" data-template="\\[HA_IP]\addon_configs\{{ connection_info.appdaemon_slug }}\"
+                    style="font-family: monospace; background: #f5f5f5; padding: 5px; border-radius: 4px; margin-top: 5px; word-break: break-all; color: #333;">
+                    ...
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeInfoModal()">Zamknij</button>
+        </div>
+    </div>
+</div>
 
 </html>
