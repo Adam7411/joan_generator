@@ -511,6 +511,10 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append(f"  title_style: \"{STYLE_TITLE}\"")
                     output.append(f"  widget_style: \"{STYLE_WIDGET}\"")
                     output.append(f"  icon_style: \"{STYLE_ICON}\"")
+                    output.append(f"  text_style: \"{STYLE_TEXT}\"")
+                    output.append(f"  level_style: \"{STYLE_TEXT}; font-size: 16px;\"")
+                    output.append(f"  icon_up_style: \"{STYLE_ICON}\"")
+                    output.append(f"  icon_down_style: \"{STYLE_ICON}\"")
                     output.append("  truncate_name: 20")
                     output.append("  step: 5")
 
@@ -838,8 +842,10 @@ def index():
         
         # Pobieranie wspólnych danych dla większości akcji
         title = request.form.get('title', 'JoanDashboard')
-        cols = int(request.form.get('grid_columns', 3))
-        rows_grid = int(request.form.get('grid_rows', 8))
+        cols_val = request.form.get('grid_columns', '3')
+        cols = int(cols_val) if cols_val and cols_val.strip() else 3
+        rows_val = request.form.get('grid_rows', '8')
+        rows_grid = int(rows_val) if rows_val and rows_val.strip() else 8
         def_size_str = request.form.get('default_widget_size', '2, 1')
         layout_json = request.form.get('layout_data_json', '[]')
         custom_defs_json = request.form.get('custom_definitions_json', '{}')
