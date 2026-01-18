@@ -1052,6 +1052,12 @@
             <div class="status-bar status-ok">
                 <i class="mdi mdi-check-circle"></i>
                 <span data-i18n="status_ok">Połączono z Home Assistant (Token OK)</span>
+                <div style="margin-top:5px; font-size:0.85em; opacity:0.9;">
+                    Encji: {{ connection_info.entity_count }} |
+                    <span class="path-display"
+                        data-path-template="\\[HA_IP]\addon_configs\{{ connection_info.appdaemon_slug }}\">\\[HA_IP]\addon_configs\{{
+                        connection_info.appdaemon_slug }}\</span>
+                </div>
             </div>
             <div class="status-details" id="status-details"></div>
             {% else %}
@@ -1410,6 +1416,7 @@
         const entitiesData = {{ entities | tojson | safe }};
         const validEntityIds = new Set(entitiesData.map(e => e.id));
         const connectionInfo = {{ connection_info | tojson | safe }};
+        const dashboardsList = {{ dashboards_list | tojson | safe }};
         let initialRows = {{ layout_data | tojson | safe }};
         let rows = (initialRows && initialRows.length > 0) ? initialRows : [[]];
         let editIdx = null;
@@ -1892,7 +1899,7 @@
             'binary_sensor': { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-checkbox-marked-circle', iconOff: 'mdi-checkbox-blank-circle-outline' },
             'sensor': { type: 'sensor', size: '(2x1)', icon: 'mdi-eye' },
             'media_player': { type: 'media_player', size: '(2x2)', icon: '' },
-            'climate': { type: 'climate', size: '(2x2)', icon: '' },
+            'climate': { type: 'climate', size: '(2x1)', icon: '' },
             'lock': { type: 'lock', size: '(2x1)', iconOn: 'mdi-lock-open', iconOff: 'mdi-lock' },
             'script': { type: 'script', size: '(2x1)', icon: 'mdi-script-text-outline' },
             'fan': { type: 'fan', size: '(2x1)', iconOn: 'mdi-fan', iconOff: 'mdi-fan-off' },
@@ -2356,6 +2363,20 @@
 
                 document.getElementById('div-icon-on').style.display = 'none';
                 document.getElementById('div-icon-off').style.display = 'none';
+
+                // Populate datalist for navigate
+                const dl = document.getElementById('nav-dash-suggestions');
+                if (dl && typeof dashboardsList !== 'undefined' && dashboardsList.length > 0) {
+                    dl.innerHTML = '';
+                    dashboardsList.forEach(f => {
+                        if (f.name && f.name.endsWith('.dash')) {
+                            const base = f.name.replace('.dash', '');
+                            const opt = document.createElement('option');
+                            opt.value = base;
+                            dl.appendChild(opt);
+                        }
+                    });
+                }
             } else if (!hideIcons) {
                 document.getElementById('div-icon-std').style.display = 'block';
                 document.querySelector('#div-icon-std label').innerText = TRANSLATIONS[currentLang].lbl_icon || 'Ikona (Standard)';
@@ -3112,23 +3133,26 @@
         function updateResultPathsToHost() {
             // Pobiera IP/Hosta z paska adresu przeglądarki
             const host = window.location.hostname || '[HA_IP]';
-            const pathEl = document.getElementById('path-code');
+
+            // Update generic path displays
+            document.querySelectorAll('.path-display').forEach(el => {
+                let tmpl = el.getAttribute('data-path-template') || el.textContent;
+                el.textContent = tmpl.replace(/\[HA_IP\]/g, host);
+            });
+
+            const pathEl = document.getElementById('path-code'); // Legacy ID support
             const linkEl = document.getElementById('dashboard-link');
 
             if (pathEl) {
-                // Pobiera szablon i podmienia [HA_IP] na wykryty host
-                let tmpl = pathEl.dataset.pathTemplate || pathEl.textContent;
-                pathEl.textContent = tmpl.replace('[HA_IP]', host);
+                let tmpl = pathEl.getAttribute('data-path-template') || pathEl.textContent;
+                pathEl.textContent = tmpl.replace(/\[HA_IP\]/g, host);
             }
 
             if (linkEl) {
                 const tmplHref = linkEl.getAttribute('data-link-template') || linkEl.getAttribute('href');
-                // Podmienia [HA_IP] w linku (np. http://[HA_IP]:5050/...)
-                const newHref = (tmplHref || '').replace('[HA_IP]', host);
+                const newHref = (tmplHref || '').replace(/\[HA_IP\]/g, host);
                 linkEl.setAttribute('href', newHref);
-
-                // Podmienia tekst linku
-                linkEl.textContent = (linkEl.textContent || '').replace('[HA_IP]', host);
+                linkEl.textContent = (linkEl.textContent || '').replace(/\[HA_IP\]/g, host);
             }
         }
 
