@@ -336,14 +336,14 @@ def get_entity_frequency(entity_id, hours=24):
 
 # 3. STYLES (E-INK OPTIMIZED & TWEAKED)
 # -------------------------------------------------------------------------
-STYLE_TITLE = "color: #000000 !important; font-size: 20px; font-weight: 700; text-align: center; padding-top: 5px; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif;"
-STYLE_WIDGET = "color: #000000 !important; background-color: #FFFFFF !important;"
-STYLE_TEXT = "color: #000000 !important; font-weight: 700 !important;"
-STYLE_VALUE_TEMPLATE = "color: #000000 !important; font-size: {px}px !important; font-weight: 700 !important; padding-top: 60px !important; line-height: 1.1 !important; display: inline-block !important;"
-STYLE_GAUGE_VALUE = "color: #000000 !important; font-size: 30px !important; font-weight: 700 !important; line-height: 1.1 !important; display: inline-block !important;"
-STYLE_UNIT = "color: #000000 !important; padding-top: 60px !important; display: inline-block !important;"
-STYLE_ICON = "color: #000000 !important;"
-STYLE_STATE_TEXT = "color: #000000 !important; font-weight: 700 !important; font-size: 16px !important;"
+STYLE_TITLE = "color: #000000 !important; font-size: 20px; font-weight: 700; text-align: center; padding-top: 5px; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif"
+STYLE_WIDGET = "color: #000000 !important; background-color: #FFFFFF !important"
+STYLE_TEXT = "color: #000000 !important; font-weight: 700 !important"
+STYLE_VALUE_TEMPLATE = "color: #000000 !important; font-size: {px}px !important; font-weight: 700 !important; padding-top: 60px !important; line-height: 1.1 !important; display: inline-block !important"
+STYLE_GAUGE_VALUE = "color: #000000 !important; font-size: 30px !important; font-weight: 700 !important; line-height: 1.1 !important; display: inline-block !important"
+STYLE_UNIT = "color: #000000 !important; padding-top: 60px !important; display: inline-block !important"
+STYLE_ICON = "color: #000000 !important"
+STYLE_STATE_TEXT = "color: #000000 !important; font-weight: 700 !important; font-size: 16px !important"
 
 def build_value_style(size_hint: str) -> str:
     """
@@ -457,9 +457,9 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
     output.append(f"  white_text_style: \"{STYLE_TEXT}\"")
     output.append(f"  state_text_style: \"{STYLE_STATE_TEXT}\"")
     output.append(f"  text_style: \"{STYLE_TEXT}\"")
-    output.append(f"  level_style: \"{STYLE_TEXT}; color: #000000 !important;\"")
-    output.append(f"  unit_style: \"{STYLE_TEXT}; color: #000000 !important;\"")
-    output.append(f"  value_style: \"{STYLE_TEXT}; color: #000000 !important;\"")
+    output.append(f"  level_style: \"{STYLE_TEXT}\"")
+    output.append(f"  unit_style: \"{STYLE_TEXT}\"")
+    output.append(f"  value_style: \"{STYLE_TEXT}\"")
     output.append(f"  icon_style_active: \"{STYLE_ICON}\"")
     output.append(f"  icon_style_inactive: \"{STYLE_ICON}; opacity: 0.5;\"")
     output.append(f"  artist_style: \"{STYLE_TEXT}\"")
@@ -498,9 +498,11 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                             size_str = f"({size_str})"
                         widget_id += size_str
 
+                    if not widget_id: continue
                     row_parts.append(widget_id)
                     processed_widgets.append(w)
-                output.append(f"  - {', '.join(row_parts)}")
+                if row_parts:
+                    output.append(f"  - {', '.join(row_parts)}")
 
             output.append("")
             output.append("# -------------------")
@@ -511,8 +513,8 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
             seen_ids = set()
 
             for w in processed_widgets:
-                w_id = w['id']
-                if w_id in seen_ids:
+                w_id = w.get('id', '')
+                if not w_id or w_id in seen_ids:
                     continue
                 seen_ids.add(w_id)
                 real_entity_id = get_real_entity(w_id)
