@@ -679,6 +679,10 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     if i_on: output.append(f"  icon_on: {i_on}")
                     if i_off: output.append(f"  icon_off: {i_off}")
                     if w_icon and not i_on: output.append(f"  icon: {w_icon}")
+
+                    output.append("  post_service_active:")
+                    output.append("    service: input_button/press")
+                    output.append(f"    entity_id: {real_entity_id}")
                     
                     output.append(f"  state_text: 1")
                     output.append(f"  title_style: \"{STYLE_TITLE}\"")
