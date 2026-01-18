@@ -1049,14 +1049,22 @@
             {% endif %}
 
             {% if has_token %}
-            <div class="status-bar status-ok">
-                <i class="mdi mdi-check-circle"></i>
-                <span data-i18n="status_ok">Połączono z Home Assistant (Token OK)</span>
-                <div style="margin-top:5px; font-size:0.85em; opacity:0.9;">
-                    Encji: {{ connection_info.entity_count }} |
-                    <span class="path-display"
-                        data-path-template="\\[HA_IP]\addon_configs\{{ connection_info.appdaemon_slug }}\">\\[HA_IP]\addon_configs\{{
-                        connection_info.appdaemon_slug }}\</span>
+            <div class="status-bar status-ok"
+                style="display: flex; flex-direction: column; align-items: flex-start; gap: 5px; padding: 12px;">
+                <div style="display: flex; align-items: center; gap: 8px; font-weight: bold;">
+                    <i class="mdi mdi-check-circle" style="font-size: 1.2em;"></i>
+                    <span data-i18n="status_ok">Połączono z Home Assistant (Token OK)</span>
+                </div>
+                <div
+                    style="display: grid; grid-template-columns: auto auto; gap: 4px 20px; font-size: 0.85em; opacity: 0.9; width: 100%; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 5px; margin-top: 2px;">
+                    <div>Encji: <b>{{ connection_info.entity_count }}</b></div>
+                    <div>AppDaemon: <b>{{ connection_info.appdaemon_slug }}</b></div>
+                    <div>API Source: {{ connection_info.token_source }}</div>
+                    <div style="grid-column: 1 / -1; word-break: break-all;">
+                        Path: <span class="path-display" style="font-family: monospace; user-select: text;"
+                            data-path-template="\\[HA_IP]\addon_configs\{{ connection_info.appdaemon_slug }}\">\\[HA_IP]\addon_configs\{{
+                            connection_info.appdaemon_slug }}\</span>
+                    </div>
                 </div>
             </div>
             <div class="status-details" id="status-details"></div>
@@ -2885,6 +2893,13 @@
 
                                 const iActiveMatch = d.match(/icon_active:\s*(.*)/);
                                 if (iActiveMatch) icon = iActiveMatch[1].trim();
+
+                                // FORCE INPUT_BUTTON DETECTION
+                                const entMatch = d.match(/entity:\s*(.*)/);
+                                if (entMatch) {
+                                    const en = entMatch[1].trim();
+                                    if (en.startsWith('input_button.')) type = 'input_button';
+                                }
 
                             } else {
                                 if (id === 'spacer') type = 'spacer';
