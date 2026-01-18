@@ -1123,7 +1123,7 @@
                     <button type="button" class="btn btn-import" onclick="importYaml()" data-i18n="btn_import">Wczytaj
                         Kod</button>
 
-                    {% if connection_info.bridge_active and connection_info.has_dashboards %}
+                    {% if connection_info.bridge_active %}
                     <button type="button" class="btn btn-import" style="background-color: #9c27b0; margin-left: 10px;"
                         onclick="openImportModal()">
                         <span data-i18n="btn_import_dash">📥 IMPORTUJ DASHBOARD</span>
