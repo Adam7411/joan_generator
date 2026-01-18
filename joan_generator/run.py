@@ -1006,14 +1006,6 @@ def index():
                 save_message = "❌ Nie podano nazwy pliku do odczytu."
 
         elif action == 'save_ad':
-            # Save via API (direct)
-            generated_yaml = generate_joan_dash_yaml(
-                layout_data, title, grid_params, lang, custom_defs, entities_map
-                )
-            except Exception as e:
-                print(f"❌ Error regenerating YAML during restart: {e}")
-
-        elif action == 'save_ad':
             try:
                 generated_yaml = generate_joan_dash_yaml(
                     layout_data, title, grid_params, lang, custom_defs, entities_map
