@@ -3815,6 +3815,13 @@ class DashSaver(hass.Hass):
             closeImportModal();
         }
     }
+
+    // Auto-run IP replacement on load
+    document.addEventListener('DOMContentLoaded', () => {
+        if (typeof updateResultPathsToHost === 'function') {
+            updateResultPathsToHost();
+        }
+    });
 </script>
 </body>
 
