@@ -518,12 +518,17 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     if w_icon:
                         output.append(f"  icon: {w_icon}")
                     output.append(f"  title_style: \"{STYLE_TITLE}\"")
+                    output.append(f"  title2_style: \"{STYLE_TITLE}; font-size: 16px;\"")
                     output.append(f"  widget_style: \"{STYLE_WIDGET}\"")
                     output.append(f"  icon_style: \"{STYLE_ICON}\"")
+                    output.append(f"  icon_style_active: \"{STYLE_ICON}\"")
+                    output.append(f"  icon_style_inactive: \"{STYLE_ICON}; opacity: 0.5;\"")
                     output.append(f"  text_style: \"{STYLE_TEXT}\"")
                     output.append(f"  level_style: \"{STYLE_TEXT}; font-size: 16px;\"")
                     output.append(f"  icon_up_style: \"{STYLE_ICON}\"")
                     output.append(f"  icon_down_style: \"{STYLE_ICON}\"")
+                    output.append(f"  level_up_style: \"{STYLE_ICON}\"")
+                    output.append(f"  level_down_style: \"{STYLE_ICON}\"")
                     output.append("  truncate_name: 20")
                     output.append("  step: 5")
 
@@ -535,8 +540,15 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append(f"  step: 1")
                     output.append(f"  precision: 1")
                     output.append(f"  title_style: \"{STYLE_TITLE}\"")
+                    output.append(f"  title2_style: \"{STYLE_TITLE}; font-size: 16px;\"")
+                    output.append(f"  text_style: \"{STYLE_TEXT}\"")
                     output.append(f"  widget_style: \"{STYLE_WIDGET}\"")
+                    output.append(f"  icon_style_active: \"{STYLE_ICON}\"")
+                    output.append(f"  icon_style_inactive: \"{STYLE_ICON}; opacity: 0.5;\"")
                     output.append(f"  icon_style: \"{STYLE_ICON}\"")
+                    output.append(f"  level_style: \"{STYLE_TEXT}\"")
+                    output.append(f"  level_up_style: \"{STYLE_ICON}\"")
+                    output.append(f"  level_down_style: \"{STYLE_ICON}\"")
 
                 elif w_type == 'fan':
                     output.append(f"  widget_type: fan")
@@ -551,6 +563,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     if w_icon and not i_on: output.append(f"  icon: {w_icon}")
 
                     output.append(f"  title_style: \"{STYLE_TITLE}\"")
+                    output.append(f"  title2_style: \"{STYLE_TITLE}; font-size: 14px;\"")
                     output.append(f"  widget_style: \"{STYLE_WIDGET}\"")
                     output.append(f"  icon_style_active: \"{STYLE_ICON}\"")
                     output.append(f"  icon_style_inactive: \"{STYLE_ICON}; opacity: 0.5;\"")
@@ -807,8 +820,8 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                             for s in ['open', 'closed', 'opening', 'closing']:
                                 output.append(f"    \"{s}\": \"{dic.get(s, s)}\"")
                         elif ad_type == 'binary_sensor':
-                            output.append(f"    \"on\": \"{dic['open']}\"")
-                            output.append(f"    \"off\": \"{dic['closed']}\"")
+                            output.append(f"    \"on\": \"{dic['on']}\"")
+                            output.append(f"    \"off\": \"{dic['off']}\"")
                         elif ad_type == 'lock':
                             output.append(f"    \"locked\": \"{dic['locked']}\"")
                             output.append(f"    \"unlocked\": \"{dic['unlocked']}\"")
