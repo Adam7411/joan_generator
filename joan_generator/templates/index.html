@@ -1034,6 +1034,58 @@
         .toast.warning {
             border-left: 5px solid #ff9800;
         }
+
+        /* MODAL STYLES ADDED */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 10000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(2px);
+        }
+
+        .modal-content {
+            background-color: var(--modal-content);
+            margin: 10% auto;
+            padding: 20px;
+            border: 1px solid var(--border);
+            width: 90%;
+            max-width: 600px;
+            border-radius: 8px;
+            color: var(--text-main);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.2em;
+        }
+
+        .close {
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #aaa;
+        }
+
+        .close:hover {
+            color: var(--accent);
+        }
     </style>
 </head>
 
@@ -1243,6 +1295,13 @@
                             <option value="medium" data-i18n="opt_medium">Średni (40px) - dla 1000+</option>
                             <option value="small" data-i18n="opt_small">Mały (32px) - dla 10000+</option>
                         </select>
+                    </div>
+                    <div class="flex-col" id="grp-show-state" style="display: none;">
+                        <label style="font-size: 0.9em; margin-bottom: 5px;">Pokaż stan (Tekst)</label>
+                        <div>
+                            <input type="checkbox" id="w-show-state" checked
+                                style="transform: scale(1.5); margin: 5px;">
+                        </div>
                     </div>
                     <div class="flex-col" style="flex: 0 0 60px;">
                         <label data-i18n="lbl_preview">Podgląd</label>
@@ -2265,6 +2324,7 @@
                 value_size_hint: document.getElementById('w-value-size')?.value || 'auto',
                 min: document.getElementById('w-min')?.value || '',
                 max: document.getElementById('w-max')?.value || '',
+                state_text_enabled: document.getElementById('w-show-state')?.checked || false,
                 was_edited: true
             };
             if (w.type === 'navigate') w.id = 'navigate.' + w.dash;
@@ -2397,6 +2457,9 @@
             if (grpValueSize) {
                 grpValueSize.style.display = (type === 'sensor') ? 'block' : 'none';
             }
+
+            const showStateTypes = ['switch', 'light', 'input_boolean', 'binary_sensor', 'lock', 'fan', 'group', 'automation'];
+            document.getElementById('grp-show-state').style.display = showStateTypes.includes(type) ? 'block' : 'none';
         }
 
         function updateTitleLimit() {
@@ -2428,6 +2491,11 @@
                 // Strip _copy\d+ for user readability as requested
                 document.getElementById('w-id').value = data.id.replace(/_copy\d+$/, '');
             }
+            if (data.min) document.getElementById('w-min').value = data.min;
+            if (data.max) document.getElementById('w-max').value = data.max;
+
+            const chkState = document.getElementById('w-show-state');
+            if (chkState) chkState.checked = (data.state_text_enabled !== false); // default true
             document.getElementById('w-name').value = data.name;
             document.getElementById('w-size').value = data.size || '(2x1)';
             document.getElementById('w-icon').value = data.icon || '';
