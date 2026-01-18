@@ -403,6 +403,9 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
     output.append(f"  value_style: \"{STYLE_TEXT}\"")
     output.append(f"  icon_style_active: \"{STYLE_ICON}\"")
     output.append(f"  icon_style_inactive: \"{STYLE_ICON}; opacity: 0.5;\"")
+    output.append(f"  artist_style: \"{STYLE_TEXT}\"")
+    output.append(f"  album_style: \"{STYLE_TEXT}\"")
+    output.append(f"  media_title_style: \"{STYLE_TEXT}\"")
     output.append("skin: simplyred")
     output.append("")
 
