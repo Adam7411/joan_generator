@@ -1352,6 +1352,18 @@
             <div style="display:flex; gap:10px; margin-top:20px;">
                 {% if not generated_yaml %}
 
+                {% if connection_info.bridge_active %}
+                <button type="button" class="btn btn-gen" style="flex:1; background-color: #2196f3;"
+                    onclick="submitForm('save_ad')">
+                    <span data-i18n="btn_save_ad">💾 ZAPISZ (APPDAEMON)</span>
+                </button>
+                {% else %}
+                <button type="button" class="btn btn-gen" style="flex:1; background-color: #607d8b;"
+                    onclick="openAdConfig()">
+                    <span data-i18n="btn_config_autosave">⚙️ KONFIGURACJA</span>
+                </button>
+                {% endif %}
+
                 <button type="button" class="btn btn-gen" style="flex:1;" onclick="submitForm('generate')"
                     data-i18n="btn_gen">GENERUJ KOD .DASH</button>
                 <button type="button" class="btn btn-gen" style="flex:1; background-color: #d32f2f;"
