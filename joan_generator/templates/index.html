@@ -3594,12 +3594,45 @@ class DashSaver(hass.Hass):
         document.getElementById('ad-config-modal').style.display = 'none';
     }
     function copyToClipboardText(elementId) {
-        const text = document.getElementById(elementId).innerText;
-        navigator.clipboard.writeText(text).then(() => {
-            showToast(TRANSLATIONS[currentLang].copy_success, 'success');
-        }).catch(err => {
+        const textObj = document.getElementById(elementId);
+        if (!textObj) {
+            showToast("Error: Element not found " + elementId, 'error');
+            return;
+        }
+        const text = textObj.innerText;
+
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast(TRANSLATIONS[currentLang].copy_success, 'success');
+            }).catch(err => {
+                // Fallback
+                fallbackCopyTextToClipboard(text);
+            });
+        } else {
+            fallbackCopyTextToClipboard(text);
+        }
+    }
+
+    function fallbackCopyTextToClipboard(text) {
+        var textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.position = "fixed";  // Avoid scrolling to bottom
+        textArea.style.left = "-9999px";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+
+        try {
+            var successful = document.execCommand('copy');
+            if (successful) {
+                showToast(TRANSLATIONS[currentLang].copy_success, 'success');
+            } else {
+                showToast(TRANSLATIONS[currentLang].copy_error + " (fallback failed)", 'error');
+            }
+        } catch (err) {
             showToast(TRANSLATIONS[currentLang].copy_error + err, 'error');
-        });
+        }
+        document.body.removeChild(textArea);
     }
 
     // Opcjonalnie: Zamknij okno po kliknięciu poza nim
