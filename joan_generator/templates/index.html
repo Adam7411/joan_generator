@@ -1122,6 +1122,18 @@
                         placeholder="Wklej tutaj zawartość pliku .dash..."></textarea>
                     <button type="button" class="btn btn-import" onclick="importYaml()" data-i18n="btn_import">Wczytaj
                         Kod</button>
+
+                    {% if connection_info.bridge_active %}
+                    <button type="button" class="btn btn-import" style="background-color: #9c27b0; margin-left: 10px;"
+                        onclick="openImportModal()">
+                        <span data-i18n="btn_import_dash">📥 IMPORTUJ DASHBOARD</span>
+                    </button>
+                    {% else %}
+                    <button type="button" class="btn btn-import" style="background-color: #607d8b; margin-left: 10px;"
+                        onclick="openAdConfig()">
+                        <span data-i18n="btn_config_autosave">⚙️ KONFIGURUJ ZAPIS/ODCZYT</span>
+                    </button>
+                    {% endif %}
                 </div>
             </details>
         </div>
@@ -1339,17 +1351,7 @@
 
             <div style="display:flex; gap:10px; margin-top:20px;">
                 {% if not generated_yaml %}
-                {% if connection_info.bridge_active %}
-                <button type="button" class="btn btn-gen" style="flex:1; background-color: #9c27b0;"
-                    onclick="openImportModal()">
-                    <span data-i18n="btn_import_dash">📥 IMPORTUJ DASHBOARD</span>
-                </button>
-                {% else %}
-                <button type="button" class="btn btn-gen" style="flex:1; background-color: #607d8b;"
-                    onclick="openAdConfig()">
-                    <span data-i18n="btn_config_autosave">⚙️ KONFIGURUJ ZAPIS/ODCZYT</span>
-                </button>
-                {% endif %}
+
                 <button type="button" class="btn btn-gen" style="flex:1;" onclick="submitForm('generate')"
                     data-i18n="btn_gen">GENERUJ KOD .DASH</button>
                 <button type="button" class="btn btn-gen" style="flex:1; background-color: #d32f2f;"
@@ -3785,11 +3787,13 @@ class DashSaver(hass.Hass):
                         div.style.padding = '8px';
                         div.style.cursor = 'pointer';
                         div.style.borderBottom = '1px solid #eee';
+                        div.style.color = '#333'; // Force dark text
+                        div.style.backgroundColor = '#fff'; // Force white background
                         div.innerText = f.name; // Display name
 
                         div.onclick = () => loadDashboard(f.name);
                         div.onmouseover = () => div.style.backgroundColor = '#e3f2fd';
-                        div.onmouseout = () => div.style.backgroundColor = 'transparent';
+                        div.onmouseout = () => div.style.backgroundColor = '#fff';
 
                         list.appendChild(div);
                     });
@@ -3808,10 +3812,28 @@ class DashSaver(hass.Hass):
 
     function loadDashboard(filename) {
         const t = TRANSLATIONS[currentLang];
-        if (confirm(t.modal_import_confirm || "Load dashboard?")) {
-            document.getElementById('open_dash_name').value = filename;
-            submitForm('load_dashboard');
-        }
+        // Confirm first? Maybe not needed for just viewing code, but good practice if checking overwrite
+        // User asked to just "load here", so we will fetch and put into textarea.
+
+        fetch('api/read_dashboard/' + encodeURIComponent(filename))
+            .then(r => r.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const importArea = document.getElementById('import-code');
+                    if (importArea) {
+                        importArea.value = data.content;
+                        // Scroll to the import section
+                        document.getElementById('import-section').scrollIntoView({ behavior: 'smooth' });
+                        closeImportModal();
+                        showToast("✅ " + filename + " wczytany do edytora!", 'success');
+                    }
+                } else {
+                    alert("Error: " + data.message);
+                }
+            })
+            .catch(err => {
+                alert("Error loading file: " + err);
+            });
     }
 
     // Close modal when clicking outside (extended)
