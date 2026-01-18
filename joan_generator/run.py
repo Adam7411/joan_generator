@@ -556,7 +556,10 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     if i_on: output.append(f"  icon_on: {i_on}")
                     if i_off: output.append(f"  icon_off: {i_off}")
                     if w_icon and not i_on: output.append(f"  icon: {w_icon}")
-                    output.append(f"  state_text: 1")
+                    if w_icon and not i_on: output.append(f"  icon: {w_icon}")
+                    
+                    st_val = 1 if w.get('state_text_enabled', True) else 0
+                    output.append(f"  state_text: {st_val}")
                     output.append(f"  title_style: \"{STYLE_TITLE}\"")
                     output.append(f"  widget_style: \"{STYLE_WIDGET}\"")
                     output.append(f"  icon_style_active: \"{STYLE_ICON}\"")
@@ -761,7 +764,10 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     if i_on: output.append(f"  icon_on: {i_on}")
                     if i_off: output.append(f"  icon_off: {i_off}")
                     if w_icon and not i_on: output.append(f"  icon: {w_icon}")
-                    output.append(f"  state_text: 1")
+                    if w_icon and not i_on: output.append(f"  icon: {w_icon}")
+                    
+                    st_val = 1 if w.get('state_text_enabled', True) else 0
+                    output.append(f"  state_text: {st_val}")
                     output.append(f"  title_style: \"{STYLE_TITLE}\"")
                     output.append(f"  widget_style: \"{STYLE_WIDGET}\"")
                     output.append(f"  icon_style_active: \"{STYLE_ICON}\"")
@@ -778,7 +784,11 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     if i_on: output.append(f"  icon_on: {i_on}")
                     if i_off: output.append(f"  icon_off: {i_off}")
                     if w_icon and not i_on: output.append(f"  icon: {w_icon}")
-                    output.append(f"  state_text: 1")
+                    
+                    # Robust check for state_text_enabled
+                    st_enabled = w.get('state_text_enabled', True)
+                    st_val = 0 if str(st_enabled).lower() == 'false' or st_enabled is False else 1
+                    output.append(f"  state_text: {st_val}")
                     output.append(f"  title_style: \"{STYLE_TITLE}\"")
                     output.append(f"  widget_style: \"{STYLE_WIDGET}\"")
                     output.append(f"  icon_style_active: \"{STYLE_ICON}\"")
@@ -795,7 +805,11 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     if i_on: output.append(f"  icon_on: {i_on}")
                     if i_off: output.append(f"  icon_off: {i_off}")
                     if w_icon and not i_on: output.append(f"  icon: {w_icon}")
-                    output.append(f"  state_text: 1")
+                    
+                    # Robust check for state_text_enabled
+                    st_enabled = w.get('state_text_enabled', True)
+                    st_val = 0 if str(st_enabled).lower() == 'false' or st_enabled is False else 1
+                    output.append(f"  state_text: {st_val}")
                     output.append(f"  title_style: \"{STYLE_TITLE}\"")
                     output.append(f"  widget_style: \"{STYLE_WIDGET}\"")
                     output.append(f"  icon_style_active: \"{STYLE_ICON}\"")
@@ -901,7 +915,10 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     if w_icon and not i_on:
                         output.append(f"  icon: {w_icon}")
 
-                    output.append(f"  state_text: 1")
+                    # Robust check for state_text_enabled
+                    st_enabled = w.get('state_text_enabled', True)
+                    st_val = 0 if str(st_enabled).lower() == 'false' or st_enabled is False else 1
+                    output.append(f"  state_text: {st_val}")
                     output.append(f"  title_style: \"{STYLE_TITLE}\"")
                     output.append(f"  text_style: \"{STYLE_TEXT}\"")
                     output.append(f"  widget_style: \"{STYLE_WIDGET}\"")
