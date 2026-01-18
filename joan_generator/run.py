@@ -206,6 +206,65 @@ def save_dash_file_via_api(filename, content):
 
     return False, f"Save error (tried all paths). Last error: {last_error}"
 
+def list_dashboards_via_api():
+    """Lists available dashboard files from AppDaemon via dash_saver bridge."""
+    host = APPDAEMON_SLUG.replace('_', '-')
+    paths = ["/api/appdaemon/list_dir", "/api/list_dir"]
+    
+    for path in paths:
+        url = f"http://{host}:5050{path}"
+        payload = {"path": "dashboards"}
+        
+        print(f"📂 Attempting to list dashboards from: {url}")
+        try:
+            headers = {"Content-Type": "application/json"}
+            if TOKEN:
+                headers["Authorization"] = f"Bearer {TOKEN}"
+
+            response = requests.post(url, json=payload, headers=headers, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("status") == "success":
+                    # Filter only .dash files
+                    items = data.get("items", [])
+                    dash_files = [item for item in items if item.get("name", "").endswith(".dash")]
+                    return True, dash_files
+            
+            print(f"ℹ️ Path {path} returned: {response.status_code}")
+        except Exception as e:
+            print(f"❌ Error listing dashboards from {path}: {e}")
+    
+    return False, []
+
+def read_dashboard_via_api(filename):
+    """Reads dashboard content from AppDaemon via dash_saver bridge."""
+    host = APPDAEMON_SLUG.replace('_', '-')
+    paths = ["/api/appdaemon/read_file", "/api/read_file"]
+    
+    for path in paths:
+        url = f"http://{host}:5050{path}"
+        payload = {"path": f"dashboards/{filename}"}
+        
+        print(f"📖 Attempting to read dashboard from: {url}")
+        try:
+            headers = {"Content-Type": "application/json"}
+            if TOKEN:
+                headers["Authorization"] = f"Bearer {TOKEN}"
+
+            response = requests.post(url, json=payload, headers=headers, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("status") == "success":
+                    return True, data.get("content", "")
+            
+            print(f"ℹ️ Path {path} returned: {response.status_code}")
+        except Exception as e:
+            print(f"❌ Error reading dashboard from {path}: {e}")
+    
+    return False, ""
+
 # -------------------------------------------------------------------------
 # ENTITY FREQUENCY ANALYZER
 # -------------------------------------------------------------------------
@@ -931,6 +990,27 @@ def index():
                     layout_data, title, grid_params, lang, custom_defs, entities_map
                 )
             except Exception as e:
+                generated_yaml = f"# ERROR REGENERATING: {e}"
+
+        elif action == 'load_dashboard':
+            filename = request.form.get('open_dashboard_name', '')
+            if filename:
+                success, content = read_dashboard_via_api(filename)
+                if success:
+                    generated_yaml = content
+                    dashboard_filename = filename
+                    save_message = f"✅ Dashboard wczytany: {filename}"
+                else:
+                    save_message = f"❌ Błąd odczytu pliku: {filename}"
+            else:
+                save_message = "❌ Nie podano nazwy pliku do odczytu."
+
+        elif action == 'save_ad':
+            # Save via API (direct)
+            generated_yaml = generate_joan_dash_yaml(
+                layout_data, title, grid_params, lang, custom_defs, entities_map
+                )
+            except Exception as e:
                 print(f"❌ Error regenerating YAML during restart: {e}")
 
         elif action == 'save_ad':
@@ -986,6 +1066,27 @@ def api_entity_frequency(entity_id):
     result = get_entity_frequency(entity_id, hours=24)
     return jsonify(result)
 
+@app.route('/api/list_dashboards')
+def api_list_dashboards():
+    """Returns list of available dashboard files from AppDaemon (JSON)."""
+    from flask import jsonify
+    success, files = list_dashboards_via_api()
+    if success:
+        return jsonify({"status": "success", "files": files})
+    else:
+        return jsonify({"status": "error", "message": "Cannot list dashboards. Is dash_saver.py installed?", "files": []})
+
+@app.route('/api/read_dashboard/<path:filename>')
+def api_read_dashboard(filename):
+    """Returns content of a dashboard file from AppDaemon (JSON)."""
+    from flask import jsonify
+    success, content = read_dashboard_via_api(filename)
+    if success:
+        return jsonify({"status": "success", "content": content, "filename": filename})
+    else:
+        return jsonify({"status": "error", "message": f"Cannot read dashboard: {filename}"})
+
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000, debug=True)
+
