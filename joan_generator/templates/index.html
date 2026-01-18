@@ -1123,12 +1123,12 @@
                     <button type="button" class="btn btn-import" onclick="importYaml()" data-i18n="btn_import">Wczytaj
                         Kod</button>
 
-                    {% if connection_info.bridge_active %}
+                    {% if connection_info.bridge_active and connection_info.has_dashboards %}
                     <button type="button" class="btn btn-import" style="background-color: #9c27b0; margin-left: 10px;"
                         onclick="openImportModal()">
                         <span data-i18n="btn_import_dash">📥 IMPORTUJ DASHBOARD</span>
                     </button>
-                    {% else %}
+                    {% elif not connection_info.bridge_active %}
                     <button type="button" class="btn btn-import" style="background-color: #607d8b; margin-left: 10px;"
                         onclick="openAdConfig()">
                         <span data-i18n="btn_config_autosave">⚙️ KONFIGURUJ ZAPIS/ODCZYT</span>
@@ -1352,12 +1352,7 @@
             <div style="display:flex; gap:10px; margin-top:20px;">
                 {% if not generated_yaml %}
 
-                {% if connection_info.bridge_active %}
-                <button type="button" class="btn btn-gen" style="flex:1; background-color: #2196f3;"
-                    onclick="submitForm('save_ad')">
-                    <span data-i18n="btn_save_ad">💾 ZAPISZ (APPDAEMON)</span>
-                </button>
-                {% else %}
+                {% if not connection_info.bridge_active %}
                 <button type="button" class="btn btn-gen" style="flex:1; background-color: #607d8b;"
                     onclick="openAdConfig()">
                     <span data-i18n="btn_config_autosave">⚙️ KONFIGURACJA</span>
@@ -3511,7 +3506,8 @@
             <span class="ip-close" onclick="closeAdConfig()">&times;</span>
         </div>
         <div style="overflow-y: auto; padding: 20px; font-size: 0.95em; line-height: 1.6;">
-            <p data-i18n="ad_config_step1">1. Wejdź w katalog <code>/addon_configs/a0d7b954_appdaemon/apps/</code>.</p>
+            <p data-i18n="ad_config_step1">1. Wejdź w katalog <code>/addon_configs/a0d7b954_appdaemon/apps/</code> (użyj
+                File Editor lub Samba).</p>
 
             <p data-i18n="ad_config_step2">2. Stwórz plik <code>dash_saver.py</code> i wklej poniższą zawartość:</p>
             <div style="position: relative;">
