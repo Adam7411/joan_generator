@@ -1335,9 +1335,21 @@
 
             <input type="hidden" name="layout_data_json" id="layout_json">
             <input type="hidden" name="custom_definitions_json" id="custom_defs">
+            <input type="hidden" name="open_dashboard_name" id="open_dash_name">
 
             <div style="display:flex; gap:10px; margin-top:20px;">
                 {% if not generated_yaml %}
+                {% if connection_info.bridge_active %}
+                <button type="button" class="btn btn-gen" style="flex:1; background-color: #9c27b0;"
+                    onclick="openImportModal()">
+                    <span data-i18n="btn_import_dash">📥 IMPORTUJ DASHBOARD</span>
+                </button>
+                {% else %}
+                <button type="button" class="btn btn-gen" style="flex:1; background-color: #607d8b;"
+                    onclick="openAdConfig()">
+                    <span data-i18n="btn_config_autosave">⚙️ KONFIGURUJ ZAPIS/ODCZYT</span>
+                </button>
+                {% endif %}
                 <button type="button" class="btn btn-gen" style="flex:1;" onclick="submitForm('generate')"
                     data-i18n="btn_gen">GENERUJ KOD .DASH</button>
                 <button type="button" class="btn btn-gen" style="flex:1; background-color: #d32f2f;"
@@ -1650,6 +1662,13 @@
 
         const TRANSLATIONS = {
             pl: {
+                btn_import_dash: "📥 IMPORTUJ DASHBOARD",
+                btn_config_autosave: "⚙️ KONFIGURUJ ZAPIS/ODCZYT",
+                modal_import_title: "Wybierz Dashboard do Edycji",
+                modal_import_loading: "Ładowanie listy...",
+                modal_import_empty: "Nie znaleziono plików .dash lub błąd połączenia.",
+                modal_import_confirm: "Czy na pewno chcesz wczytać ten dashboard? Obecny wynik zostanie nadpisany.",
+                btn_cancel: "Anuluj",
                 title_main: "Joan 6 E-Ink Generator",
                 sec_settings: "1. Ustawienia Dashboardu", lbl_dash_title: "Tytuł Dashboardu", lbl_grid: "Układ Siatki (Smart Grid)",
                 lbl_orientation: "Orientacja ekranu",
@@ -1769,6 +1788,13 @@
                 `
             },
             en: {
+                btn_import_dash: "📥 IMPORT DASHBOARD",
+                btn_config_autosave: "⚙️ CONFIGURE AUTO-SAVE/READ",
+                modal_import_title: "Select Dashboard to Edit",
+                modal_import_loading: "Loading list...",
+                modal_import_empty: "No .dash files found or connection error.",
+                modal_import_confirm: "Are you sure you want to load this dashboard? Current result will be overwritten.",
+                btn_cancel: "Cancel",
                 title_main: "Joan 6 E-Ink Generator",
                 sec_settings: "1. Dashboard Settings", lbl_dash_title: "Dashboard Title", lbl_grid: "Grid Layout (Smart Grid)",
                 lbl_orientation: "Screen orientation",
@@ -3584,3 +3610,86 @@ class DashSaver(hass.Hass):
         if (event.target == configModal) closeAdConfig();
     });
 </script>
+
+<!-- Import Modal -->
+<div id="import-modal" class="modal"
+    style="display:none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);">
+    <div class="modal-content"
+        style="background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 50%; max-width: 500px; border-radius: 8px;">
+        <h3 id="import-title" style="margin-top:0" data-i18n="modal_import_title">Wybierz Dashboard</h3>
+        <div id="dashboard-list"
+            style="max-height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; margin-bottom: 20px;">
+            <p data-i18n="modal_import_loading">Ładowanie listy...</p>
+        </div>
+        <div style="text-align: right;">
+            <button type="button" class="btn btn-gen" onclick="closeImportModal()" data-i18n="btn_cancel"
+                style="background-color: #757575;">Anuluj</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openImportModal() {
+        document.getElementById('import-modal').style.display = 'block';
+
+        // Refresh translations for modal
+        const t = TRANSLATIONS[currentLang];
+        const titleEl = document.getElementById('import-title');
+        if (titleEl && t.modal_import_title) titleEl.innerText = t.modal_import_title;
+
+        const list = document.getElementById('dashboard-list');
+        list.innerHTML = `<p>${t.modal_import_loading || "Loading..."}</p>`;
+
+        fetch('/api/list_dashboards')
+            .then(r => r.json())
+            .then(data => {
+                list.innerHTML = '';
+                if (data.status === 'success' && data.files.length > 0) {
+                    data.files.forEach(f => {
+                        const div = document.createElement('div');
+                        div.style.padding = '8px';
+                        div.style.cursor = 'pointer';
+                        div.style.borderBottom = '1px solid #eee';
+                        div.innerText = f.name; // Display name
+
+                        div.onclick = () => loadDashboard(f.name);
+                        div.onmouseover = () => div.style.backgroundColor = '#e3f2fd';
+                        div.onmouseout = () => div.style.backgroundColor = 'transparent';
+
+                        list.appendChild(div);
+                    });
+                } else {
+                    list.innerText = t.modal_import_empty || "No files found.";
+                }
+            })
+            .catch(err => {
+                list.innerText = "Error: " + err;
+            });
+    }
+
+    function closeImportModal() {
+        document.getElementById('import-modal').style.display = 'none';
+    }
+
+    function loadDashboard(filename) {
+        const t = TRANSLATIONS[currentLang];
+        if (confirm(t.modal_import_confirm || "Load dashboard?")) {
+            document.getElementById('open_dash_name').value = filename;
+            submitForm('load_dashboard');
+        }
+    }
+
+    // Close modal when clicking outside (extended)
+    const existingWindowOnClick = window.onclick;
+    window.onclick = function (event) {
+        if (existingWindowOnClick) existingWindowOnClick(event);
+
+        const modal = document.getElementById('import-modal');
+        if (event.target == modal) {
+            closeImportModal();
+        }
+    }
+</script>
+</body>
+
+</html>
