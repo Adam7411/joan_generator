@@ -1055,8 +1055,11 @@
                     <i class="mdi mdi-check-circle" style="font-size: 1.2em;"></i>
                     <span data-i18n="status_ok">Połączono z Home Assistant (Token OK)</span>
                 </div>
-                <i class="mdi mdi-information-outline click-icon" onclick="showInfoModal()"
-                    style="font-size: 1.4em; cursor: pointer; opacity: 0.8;" title="Szczegóły połączenia"></i>
+                <div onclick="showInfoModal()"
+                    style="cursor: pointer; background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 12px; font-size: 0.8em; display: flex; align-items: center; gap: 4px;">
+                    <i class="mdi mdi-information-outline"></i>
+                    <span>INFO</span>
+                </div>
             </div>
             <div class="status-details" id="status-details"></div>
             {% else %}
@@ -1210,11 +1213,12 @@
                             <option value="scene" data-i18n="opt_scene">Scene / Scena</option>
                             <option value="input_select" data-i18n="opt_input_select">Input Select</option>
                             <option value="input_number" data-i18n="opt_input_number">Input Number</option>
-                            <option value="input_button" data-i18n="opt_input_button">Input Button / Przycisk</option>
                             <option value="script" data-i18n="opt_script">Script</option>
                             <option value="navigate" data-i18n="opt_navigate">Navigate / Button</option>
                             <option value="reload" data-i18n="opt_reload">Reload Dashboard</option>
                             <option value="gauge" data-i18n="opt_gauge">Gauge / Wskaźnik</option>
+                            <option value="fan_pct" data-i18n="opt_fan_pct">Fan (Percentage)</option>
+                            <option value="binary_sensor" data-i18n="opt_binary">Binary Sensor / Drzwi / Okno</option>
                         </select>
                     </div>
                 </div>
@@ -1674,6 +1678,7 @@
                 opt_light: "Światło (Ściemniane)", opt_group: "Grupa (Świateł)", opt_input_boolean: "Przełącznik Boolean", opt_reload: "Odśwież Dashboard",
                 opt_label: "Etykieta (Tekst)", opt_clock: "Zegar", opt_spacer: "Odstęp (Pusty)",
                 opt_gauge: "Wskaźnik (Gauge)",
+                opt_fan_pct: "Wentylator (Procentowo)",
                 size_2x1: "2x1 (Szeroki Przycisk)", size_1x1: "1x1 (Mały)", size_2x2: "2x2 (Duży)",
                 size_3x1: "3x1 (Bardzo Szeroki)", size_1x2: "1x2 (Wysoki)", size_3x2: "3x2 (Ogromny)",
                 btn_add: "+ DODAJ WIDGET", btn_update: "ZAPISZ ZMIANY", btn_cancel: "ANULUJ",
@@ -1799,6 +1804,7 @@
                 opt_light: "Light (Dimmable)", opt_group: "Group (Lights)", opt_input_boolean: "Input Boolean", opt_reload: "Reload Dashboard",
                 opt_label: "Label (Text)", opt_clock: "Clock", opt_spacer: "Spacer (Empty)",
                 opt_gauge: "Gauge",
+                opt_fan_pct: "Fan (Percentage)",
                 size_2x1: "2x1 (Wide Button)", size_1x1: "1x1 (Small)", size_2x2: "2x2 (Large)",
                 size_3x1: "3x1 (Extra Wide)", size_1x2: "1x2 (Tall)", size_3x2: "3x2 (Huge)",
                 btn_add: "+ ADD WIDGET", btn_update: "SAVE CHANGES", btn_cancel: "CANCEL",
@@ -1902,9 +1908,8 @@
             'lock': { type: 'lock', size: '(2x1)', iconOn: 'mdi-lock-open', iconOff: 'mdi-lock' },
             'script': { type: 'script', size: '(2x1)', icon: 'mdi-script-text-outline' },
             'fan': { type: 'fan', size: '(2x1)', iconOn: 'mdi-fan', iconOff: 'mdi-fan-off' },
-            'scene': { type: 'scene', size: '(2x1)', icon: 'mdi-palette' },
-            'input_button': { type: 'input_button', size: '(2x1)', icon: 'mdi-gesture-tap-button' },
-            'gauge': { type: 'gauge', size: '(2x1)', icon: 'mdi-gauge' }
+            'automation': { type: 'switch', size: '(2x1)', icon: 'mdi-robot' },
+            'input_boolean': { type: 'switch', size: '(2x1)', icon: 'mdi-toggle-switch' }
         };
 
         // Ulepszona normalizacja (usuwa polskie znaki, małe litery, usuwa zbędne spacje)
@@ -3882,7 +3887,7 @@ class DashSaver(hass.Hass):
 </body>
 
 <!-- INFO MODAL -->
-<div id="info-modal" class="modal">
+<div id="info-modal" class="modal" style="z-index: 100000;">
     <div class="modal-content" style="max-width: 500px;">
         <div class="modal-header">
             <h2>Szczegóły Systemu</h2>
