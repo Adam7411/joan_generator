@@ -684,7 +684,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append("    service: input_button/press")
                     output.append(f"    entity_id: {real_entity_id}")
                     
-                    output.append(f"  state_text: 1")
+                    output.append(f"  state_text: 0")
                     output.append(f"  title_style: \"{STYLE_TITLE}\"")
                     output.append(f"  widget_style: \"{STYLE_WIDGET}\"")
                     output.append(f"  icon_style_active: \"{STYLE_ICON}\"")
