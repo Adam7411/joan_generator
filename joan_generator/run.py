@@ -277,7 +277,7 @@ def get_entity_frequency(entity_id, hours=24):
 
 # 3. STYLES (E-INK OPTIMIZED & TWEAKED)
 # -------------------------------------------------------------------------
-STYLE_TITLE = "color: #000000; font-size: 20px; font-weight: 700; text-align: center; padding-top: 5px; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif;"
+STYLE_TITLE = "color: #000000 !important; font-size: 20px; font-weight: 700; text-align: center; padding-top: 5px; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif;"
 STYLE_WIDGET = "color: #000000 !important; background-color: #FFFFFF !important;"
 STYLE_TEXT = "color: #000000 !important; font-weight: 700 !important;"
 STYLE_VALUE_TEMPLATE = "color: #000000 !important; font-size: {px}px !important; font-weight: 700 !important; padding-top: 60px !important; line-height: 1.1 !important; display: inline-block !important;"
@@ -393,8 +393,16 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
     output.append("      step: 5")
     output.append("    climate:")
     output.append("      step: 1")
+    output.append(f"  title_style: \"{STYLE_TITLE}\"")
+    output.append(f"  title2_style: \"{STYLE_TITLE}; font-size: 16px;\"")
     output.append(f"  white_text_style: \"{STYLE_TEXT}\"")
     output.append(f"  state_text_style: \"{STYLE_STATE_TEXT}\"")
+    output.append(f"  text_style: \"{STYLE_TEXT}\"")
+    output.append(f"  level_style: \"{STYLE_TEXT}\"")
+    output.append(f"  unit_style: \"{STYLE_TEXT}\"")
+    output.append(f"  value_style: \"{STYLE_TEXT}\"")
+    output.append(f"  icon_style_active: \"{STYLE_ICON}\"")
+    output.append(f"  icon_style_inactive: \"{STYLE_ICON}; opacity: 0.5;\"")
     output.append("skin: simplyred")
     output.append("")
 
