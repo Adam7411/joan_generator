@@ -571,9 +571,9 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
 
                 elif w_type == 'fan':
                     output.append(f"  widget_type: fan")
-                    output.append("  low_speed: 33")
-                    output.append("  medium_speed: 66")
-                    output.append("  high_speed: 100")
+                    output.append("  low_speed: low")
+                    output.append("  medium_speed: medium")
+                    output.append("  high_speed: high")
                     output.append(f"  entity: {real_entity_id}")
                     output.append(f"  title: \"{w_name}\"")
 
@@ -584,15 +584,24 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append(f"  title_style: \"{STYLE_TITLE}\"")
                     output.append(f"  title2_style: \"{STYLE_TITLE}; font-size: 14px;\"")
                     output.append(f"  widget_style: \"{STYLE_WIDGET}\"")
+                    output.append(f"  container_style: \"{STYLE_WIDGET}\"")
                     output.append(f"  icon_style_active: \"{STYLE_ICON}\"")
                     output.append(f"  icon_style_inactive: \"{STYLE_ICON}; opacity: 0.5;\"")
-
+                    output.append(f"  speed1_style: \"{STYLE_ICON}\"")
+                    output.append(f"  speed2_style: \"{STYLE_ICON}\"")
+                    output.append(f"  speed3_style: \"{STYLE_ICON}\"")
                     output.append(f"  speed1_icon_style_active: \"{STYLE_ICON}\"")
                     output.append(f"  speed1_icon_style_inactive: \"{STYLE_ICON}; opacity: 0.3;\"")
                     output.append(f"  speed2_icon_style_active: \"{STYLE_ICON}\"")
                     output.append(f"  speed2_icon_style_inactive: \"{STYLE_ICON}; opacity: 0.3;\"")
                     output.append(f"  speed3_icon_style_active: \"{STYLE_ICON}\"")
                     output.append(f"  speed3_icon_style_inactive: \"{STYLE_ICON}; opacity: 0.3;\"")
+                    output.append("  speed1_icon_on: mdi-fan-speed-1")
+                    output.append("  speed1_icon_off: mdi-fan-speed-1")
+                    output.append("  speed2_icon_on: mdi-fan-speed-2")
+                    output.append("  speed2_icon_off: mdi-fan-speed-2")
+                    output.append("  speed3_icon_on: mdi-fan-speed-3")
+                    output.append("  speed3_icon_off: mdi-fan-speed-3")
 
                 elif w_type == 'scene':
                     output.append(f"  widget_type: scene")
