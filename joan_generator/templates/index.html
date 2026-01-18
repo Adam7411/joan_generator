@@ -3674,7 +3674,15 @@ class DashSaver(hass.Hass):
         list.innerHTML = `<p>${t.modal_import_loading || "Loading..."}</p>`;
 
         fetch('/api/list_dashboards')
-            .then(r => r.json())
+            .then(r => r.text())
+            .then(text => {
+                try {
+                    return JSON.parse(text);
+                } catch (e) {
+                    console.error("JSON Parse Error. Raw response:", text);
+                    throw new Error("Invalid JSON: " + text.substring(0, 50) + "... (" + e.message + ")");
+                }
+            })
             .then(data => {
                 list.innerHTML = '';
                 if (data.status === 'success' && data.files.length > 0) {
