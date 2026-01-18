@@ -3767,7 +3767,7 @@ class DashSaver(hass.Hass):
         const list = document.getElementById('dashboard-list');
         list.innerHTML = `<p>${t.modal_import_loading || "Loading..."}</p>`;
 
-        fetch('/api/list_dashboards')
+        fetch('api/list_dashboards')
             .then(r => r.text())
             .then(text => {
                 try {
