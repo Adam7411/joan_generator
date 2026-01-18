@@ -1267,12 +1267,14 @@
                             <option value="scene" data-i18n="opt_scene">Scene / Scena</option>
                             <option value="input_select" data-i18n="opt_input_select">Input Select</option>
                             <option value="input_number" data-i18n="opt_input_number">Input Number</option>
+                            <option value="input_button" data-i18n="opt_input_button">Input Button / Przycisk</option>
                             <option value="script" data-i18n="opt_script">Script</option>
                             <option value="navigate" data-i18n="opt_navigate">Navigate / Button</option>
                             <option value="reload" data-i18n="opt_reload">Reload Dashboard</option>
                             <option value="gauge" data-i18n="opt_gauge">Gauge / Wskaźnik</option>
-                            <option value="fan_pct" data-i18n="opt_fan_pct">Fan (Percentage)</option>
-                            <option value="binary_sensor" data-i18n="opt_binary">Binary Sensor / Drzwi / Okno</option>
+                            <option value="clock" data-i18n="opt_clock">Zegar</option>
+                            <option value="label" data-i18n="opt_label">Etykieta</option>
+                            <option value="spacer" data-i18n="opt_spacer">Odstęp</option>
                         </select>
                     </div>
                 </div>
@@ -1299,7 +1301,8 @@
                         </select>
                     </div>
                     <div class="flex-col" id="grp-show-state" style="display: none;">
-                        <label style="font-size: 0.9em; margin-bottom: 5px;">Pokaż stan (Tekst)</label>
+                        <label style="font-size: 0.9em; margin-bottom: 5px;" data-i18n="lbl_show_state">Pokaż stan
+                            (Tekst)</label>
                         <div>
                             <input type="checkbox" id="w-show-state" checked
                                 style="transform: scale(1.5); margin: 5px;">
@@ -1314,11 +1317,11 @@
                     <div id="grp-gauge" class="flex-col" style="display:none; flex: 0 0 100px;">
                         <div style="display:flex; gap:5px;">
                             <div style="flex:1">
-                                <label>Min</label>
+                                <label data-i18n="lbl_min">Min</label>
                                 <input type="number" id="w-min" placeholder="0" style="width:100%">
                             </div>
                             <div style="flex:1">
-                                <label>Max</label>
+                                <label data-i18n="lbl_max">Max</label>
                                 <input type="number" id="w-max" placeholder="100" style="width:100%">
                             </div>
                         </div>
@@ -1498,17 +1501,17 @@
 
         const GRID_OPTION_SETS = {
             portrait: [
-                { value: '3x8', label: 'Standard (3 kolumny x 8 wierszy)' },
-                { value: '3x10', label: 'Wysoki (3 kolumny x 10 wierszy)' },
-                { value: '3x6', label: 'Kompakt (3 kolumny x 6 wierszy)' },
-                { value: 'custom', label: 'Układ własny' }
+                { value: '3x8', i18n: 'grid_3x8' },
+                { value: '3x10', i18n: 'grid_3x10' },
+                { value: '3x6', i18n: 'grid_3x6' },
+                { value: 'custom', i18n: 'grid_custom' }
             ],
             landscape: [
-                { value: '4x6', label: 'Szeroki (4 kolumny x 6 wierszy)' },
-                { value: '4x8', label: 'Rozszerzony (4 kolumny x 8 wierszy)' },
-                { value: '6x4', label: 'Panorama (6 kolumn x 4 wiersze)' },
-                { value: '8x3', label: 'Ultra szeroki (8 kolumn x 3 wiersze)' },
-                { value: 'custom', label: 'Układ własny' }
+                { value: '4x6', i18n: 'grid_4x6' },
+                { value: '4x8', i18n: 'grid_4x8' },
+                { value: '6x4', i18n: 'grid_6x4' },
+                { value: '8x3', i18n: 'grid_8x3' },
+                { value: 'custom', i18n: 'grid_custom' }
             ]
         };
 
@@ -1735,11 +1738,16 @@
                 opt_media: "Media Player", opt_climate: "Termostat", opt_input_select: "Lista Wyboru",
                 opt_input_number: "Suwak", opt_script: "Skrypt", opt_navigate: "Przycisk Nawigacji",
                 opt_fan: "Wentylator", opt_scene: "Scena", opt_input_button: "Input Button / Przycisk",
-                opt_fan: "Wentylator", opt_scene: "Scena", opt_input_button: "Input Button / Przycisk",
                 opt_light: "Światło (Ściemniane)", opt_group: "Grupa (Świateł)", opt_input_boolean: "Przełącznik Boolean", opt_reload: "Odśwież Dashboard",
                 opt_label: "Etykieta (Tekst)", opt_clock: "Zegar", opt_spacer: "Odstęp (Pusty)",
                 opt_gauge: "Wskaźnik (Gauge)",
                 opt_fan_pct: "Wentylator (Procentowo)",
+                lbl_show_state: "Pokaż stan (Tekst)",
+                grid_3x10: "Wysoki (3 kolumny x 10 wierszy)",
+                grid_3x6: "Kompakt (3 kolumny x 6 wierszy)",
+                grid_6x4: "Panorama (6 kolumn x 4 wiersze)",
+                grid_8x3: "Ultra szeroki (8 kolumn x 3 wiersze)",
+                lbl_min: "Min", lbl_max: "Max",
                 size_2x1: "2x1 (Szeroki Przycisk)", size_1x1: "1x1 (Mały)", size_2x2: "2x2 (Duży)",
                 size_3x1: "3x1 (Bardzo Szeroki)", size_1x2: "1x2 (Wysoki)", size_3x2: "3x2 (Ogromny)",
                 btn_add: "+ DODAJ WIDGET", btn_update: "ZAPISZ ZMIANY", btn_cancel: "ANULUJ",
@@ -1866,6 +1874,12 @@
                 opt_label: "Label (Text)", opt_clock: "Clock", opt_spacer: "Spacer (Empty)",
                 opt_gauge: "Gauge",
                 opt_fan_pct: "Fan (Percentage)",
+                lbl_show_state: "Show state (Text)",
+                grid_3x10: "Tall (3 cols x 10 rows)",
+                grid_3x6: "Compact (3 cols x 6 rows)",
+                grid_6x4: "Panorama (6 cols x 4 rows)",
+                grid_8x3: "Ultra wide (8 cols x 3 rows)",
+                lbl_min: "Min", lbl_max: "Max",
                 size_2x1: "2x1 (Wide Button)", size_1x1: "1x1 (Small)", size_2x2: "2x2 (Large)",
                 size_3x1: "3x1 (Extra Wide)", size_1x2: "1x2 (Tall)", size_3x2: "3x2 (Huge)",
                 btn_add: "+ ADD WIDGET", btn_update: "SAVE CHANGES", btn_cancel: "CANCEL",
@@ -1990,7 +2004,8 @@
             set.forEach(opt => {
                 const o = document.createElement('option');
                 o.value = opt.value;
-                o.textContent = opt.label;
+                o.setAttribute('data-i18n', opt.i18n);
+                o.textContent = TRANSLATIONS[currentLang][opt.i18n] || opt.value;
                 select.appendChild(o);
             });
             const found = set.find(o => o.value === current);
@@ -3189,6 +3204,10 @@
                     }
                 }
             });
+
+            // Re-render dynamic list with new language strings
+            rebuildGridOptions(document.getElementById('screen-orientation').value);
+
             document.getElementById('btn-pl').classList.toggle('active', l === 'pl');
             document.getElementById('btn-en').classList.toggle('active', l === 'en');
 
