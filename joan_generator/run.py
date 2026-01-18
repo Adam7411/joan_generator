@@ -5,19 +5,31 @@ from flask import Flask, render_template, request, send_file, Response
 from pathlib import Path
 import io
 
-# Inicjalizacja aplikacji
-print("📦 1. Inicjalizacja aplikacji Joan 6 Generator...")
+# Application Initialization
+print("📦 1. Initializing Joan 6 Generator app...")
 app = Flask(__name__)
 
+def safe_int(val, default):
+    if val is None:
+        return default
+    s = str(val).strip().lower()
+    if not s or s == 'undefined' or s == 'none':
+        return default
+    try:
+        # Handle cases like "12.0" or "undefined"
+        return int(float(s))
+    except (ValueError, TypeError):
+        return default
+
 # -------------------------------------------------------------------------
-# 1. KONFIGURACJA API I TOKENU
+# API AND TOKEN CONFIGURATION
 # -------------------------------------------------------------------------
 TOKEN = os.environ.get('SUPERVISOR_TOKEN')
 API_URL = "http://supervisor/core/api"
 SUPERVISOR_URL = "http://supervisor"
 TOKEN_SOURCE = "System (Supervisor)"
 
-# Slug AppDaemona (konfigurowalny: env APPDAEMON_SLUG lub options.json)
+# AppDaemon Slug (configurable: env APPDAEMON_SLUG or options.json)
 APPDAEMON_SLUG = os.environ.get('APPDAEMON_SLUG', "a0d7b954_appdaemon")
 
 try:
@@ -30,18 +42,18 @@ try:
                 TOKEN = manual_token
                 API_URL = "http://homeassistant:8123/api"
                 TOKEN_SOURCE = "Manual (Konfiguracja)"
-                print(f"🔧 Wykryto manualny token. Przełączam API na: {API_URL}")
+                print(f"🔧 Manual token detected. Switching API to: {API_URL}")
             opt_slug = options.get('appdaemon_slug')
             if opt_slug:
                 APPDAEMON_SLUG = opt_slug
 except Exception as e:
-    print(f"ℹ️ Info: Nie udało się odczytać pliku opcji: {e}")
+    print(f"ℹ️ Info: Could not read options file: {e}")
 
 if not TOKEN:
-    print("❌ OSTRZEŻENIE: Brak tokena autoryzacji! Lista encji będzie pusta.")
+    print("❌ WARNING: No authorization token! Entity list will be empty.")
 
 # -------------------------------------------------------------------------
-# 2. POBIERANIE DANYCH Z HOME ASSISTANT
+# FETCHING DATA FROM HOME ASSISTANT
 # -------------------------------------------------------------------------
 def get_ha_entities():
     if not TOKEN:
@@ -69,40 +81,40 @@ def get_ha_entities():
             entities.sort(key=lambda x: x['id'])
             return entities
     except Exception as e:
-        print(f"❌ Wyjątek podczas pobierania encji: {e}")
+        print(f"❌ Exception while fetching entities: {e}")
     return []
 
 # -------------------------------------------------------------------------
-# FUNKCJA ZAPISU PLIKU .DASH
+# .DASH FILE SAVE FUNCTION
 # -------------------------------------------------------------------------
 def save_dash_file(filename, content):
     """
-    UWAGA: W Home Assistant Supervisor addony działają w izolowanych kontenerach Docker.
-    Bezpośredni zapis do katalogu innego addona nie jest możliwy bez specjalnej konfiguracji.
+    WARNING: In Home Assistant Supervisor, add-ons run in isolated Docker containers.
+    Direct saving to another add-on's directory is not possible without specific configuration.
     
-    Funkcja informuje użytkownika, że musi zapisać plik ręcznie.
+    This function informs the user they must save the file manually.
     """
     network_path = f"\\\\[HA_IP]\\addon_configs\\{APPDAEMON_SLUG}\\dashboards\\{filename}"
     unix_path = f"/addon_configs/{APPDAEMON_SLUG}/dashboards/{filename}"
     
     message = (
-        f"⚠️ BEZPOŚREDNI ZAPIS NIEMOŻLIWY\n\n"
-        f"Addony w Home Assistant działają w izolowanych kontenerach Docker. "
-        f"Nie można bezpośrednio zapisać pliku do katalogu innego addona.\n\n"
-        f"Zapisz plik ręcznie:\n"
-        f"• Przez Samba: {network_path}\n"
-        f"• Przez SSH: {unix_path}\n\n"
-        f"Lub skopiuj wygenerowany kod i zapisz go ręcznie."
+        f"⚠️ DIRECT SAVE NOT POSSIBLE\n\n"
+        f"Home Assistant add-ons run in isolated Docker containers. "
+        f"Saving files directly to another add-on's directory is not possible without specific configuration.\n\n"
+        f"Save the file manually:\n"
+        f"• Via Samba: {network_path}\n"
+        f"• Via SSH: {unix_path}\n\n"
+        f"Or copy the generated code and save it manually."
     )
     
     print(f"⚠️ {message}")
     return False, message
 
 # -------------------------------------------------------------------------
-# FUNKCJA RESTARTU APPDAEMON
+# APPDAEMON RESTART FUNCTION
 # -------------------------------------------------------------------------
 def restart_appdaemon_addon():
-    """Restartuje AppDaemon używając dostępnego tokena (Manual lub System)."""
+    """Restarts AppDaemon using available token (Manual or System)."""
     if not TOKEN:
         return False, "Błąd: Brak tokena API (uzupełnij manual_token w konfiguracji)."
 
@@ -115,58 +127,58 @@ def restart_appdaemon_addon():
     if "homeassistant" in API_URL or "8123" in API_URL:
         url = f"{API_URL}/services/hassio/addon_restart"
         payload = {"addon": target_slug}
-        print(f"🔄 Restart przez Service Call (Manual Token): {url}")
+        print(f"🔄 Restarting via Service Call (Manual Token): {url}")
         try:
             response = requests.post(url, headers=headers, json=payload, timeout=30)
         except Exception as e:
-            print(f"❌ Wyjątek połączenia: {e}")
+            print(f"❌ Connection exception: {e}")
             return False, str(e)
     else:
         url = f"http://supervisor/addons/{target_slug}/restart"
-        print(f"🔄 Restart przez Supervisor API: {url}")
+        print(f"🔄 Restarting via Supervisor API: {url}")
         try:
             response = requests.post(url, headers=headers, timeout=30)
         except Exception as e:
-            print(f"❌ Wyjątek połączenia: {e}")
+            print(f"❌ Connection exception: {e}")
             return False, str(e)
 
     if response.status_code in [200, 201, 202]:
-        print("✅ Restart udany.")
-        return True, "Zrestartowano AppDaemon."
+        print("✅ Restart successful.")
+        return True, "AppDaemon restarted."
     else:
-        print(f"❌ Błąd API: {response.status_code} - {response.text}")
-        return False, f"Błąd API: {response.status_code} {response.text}"
+        print(f"❌ API Error: {response.status_code} - {response.text}")
+        return False, f"API Error: {response.status_code} {response.text}"
 
 # -------------------------------------------------------------------------
-# FUNKCJE MOSTEK API APPDAEMON (Direct Save)
+# APPDAEMON API BRIDGE FUNCTIONS (Direct Save)
 # -------------------------------------------------------------------------
 def check_appdaemon_bridge():
-    """Sprawdza czy skrypt dash_saver.py jest zainstalowany i aktywny w AppDaemon."""
+    """Checks if dash_saver.py script is installed and active in AppDaemon."""
     host = APPDAEMON_SLUG.replace('_', '-')
     paths = ["/api/save_dash", "/api/appdaemon/save_dash"]
     
     for path in paths:
         url = f"http://{host}:5050{path}"
-        print(f"🔍 Sprawdzanie ścieżki: {url}")
+        print(f"🔍 Checking path: {url}")
         try:
             response = requests.get(url, timeout=3)
             if response.status_code in [200, 405]:
-                print(f"✅ Mostek AppDaemon wykryty pod adresem: {url}")
-                # Zapisujemy działającą ścieżkę w zmiennej globalnej dla funkcji save
+                print(f"✅ AppDaemon bridge detected at: {url}")
+                # Save working path in global variable for save function
                 global ACTIVE_BRIDGE_PATH
                 ACTIVE_BRIDGE_PATH = path
                 return True
             else:
-                print(f"ℹ️ Ścieżka {path} zwróciła status: {response.status_code}")
+                print(f"ℹ️ Path {path} returned status: {response.status_code}")
         except Exception as e:
-            print(f"❌ Błąd dla ścieżki {path}: {e}")
+            print(f"❌ Error for path {path}: {e}")
     
     return False
 
 ACTIVE_BRIDGE_PATH = "/api/save_dash" # Fallback
 
 def save_dash_file_via_api(filename, content):
-    """Wysyła plik do AppDaemona próbując różnych możliwych ścieżek API."""
+    """Sends file to AppDaemon by trying various possible API paths."""
     host = APPDAEMON_SLUG.replace('_', '-')
     paths = ["/api/appdaemon/save_dash", "/api/save_dash"]
     
@@ -175,7 +187,7 @@ def save_dash_file_via_api(filename, content):
         url = f"http://{host}:5050{path}"
         payload = {"filename": filename, "content": content}
         
-        print(f"🚀 Próba wysyłki dashboardu na: {url}")
+        print(f"🚀 Attempting to upload dashboard to: {url}")
         try:
             headers = {"Content-Type": "application/json"}
             if TOKEN:
@@ -184,30 +196,30 @@ def save_dash_file_via_api(filename, content):
             response = requests.post(url, json=payload, headers=headers, timeout=10)
             
             if response.status_code == 200:
-                return True, f"Sukces: Plik {filename} został zapisany!"
+                return True, f"Success: File {filename} saved!"
             
             last_error = f"Status {response.status_code}: {response.text}"
-            print(f"ℹ️ Ścieżka {path} nie zadziałała ({last_error})")
+            print(f"ℹ️ Path {path} did not work ({last_error})")
         except Exception as e:
             last_error = str(e)
-            print(f"❌ Błąd połączenia ze ścieżką {path}: {e}")
+            print(f"❌ Connection error with path {path}: {e}")
 
-    return False, f"Błąd zapisu (próbowano wszystkich ścieżek). Ostatni błąd: {last_error}"
+    return False, f"Save error (tried all paths). Last error: {last_error}"
 
 # -------------------------------------------------------------------------
-# FUNKCJA ANALIZY CZĘSTOTLIWOŚCI ENCJI (Entity Frequency Analyzer)
+# ENTITY FREQUENCY ANALYZER
 # -------------------------------------------------------------------------
 def get_entity_frequency(entity_id, hours=24):
     """
-    Pobiera historię zmian encji z ostatnich X godzin i oblicza częstotliwość aktualizacji.
-    Zwraca: {'changes_per_hour': float, 'total_changes': int, 'level': 'ok'|'warning'|'danger'}
+    Fetches entity state history for the last X hours and calculates update frequency.
+    Returns: {'changes_per_hour': float, 'total_changes': int, 'level': 'ok'|'warning'|'danger'}
     """
     if not TOKEN:
         return {'error': 'Brak tokena API', 'changes_per_hour': 0, 'total_changes': 0, 'level': 'unknown'}
     
     from datetime import datetime, timedelta
     
-    # Oblicz timestamp startu (X godzin wstecz)
+    # Calculate start timestamp (X hours ago)
     end_time = datetime.utcnow()
     start_time = end_time - timedelta(hours=hours)
     start_iso = start_time.strftime('%Y-%m-%dT%H:%M:%SZ')
@@ -223,16 +235,16 @@ def get_entity_frequency(entity_id, hours=24):
             data = response.json()
             if data and len(data) > 0 and len(data[0]) > 0:
                 history = data[0]
-                total_changes = len(history) - 1  # -1 bo pierwszy wpis to stan początkowy
+                total_changes = len(history) - 1  # -1 because first entry is initial state
                 if total_changes < 0:
                     total_changes = 0
                 
                 changes_per_hour = total_changes / hours if hours > 0 else 0
                 
-                # Poziom ostrzeżenia (Złagodzone progi)
+                # Warning levels (relaxed thresholds)
                 # < 10/h = OK
-                # 10-60/h = Ostrzeżenie (co 1-6 min)
-                # > 60/h = Danger (częściej niż co minutę)
+                # 10-60/h = Warning (every 1-6 min)
+                # > 60/h = Danger (more frequent than every minute)
                 if changes_per_hour > 60:
                     level = 'danger'
                 elif changes_per_hour > 10:
@@ -248,7 +260,7 @@ def get_entity_frequency(entity_id, hours=24):
                     'level': level
                 }
             else:
-                # Brak historii - encja nowa lub bez zmian
+                # No history - new entity or no changes
                 return {
                     'entity_id': entity_id,
                     'changes_per_hour': 0,
@@ -257,14 +269,13 @@ def get_entity_frequency(entity_id, hours=24):
                     'level': 'ok'
                 }
         else:
-            print(f"❌ Błąd History API: {response.status_code}")
+            print(f"❌ History API Error: {response.status_code}")
             return {'error': f'API error: {response.status_code}', 'changes_per_hour': 0, 'total_changes': 0, 'level': 'unknown'}
     except Exception as e:
-        print(f"❌ Wyjątek podczas analizy częstotliwości: {e}")
+        print(f"❌ Exception during frequency analysis: {e}")
         return {'error': str(e), 'changes_per_hour': 0, 'total_changes': 0, 'level': 'unknown'}
 
-# -------------------------------------------------------------------------
-# 3. STYLE (E-INK OPTIMIZED & TWEAKED)
+# 3. STYLES (E-INK OPTIMIZED & TWEAKED)
 # -------------------------------------------------------------------------
 STYLE_TITLE = "color: #000000; font-size: 20px; font-weight: 700; text-align: center; padding-top: 5px; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif;"
 STYLE_WIDGET = "color: #000000 !important; background-color: #FFFFFF !important;"
@@ -277,11 +288,11 @@ STYLE_STATE_TEXT = "color: #000000 !important; font-weight: 700 !important; font
 
 def build_value_style(size_hint: str) -> str:
     """
-    Zwraca styl dla wartości na podstawie wskazówki:
+    Returns style for value based on hint:
     - normal -> 54px
     - medium -> 48px
     - small  -> 40px
-    - auto   -> 54px (zostanie dobrane wcześniej)
+    - auto   -> 54px (will be selected earlier)
     """
     px = {
         "normal": 54,
@@ -292,12 +303,12 @@ def build_value_style(size_hint: str) -> str:
 
 def pick_auto_size(value_size_hint: str, entity_id: str, entities_map: dict) -> str:
     """
-    Jeśli hint == 'auto', na podstawie bieżącej wartości encji dobiera rozmiar:
+    If hint == 'auto', selects size based on current entity state:
       >10000  -> small (40px)
       >1000   -> medium (48px)
       else    -> normal (54px)
-    Jeśli nie uda się sparsować liczby, fallback na długość tekstu:
-      len>9 -> small, len>6 -> medium, inaczej normal.
+    If number parsing fails, falls back to text length:
+      len>9 -> small, len>6 -> medium, otherwise normal.
     """
     if value_size_hint != "auto":
         return value_size_hint
@@ -321,8 +332,7 @@ def pick_auto_size(value_size_hint: str, entity_id: str, entities_map: dict) -> 
             return "medium"
     return "normal"
 
-# -------------------------------------------------------------------------
-# 4. NORMALIZACJA FORMATU IKON
+# ICON FORMAT NORMALIZATION
 # -------------------------------------------------------------------------
 def normalize_icon_format(icon_name):
     if not icon_name:
@@ -334,13 +344,12 @@ def normalize_icon_format(icon_name):
         return icon_name
     return icon_name
 
-# -------------------------------------------------------------------------
-# 5. LOGIKA GENEROWANIA YAML
+# YAML GENERATION LOGIC
 # -------------------------------------------------------------------------
 def get_real_entity(w_id: str) -> str:
     """
-    Usuwa sufiks _copyX z ID widżetu, aby uzyskać prawdziwe ID encji.
-    Np. sensor.temp_copy1 -> sensor.temp
+    Removes _copyX suffix from widget ID to get real entity ID.
+    E.g. sensor.temp_copy1 -> sensor.temp
     """
     import re
     return re.sub(r'_copy\d+$', '', w_id)
@@ -425,7 +434,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
 
             output.append("")
             output.append("# -------------------")
-            output.append("# DEFINICJE WIDŻETÓW")
+            output.append("# WIDGET DEFINITIONS")
             output.append("# -------------------")
             output.append("")
 
@@ -452,7 +461,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                 i_on = normalize_icon_format(w.get('icon_on'))
                 i_off = normalize_icon_format(w.get('icon_off'))
                 value_size_hint = w.get('value_size_hint', 'auto')
-                # Obliczamy realny hint (auto -> medium/small/normal wg stanu)
+                # Calculate real hint (auto -> medium/small/normal based on state)
                 final_size_hint = pick_auto_size(value_size_hint, real_entity_id, entities_map)
 
                 output.append(f"{w_id}:")
@@ -814,8 +823,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
 
     return "\n".join(output)
 
-# -------------------------------------------------------------------------
-# ROUTY
+# ROUTES
 # -------------------------------------------------------------------------
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -840,19 +848,17 @@ def index():
     if request.method == 'POST':
         action = request.form.get('action', 'generate')
         
-        # Pobieranie wspólnych danych dla większości akcji
+        # Retrieving common data for most actions
         title = request.form.get('title', 'JoanDashboard')
-        cols_val = request.form.get('grid_columns', '3')
-        cols = int(cols_val) if cols_val and cols_val.strip() else 3
-        rows_val = request.form.get('grid_rows', '8')
-        rows_grid = int(rows_val) if rows_val and rows_val.strip() else 8
+        cols = safe_int(request.form.get('grid_columns'), 3)
+        rows_grid = safe_int(request.form.get('grid_rows'), 8)
         def_size_str = request.form.get('default_widget_size', '2, 1')
         layout_json = request.form.get('layout_data_json', '[]')
         custom_defs_json = request.form.get('custom_definitions_json', '{}')
         lang = request.form.get('ui_language', 'pl')
         current_ui_lang = lang
 
-        # Aktualizacja globalnych parametrów widoku
+        # Update global view parameters
         dashboard_slug = title.lower().replace(" ", "_")
         dashboard_filename = dashboard_slug + ".dash"
         
@@ -869,7 +875,7 @@ def index():
         if action == 'restart':
             success, msg = restart_appdaemon_addon()
             save_message = f"{'✅' if success else '❌'} {msg}"
-            # Regenerujemy YAML, aby nie znikał po odświeżeniu strony przy restarcie
+            # Regenerate YAML so it doesn't disappear after page refresh on restart
             try:
                 generated_yaml = generate_joan_dash_yaml(
                     layout_data, title, grid_params, lang, custom_defs, entities_map
@@ -885,7 +891,7 @@ def index():
                 success, msg = save_dash_file_via_api(dashboard_filename, generated_yaml)
                 save_message = f"{'✅' if success else '❌'} {msg}"
             except Exception as e:
-                save_message = f"❌ Błąd zapisu: {e}"
+                save_message = f"❌ Save error: {e}"
 
         elif action == 'download_file':
             yaml_content = request.form.get('yaml_content', '')
@@ -925,7 +931,7 @@ def index():
 # -------------------------------------------------------------------------
 @app.route('/api/entity_frequency/<path:entity_id>')
 def api_entity_frequency(entity_id):
-    """Zwraca analizę częstotliwości aktualizacji encji (JSON)."""
+    """Returns entity update frequency analysis (JSON)."""
     from flask import jsonify
     result = get_entity_frequency(entity_id, hours=24)
     return jsonify(result)
