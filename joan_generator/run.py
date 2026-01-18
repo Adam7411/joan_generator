@@ -571,11 +571,22 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
 
                 elif w_type == 'fan':
                     output.append(f"  widget_type: fan")
-                    output.append("  low_speed: low")
-                    output.append("  medium_speed: medium")
-                    output.append("  high_speed: high")
+                    # Use percentage values for modern HA fan API
+                    output.append("  low_speed: 33")
+                    output.append("  medium_speed: 66")
+                    output.append("  high_speed: 100")
                     output.append(f"  entity: {real_entity_id}")
                     output.append(f"  title: \"{w_name}\"")
+                    # Configure service to use fan.set_percentage
+                    output.append("  post_service_speed:")
+                    output.append("    service: fan/set_percentage")
+                    output.append(f"    entity_id: {real_entity_id}")
+                    output.append("  post_service_active:")
+                    output.append("    service: fan/turn_on")
+                    output.append(f"    entity_id: {real_entity_id}")
+                    output.append("  post_service_inactive:")
+                    output.append("    service: fan/turn_off")
+                    output.append(f"    entity_id: {real_entity_id}")
 
                     if i_on: output.append(f"  icon_on: {i_on}")
                     if i_off: output.append(f"  icon_off: {i_off}")
@@ -586,7 +597,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append(f"  container_style: \"{STYLE_WIDGET}\"")
                     output.append(f"  icon_style_active: \"{STYLE_ICON}\"")
                     output.append(f"  icon_style_inactive: \"{STYLE_ICON}; opacity: 0.5;\"")
-                    # Speed button styles (active/inactive based on selected speed)
+                    # Speed button styles
                     output.append(f"  speed1_style_active: \"{STYLE_ICON}\"")
                     output.append(f"  speed1_style_inactive: \"{STYLE_ICON}; opacity: 0.3;\"")
                     output.append(f"  speed2_style_active: \"{STYLE_ICON}\"")
