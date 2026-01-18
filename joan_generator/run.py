@@ -671,6 +671,24 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append("  icon3_active: mdi-fan-speed-3")
                     output.append("  icon3_inactive: mdi-fan-speed-3")
 
+                elif w_type == 'input_button':
+                    output.append(f"  widget_type: switch")
+                    output.append(f"  entity: {real_entity_id}")
+                    output.append(f"  title: \"{w_name}\"")
+                    output.append(f"  momentary: 200")
+                    if i_on: output.append(f"  icon_on: {i_on}")
+                    if i_off: output.append(f"  icon_off: {i_off}")
+                    if w_icon and not i_on: output.append(f"  icon: {w_icon}")
+                    
+                    output.append(f"  state_text: 1")
+                    output.append(f"  title_style: \"{STYLE_TITLE}\"")
+                    output.append(f"  widget_style: \"{STYLE_WIDGET}\"")
+                    output.append(f"  icon_style_active: \"{STYLE_ICON}\"")
+                    output.append(f"  icon_style_inactive: \"{STYLE_ICON}\"")
+                    output.append("  state_map:")
+                    output.append(f"    \"on\": \"PRESS\"")
+                    output.append(f"    \"off\": \"PRESS\"")
+
                 elif w_type == 'scene':
                     output.append(f"  widget_type: scene")
                     output.append(f"  entity: {real_entity_id}")
@@ -885,8 +903,6 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     if w_type == 'input_number':
                         ad_type = 'input_number'
                     if w_type == 'script':
-                        ad_type = 'script'
-                    if w_type == 'input_button':
                         ad_type = 'script'
 
                     output.append(f"  widget_type: {ad_type}")
