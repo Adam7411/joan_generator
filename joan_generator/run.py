@@ -621,10 +621,10 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append(f"  icon_style_active: \"{STYLE_ICON}\"")
                     output.append(f"  icon_style_inactive: \"{STYLE_ICON}; opacity: 0.5;\"")
                     output.append(f"  icon_style: \"{STYLE_ICON}\"")
-                    output.append(f"  level_style: \"{STYLE_TEXT}\"")
-                    output.append(f"  level2_style: \"{STYLE_TEXT}\"")
-                    output.append(f"  unit_style: \"{STYLE_TEXT}\"")
-                    output.append(f"  unit2_style: \"{STYLE_TEXT}\"")
+                    output.append(f"  level_style: \"{STYLE_TEXT}; color: #000000 !important;\"")
+                    output.append(f"  level2_style: \"{STYLE_TEXT}; color: #000000 !important;\"")
+                    output.append(f"  unit_style: \"{STYLE_TEXT}; color: #000000 !important;\"")
+                    output.append(f"  unit2_style: \"{STYLE_TEXT}; color: #000000 !important;\"")
                     output.append(f"  level_up_style: \"{STYLE_ICON}\"")
                     output.append(f"  level_down_style: \"{STYLE_ICON}\"")
 
@@ -944,12 +944,21 @@ def index():
     has_token = bool(TOKEN)
     save_message = None
 
+
+    bridge_active = check_appdaemon_bridge()
+    has_dashboards = False
+    if bridge_active:
+        success, files = list_dashboards_via_api()
+        if success and files:
+            has_dashboards = True
+
     connection_info = {
         "token_source": TOKEN_SOURCE,
         "api_url": API_URL,
         "entity_count": len(ha_entities),
         "appdaemon_slug": APPDAEMON_SLUG,
-        "bridge_active": check_appdaemon_bridge()
+        "bridge_active": bridge_active,
+        "has_dashboards": has_dashboards
     }
 
     current_ui_lang = request.form.get('ui_language', 'pl') if request.method == 'POST' else request.args.get('lang', 'pl')
