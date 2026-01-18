@@ -947,10 +947,12 @@ def index():
 
     bridge_active = check_appdaemon_bridge()
     has_dashboards = False
+    available_dash_files = []
     if bridge_active:
         success, files = list_dashboards_via_api()
         if success and files:
             has_dashboards = True
+            available_dash_files = files
 
     connection_info = {
         "token_source": TOKEN_SOURCE,
@@ -1054,7 +1056,8 @@ def index():
         title=title if 'title' in locals() else "JoanDashboard",
         cols=cols if 'cols' in locals() else 3,
         rows_grid=rows_grid if 'rows_grid' in locals() else 8,
-        def_size=def_size_str if 'def_size_str' in locals() else "2, 1"
+        def_size=def_size_str if 'def_size_str' in locals() else "2, 1",
+        dashboards_list=available_dash_files if 'available_dash_files' in locals() else []
     )
 
 # -------------------------------------------------------------------------
