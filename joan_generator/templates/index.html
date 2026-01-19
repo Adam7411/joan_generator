@@ -1888,7 +1888,45 @@
             "mdi-shield-home", "mdi-shield-check", "mdi-shield-alert", "mdi-bell", "mdi-bell-outline",
             "mdi-bell-ring", "mdi-bell-off", "mdi-video", "mdi-video-outline", "mdi-video-off",
             "mdi-webcam", "mdi-cctv", "mdi-smoke-detector", "mdi-water-boiler", "mdi-radiator",
-            "mdi-air-conditioner", "mdi-air-filter", "mdi-air-purifier", "mdi-fan", "mdi-fan-off"
+            "mdi-air-conditioner", "mdi-air-filter", "mdi-air-purifier", "mdi-fan", "mdi-fan-off",
+
+            // === SPORTS & FITNESS (NEW) ===
+            "mdi-soccer", "mdi-basketball", "mdi-football", "mdi-tennis", "mdi-baseball", "mdi-volleyball",
+            "mdi-cricket", "mdi-hockey-sticks", "mdi-golf", "mdi-bowling", "mdi-billiards",
+            "mdi-table-tennis", "mdi-badminton", "mdi-karate", "mdi-fencing", "mdi-archery",
+            "mdi-dumbbell", "mdi-weight-lifter", "mdi-kettlebell", "mdi-yoga", "mdi-run", "mdi-walk",
+            "mdi-bike", "mdi-bicycle", "mdi-swim", "mdi-skate", "mdi-roller-skate", "mdi-skiing",
+            "mdi-snowboard", "mdi-sledding", "mdi-hiking", "mdi-climbing", "mdi-pool",
+
+            // === TRAVEL & OUTDOORS (NEW) ===
+            "mdi-airplane-takeoff", "mdi-airplane-landing", "mdi-airport", "mdi-train-variant",
+            "mdi-bus-stop", "mdi-ferry", "mdi-car-hatchback", "mdi-car-estate", "mdi-car-convertible",
+            "mdi-car-pickup", "mdi-truck-cargo-container", "mdi-caravan", "mdi-tent", "mdi-campfire",
+            "mdi-mountain", "mdi-image-filter-hdr", "mdi-beach", "mdi-beach-line", "mdi-island",
+            "mdi-palm-tree", "mdi-map-clock", "mdi-map-search", "mdi-compass", "mdi-compass-outline",
+            "mdi-passport", "mdi-suitcase", "mdi-suitcase-rolling", "mdi-hotel", "mdi-bed-outline",
+
+            // === HOBBIES & CREATIVITY (NEW) ===
+            "mdi-camera", "mdi-camera-outline", "mdi-camera-iris", "mdi-image-multiple", "mdi-palette",
+            "mdi-brush", "mdi-brush-variant", "mdi-format-paint", "mdi-pen", "mdi-draw",
+            "mdi-guitar-acoustic", "mdi-guitar-electric", "mdi-piano", "mdi-drums", "mdi-violin",
+            "mdi-saxophone", "mdi-trumpet", "mdi-music-clef-treble", "mdi-metronome", "mdi-recording",
+            "mdi-microphone-variant", "mdi-controller-classic", "mdi-gamepad-variant", "mdi-google-controller",
+            "mdi-chess-knight", "mdi-dice-5", "mdi-cards-outline", "mdi-poker-chip", "mdi-fishing",
+
+            // === SCIENCE & EDUCATION (NEW) ===
+            "mdi-school", "mdi-school-outline", "mdi-mortar-board", "mdi-book-open-variant",
+            "mdi-library", "mdi-notebook-edit", "mdi-pencil-ruler", "mdi-microscope", "mdi-telescope",
+            "mdi-flask", "mdi-flask-outline", "mdi-test-tube", "mdi-dna", "mdi-atom", "mdi-molecule",
+            "mdi-rocket", "mdi-rocket-launch", "mdi-satellite-variant", "mdi-earth", "mdi-globe-model",
+            "mdi-brain", "mdi-head-lightbulb-outline", "mdi-abacus", "mdi-calculator",
+
+            // === FAMILY & LIFE EVENTS (NEW) ===
+            "mdi-human-male-female", "mdi-human-female-boy", "mdi-human-male-boy", "mdi-baby-carriage",
+            "mdi-cradle", "mdi-toy-brick-outline", "mdi-teddy-bear", "mdi-pacifier", "mdi-ring",
+            "mdi-cards-heart", "mdi-cake-variant", "mdi-candle", "mdi-party-popper", "mdi-balloon",
+            "mdi-gift", "mdi-home-heart", "mdi-hand-heart", "mdi-account-heart", "mdi-account-star",
+            "mdi-emoticon-happy-outline", "mdi-emoticon-cool-outline", "mdi-face-man", "mdi-face-woman"
         ];
 
         // === SMART ICON LOGIC ===
@@ -3636,7 +3674,7 @@
 
             let count = 0;
             POPULAR_ICONS.forEach(icon => {
-                if (count > 1000 && filter === "") return;
+                if (count > 1200 && filter === "") return;
                 if (icon.toLowerCase().includes(f)) {
                     const div = document.createElement('div');
                     div.className = 'grid-icon-item';
