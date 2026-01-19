@@ -1109,11 +1109,6 @@
                     <i class="mdi mdi-check-circle" style="font-size: 1.2em;"></i>
                     <span data-i18n="status_ok">Połączono z Home Assistant (Token OK)</span>
                 </div>
-                <div onclick="showInfoModal()"
-                    style="cursor: pointer; background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 12px; font-size: 0.8em; display: flex; align-items: center; gap: 4px;">
-                    <i class="mdi mdi-information-outline"></i>
-                    <span>INFO</span>
-                </div>
             </div>
             <div class="status-details" id="status-details"></div>
             {% else %}
@@ -1127,8 +1122,11 @@
 
             <div class="header-top">
                 <h1 data-i18n="title_main">Joan 6 E-Ink Generator</h1>
-                <div class="controls">
-                    <button type="button" onclick="toggleTheme()" id="btn-theme">🌙</button>
+                <div class="controls" style="display:flex; align-items:center;">
+                    <button type="button" onclick="toggleTheme()" id="btn-theme" title="Zmień motyw">🌙</button>
+                    <button type="button" onclick="showInfoModal()" id="btn-info" title="Informacje o systemie" style="padding: 8px 12px;"><i class="mdi mdi-information-variant" style="font-size:1.2em; line-height:1;"></i></button>
+                    <button type="button" onclick="openVisionectHelp()" id="btn-joan-help" title="Pomoc Visionect Joan" style="font-size: 0.9em;">JOAN</button>
+                    <div style="width:1px; height:24px; background:#ccc; margin:0 8px;"></div>
                     <button type="button" onclick="setLang('pl')" id="btn-pl" class="active">PL</button>
                     <button type="button" onclick="setLang('en')" id="btn-en">EN</button>
                 </div>
@@ -1731,8 +1729,8 @@
                 opt_medium: "Średni (40px) - dla 1000+",
                 opt_small: "Mały (32px) - dla 10000+",
                 opt_switch: "Przełącznik / Światło", opt_cover: "Roleta / Brama", opt_sensor: "Sensor",
-                opt_binary: "Sensor Binarny (On/Off)", opt_lock: "Zamek", opt_person: "Osoba / Tracker",
-                opt_media: "Media Player", opt_climate: "Termostat", opt_input_select: "Lista Wyboru",
+                opt_binary: "Sensor Binarny (On/Off)", opt_lock: "Lock / Zamek", opt_person: "Osoba / Tracker",
+                opt_media: "Media Player", opt_climate: "Climate / Klimatyzacja", opt_input_select: "Lista Wyboru",
                 opt_input_number: "Suwak", opt_script: "Skrypt", opt_navigate: "Przycisk Nawigacji",
                 opt_fan: "Wentylator", opt_scene: "Scena", opt_input_button: "Input Button / Przycisk",
                 opt_light: "Światło (Ściemniane)", opt_group: "Grupa (Świateł)", opt_input_boolean: "Przełącznik Boolean", opt_reload: "Odśwież Dashboard",
@@ -3584,6 +3582,38 @@
     </div>
 </div>
 
+<!-- MODAL POMOCY VISIONECT JOAN -->
+<div id="visionect-help-modal" class="icon-picker-modal">
+    <div class="icon-picker-content" style="max-width: 600px; height: auto; max-height: 85vh;">
+        <div class="ip-header">
+            <h2>Usługi dodatku Visionect Joan</h2>
+            <span class="ip-close" onclick="closeVisionectHelp()">&times;</span>
+        </div>
+        <div style="overflow-y: auto; padding-right: 10px; font-size: 0.95em; line-height: 1.5;">
+            <p>Najlepiej i najszybciej uruchamiać usługi Visionect Joan przez widget <b>Skrypty</b>. Skrypt tworzymy w Home Assistant.</p>
+            <p><b>Krok po kroku:</b></p>
+            <ol style="margin-left: 20px;">
+                <li>Ustawienia</li>
+                <li>Automatyzacje oraz sceny</li>
+                <li>Skrypty</li>
+                <li><b>Utwórz skrypt</b>
+                    <ul style="margin-top:5px; margin-bottom:10px;">
+                        <li>a. Utwórz nowy skrypt</li>
+                        <li>b. Sekwencja + Dodaj akcję</li>
+                        <li>c. Wpisz <code>visionect</code> - pokażą się wszystkie usługi dodatku Visionect Joan</li>
+                        <li>d. Wybierz daną usługę visionect i skonfiguruj ją (np. clear_screen, show_image itp.)</li>
+                        <li>e. Kliknij <b>Zapisz</b> i nadaj nazwę skryptu.</li>
+                    </ul>
+                </li>
+            </ol>
+            <p style="margin-top:15px; background: #e3f2fd; padding:10px; border-radius:4px;">
+                <b>Wskazówka:</b> Po stworzeniu skryptu, wróć tutaj (Joan 6 Generator), dodaj widget typu <b>Script</b> i wybierz encję swojego nowego skryptu. Możesz też dodać przycisk do dashboardu, który go wywoła.
+            </p>
+        </div>
+        <button type="button" class="btn btn-gen" onclick="closeVisionectHelp()" style="margin-top:20px;">ROZUMIEM</button>
+    </div>
+</div>
+
 <!-- MODAL KONFIGURACJI APPDAEMON (Bridge) -->
 <div id="ad-config-modal" class="icon-picker-modal">
     <div class="icon-picker-content" style="max-width: 800px; height: auto; max-height: 90vh;">
@@ -3771,6 +3801,14 @@ class DashSaver(hass.Hass):
         document.getElementById('battery-help-modal').style.display = 'none';
     }
 
+    function openVisionectHelp() {
+        document.getElementById('visionect-help-modal').style.display = 'block';
+    }
+
+    function closeVisionectHelp() {
+        document.getElementById('visionect-help-modal').style.display = 'none';
+    }
+
     function clearAll() {
         if (confirm(TRANSLATIONS[currentLang].confirm_clear)) {
             window.location.href = window.location.pathname;
@@ -3828,8 +3866,10 @@ class DashSaver(hass.Hass):
     // Opcjonalnie: Zamknij okno po kliknięciu poza nim
     window.addEventListener('click', function (event) {
         const helpModal = document.getElementById('battery-help-modal');
+        const visionectModal = document.getElementById('visionect-help-modal');
         const configModal = document.getElementById('ad-config-modal');
         if (event.target == helpModal) closeBatteryHelp();
+        if (event.target == visionectModal) closeVisionectHelp();
         if (event.target == configModal) closeAdConfig();
     });
 </script>
