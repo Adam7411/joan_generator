@@ -1503,6 +1503,12 @@
             <textarea class="output" id="output-yaml" readonly>{{ generated_yaml }}</textarea>
         </div>
         {% endif %}
+
+        <!-- ROW: Useful Links -->
+        <div style="margin-top: 30px; display: flex; justify-content: center;">
+            <button type="button" class="btn btn-gen" style="background-color: #4caf50; max-width: 300px;"
+                onclick="openLinksModal()" data-i18n="btn_links">🔗 PRZYDATNE LINKI</button>
+        </div>
     </div>
 
     <!-- MODAL PICKER IKON -->
@@ -1971,7 +1977,7 @@
 
             // === TECHNICAL / HARDWARE / AUTOMATION (NEW +250) ===
             "mdi-cpu-32-bit", "mdi-cpu-64-bit", "mdi-memory", "mdi-harddisk", "mdi-expansion-card",
-            "mdi-ethernet", "mdi-usb", "mdi-usb-port", "mdi-serial-port", "mdi-hdmi-port", "mdi-displayport",
+            "mdi-ethernet", "mdi-usb", "mdi-usb-port", "mdi-serial-port", "mdi-hdmi-port",
             "mdi-resistor", "mdi-electronic-components",
             "mdi-screwdriver", "mdi-wrench", "mdi-hammer", "mdi-pliers", "mdi-tape-measure", "mdi-spirit-level",
             "mdi-compass", "mdi-ruler", "mdi-ladder",
@@ -1982,9 +1988,9 @@
             "mdi-lan", "mdi-lan-connect", "mdi-lan-disconnect", "mdi-lan-pending", "mdi-lan-check",
             "mdi-wifi", "mdi-wifi-strength-4", "mdi-wifi-strength-3", "mdi-wifi-strength-2", "mdi-wifi-strength-1",
             "mdi-bluetooth", "mdi-bluetooth-connect", "mdi-bluetooth-settings", "mdi-nfc", "mdi-nfc-tap",
-            "mdi-rf-id", "mdi-identifier", "mdi-camera-control", "mdi-cctv", "mdi-video-input-hdmi",
+            "mdi-identifier", "mdi-camera-control", "mdi-cctv", "mdi-video-input-hdmi",
             "mdi-video-input-component", "mdi-video-input-svideo", "mdi-remote", "mdi-remote-tv",
-            "mdi-cog-sync", "mdi-sync-alert", "mdi-wrench-check", "mdi-hammer-check", "mdi-tools-check",
+            "mdi-cog-sync", "mdi-sync-alert", "mdi-wrench-check",
             "mdi-shield-check", "mdi-shield-alert-outline", "mdi-alarm-panel", "mdi-alarm-panel-outline",
             "mdi-access-point-check", "mdi-server-security", "mdi-server-off", "mdi-database-alert",
             "mdi-database-check", "mdi-factory", "mdi-warehouse", "mdi-oil", "mdi-fuel-cell",
@@ -2012,7 +2018,7 @@
             "mdi-shield-moon", "mdi-shield-moon-outline", "mdi-shield-sun", "mdi-shield-sun-outline",
             "mdi-cctv-off", "mdi-doorbell-video", "mdi-ip-network-outline", "mdi-router-network",
             "mdi-router-wireless-settings", "mdi-wifi-strength-4-alert", "mdi-wifi-sync",
-            "mdi-nfc-search-variant", "mdi-rfid-variant",
+            "mdi-nfc-search-variant",
             "mdi-zigbee", "mdi-z-wave", "mdi-home-assistant", "mdi-home-automation",
             "mdi-lightbulb-on", "mdi-lightbulb-outline", "mdi-lightbulb-group", "mdi-lamp", "mdi-led-on",
             "mdi-power", "mdi-power-plug", "mdi-power-socket-eu", "mdi-battery-charging", "mdi-battery-check",
@@ -2029,13 +2035,13 @@
             "mdi-format-paint", "mdi-format-color-fill", "mdi-opacity", "mdi-eyedropper",
             "mdi-vector-point", "mdi-vector-line", "mdi-vector-circle", "mdi-vector-square",
             "mdi-layers", "mdi-layers-outline", "mdi-layers-plus", "mdi-layers-minus",
-            "mdi-cube", "mdi-cube-outline", "mdi-box", "mdi-box-variant", "mdi-package-variant",
+            "mdi-cube", "mdi-cube-outline", "mdi-box", "mdi-package-variant",
             "mdi-package-variant-closed", "mdi-truck-delivery", "mdi-forklift", "mdi-crane",
             "mdi-excavator", "mdi-tractor", "mdi-mower", "mdi-robot-mower", "mdi-sprinkler-variant",
             "mdi-leaf", "mdi-flower", "mdi-tree", "mdi-pine-tree", "mdi-palm-tree",
             "mdi-weather-sunny", "mdi-weather-partly-cloudy", "mdi-weather-cloudy", "mdi-weather-rainy",
             "mdi-weather-snowy", "mdi-weather-windy", "mdi-weather-fog", "mdi-weather-hail",
-            "mdi-thermometer-plus", "mdi-thermometer-minus", "mdi-snow-well", "mdi-fire", "mdi-water",
+            "mdi-thermometer-plus", "mdi-thermometer-minus", "mdi-fire", "mdi-water",
             "mdi-oil", "mdi-gas-cylinder", "mdi-fuel", "mdi-lightning-bolt", "mdi-flash",
             "mdi-account", "mdi-account-group", "mdi-account-multiple", "mdi-account-voice",
             "mdi-shield", "mdi-shield-check", "mdi-shield-lock", "mdi-lock", "mdi-lock-open",
@@ -2300,7 +2306,9 @@
                 info_bridge_no: "NIE / BRAK",
                 btn_refresh_entities_title: "Odśwież listę encji",
                 msg_refreshing: "Odświeżanie listy encji...",
-                msg_refreshed: "✅ Lista encji odświeżona!"
+                msg_refreshed: "✅ Lista encji odświeżona!",
+                btn_links: "🔗 PRZYDATNE LINKI",
+                modal_links_title: "Przydatne Linki i Dokumentacja"
             },
             en: {
                 btn_import_dash: "📥 IMPORT DASHBOARD",
@@ -2381,6 +2389,8 @@
                 preview_hint: "You can drag buttons between rows and reorder them within a row (Drag & Drop).",
                 btn_restart: "RESTART APPDAEMON",
                 btn_copy: "📋 COPY CODE TO CLIPBOARD",
+                btn_links: "🔗 USEFUL LINKS",
+                modal_links_title: "Useful Links & Documentation",
                 btn_download_file: "⬇️ DOWNLOAD .DASH FILE",
                 btn_save_ad: "🚀 SAVE DIRECTLY TO APPDAEMON",
                 status_details: "Token: {token_source} • API: {api_url} • Entities: {entity_count} • AppDaemon: {appdaemon_slug}",
@@ -4347,6 +4357,14 @@ class DashSaver(hass.Hass):
         document.getElementById('visionect-help-modal').style.display = 'none';
     }
 
+    function openLinksModal() {
+        document.getElementById('links-modal').style.display = 'block';
+    }
+
+    function closeLinksModal() {
+        document.getElementById('links-modal').style.display = 'none';
+    }
+
     function clearAll() {
         if (confirm(TRANSLATIONS[currentLang].confirm_clear)) {
             window.location.href = window.location.pathname;
@@ -4585,8 +4603,12 @@ class DashSaver(hass.Hass):
         if (existingWindowOnClick) existingWindowOnClick(event);
 
         const modal = document.getElementById('import-modal');
+        const linksModal = document.getElementById('links-modal');
         if (event.target == modal) {
             closeImportModal();
+        }
+        if (event.target == linksModal) {
+            closeLinksModal();
         }
     }
 
@@ -4658,9 +4680,53 @@ class DashSaver(hass.Hass):
                 </div>
             </div>
         </div>
+    </div>
+</div>
+</div>
+
+<!-- USEFUL LINKS MODAL -->
+<div id="links-modal" class="modal" style="z-index: 100001;">
+    <div class="modal-content" style="max-width: 600px;">
+        <div class="modal-header">
+            <h2 data-i18n="modal_links_title">Przydatne Linki</h2>
+            <span class="close" onclick="closeLinksModal()">&times;</span>
+        </div>
+        <div class="modal-body" style="font-size: 0.95em; line-height: 1.6;">
+            <ul style="list-style: none; padding: 0;">
+                <li
+                    style="margin-bottom: 15px; padding: 12px; background: #f9f9f9; border-left: 4px solid #4caf50; border-radius: 4px;">
+                    <a href="https://github.com/Adam7411/visionect-v3-allinone" target="_blank"
+                        style="text-decoration: none; color: #1565c0; font-weight: bold;">
+                        Visionect Server v3 (All‑in‑One) installation in Home Assistant
+                    </a>
+                </li>
+                <li
+                    style="margin-bottom: 15px; padding: 12px; background: #f9f9f9; border-left: 4px solid #4caf50; border-radius: 4px;">
+                    <a href="https://github.com/Adam7411/Joan-6-Visionect_Home-Assistant_EN" target="_blank"
+                        style="text-decoration: none; color: #1565c0; font-weight: bold;">
+                        Visionect Software Suite - Installation in Proxmox
+                    </a>
+                </li>
+                <li
+                    style="margin-bottom: 15px; padding: 12px; background: #f9f9f9; border-left: 4px solid #4caf50; border-radius: 4px;">
+                    <a href="https://github.com/Adam7411/visionect_joan" target="_blank"
+                        style="text-decoration: none; color: #1565c0; font-weight: bold;">
+                        Visionect Joan for Home Assistant add-on
+                    </a>
+                </li>
+                <li
+                    style="margin-bottom: 15px; padding: 12px; background: #f9f9f9; border-left: 4px solid #4caf50; border-radius: 4px;">
+                    <a href="https://github.com/Adam7411/joan_generator" target="_blank"
+                        style="text-decoration: none; color: #1565c0; font-weight: bold;">
+                        Joan 6: AppDaemon Dashboard Generator add-on
+                    </a>
+                </li>
+            </ul>
+        </div>
         <div class="modal-footer"
             style="padding-top: 10px; border-top: 1px solid #ddd; display: flex; justify-content: flex-end;">
-            <!-- Removed 'Zamknij' button as requested -->
+            <button type="button" class="btn" style="background: #607d8b; color: white;" onclick="closeLinksModal()"
+                data-i18n="btn_cancel">Zamknij</button>
         </div>
     </div>
 </div>
