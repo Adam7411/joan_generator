@@ -949,8 +949,8 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     if w_icon and not i_on:
                         output.append(f"  icon: {w_icon}")
                         if ad_type == 'script':
-                            output.append(f"  icon_active: {w_icon}")
-                            output.append(f"  icon_inactive: {w_icon}")
+                            output.append(f"  icon_on: {w_icon}")
+                            output.append(f"  icon_off: {w_icon}")
 
                     # Robust check for state_text_enabled
                     st_enabled = w.get('state_text_enabled', True)
