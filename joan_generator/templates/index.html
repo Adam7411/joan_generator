@@ -3930,8 +3930,10 @@ class DashSaver(hass.Hass):
             .then(response => response.text())
             .then(html => {
                 // Regex to extract the entitiesData JSON array
-                // Matches: const entitiesData = [...];
-                const match = html.match(/const\s+entitiesData\s*=\s*(\[.*?\]);/s);
+                // Matches: let/const/var entitiesData = [...];
+                // We changed it to 'let' in the template, so we must match 'let'.
+                // Also capture everything until the semicolon to handle nested structures correctly.
+                const match = html.match(/(?:let|const|var)\s+entitiesData\s*=\s*(\[[\s\S]*?\]);/);
 
                 if (match && match[1]) {
                     try {
