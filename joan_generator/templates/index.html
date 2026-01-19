@@ -1372,6 +1372,8 @@
                         <div id="div-icon-on" class="flex-col">
                             <label data-i18n="lbl_icon_on">Ikona ON</label>
                             <div class="input-group">
+                                <i id="preview-icon-on" class="mdi mdi-checkbox-blank-circle-outline"
+                                    style="font-size: 24px; margin-right: 5px; color: #444;"></i>
                                 <input type="text" id="w-icon-on" list="icon-list"
                                     oninput="manualIconOverride = true; updateIconPreview()"
                                     placeholder="mdi-lightbulb-on">
@@ -1381,6 +1383,8 @@
                         <div id="div-icon-off" class="flex-col">
                             <label data-i18n="lbl_icon_off">Ikona OFF</label>
                             <div class="input-group">
+                                <i id="preview-icon-off" class="mdi mdi-checkbox-blank-circle-outline"
+                                    style="font-size: 24px; margin-right: 5px; color: #444;"></i>
                                 <input type="text" id="w-icon-off" list="icon-list"
                                     oninput="manualIconOverride = true; updateIconPreview()"
                                     placeholder="mdi-lightbulb-outline">
@@ -2672,8 +2676,25 @@
             const i1 = document.getElementById('w-icon').value;
             const i2 = document.getElementById('w-icon-on').value;
             const i3 = document.getElementById('w-icon-off').value;
+
+            // Main preview (top right)
             const final = i1 || i2 || i3 || 'mdi-help-circle-outline';
             document.getElementById('preview-icon').className = `mdi ${final} icon-preview`;
+
+            // Dual Previews (next to inputs)
+            const pOn = document.getElementById('preview-icon-on');
+            if (pOn) {
+                const iconOn = i2 || 'mdi-checkbox-blank-circle-outline';
+                pOn.className = `mdi ${iconOn}`;
+                pOn.style.color = i2 ? '#4caf50' : '#444'; // Green if set, dark if default
+            }
+
+            const pOff = document.getElementById('preview-icon-off');
+            if (pOff) {
+                const iconOff = i3 || 'mdi-checkbox-blank-circle-outline';
+                pOff.className = `mdi ${iconOff}`;
+                pOff.style.color = i3 ? '#f44336' : '#444'; // Red if set, dark if default
+            }
         }
 
         function handleTypeChange() {
