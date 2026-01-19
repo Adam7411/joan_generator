@@ -1926,7 +1926,48 @@
             "mdi-cradle", "mdi-toy-brick-outline", "mdi-teddy-bear", "mdi-pacifier", "mdi-ring",
             "mdi-cards-heart", "mdi-cake-variant", "mdi-candle", "mdi-party-popper", "mdi-balloon",
             "mdi-gift", "mdi-home-heart", "mdi-hand-heart", "mdi-account-heart", "mdi-account-star",
-            "mdi-emoticon-happy-outline", "mdi-emoticon-cool-outline", "mdi-face-man", "mdi-face-woman"
+            "mdi-emoticon-happy-outline", "mdi-emoticon-cool-outline", "mdi-face-man", "mdi-face-woman",
+
+            // === PHOTOGRAPHY & NEWS (NEW) ===
+            "mdi-camera-enhance", "mdi-camera-flip", "mdi-camera-gopro", "mdi-camera-metering-center",
+            "mdi-camera-metering-matrix", "mdi-camera-metering-partial", "mdi-camera-metering-spot",
+            "mdi-camera-off", "mdi-camera-party-mode", "mdi-camera-plus", "mdi-camera-plus-outline",
+            "mdi-camera-front", "mdi-camera-front-variant", "mdi-camera-rear", "mdi-camera-rear-variant",
+            "mdi-camera-retake", "mdi-camera-switch", "mdi-camera-switch-outline", "mdi-camera-timer",
+            "mdi-camera-wireless", "mdi-camera-wireless-outline", "mdi-video-plus", "mdi-video-minus",
+            "mdi-video-check", "mdi-video-stabilization", "mdi-image-filter-black-white",
+            "mdi-image-filter-center-focus", "mdi-image-filter-frames", "mdi-image-edit",
+            "mdi-rss", "mdi-rss-box", "mdi-rss-off", "mdi-feed", "mdi-newspaper-variant-outline", "mdi-post-outline",
+
+            // === ADVANCED HARDWARE & AUTOMATION (NEW) ===
+            "mdi-automation", "mdi-home-automation", "mdi-chip", "mdi-cpu-32-bit", "mdi-cpu-64-bit",
+            "mdi-microchip", "mdi-memory", "mdi-expansion-card", "mdi-motherboard", "mdi-pci-card",
+            "mdi-raspberry-pi", "mdi-arduino", "mdi-developer-board", "mdi-usb", "mdi-usb-port",
+            "mdi-ip-network", "mdi-ip-network-outline", "mdi-ethernet-cable", "mdi-ethernet-cable-off",
+            "mdi-wifi-alert", "mdi-wifi-lock", "mdi-bluetooth-audio", "mdi-bluetooth-transfer",
+
+            // === SPECIFIC SENSORS & ALARMS (NEW) ===
+            "mdi-sensor", "mdi-sensor-group", "mdi-leak", "mdi-gas-cylinder", "mdi-smoke-detector-variant",
+            "mdi-fire-alert", "mdi-flood", "mdi-water-alert", "mdi-wind-power-outline", "mdi-home-thermometer",
+            "mdi-thermometer-lines", "mdi-thermometer-low", "mdi-thermometer-high", "mdi-thermometer-alert",
+            "mdi-hydro-power", "mdi-wind-power", "mdi-solar-power-variant", "mdi-lightning-bolt-outline",
+
+            // === UTILITIES & VALVES (NEW) ===
+            "mdi-pool-thermometer", "mdi-sprinkler", "mdi-sprinkler-variant", "mdi-valve", "mdi-valve-closed",
+            "mdi-power-plug-outline", "mdi-power-socket-uk", "mdi-power-socket-us", "mdi-power-socket-au",
+            "mdi-hammer-wrench", "mdi-hammer-screwdriver", "mdi-toolbox", "mdi-toolbox-outline",
+
+            // === MISC SMARTHOME (NEW) ===
+            "mdi-key-variant", "mdi-key-wireless", "mdi-key-alert", "mdi-home-lock", "mdi-home-lock-open",
+            "mdi-mower", "mdi-mower-bag", "mdi-leaf", "mdi-tree", "mdi-flower", "mdi-flower-outline",
+            "mdi-weather-pouring", "mdi-weather-snowy-heavy", "mdi-weather-tornado", "mdi-weather-hurricane",
+            "mdi-shield-bug", "mdi-bug-outline", "mdi-spider", "mdi-skull-outline",
+
+            // === MORE LIFESTYLE / UI SYMBOLS (NEW) ===
+            "mdi-account-group", "mdi-account-multiple-plus", "mdi-account-voice", "mdi-account-question",
+            "mdi-star-face", "mdi-medal", "mdi-trophy", "mdi-handshake", "mdi-handshake-outline",
+            "mdi-heart-multiple", "mdi-heart-settings", "mdi-chat-question", "mdi-comment-alert",
+            "mdi-alert-octagon", "mdi-alert-decagram", "mdi-check-decagram", "mdi-check-bold"
         ];
 
         // === SMART ICON LOGIC ===
@@ -1953,7 +1994,8 @@
             'drukarka': 'mdi-printer', 'printer': 'mdi-printer',
             'router': 'mdi-router-wireless',
             'server': 'mdi-server', 'serwer': 'mdi-server',
-            'camera': 'mdi-cctv', 'kamera': 'mdi-cctv',
+            'camera': 'mdi-camera', 'kamera': 'mdi-camera', 'cctv': 'mdi-cctv',
+            'rss': 'mdi-rss', 'news': 'mdi-newspaper-variant-outline',
             'motion': 'mdi-motion-sensor', 'ruch': 'mdi-motion-sensor',
             'humidity': 'mdi-water-percent', 'wilgotność': 'mdi-water-percent',
             'battery': 'mdi-battery', 'bateria': 'mdi-battery',
@@ -3674,7 +3716,7 @@
 
             let count = 0;
             POPULAR_ICONS.forEach(icon => {
-                if (count > 1200 && filter === "") return;
+                if (count > 1500 && filter === "") return;
                 if (icon.toLowerCase().includes(f)) {
                     const div = document.createElement('div');
                     div.className = 'grid-icon-item';
