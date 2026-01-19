@@ -1240,32 +1240,6 @@
                         <datalist id="nav-dash-suggestions"></datalist>
                         <small id="nav-hint" class="input-hint"></small>
                     </div>
-                    <!-- PANEL DLA SERVICE CALL - YAML INPUT -->
-                    <div class="flex-col hidden" id="grp-raw-yaml"
-                        style="flex: 100%; border: 3px solid #4caf50; padding: 20px; background: #e8f5e9; border-radius: 8px; margin: 15px 0;">
-                        <h3 style="margin: 0 0 10px 0; color: #2e7d32; font-size: 16px;">📝 Wklej kod YAML z Home
-                            Assistant</h3>
-
-                        <div
-                            style="background: #fff3cd; border: 1px solid #ffc107; border-radius: 4px; padding: 12px; margin-bottom: 15px;">
-                            <strong style="color: #856404;">📌 Instrukcja:</strong>
-                            <ol style="margin: 8px 0 0 0; padding-left: 20px; font-size: 13px; color: #856404;">
-                                <li>W Home Assistant przejdź do: <strong>Narzędzia deweloperskie → Akcje</strong></li>
-                                <li>Wybierz usługę (np. <code>visionect_joan.send_qr_code</code>)</li>
-                                <li>Wypełnij wszystkie opcje</li>
-                                <li>Skopiuj cały wygenerowany kod YAML i wklej poniżej</li>
-                            </ol>
-                        </div>
-
-                        <textarea id="w-raw-yaml" rows="14"
-                            style="width: 100%; font-family: 'Courier New', monospace; font-size: 13px; border: 2px solid #999; background: #fff; padding: 10px; border-radius: 4px; resize: vertical;"
-                            placeholder="action: visionect_joan.send_qr_code
-data:
-  device_id: e74ec415d083d6aae4f826c4332412fe
-  message: Test
-  qr_message_text_size: 49
-  border: 4"></textarea>
-                    </div>
                 </div>
 
                 <div class="flex-row">
@@ -1287,7 +1261,6 @@ data:
                             <option value="input_boolean" data-i18n="opt_input_boolean">Input Boolean</option>
                             <option value="lock" data-i18n="opt_lock">Lock</option>
                             <option value="person" data-i18n="opt_person">Person / Tracker</option>
-                            <option value="service_call" data-i18n="opt_service_call">Service Call</option>
                             <option value="media_player" data-i18n="opt_media">Media Player</option>
                             <option value="climate" data-i18n="opt_climate">Climate</option>
                             <option value="fan" data-i18n="opt_fan">Fan / Wentylator</option>
@@ -1764,7 +1737,7 @@ data:
                 opt_fan: "Wentylator", opt_scene: "Scena", opt_input_button: "Input Button / Przycisk",
                 opt_light: "Światło (Ściemniane)", opt_group: "Grupa (Świateł)", opt_input_boolean: "Przełącznik Boolean", opt_reload: "Odśwież Dashboard",
                 opt_gauge: "Wskaźnik (Gauge)",
-                opt_service_call: "🔵 CALL SERVICE (Wklej YAML)",
+                opt_gauge: "Wskaźnik (Gauge)",
                 lbl_show_state: "Pokaż stan (Tekst)",
                 grid_3x10: "Wysoki (3 kolumny x 10 wierszy)",
                 grid_3x6: "Kompakt (3 kolumny x 6 wierszy)",
@@ -1896,7 +1869,6 @@ data:
                 opt_light: "Light (Dimmable)", opt_group: "Group (Lights)", opt_input_boolean: "Input Boolean", opt_reload: "Reload Dashboard",
                 opt_gauge: "Gauge",
                 opt_gauge: "Gauge",
-                opt_service_call: "🔵 CALL SERVICE (Paste YAML)",
                 lbl_show_state: "Show state (Text)",
                 grid_3x10: "Tall (3 cols x 10 rows)",
                 grid_3x6: "Compact (3 cols x 6 rows)",
@@ -2373,13 +2345,6 @@ data:
             }
             if (w.type === 'spacer') w.id = 'spacer';
             if (w.type === 'reload') w.id = 'reload';
-            if (w.type === 'service_call') {
-                if (!w.id) {
-                    // Generate a unique ID for service_call if not provided
-                    const baseId = 'service_call_' + Math.random().toString(36).substring(2, 9);
-                    w.id = ensureUniqueId(baseId);
-                }
-            }
 
             if (!w.id && w.type !== 'spacer') {
                 alert(currentLang === 'pl' ? "Wybierz encję!" : "Entity required!");
@@ -2389,7 +2354,7 @@ data:
             fitSizeToGrid(w);
 
             // LOGIKA UNIKANIA DUPLIKATÓW
-            if (w.type !== 'navigate' && w.type !== 'spacer' && w.type !== 'service_call') { // Exclude service_call from this specific duplicate check
+            if (w.type !== 'navigate' && w.type !== 'spacer') {
                 if (editIdx) {
                     // EDYCJA: Sprawdzamy czy zmieniliśmy "bazowe" ID
                     const originalRow = rows[editIdx.r];
@@ -2402,8 +2367,8 @@ data:
                             // Jeśli nowe ID już istnieje gdzieś indziej, dodaj suffix
                             w.id = ensureUniqueId(w.id);
                         } else {
-                            // Użytkownik zachował bazową encję.
-                            // Musimy przywrócić originalId (czyli np. z suffixem),
+                            // Użytkownik zachował bazową encję. 
+                            // Musimy przywrócić originalId (czyli np. z suffixem), 
                             // aby nie stworzyć konfliktu z innym widgetem o tym samym base.
                             w.id = originalId;
                         }
@@ -2461,7 +2426,7 @@ data:
         function toggleInputs() {
             const type = document.getElementById('w-type').value;
             const isNav = type === 'navigate';
-            const hideEntity = ['clock', 'label', 'spacer', 'reload', 'service_call'].includes(type);
+            const hideEntity = ['clock', 'label', 'spacer', 'reload'].includes(type);
 
             document.getElementById('grp-entity').style.display = (isNav || hideEntity) ? 'none' : 'block';
             document.getElementById('grp-nav').style.display = isNav ? 'block' : 'none';
@@ -2470,13 +2435,6 @@ data:
             const isGauge = type === 'gauge';
             const grpGauge = document.getElementById('grp-gauge');
             if (grpGauge) grpGauge.style.display = isGauge ? 'block' : 'none';
-
-            const isServiceCall = type === 'service_call';
-            const grpYaml = document.getElementById('grp-raw-yaml');
-            if (grpYaml) {
-                grpYaml.style.display = isServiceCall ? 'block' : 'none';
-                grpYaml.classList.toggle('hidden', !isServiceCall);
-            }
 
             const hideIcons = (type === 'sensor' || type === 'clock' || type === 'spacer' || type === 'gauge');
             document.getElementById('grp-icons').style.display = hideIcons ? 'none' : 'contents';
@@ -2553,7 +2511,6 @@ data:
             }
             if (data.min) document.getElementById('w-min').value = data.min;
             if (data.max) document.getElementById('w-max').value = data.max;
-            if (data.raw_yaml) document.getElementById('w-raw-yaml').value = data.raw_yaml;
 
             const chkState = document.getElementById('w-show-state');
             if (chkState) chkState.checked = (data.state_text_enabled !== false); // default true
@@ -2586,7 +2543,6 @@ data:
             if (valueSizeSelect) valueSizeSelect.value = 'normal'; // Domyślnie normal
             if (document.getElementById('w-min')) document.getElementById('w-min').value = '';
             if (document.getElementById('w-max')) document.getElementById('w-max').value = '';
-            if (document.getElementById('w-raw-yaml')) document.getElementById('w-raw-yaml').value = '';
             manualIconOverride = false; updateIconPreview(); updateTitleLimit();
         }
 
