@@ -1102,6 +1102,20 @@
             color: #eceff1;
             border: 1px solid #546e7a;
         }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .rotating i {
+            animation: spin 1s linear infinite;
+        }
     </style>
 </head>
 
@@ -1231,7 +1245,15 @@
 
                 <div class="flex-row" style="margin-bottom: 20px;">
                     <div class="flex-col" id="grp-entity" style="flex: 100%;">
-                        <label data-i18n="lbl_entity">Encja (Wyszukaj po nazwie lub ID)</label>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <label data-i18n="lbl_entity">Encja (Wyszukaj po nazwie lub ID)</label>
+                            <button type="button" onclick="refreshEntities()" id="btn-refresh-ent"
+                                style="background: none; border: none; cursor: pointer; padding: 0 5px; opacity: 0.7; transition: opacity 0.3s;"
+                                onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.7"
+                                title="Odśwież listę encji" data-i18n-title="btn_refresh_entities_title">
+                                <i class="mdi mdi-refresh" style="font-size: 1.1em;"></i>
+                            </button>
+                        </div>
                         <input list="entity-list" id="w-id" placeholder="np. switch.salon"
                             oninput="searchEntities(this.value); validateEntityInput(this.value); checkEntityFrequency(this.value)"
                             autocomplete="off">
@@ -1813,7 +1835,7 @@
                 ad_config_step1: "1. Wejdź w katalog <code>/addon_configs/a0d7b954_appdaemon/apps/</code> (np. przez File Editor).",
                 ad_config_step2: "2. Stwórz plik <code>dash_saver.py</code> i wklej poniższą zawartość:",
                 ad_config_step3: "3. W pliku <code>apps.yaml</code> w tym samym folderze dopisz:",
-                ad_config_step4: "4. Zrestartuj AppDaemon i odśwież tę stronę.",
+                ad_config_step4: "4. Zrestartuj AppDaemon i odśwież tą stronę.",
                 btn_copy_code: "Kopiuj kod",
                 copy_success: "✅ SKOPIOWANO!",
                 copy_error: "❌ Błąd kopiowania: ",
@@ -1878,7 +1900,10 @@
                 info_lbl_bridge: "Plik dash_saver.py:",
                 info_lbl_dash_count: "Liczba Dashboardów:",
                 info_bridge_yes: "TAK (Aktywny)",
-                info_bridge_no: "NIE / BRAK"
+                info_bridge_no: "NIE / BRAK",
+                btn_refresh_entities_title: "Odśwież listę encji",
+                msg_refreshing: "Odświeżanie listy encji...",
+                msg_refreshed: "✅ Lista encji odświeżona!"
             },
             en: {
                 btn_import_dash: "📥 IMPORT DASHBOARD",
@@ -2039,7 +2064,10 @@
                 info_lbl_bridge: "dash_saver.py file:",
                 info_lbl_dash_count: "Dashboard Count:",
                 info_bridge_yes: "YES (Active)",
-                info_bridge_no: "NO / MISSING"
+                info_bridge_no: "NO / MISSING",
+                btn_refresh_entities_title: "Refresh entity list",
+                msg_refreshing: "Refreshing entity list...",
+                msg_refreshed: "✅ Entity list refreshed!"
             }
         };
 
@@ -2148,7 +2176,7 @@
             let conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-eye' };
 
             // --- POPRAWKA: Pobieramy dane o encji, żeby sprawdzić jej klasę (device_class) ---
-            // Sprawdzamy najpierw czy wpis przypomina id encji (zawiera kropkę), w przeciwnym razie
+            // Sprawdzamy najpierw czy wpis przypomina id encji (zawiera kropkę), w przeciwnosci razie
             // próbujemy znaleźć encję zawierającą wpis w id lub friendly_name.
             let targetEntity = null;
             if (input.includes('.')) {
@@ -2213,7 +2241,7 @@
             else if (check(['swiatlo', 'lamp', 'kinkiet', 'led', 'zarowka', 'lampa'])) conf = SMART_MAP['light'];
             else if (check(['gniazdko', 'wtyczka', 'outlet', 'plug', 'socket'])) conf = SMART_MAP['switch'];
             else if (check(['wiatrak', 'wentylator', 'fan', 'nawiew', 'cyrkulacja'])) conf = SMART_MAP['fan'];
-            else if (check(['scena', 'tryb', 'kino', 'wieczór', 'scene'])) conf = SMART_MAP['scene'];
+            else if (check(['scena', 'tryb', 'kino', 'wieczor', 'scene'])) conf = SMART_MAP['scene'];
             else if (check(['przycisk', 'button', 'klik'])) conf = SMART_MAP['input_button'];
             else if (check(['brama', 'garaz', 'gate'])) conf = { type: 'cover', size: '(2x1)', iconOn: 'mdi-garage-open', iconOff: 'mdi-garage' };
             else if (check(['rolet', 'blind', 'shutter', 'zaslon'])) conf = SMART_MAP['cover'];
@@ -3277,6 +3305,14 @@
                 }
             });
 
+            // Handle title tooltips
+            document.querySelectorAll('[data-i18n-title]').forEach(el => {
+                const k = el.getAttribute('data-i18n-title');
+                if (TRANSLATIONS[l][k]) {
+                    el.title = TRANSLATIONS[l][k];
+                }
+            });
+
             // Re-render dynamic list with new language strings
             rebuildGridOptions(document.getElementById('screen-orientation').value);
 
@@ -3880,6 +3916,39 @@ class DashSaver(hass.Hass):
         if (confirm(TRANSLATIONS[currentLang].confirm_clear)) {
             window.location.href = window.location.pathname;
         }
+    }
+
+    function refreshEntities() {
+        const t = TRANSLATIONS[currentLang];
+        const btn = document.getElementById('btn-refresh-ent');
+        if (btn) btn.classList.add('rotating'); // Add rotation class if defined or just visual feedback
+
+        showToast(t.msg_refreshing, 'info');
+
+        fetch(window.location.href)
+            .then(response => response.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, "text/html");
+                const newDatalist = doc.getElementById('entity-list');
+                const currentDatalist = document.getElementById('entity-list');
+
+                if (newDatalist && currentDatalist) {
+                    currentDatalist.innerHTML = newDatalist.innerHTML;
+                    showToast(t.msg_refreshed, 'success');
+                    // Opcjonalnie zaktualizuj też listę entitiesData jeśli jest dostępna jako zmienna globalna, 
+                    // ale tutaj opieramy się na datalist.
+                } else {
+                    showToast("Error parsing entities.", 'error');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                showToast("Refresh error: " + err, 'error');
+            })
+            .finally(() => {
+                if (btn) btn.classList.remove('rotating');
+            });
     }
 
     function openAdConfig() {
