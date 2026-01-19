@@ -344,6 +344,7 @@ STYLE_GAUGE_VALUE = "color: #000000 !important; font-size: 30px !important; font
 STYLE_UNIT = "color: #000000 !important; padding-top: 60px !important; display: inline-block !important"
 STYLE_ICON = "color: #000000 !important"
 STYLE_STATE_TEXT = "color: #000000 !important; font-weight: 700 !important; font-size: 16px !important"
+STYLE_TITLE2 = "color: #000000 !important; font-size: 16px; font-weight: 700; text-align: center; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif"
 
 def build_value_style(size_hint: str) -> str:
     """
@@ -453,7 +454,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
     output.append("    climate:")
     output.append("      step: 1")
     output.append(f"  title_style: \"{STYLE_TITLE}\"")
-    output.append(f"  title2_style: \"{STYLE_TITLE}; font-size: 16px;\"")
+    output.append(f"  title2_style: \"{STYLE_TITLE2}\"")
     output.append(f"  white_text_style: \"{STYLE_TEXT}\"")
     output.append(f"  state_text_style: \"{STYLE_STATE_TEXT}\"")
     output.append(f"  text_style: \"{STYLE_TEXT}\"")
@@ -557,7 +558,10 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append(f"  title: \"{w_name}\"")
                     if i_on: output.append(f"  icon_on: {i_on}")
                     if i_off: output.append(f"  icon_off: {i_off}")
-                    if w_icon and not i_on: output.append(f"  icon: {w_icon}")
+                    if w_icon and not i_on:
+                        output.append(f"  icon: {w_icon}")
+                        output.append(f"  icon_on: {w_icon}")
+                        output.append(f"  icon_off: {w_icon}")
                     
                     st_enabled = w.get('state_text_enabled', True)
                     if str(st_enabled).lower() == 'false' or st_enabled is False:
@@ -657,7 +661,10 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
 
                     if i_on: output.append(f"  icon_on: {i_on}")
                     if i_off: output.append(f"  icon_off: {i_off}")
-                    if w_icon and not i_on: output.append(f"  icon: {w_icon}")
+                    if w_icon and not i_on:
+                        output.append(f"  icon: {w_icon}")
+                        output.append(f"  icon_on: {w_icon}")
+                        output.append(f"  icon_off: {w_icon}")
 
                     output.append(f"  title_style: \"{STYLE_TITLE}\"")
                     output.append(f"  widget_style: \"{STYLE_WIDGET}\"")
@@ -736,7 +743,10 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
 
                     if i_on: output.append(f"  icon_on: {i_on}")
                     if i_off: output.append(f"  icon_off: {i_off}")
-                    if w_icon and not i_on: output.append(f"  icon: {w_icon}")
+                    if w_icon and not i_on:
+                        output.append(f"  icon: {w_icon}")
+                        output.append(f"  icon_on: {w_icon}")
+                        output.append(f"  icon_off: {w_icon}")
                     output.append(f"  title_style: \"{STYLE_TITLE}\"")
                     output.append(f"  widget_style: \"{STYLE_WIDGET}\"")
                     output.append(f"  icon_style_inactive: \"{STYLE_ICON}; opacity: 0.5;\"")
@@ -758,7 +768,10 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
 
                     if i_on: output.append(f"  icon_on: {i_on}")
                     if i_off: output.append(f"  icon_off: {i_off}")
-                    if w_icon and not i_on: output.append(f"  icon: {w_icon}")
+                    if w_icon and not i_on:
+                        output.append(f"  icon: {w_icon}")
+                        output.append(f"  icon_on: {w_icon}")
+                        output.append(f"  icon_off: {w_icon}")
                     output.append(f"  title_style: \"{STYLE_TITLE}\"")
                     output.append(f"  widget_style: \"{STYLE_WIDGET}\"")
                     output.append(f"  icon_style_active: \"{STYLE_ICON}\"")
@@ -781,7 +794,10 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
 
                     if i_on: output.append(f"  icon_on: {i_on}")
                     if i_off: output.append(f"  icon_off: {i_off}")
-                    if w_icon and not i_on: output.append(f"  icon: {w_icon}")
+                    if w_icon and not i_on:
+                        output.append(f"  icon: {w_icon}")
+                        output.append(f"  icon_on: {w_icon}")
+                        output.append(f"  icon_off: {w_icon}")
                     
                     st_enabled = w.get('state_text_enabled', True)
                     if str(st_enabled).lower() == 'false' or st_enabled is False:
@@ -828,7 +844,10 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
 
                     if i_on: output.append(f"  icon_on: {i_on}")
                     if i_off: output.append(f"  icon_off: {i_off}")
-                    if w_icon and not i_on: output.append(f"  icon: {w_icon}")
+                    if w_icon and not i_on:
+                        output.append(f"  icon: {w_icon}")
+                        output.append(f"  icon_on: {w_icon}")
+                        output.append(f"  icon_off: {w_icon}")
                     
                     # Robust check for state_text_enabled
                     st_enabled = w.get('state_text_enabled', True)
@@ -851,7 +870,10 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append(f"  title: \"{w_name}\"")
                     if i_on: output.append(f"  icon_on: {i_on}")
                     if i_off: output.append(f"  icon_off: {i_off}")
-                    if w_icon and not i_on: output.append(f"  icon: {w_icon}")
+                    if w_icon and not i_on:
+                        output.append(f"  icon: {w_icon}")
+                        output.append(f"  icon_on: {w_icon}")
+                        output.append(f"  icon_off: {w_icon}")
                     output.append(f"  title_style: \"{STYLE_TITLE}\"")
                     output.append(f"  widget_style: \"{STYLE_WIDGET}\"")
                     output.append(f"  icon_style_active: \"{STYLE_ICON}\"")
@@ -948,9 +970,9 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
 
                     if w_icon and not i_on:
                         output.append(f"  icon: {w_icon}")
-                        if ad_type == 'script':
-                            output.append(f"  icon_on: {w_icon}")
-                            output.append(f"  icon_off: {w_icon}")
+                        # Fallback for all generic widgets (script, binary_sensor, etc)
+                        output.append(f"  icon_on: {w_icon}")
+                        output.append(f"  icon_off: {w_icon}")
 
                     # Robust check for state_text_enabled
                     st_enabled = w.get('state_text_enabled', True)
