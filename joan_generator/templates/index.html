@@ -1795,8 +1795,110 @@
             "mdi-shape", "mdi-shape-outline", "mdi-shape-plus",
             "mdi-ray-vertex", "mdi-ray-start", "mdi-ray-end",
             "mdi-vector-point", "mdi-vector-line", "mdi-vector-circle",
-            "mdi-palette", "mdi-palette-swatch", "mdi-movie", "mdi-movie-open"
+            "mdi-palette", "mdi-palette-swatch", "mdi-movie", "mdi-movie-open",
+
+            // === MEDICAL / HEALTH (NEW) ===
+            "mdi-medical-bag", "mdi-doctor", "mdi-ambulance", "mdi-hospital", "mdi-hospital-box",
+            "mdi-pill", "mdi-pill-off", "mdi-needle", "mdi-bandage", "mdi-stethoscope",
+            "mdi-heart-pulse", "mdi-heart-broken", "mdi-blood-bag", "mdi-virus", "mdi-bacteria",
+            "mdi-tooth", "mdi-tooth-outline", "mdi-glasses", "mdi-sunglasses",
+            "mdi-wheelchair", "mdi-human-cane", "mdi-bed-patient",
+
+            // === SOCIAL / BRANDS (NEW) ===
+            "mdi-facebook", "mdi-facebook-messenger", "mdi-twitter", "mdi-instagram", "mdi-snapchat",
+            "mdi-whatsapp", "mdi-youtube", "mdi-twitch", "mdi-discord", "mdi-slack",
+            "mdi-google", "mdi-google-chrome", "mdi-apple", "mdi-microsoft", "mdi-microsoft-windows", "mdi-android",
+            "mdi-github", "mdi-gitlab", "mdi-bitbucket", "mdi-reddit", "mdi-linkedin",
+            "mdi-spotify", "mdi-netflix", "mdi-hulu", "mdi-kodi", "mdi-plex",
+            "mdi-steam", "mdi-playstation", "mdi-nintendo-switch", "mdi-xbox", "mdi-xbox-controller",
+
+            // === WEATHER EXTENDED (NEW) ===
+            "mdi-weather-hail", "mdi-weather-lighting", "mdi-weather-cloudy-alert", "mdi-weather-cloudy-arrow-right",
+            "mdi-weather-fog", "mdi-weather-partly-cloudy", "mdi-weather-night-partly-cloudy",
+            "mdi-windsock", "mdi-weather-sunset", "mdi-weather-sunset-up", "mdi-weather-sunset-down",
+
+            // === FOOD / DRINK EXTENDED (NEW) ===
+            "mdi-food-apple", "mdi-food-croissant", "mdi-food-drumstick", "mdi-food-fork-drink",
+            "mdi-food-steak", "mdi-food-turkey", "mdi-food-variant", "mdi-fruit-cherries",
+            "mdi-fruit-citrus", "mdi-fruit-grapes", "mdi-fruit-pineapple", "mdi-fruit-watermelon",
+            "mdi-cupcake", "mdi-ice-cream", "mdi-lollipop", "mdi-muffin", "mdi-pizza",
+            "mdi-glass-cocktail", "mdi-glass-flute", "mdi-glass-mug", "mdi-glass-stange", "mdi-glass-tulip",
+            "mdi-glass-wine", "mdi-bottle-wine", "mdi-beer", "mdi-coffee-to-go",
+
+            // === FINANCE / SHOPPING (NEW) ===
+            "mdi-cash", "mdi-cash-multiple", "mdi-cash-100", "mdi-credit-card", "mdi-credit-card-outline",
+            "mdi-bank", "mdi-finance", "mdi-wallet", "mdi-wallet-outline", "mdi-wallet-travel",
+            "mdi-basket", "mdi-basket-outline", "mdi-cart", "mdi-cart-outline", "mdi-cart-off",
+            "mdi-store", "mdi-store-24-hour", "mdi-shopping", "mdi-tag", "mdi-tag-outline",
+            "mdi-sale", "mdi-barcode", "mdi-barcode-scan", "mdi-qrcode", "mdi-qrcode-scan"
         ];
+
+        // === SMART ICON LOGIC ===
+        const SMART_ICONS_MAP = {
+            'light': 'mdi-lightbulb', 'lampa': 'mdi-lightbulb', 'kinkiet': 'mdi-wall-sconce',
+            'switch': 'mdi-power', 'włącznik': 'mdi-power', 'przełącznik': 'mdi-power',
+            'fan': 'mdi-fan', 'wiatrak': 'mdi-fan', 'wentylator': 'mdi-fan',
+            'lock': 'mdi-lock', 'zamek': 'mdi-lock',
+            'door': 'mdi-door', 'drzwi': 'mdi-door',
+            'window': 'mdi-window-closed', 'okno': 'mdi-window-closed',
+            'garage': 'mdi-garage', 'garaż': 'mdi-garage',
+            'gate': 'mdi-gate', 'brama': 'mdi-gate',
+            'temp': 'mdi-thermometer', 'heat': 'mdi-radiator', 'grzejnik': 'mdi-radiator',
+            'salon': 'mdi-sofa', 'living': 'mdi-sofa',
+            'kuchnia': 'mdi-silverware-fork-knife', 'kitchen': 'mdi-silverware-fork-knife',
+            'łazienka': 'mdi-shower', 'bathroom': 'mdi-shower', 'bath': 'mdi-bathtub',
+            'sypialnia': 'mdi-bed', 'bedroom': 'mdi-bed',
+            'biuro': 'mdi-desk', 'office': 'mdi-desk',
+            'hol': 'mdi-walk', 'hall': 'mdi-walk', 'korytarz': 'mdi-walk',
+            'głośnik': 'mdi-speaker', 'speaker': 'mdi-speaker',
+            'tv': 'mdi-television', 'telewizor': 'mdi-television',
+            'nocna': 'mdi-lamp', 'night': 'mdi-lamp',
+            'plug': 'mdi-power-plug', 'gniazdko': 'mdi-power-socket-eu', 'socket': 'mdi-power-socket-eu',
+            'drukarka': 'mdi-printer', 'printer': 'mdi-printer',
+            'router': 'mdi-router-wireless',
+            'server': 'mdi-server', 'serwer': 'mdi-server',
+            'camera': 'mdi-cctv', 'kamera': 'mdi-cctv',
+            'motion': 'mdi-motion-sensor', 'ruch': 'mdi-motion-sensor',
+            'humidity': 'mdi-water-percent', 'wilgotność': 'mdi-water-percent',
+            'battery': 'mdi-battery', 'bateria': 'mdi-battery',
+            'power': 'mdi-lightning-bolt', 'moc': 'mdi-lightning-bolt', 'energia': 'mdi-lightning-bolt',
+            'solar': 'mdi-solar-power', 'fotowoltaika': 'mdi-solar-power',
+            'weather': 'mdi-weather-partly-cloudy', 'pogoda': 'mdi-weather-partly-cloudy',
+            'sun': 'mdi-weather-sunny', 'słońce': 'mdi-weather-sunny',
+            'moon': 'mdi-moon-waning-crescent', 'księżyc': 'mdi-moon-waning-crescent',
+            'rain': 'mdi-weather-rainy', 'deszcz': 'mdi-weather-rainy',
+            'cover': 'mdi-window-shutter', 'roleta': 'mdi-window-shutter'
+        };
+
+        function tryAutoSelectIcon(entityId) {
+            if (!entityId) return;
+            const iconStd = document.getElementById('w-icon');
+            const iconOn = document.getElementById('w-icon-on');
+            const iconOff = document.getElementById('w-icon-off');
+
+            // Only auto-fill if fields are empty to respect manual choice
+            if (iconStd.value || iconOn.value) return;
+
+            const lower = entityId.toLowerCase();
+            const parts = lower.split(/[\._\-\s]+/);
+            let bestMatch = '';
+
+            // Check parts in reverse order (often suffix defines type)
+            for (let i = parts.length - 1; i >= 0; i--) {
+                const part = parts[i];
+                if (SMART_ICONS_MAP[part]) {
+                    bestMatch = SMART_ICONS_MAP[part];
+                    break;
+                }
+            }
+
+            if (bestMatch) {
+                iconStd.value = bestMatch;
+                iconOn.value = bestMatch;
+                iconOff.value = bestMatch;
+                updateIconPreview();
+            }
+        }
 
         const TRANSLATIONS = {
             pl: {
@@ -2603,6 +2705,10 @@
             const hideIcons = (type === 'sensor' || type === 'clock' || type === 'spacer' || type === 'gauge');
             document.getElementById('grp-icons').style.display = hideIcons ? 'none' : 'contents';
 
+            // List of widgets that use On/Off icons (so we hide Std icon)
+            const iconOnTypes = ['switch', 'light', 'input_boolean', 'binary_sensor', 'lock', 'fan', 'group', 'cover', 'script'];
+            const useOnIcons = iconOnTypes.includes(type);
+
             if (type === 'navigate') {
                 document.getElementById('div-icon-std').style.display = 'block';
                 document.querySelector('#div-icon-std label').innerText = currentLang === 'pl' ? 'Ikona' : 'Icon';
@@ -2624,10 +2730,17 @@
                     });
                 }
             } else if (!hideIcons) {
-                document.getElementById('div-icon-std').style.display = 'block';
-                document.querySelector('#div-icon-std label').innerText = TRANSLATIONS[currentLang].lbl_icon || 'Ikona (Standard)';
-                document.getElementById('div-icon-on').style.display = 'block';
-                document.getElementById('div-icon-off').style.display = 'block';
+                // Modified: If widget uses On/Off icons, hide the Standard Icon field
+                if (useOnIcons) {
+                    document.getElementById('div-icon-std').style.display = 'none';
+                    document.getElementById('div-icon-on').style.display = 'block';
+                    document.getElementById('div-icon-off').style.display = 'block';
+                } else {
+                    document.getElementById('div-icon-std').style.display = 'block';
+                    document.querySelector('#div-icon-std label').innerText = TRANSLATIONS[currentLang].lbl_icon || 'Ikona (Standard)';
+                    document.getElementById('div-icon-on').style.display = 'none';
+                    document.getElementById('div-icon-off').style.display = 'none';
+                }
             } else {
                 document.getElementById('div-icon-std').style.display = 'none';
                 document.getElementById('div-icon-on').style.display = 'none';
@@ -3481,6 +3594,9 @@
                 el.classList.remove('input-valid', 'input-invalid');
                 return;
             }
+
+            // Try Auto-Detect Icon
+            tryAutoSelectIcon(val);
 
             // Sprawdzamy bezpośrednio w zestawie ID lub czy to specjalny typ
             const isValid = validEntityIds.has(val) || val.startsWith('navigate.') || val === 'spacer';
