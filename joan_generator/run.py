@@ -553,23 +553,72 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append(f"  icon_inactive_style: \"{STYLE_ICON}\"")
 
                 elif w_type == 'service_call':
-                    output.append(f"  widget_type: service_call")
+                    # Use switch widget with post_service (AppDaemon compatible)
+                    output.append(f"  widget_type: switch")
+                    output.append(f"  entity: {real_entity_id}")
                     output.append(f"  title: \"{w_name}\"")
-                    if w_icon: output.append(f"  icon: {w_icon}")
+                    
+                    # Add icons
+                    if i_on: 
+                        output.append(f"  icon_on: {i_on}")
+                    if i_off: 
+                        output.append(f"  icon_off: {i_off}")
+                    if w_icon and not i_on: 
+                        output.append(f"  icon_on: {w_icon}")
+                        output.append(f"  icon_off: {w_icon}")
+                    elif not w_icon and not i_on:
+                        output.append(f"  icon_on: mdi-gesture-tap")
+                        output.append(f"  icon_off: mdi-gesture-tap")
+                    
+                    # Hide state text
+                    output.append(f"  state_text_style: \"display: none !important;\"")
                     output.append(f"  title_style: \"{STYLE_TITLE}\"")
                     output.append(f"  widget_style: \"{STYLE_WIDGET}\"")
-                    output.append(f"  icon_style: \"{STYLE_ICON}\"")
-                    output.append(f"  icon_active_style: \"{STYLE_ICON}\"")
-                    output.append(f"  icon_inactive_style: \"{STYLE_ICON}\"")
-                    service_full = w.get('service', '')
-                    if service_full:
-                        domain, service_name = service_full.split('.', 1)
-                        output.append(f"  post_service:")
-                        output.append(f"    service: {domain}/{service_name}")
-                        service_data = w.get('service_data', {})
-                        if service_data:
-                            for key, value in service_data.items():
-                                output.append(f"    {key}: {value}")
+                    output.append(f"  icon_style_active: \"{STYLE_ICON}\"")
+                    output.append(f"  icon_style_inactive: \"{STYLE_ICON}\"")
+                    
+                    # Parse raw_yaml field
+                    raw_yaml_text = w.get('raw_yaml', '')
+                    if raw_yaml_text:
+                        try:
+                            parsed_yaml = yaml.safe_load(raw_yaml_text)
+                            if parsed_yaml and isinstance(parsed_yaml, dict):
+                                # Get service name from action or service field
+                                service_name = parsed_yaml.get('action') or parsed_yaml.get('service', '')
+                                # Convert dot to slash for AppDaemon format
+                                appdaemon_service = service_name.replace('.', '/') if service_name else ''
+                                
+                                # Get parameters from data or target field
+                                service_params = parsed_yaml.get('data', {})
+                                if not service_params:
+                                    service_params = parsed_yaml.get('target', {})
+                                
+                                # Generate post_service for both active and inactive states
+                                for state_name in ["active", "inactive"]:
+                                    output.append(f"  post_service_{state_name}:")
+                                    if appdaemon_service:
+                                        output.append(f"    service: {appdaemon_service}")
+                                    
+                                    # Add all service parameters
+                                    if service_params and isinstance(service_params, dict):
+                                        for param_key, param_value in service_params.items():
+                                            # Format value based on type
+                                            if isinstance(param_value, bool):
+                                                formatted_value = str(param_value).lower()
+                                            elif isinstance(param_value, list):
+                                                # For lists, keep as YAML list
+                                                formatted_value = str(param_value)
+                                            elif param_value is None:
+                                                formatted_value = "null"
+                                            else:
+                                                formatted_value = str(param_value)
+                                            output.append(f"    {param_key}: {formatted_value}")
+                            else:
+                                output.append(f"  # ERROR: Invalid YAML format")
+                        except Exception as yaml_error:
+                            output.append(f"  # ERROR: YAML parse failed - {str(yaml_error)}")
+                    else:
+                        output.append(f"  # ERROR: No YAML configuration provided")
 
                 elif w_type == 'switch':
                     output.append(f"  widget_type: switch")
