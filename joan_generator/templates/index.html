@@ -2474,7 +2474,10 @@ data:
 
             const isServiceCall = type === 'service_call';
             const grpYaml = document.getElementById('grp-raw-yaml');
-            if (grpYaml) grpYaml.style.display = isServiceCall ? 'block' : 'none';
+            if (grpYaml) {
+                grpYaml.style.display = isServiceCall ? 'block' : 'none';
+                grpYaml.classList.toggle('hidden', !isServiceCall);
+            }
 
             const hideIcons = (type === 'sensor' || type === 'clock' || type === 'spacer' || type === 'gauge');
             document.getElementById('grp-icons').style.display = hideIcons ? 'none' : 'contents';
