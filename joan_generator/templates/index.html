@@ -1240,14 +1240,31 @@
                         <datalist id="nav-dash-suggestions"></datalist>
                         <small id="nav-hint" class="input-hint"></small>
                     </div>
-                    <div class="flex-col hidden" id="grp-raw-yaml" style="flex: 100%;">
-                        <label data-i18n="lbl_raw_yaml">Surowy YAML (zaawansowane)</label>
-                        <textarea id="w-raw-yaml" rows="4" placeholder="np.
-entity_id: light.my_light
-brightness: 128" style="font-family: monospace; font-size: 0.9em;"></textarea>
-                        <small class="input-hint" data-i18n="hint_raw_yaml">Wprowadź dodatkowe parametry w formacie
-                            YAML. Użyj
-                            `entity_id: this` aby odnieść się do encji widgetu.</small>
+                    <!-- PANEL DLA SERVICE CALL - YAML INPUT -->
+                    <div class="flex-col hidden" id="grp-raw-yaml"
+                        style="flex: 100%; border: 3px solid #4caf50; padding: 20px; background: #e8f5e9; border-radius: 8px; margin: 15px 0;">
+                        <h3 style="margin: 0 0 10px 0; color: #2e7d32; font-size: 16px;">📝 Wklej kod YAML z Home
+                            Assistant</h3>
+
+                        <div
+                            style="background: #fff3cd; border: 1px solid #ffc107; border-radius: 4px; padding: 12px; margin-bottom: 15px;">
+                            <strong style="color: #856404;">📌 Instrukcja:</strong>
+                            <ol style="margin: 8px 0 0 0; padding-left: 20px; font-size: 13px; color: #856404;">
+                                <li>W Home Assistant przejdź do: <strong>Narzędzia deweloperskie → Akcje</strong></li>
+                                <li>Wybierz usługę (np. <code>visionect_joan.send_qr_code</code>)</li>
+                                <li>Wypełnij wszystkie opcje</li>
+                                <li>Skopiuj cały wygenerowany kod YAML i wklej poniżej</li>
+                            </ol>
+                        </div>
+
+                        <textarea id="w-raw-yaml" rows="14"
+                            style="width: 100%; font-family: 'Courier New', monospace; font-size: 13px; border: 2px solid #999; background: #fff; padding: 10px; border-radius: 4px; resize: vertical;"
+                            placeholder="action: visionect_joan.send_qr_code
+data:
+  device_id: e74ec415d083d6aae4f826c4332412fe
+  message: Test
+  qr_message_text_size: 49
+  border: 4"></textarea>
                     </div>
                 </div>
 
