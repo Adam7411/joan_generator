@@ -4,6 +4,7 @@ import requests
 from flask import Flask, render_template, request, send_file, Response
 from pathlib import Path
 import io
+import yaml
 
 # Application Initialization
 print("📦 1. Initializing Joan 6 Generator app...")
@@ -550,6 +551,25 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append(f"  widget_style: \"{STYLE_WIDGET}\"")
                     output.append(f"  icon_active_style: \"{STYLE_ICON}\"")
                     output.append(f"  icon_inactive_style: \"{STYLE_ICON}\"")
+
+                elif w_type == 'service_call':
+                    output.append(f"  widget_type: service_call")
+                    output.append(f"  title: \"{w_name}\"")
+                    if w_icon: output.append(f"  icon: {w_icon}")
+                    output.append(f"  title_style: \"{STYLE_TITLE}\"")
+                    output.append(f"  widget_style: \"{STYLE_WIDGET}\"")
+                    output.append(f"  icon_style: \"{STYLE_ICON}\"")
+                    output.append(f"  icon_active_style: \"{STYLE_ICON}\"")
+                    output.append(f"  icon_inactive_style: \"{STYLE_ICON}\"")
+                    service_full = w.get('service', '')
+                    if service_full:
+                        domain, service_name = service_full.split('.', 1)
+                        output.append(f"  post_service:")
+                        output.append(f"    service: {domain}/{service_name}")
+                        service_data = w.get('service_data', {})
+                        if service_data:
+                            for key, value in service_data.items():
+                                output.append(f"    {key}: {value}")
 
                 elif w_type == 'switch':
                     output.append(f"  widget_type: switch")
