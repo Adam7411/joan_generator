@@ -3390,6 +3390,7 @@
                             let icon_on = '';
                             let icon_off = '';
 
+                            let state_text_enabled = true;
                             if (rawDefs[id]) {
                                 const d = rawDefs[id];
 
@@ -3407,6 +3408,11 @@
 
                                 const iActiveMatch = d.match(/icon_active:\s*(.*)/);
                                 if (iActiveMatch) icon = iActiveMatch[1].trim();
+
+                                // Detect if state text is disabled (display: none in style)
+                                if (d.includes('display: none') && (d.includes('state_text_style') || d.includes('value_style'))) {
+                                    state_text_enabled = false;
+                                }
 
                                 // FORCE INPUT_BUTTON DETECTION
                                 const entMatch = d.match(/entity:\s*(.*)/);
@@ -3430,6 +3436,7 @@
                                 icon_on,
                                 icon_off,
                                 value_size_hint: 'auto',
+                                state_text_enabled,
                                 was_edited: false
                             };
                             fitSizeToGrid(widgetObj);
