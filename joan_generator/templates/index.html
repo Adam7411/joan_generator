@@ -1088,6 +1088,20 @@
         .close:hover {
             color: #ff0000 !important;
         }
+
+        .tip-box {
+            margin-top: 15px;
+            background: #e3f2fd;
+            padding: 10px;
+            border-radius: 4px;
+            color: #0d47a1;
+        }
+
+        html.dark-mode .tip-box {
+            background: #263238;
+            color: #eceff1;
+            border: 1px solid #546e7a;
+        }
     </style>
 </head>
 
@@ -1124,8 +1138,11 @@
                 <h1 data-i18n="title_main">Joan 6 E-Ink Generator</h1>
                 <div class="controls" style="display:flex; align-items:center;">
                     <button type="button" onclick="toggleTheme()" id="btn-theme" title="Zmień motyw">🌙</button>
-                    <button type="button" onclick="showInfoModal()" id="btn-info" title="Informacje o systemie" style="padding: 8px 12px;"><i class="mdi mdi-information-variant" style="font-size:1.2em; line-height:1;"></i></button>
-                    <button type="button" onclick="openVisionectHelp()" id="btn-joan-help" title="Pomoc Visionect Joan" style="font-size: 0.9em;">JOAN</button>
+                    <button type="button" onclick="showInfoModal()" id="btn-info" title="Informacje o systemie"
+                        style="padding: 8px 12px;"><i class="mdi mdi-information-variant"
+                            style="font-size:1.2em; line-height:1;"></i></button>
+                    <button type="button" onclick="openVisionectHelp()" id="btn-joan-help" title="Pomoc Visionect Joan"
+                        style="font-size: 0.9em;">JOAN</button>
                     <div style="width:1px; height:24px; background:#ccc; margin:0 8px;"></div>
                     <button type="button" onclick="setLang('pl')" id="btn-pl" class="active">PL</button>
                     <button type="button" onclick="setLang('en')" id="btn-en">EN</button>
@@ -1829,7 +1846,39 @@
                         <li>Zapisz i użyj nowej encji (np. <i>sensor.mean_...</i>) w tym generatorze.</li>
                     </ol>
                     <p>Oficjalna dokumentacja: <a href="https://www.home-assistant.io/integrations/statistics/" target="_blank">Home Assistant Statistics</a></p>
-                `
+                `,
+                modal_visionect_title: "Usługi dodatku Visionect Joan",
+                visionect_body: `
+                    <p>Najlepiej i najszybciej uruchamiać usługi Visionect Joan przez widget <b>Skrypty</b>. Skrypt tworzymy w Home Assistant.</p>
+                    <p><b>Krok po kroku:</b></p>
+                    <ol style="margin-left: 20px;">
+                        <li>Ustawienia</li>
+                        <li>Automatyzacje oraz sceny</li>
+                        <li>Skrypty</li>
+                        <li><b>Utwórz skrypt</b>
+                            <ul style="margin-top:5px; margin-bottom:10px;">
+                                <li>a. Utwórz nowy skrypt</li>
+                                <li>b. Sekwencja + Dodaj akcję</li>
+                                <li>c. Wpisz <code>visionect</code> - pokażą się wszystkie usługi dodatku Visionect Joan</li>
+                                <li>d. Wybierz daną usługę visionect i skonfiguruj ją (np. clear_screen, show_image itp.)</li>
+                                <li>e. Kliknij <b>Zapisz</b> i nadaj nazwę skryptu.</li>
+                            </ul>
+                        </li>
+                    </ol>
+                    <p class="tip-box">
+                        <b>Wskazówka:</b> Po stworzeniu skryptu, wróć tutaj (Joan 6 Generator), dodaj widget typu <b>Script</b> i wybierz encję swojego nowego skryptu. Możesz też dodać przycisk do dashboardu, który go wywoła.
+                    </p>
+                `,
+                modal_battery_understand: "ROZUMIEM",
+                btn_understand: "ROZUMIEM",
+                modal_info_title: "Szczegóły Systemu",
+                info_lbl_entities: "Liczba Encji:",
+                info_lbl_slug: "AppDaemon Slug:",
+                info_lbl_source: "Źródło API:",
+                info_lbl_bridge: "Plik dash_saver.py:",
+                info_lbl_dash_count: "Liczba Dashboardów:",
+                info_bridge_yes: "TAK (Aktywny)",
+                info_bridge_no: "NIE / BRAK"
             },
             en: {
                 btn_import_dash: "📥 IMPORT DASHBOARD",
@@ -1960,7 +2009,37 @@
                         <li>Save and use the new entity (e.g., <i>sensor.mean_...</i>) in this generator.</li>
                     </ol>
                     <p>Official documentation: <a href="https://www.home-assistant.io/integrations/statistics/" target="_blank">Home Assistant Statistics</a></p>
-                `
+                `,
+                modal_visionect_title: "Visionect Joan Add-on Services",
+                visionect_body: `
+                    <p>The best and fastest way to trigger Visionect Joan services is via the <b>Scripts</b> widget. Not sure how? Follow these steps:</p>
+                    <ol style="margin-left: 20px;">
+                        <li>Settings</li>
+                        <li>Automations & Scenes</li>
+                        <li>Scripts</li>
+                        <li><b>Create Script</b>
+                            <ul style="margin-top:5px; margin-bottom:10px;">
+                                <li>a. Create new script</li>
+                                <li>b. Sequence + Add Action</li>
+                                <li>c. Type <code>visionect</code> - all Visionect Joan services will appear</li>
+                                <li>d. Select a service and configure it (e.g. clear_screen, show_image, etc.)</li>
+                                <li>e. Click <b>Save</b> and name your script.</li>
+                            </ul>
+                        </li>
+                    </ol>
+                    <p class="tip-box">
+                        <b>Hint:</b> After creating the script, come back here (Joan 6 Generator), add a <b>Script</b> widget and select your new script entity. You can also add a button to the dashboard to trigger it.
+                    </p>
+                `,
+                btn_understand: "I UNDERSTAND",
+                modal_info_title: "System Details",
+                info_lbl_entities: "Entity Count:",
+                info_lbl_slug: "AppDaemon Slug:",
+                info_lbl_source: "API Source:",
+                info_lbl_bridge: "dash_saver.py file:",
+                info_lbl_dash_count: "Dashboard Count:",
+                info_bridge_yes: "YES (Active)",
+                info_bridge_no: "NO / MISSING"
             }
         };
 
@@ -3586,31 +3665,15 @@
 <div id="visionect-help-modal" class="icon-picker-modal">
     <div class="icon-picker-content" style="max-width: 600px; height: auto; max-height: 85vh;">
         <div class="ip-header">
-            <h2>Usługi dodatku Visionect Joan</h2>
+            <h2 id="visionect-help-title">Usługi dodatku Visionect Joan</h2>
             <span class="ip-close" onclick="closeVisionectHelp()">&times;</span>
         </div>
-        <div style="overflow-y: auto; padding-right: 10px; font-size: 0.95em; line-height: 1.5;">
-            <p>Najlepiej i najszybciej uruchamiać usługi Visionect Joan przez widget <b>Skrypty</b>. Skrypt tworzymy w Home Assistant.</p>
-            <p><b>Krok po kroku:</b></p>
-            <ol style="margin-left: 20px;">
-                <li>Ustawienia</li>
-                <li>Automatyzacje oraz sceny</li>
-                <li>Skrypty</li>
-                <li><b>Utwórz skrypt</b>
-                    <ul style="margin-top:5px; margin-bottom:10px;">
-                        <li>a. Utwórz nowy skrypt</li>
-                        <li>b. Sekwencja + Dodaj akcję</li>
-                        <li>c. Wpisz <code>visionect</code> - pokażą się wszystkie usługi dodatku Visionect Joan</li>
-                        <li>d. Wybierz daną usługę visionect i skonfiguruj ją (np. clear_screen, show_image itp.)</li>
-                        <li>e. Kliknij <b>Zapisz</b> i nadaj nazwę skryptu.</li>
-                    </ul>
-                </li>
-            </ol>
-            <p style="margin-top:15px; background: #e3f2fd; padding:10px; border-radius:4px;">
-                <b>Wskazówka:</b> Po stworzeniu skryptu, wróć tutaj (Joan 6 Generator), dodaj widget typu <b>Script</b> i wybierz encję swojego nowego skryptu. Możesz też dodać przycisk do dashboardu, który go wywoła.
-            </p>
+        <div id="visionect-help-body"
+            style="overflow-y: auto; padding-right: 10px; font-size: 0.95em; line-height: 1.5;">
+            <!-- Content injected by JS -->
         </div>
-        <button type="button" class="btn btn-gen" onclick="closeVisionectHelp()" style="margin-top:20px;">ROZUMIEM</button>
+        <button type="button" class="btn btn-gen" onclick="closeVisionectHelp()" style="margin-top:20px;"
+            id="btn-visionect-ok">ROZUMIEM</button>
     </div>
 </div>
 
@@ -3802,6 +3865,10 @@ class DashSaver(hass.Hass):
     }
 
     function openVisionectHelp() {
+        const t = TRANSLATIONS[currentLang];
+        document.getElementById('visionect-help-title').innerText = t.modal_visionect_title;
+        document.getElementById('visionect-help-body').innerHTML = t.visionect_body;
+        document.getElementById('btn-visionect-ok').innerText = t.btn_understand;
         document.getElementById('visionect-help-modal').style.display = 'block';
     }
 
@@ -3998,7 +4065,8 @@ class DashSaver(hass.Hass):
         document.getElementById('info-api-source').innerText = typeof connectionInfo !== 'undefined' ? connectionInfo.token_source : '-';
 
         const bridgeActive = typeof connectionInfo !== 'undefined' && connectionInfo.bridge_active;
-        document.getElementById('info-bridge').innerText = bridgeActive ? 'TAK (Aktywny)' : 'NIE / BRAK';
+        const brText = bridgeActive ? TRANSLATIONS[currentLang].info_bridge_yes : TRANSLATIONS[currentLang].info_bridge_no;
+        document.getElementById('info-bridge').innerText = brText;
         document.getElementById('info-bridge').style.color = bridgeActive ? 'green' : 'red';
 
         const dashCount = typeof dashboardsList !== 'undefined' ? dashboardsList.length : 0;
@@ -4020,24 +4088,24 @@ class DashSaver(hass.Hass):
 <div id="info-modal" class="modal" style="z-index: 100000;">
     <div class="modal-content" style="max-width: 500px;">
         <div class="modal-header">
-            <h2>Szczegóły Systemu</h2>
+            <h2 data-i18n="modal_info_title">Szczegóły Systemu</h2>
             <span class="close" onclick="closeInfoModal()">&times;</span>
         </div>
         <div class="modal-body" style="font-size: 0.95em; line-height: 1.6;">
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                <div><strong>Liczba Encji:</strong></div>
+                <div><strong data-i18n="info_lbl_entities">Liczba Encji:</strong></div>
                 <div id="info-entities">...</div>
 
-                <div><strong>AppDaemon Slug:</strong></div>
+                <div><strong data-i18n="info_lbl_slug">AppDaemon Slug:</strong></div>
                 <div id="info-ad-slug">...</div>
 
-                <div><strong>API Source:</strong></div>
+                <div><strong data-i18n="info_lbl_source">Źródło API:</strong></div>
                 <div id="info-api-source">...</div>
 
-                <div><strong>Plik dash_saver.py:</strong></div>
+                <div><strong data-i18n="info_lbl_bridge">Plik dash_saver.py:</strong></div>
                 <div id="info-bridge" style="font-weight: bold;">...</div>
 
-                <div><strong>Liczba Dashboardów:</strong></div>
+                <div><strong data-i18n="info_lbl_dash_count">Liczba Dashboardów:</strong></div>
                 <div id="info-dash-count">...</div>
             </div>
             <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #ddd;">
