@@ -1514,8 +1514,8 @@
     </div>
 
     <script>
-        const entitiesData = {{ entities | tojson | safe }};
-        const validEntityIds = new Set(entitiesData.map(e => e.id));
+        let entitiesData = {{ entities | tojson | safe }};
+        let validEntityIds = new Set(entitiesData.map(e => e.id));
         const connectionInfo = {{ connection_info | tojson | safe }};
         const dashboardsList = {{ dashboards_list | tojson | safe }};
         let initialRows = {{ layout_data | tojson | safe }};
@@ -3921,25 +3921,61 @@ class DashSaver(hass.Hass):
     function refreshEntities() {
         const t = TRANSLATIONS[currentLang];
         const btn = document.getElementById('btn-refresh-ent');
-        if (btn) btn.classList.add('rotating'); // Add rotation class if defined or just visual feedback
+        if (btn) btn.classList.add('rotating');
 
         showToast(t.msg_refreshing, 'info');
 
-        fetch(window.location.href)
+        // Add timestamp to prevent caching
+        fetch(window.location.href.split('?')[0] + '?t=' + new Date().getTime())
             .then(response => response.text())
             .then(html => {
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, "text/html");
-                const newDatalist = doc.getElementById('entity-list');
-                const currentDatalist = document.getElementById('entity-list');
+                // Regex to extract the entitiesData JSON array
+                // Matches: const entitiesData = [...];
+                const match = html.match(/const\s+entitiesData\s*=\s*(\[.*?\]);/s);
 
-                if (newDatalist && currentDatalist) {
-                    currentDatalist.innerHTML = newDatalist.innerHTML;
-                    showToast(t.msg_refreshed, 'success');
-                    // Opcjonalnie zaktualizuj też listę entitiesData jeśli jest dostępna jako zmienna globalna, 
-                    // ale tutaj opieramy się na datalist.
+                if (match && match[1]) {
+                    try {
+                        const newEntities = JSON.parse(match[1]);
+                        if (Array.isArray(newEntities)) {
+                            // Update global variables
+                            entitiesData = newEntities; // Modify global let/const (if let) - entitiesData was const? check below.
+                            // If entitiesData is const, we can't reassign line 1517.
+                            // However, in standard JS 'const' prevents reassignment. 
+                            // Refactoring line 1517 to 'let' is required or we operate on object content.
+                            // But usually template renders 'const'.
+                            // Let's assume we can't reassign const. We will check line 1517 next.
+                            // For now, let's assume validEntityIds is what matters for validation
+                            // and searchEntities uses entitiesData.
+
+                            // Hack: we cannot reassign const. We must change line 1517 to let/var first.
+                            // Or we use a mutable global object property? 
+                            // Wait, I can verify if it is const.
+                            // It is 'const entitiesData = ...' in line 1517.
+                            // I MUST change line 1517 to 'let' in a separate chunk or same tool call.
+
+                            window.entitiesData = newEntities; // This won't override const in same scope but might work if global scope is window.
+                            // Better to change 'const' to 'var' or 'let'.
+
+                            validEntityIds = new Set(newEntities.map(e => e.id));
+
+                            // Re-run search/validation for current input
+                            const input = document.getElementById('w-id');
+                            if (input && input.value) {
+                                searchEntities(input.value);
+                                validateEntityInput(input.value);
+                            }
+
+                            showToast(t.msg_refreshed, 'success');
+                        } else {
+                            throw new Error("Parsed entities is not an array");
+                        }
+                    } catch (e) {
+                        console.error("JSON Parse Error", e);
+                        showToast("Error parsing new entities data.", 'error');
+                    }
                 } else {
-                    showToast("Error parsing entities.", 'error');
+                    console.error("Regex match failed for entitiesData");
+                    showToast("Could not find entity data in response.", 'error');
                 }
             })
             .catch(err => {
