@@ -2374,7 +2374,6 @@ data:
             if (w.type === 'spacer') w.id = 'spacer';
             if (w.type === 'reload') w.id = 'reload';
             if (w.type === 'service_call') {
-                w.raw_yaml = document.getElementById('w-raw-yaml').value;
                 if (!w.id) {
                     // Generate a unique ID for service_call if not provided
                     const baseId = 'service_call_' + Math.random().toString(36).substring(2, 9);
