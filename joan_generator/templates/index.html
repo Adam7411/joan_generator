@@ -1774,7 +1774,6 @@
                 opt_fan: "Wentylator", opt_scene: "Scena", opt_input_button: "Input Button / Przycisk",
                 opt_light: "Światło (Ściemniane)", opt_group: "Grupa (Świateł)", opt_input_boolean: "Przełącznik Boolean", opt_reload: "Odśwież Dashboard",
                 opt_gauge: "Wskaźnik (Gauge)",
-                opt_gauge: "Wskaźnik (Gauge)",
                 lbl_show_state: "Pokaż stan (Tekst)",
                 grid_3x10: "Wysoki (3 kolumny x 10 wierszy)",
                 grid_3x6: "Kompakt (3 kolumny x 6 wierszy)",
@@ -2581,7 +2580,7 @@
                 grpValueSize.style.display = (type === 'sensor') ? 'block' : 'none';
             }
 
-            const showStateTypes = ['switch', 'light', 'input_boolean', 'binary_sensor', 'lock', 'fan', 'group', 'automation'];
+            const showStateTypes = ['switch', 'light', 'input_boolean', 'binary_sensor', 'lock', 'fan', 'group', 'automation', 'script'];
             document.getElementById('grp-show-state').style.display = showStateTypes.includes(type) ? 'block' : 'none';
         }
 
