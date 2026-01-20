@@ -1316,12 +1316,6 @@
                             <option value="navigate" data-i18n="opt_navigate">Navigate / Button</option>
                             <option value="reload" data-i18n="opt_reload">Reload Dashboard</option>
                             <option value="gauge" data-i18n="opt_gauge">Gauge / Radial</option>
-                            <option value="weather" data-i18n="opt_weather">Weather</option>
-                            <option value="alarm" data-i18n="opt_alarm">Alarm</option>
-                            <option value="camera" data-i18n="opt_camera">Camera</option>
-                            <option value="clock" data-i18n="opt_clock">Clock (Current Time)</option>
-                            <option value="label" data-i18n="opt_label">Static Label / Image</option>
-                            <option value="spacer" data-i18n="opt_spacer">Spacer (Blank)</option>
                         </select>
                     </div>
                 </div>
@@ -2192,7 +2186,6 @@
                 opt_fan: "Wentylator", opt_scene: "Scena", opt_input_button: "Input Button / Przycisk",
                 opt_light: "Światło (Ściemniane)", opt_group: "Grupa (Świateł)", opt_input_boolean: "Przełącznik Boolean", opt_reload: "Odśwież Dashboard",
                 opt_gauge: "Wskaźnik (Gauge)",
-                opt_weather: "Pogoda", opt_alarm: "Alarm", opt_camera: "Kamera", opt_clock: "Zegar (Aktualny Czas)", opt_label: "Etykieta Statyczna / Obraz", opt_spacer: "Pusty (Spacer)",
                 lbl_show_state: "Pokaż stan (Tekst)",
                 grid_3x10: "Wysoki (3 kolumny x 10 wierszy)",
                 grid_3x6: "Kompakt (3 kolumny x 6 wierszy)",
@@ -2362,7 +2355,6 @@
                 opt_fan: "Fan", opt_scene: "Scene", opt_input_button: "Input Button",
                 opt_light: "Light (Dimmable)", opt_group: "Group (Lights)", opt_input_boolean: "Input Boolean", opt_reload: "Reload Dashboard",
                 opt_gauge: "Gauge",
-                opt_weather: "Weather", opt_alarm: "Alarm", opt_camera: "Camera", opt_clock: "Clock (Current Time)", opt_label: "Static Label / Image", opt_spacer: "Spacer (Blank)",
                 lbl_show_state: "Show state (Text)",
                 grid_3x10: "Tall (3 cols x 10 rows)",
                 grid_3x6: "Compact (3 cols x 6 rows)",
@@ -2520,13 +2512,9 @@
             'humidifier': { type: 'switch', size: '(2x1)', iconOn: 'mdi-air-humidifier', iconOff: 'mdi-air-humidifier-off' },
             'group': { type: 'group', size: '(2x1)', iconOn: 'mdi-google-circles-communities', iconOff: 'mdi-google-circles-communities' },
             'update': { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-update', iconOff: 'mdi-check-circle-outline' },
-            'weather': { type: 'weather', size: '(2x2)', icon: 'mdi-weather-cloudy' },
             'sun': { type: 'sensor', size: '(2x1)', icon: 'mdi-weather-sunny' },
             'proximity': { type: 'sensor', size: '(2x1)', icon: 'mdi-map-marker-distance' },
-            'zone': { type: 'sensor', size: '(2x1)', icon: 'mdi-map-marker-radius' },
-            'clock': { type: 'clock', size: '(2x1)', icon: 'mdi-clock' },
-            'label': { type: 'label', size: '(2x1)', icon: 'mdi-text-box-outline' },
-            'spacer': { type: 'spacer', size: '(1x1)', icon: 'mdi-blank' }
+            'zone': { type: 'sensor', size: '(2x1)', icon: 'mdi-map-marker-radius' }
         };
 
         // Ulepszona normalizacja (usuwa polskie znaki, małe litery, usuwa zbędne spacje)
