@@ -1289,6 +1289,10 @@
                             oninput="checkTitleLimit(); searchEntities(this.value, true)">
                         <div id="char-count" class="char-counter">0/20</div>
                     </div>
+                    <div class="flex-col" style="flex: 0 0 100px;">
+                        <label data-i18n="lbl_title_size">Rozmiar PX</label>
+                        <input type="number" id="w-title-size" placeholder="20" style="width: 100%;">
+                    </div>
                     <div class="flex-col" style="flex: 1;">
                         <label data-i18n="lbl_type">Typ Widgetu</label>
                         <select id="w-type" onchange="handleTypeChange()">
@@ -1330,12 +1334,16 @@
                     </div>
                     <div class="flex-col" id="grp-value-size" style="display: none;">
                         <label data-i18n="lbl_value_size">Rozmiar czcionki wartości</label>
-                        <select id="w-value-size">
-                            <option value="auto" data-i18n="opt_auto">Auto (na podstawie wartości)</option>
-                            <option value="normal" data-i18n="opt_normal">Normalny (54px)</option>
-                            <option value="medium" data-i18n="opt_medium">Średni (40px) - dla 1000+</option>
-                            <option value="small" data-i18n="opt_small">Mały (32px) - dla 10000+</option>
-                        </select>
+                        <div style="display: flex; gap: 5px;">
+                            <select id="w-value-size" style="flex: 2;">
+                                <option value="auto" data-i18n="opt_auto">Auto (na podstawie wartości)</option>
+                                <option value="normal" data-i18n="opt_normal">Normalny (54px)</option>
+                                <option value="medium" data-i18n="opt_medium">Średni (40px) - dla 1000+</option>
+                                <option value="small" data-i18n="opt_small">Mały (32px) - dla 10000+</option>
+                            </select>
+                            <input type="number" id="w-value-size-custom" placeholder="px" style="flex: 1;"
+                                title="Własny rozmiar (opcjonalnie)">
+                        </div>
                     </div>
                     <div class="flex-col" id="grp-show-state" style="display: none;">
                         <label style="font-size: 0.9em; margin-bottom: 5px;" data-i18n="lbl_show_state">Pokaż stan
@@ -2165,6 +2173,8 @@
                 lbl_name: "Tytuł na ekranie", lbl_size: "Rozmiar", lbl_preview: "Podgląd",
                 lbl_icon: "Ikona (Standard)", lbl_icon_on: "Ikona ON", lbl_icon_off: "Ikona OFF",
                 lbl_value_size: "Rozmiar czcionki wartości",
+                lbl_title_size: "Rozmiar PX",
+                lbl_value_size_custom: "Własny (px)",
                 opt_auto: "Auto (na podstawie wartości)",
                 opt_normal: "Normalny (54px)",
                 opt_medium: "Średni (40px) - dla 1000+",
@@ -2332,6 +2342,8 @@
                 lbl_name: "Title on Screen", lbl_size: "Size", lbl_preview: "Preview",
                 lbl_icon: "Icon (Standard)", lbl_icon_on: "Icon ON", lbl_icon_off: "Icon OFF",
                 lbl_value_size: "Value font size",
+                lbl_title_size: "Size PX",
+                lbl_value_size_custom: "Custom (px)",
                 opt_auto: "Auto (based on value)",
                 opt_normal: "Normal (54px)",
                 opt_medium: "Medium (40px) - for 1000+",
@@ -2843,6 +2855,8 @@
                 icon_on: document.getElementById('w-icon-on').value,
                 icon_off: document.getElementById('w-icon-off').value,
                 value_size_hint: document.getElementById('w-value-size')?.value || 'auto',
+                value_size_custom: document.getElementById('w-value-size-custom')?.value || '',
+                title_size_custom: document.getElementById('w-title-size')?.value || '',
                 min: document.getElementById('w-min')?.value || '',
                 max: document.getElementById('w-max')?.value || '',
                 state_text_enabled: document.getElementById('w-show-state')?.checked || false,
@@ -3057,6 +3071,8 @@
             document.getElementById('w-icon-on').value = data.icon_on || '';
             document.getElementById('w-icon-off').value = data.icon_off || '';
             document.getElementById('w-value-size').value = data.value_size_hint || 'auto';
+            document.getElementById('w-value-size-custom').value = data.value_size_custom || '';
+            document.getElementById('w-title-size').value = data.title_size_custom || '';
             manualIconOverride = true;
             updateIconPreview(); updateTitleLimit();
             setTimeout(() => blockSmart = false, 500); renderPreview();
@@ -3078,6 +3094,8 @@
             document.getElementById('w-icon').value = ''; document.getElementById('w-icon-on').value = ''; document.getElementById('w-icon-off').value = '';
             const valueSizeSelect = document.getElementById('w-value-size');
             if (valueSizeSelect) valueSizeSelect.value = 'normal'; // Domyślnie normal
+            document.getElementById('w-value-size-custom').value = '';
+            document.getElementById('w-title-size').value = '';
             if (document.getElementById('w-min')) document.getElementById('w-min').value = '';
             if (document.getElementById('w-max')) document.getElementById('w-max').value = '';
             manualIconOverride = false; updateIconPreview(); updateTitleLimit();
