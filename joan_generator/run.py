@@ -980,10 +980,25 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                         ad_type = 'input_number'
                     if w_type == 'script':
                         ad_type = 'script'
+                    if w_type == 'alarm':
+                        ad_type = 'alarm'
+                    if w_type == 'camera':
+                        ad_type = 'camera'
+                    if w_type == 'weather':
+                        ad_type = 'weather'
 
                     output.append(f"  widget_type: {ad_type}")
                     output.append(f"  entity: {real_entity_id}")
                     output.append(f"  title: \"{w_name}\"")
+
+                    if ad_type == 'camera':
+                        # Use API_URL as base_url if available
+                        base = API_URL.replace('/api', '') if API_URL else "http://YOUR_HA_URL:8123"
+                        output.append(f"  base_url: {base}")
+                    
+                    if ad_type == 'weather':
+                        output.append("  show_forecast: 1")
+                        output.append("  prefer_icons: 1")
 
                     if i_on: output.append(f"  icon_on: {i_on}")
                     if i_off: output.append(f"  icon_off: {i_off}")
