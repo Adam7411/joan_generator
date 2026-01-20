@@ -599,6 +599,8 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append(f"  widget_type: sensor")
                     output.append(f"  entity: {real_entity_id}")
                     output.append(f"  title: \"{w_name}\"")
+                    if w_icon:
+                        output.append(f"  icon: {w_icon}")
 
                     is_small = (size_str == '(1x1)' or size_str == '(1x2)')
                     t_size_custom = w.get('title_size_custom')
