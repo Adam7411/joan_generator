@@ -361,8 +361,8 @@ def build_value_style(size_hint: str, is_small: bool = False, custom_px: str = N
     else:
         px = {
             "normal": 54,
-            "medium": 48,
-            "small": 40
+            "medium": 40,
+            "small": 32
         }.get(size_hint, 54)
     return STYLE_VALUE_TEMPLATE.format(px=px)
 
@@ -602,7 +602,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     if w_icon:
                         output.append(f"  icon: {w_icon}")
 
-                    is_small = (size_str == '(1x1)' or size_str == '(1x2)')
+                    is_small = (w.get('size') == '(1x1)' or w.get('size') == '(1x2)')
                     t_size_custom = w.get('title_size_custom')
                     v_size_custom = w.get('value_size_custom')
                     
