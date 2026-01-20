@@ -2976,7 +2976,7 @@
             const grpGauge = document.getElementById('grp-gauge');
             if (grpGauge) grpGauge.style.display = isGauge ? 'block' : 'none';
 
-            const hideIcons = (type === 'sensor' || type === 'clock' || type === 'spacer' || type === 'gauge');
+            const hideIcons = (type === 'clock' || type === 'spacer');
             document.getElementById('grp-icons').style.display = hideIcons ? 'none' : 'contents';
 
             // List of widgets that use On/Off icons (so we hide Std icon)
