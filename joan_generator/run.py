@@ -345,20 +345,24 @@ STYLE_UNIT = "color: #000000 !important; padding-top: 60px !important; display: 
 STYLE_ICON = "color: #000000 !important"
 STYLE_STATE_TEXT = "color: #000000 !important; font-weight: 700 !important; font-size: 16px !important"
 STYLE_TITLE2 = "color: #000000 !important; font-size: 16px; font-weight: 700; text-align: center; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif"
+STYLE_TITLE_SMALL = "color: #000000 !important; font-size: 16px; font-weight: 700; text-align: center; padding-top: 5px; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif"
 
-def build_value_style(size_hint: str) -> str:
+def build_value_style(size_hint: str, is_small: bool = False) -> str:
     """
     Returns style for value based on hint:
-    - normal -> 54px
+    - normal -> 54px (or 34px if is_small)
     - medium -> 48px
     - small  -> 40px
     - auto   -> 54px (will be selected earlier)
     """
-    px = {
-        "normal": 54,
-        "medium": 48,
-        "small": 40
-    }.get(size_hint, 54)
+    if is_small:
+        px = 34
+    else:
+        px = {
+            "normal": 54,
+            "medium": 48,
+            "small": 40
+        }.get(size_hint, 54)
     return STYLE_VALUE_TEMPLATE.format(px=px)
 
 def pick_auto_size(value_size_hint: str, entity_id: str, entities_map: dict) -> str:
@@ -553,6 +557,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append(f"  icon_inactive_style: \"{STYLE_ICON}\"")
 
                 elif w_type == 'switch':
+                    is_small = (w.get('size') == '(1x1)' or w.get('size') == '(1x2)')
                     output.append(f"  widget_type: switch")
                     output.append(f"  entity: {real_entity_id}")
                     output.append(f"  title: \"{w_name}\"")
@@ -569,7 +574,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                         output.append(f"  value_style: \"display: none !important;\"")
                     else:
                         output.append(f"  state_text: 1")
-                    output.append(f"  title_style: \"{STYLE_TITLE}\"")
+                    output.append(f"  title_style: \"{STYLE_TITLE_SMALL if is_small else STYLE_TITLE}\"")
                     output.append(f"  widget_style: \"{STYLE_WIDGET}\"")
                     output.append(f"  icon_style_active: \"{STYLE_ICON}\"")
                     output.append(f"  icon_style_inactive: \"{STYLE_ICON}; opacity: 0.5;\"")
@@ -582,9 +587,10 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append(f"  entity: {real_entity_id}")
                     output.append(f"  title: \"{w_name}\"")
 
-                    output.append(f"  title_style: \"{STYLE_TITLE}\"")
+                    is_small = (size_str == '(1x1)' or size_str == '(1x2)')
+                    output.append(f"  title_style: \"{STYLE_TITLE_SMALL if is_small else STYLE_TITLE}\"")
                     output.append(f"  text_style: \"{STYLE_TEXT}\"")
-                    output.append(f"  value_style: \"{build_value_style(final_size_hint)}\"")
+                    output.append(f"  value_style: \"{build_value_style(final_size_hint, is_small)}\"")
                     output.append(f"  unit_style: \"{STYLE_UNIT}\"")
                     output.append(f"  widget_style: \"{STYLE_WIDGET}\"")
                     if any(k in w_id for k in ['battery', 'bateria', 'level']):
