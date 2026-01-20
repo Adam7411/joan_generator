@@ -2731,7 +2731,6 @@
             const sizeStr = conf.size || '(2x1)';
             let [w, h] = sizeStr.replace(/[()]/g, '').split('x').map(n => parseInt(n) || 1);
             if (w > cols) w = cols;
-            if (cols === 3 && w < 2) w = 2;
             conf.size = `(${w}x${h})`;
         }
 
