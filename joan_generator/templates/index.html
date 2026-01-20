@@ -1300,22 +1300,28 @@
                             <option value="light" data-i18n="opt_light">Light (Dimmable)</option>
                             <option value="group" data-i18n="opt_group">Group (Lights)</option>
                             <option value="cover" data-i18n="opt_cover">Cover / Gate</option>
-                            <option value="sensor" data-i18n="opt_sensor">Sensor</option>
-                            <option value="binary_sensor" data-i18n="opt_binary">Binary Sensor (On/Off)</option>
+                            <option value="sensor" data-i18n="opt_sensor">Sensor / Text</option>
+                            <option value="binary_sensor" data-i18n="opt_binary_sensor">Binary Sensor (On/Off)</option>
                             <option value="input_boolean" data-i18n="opt_input_boolean">Input Boolean</option>
                             <option value="lock" data-i18n="opt_lock">Lock</option>
-                            <option value="person" data-i18n="opt_person">Person / Tracker</option>
-                            <option value="media_player" data-i18n="opt_media">Media Player</option>
-                            <option value="climate" data-i18n="opt_climate">Climate</option>
-                            <option value="fan" data-i18n="opt_fan">Fan / Wentylator</option>
-                            <option value="scene" data-i18n="opt_scene">Scene / Scena</option>
+                            <option value="person" data-i18n="opt_person">Person / Presence</option>
+                            <option value="media_player" data-i18n="opt_media_player">Media Player</option>
+                            <option value="climate" data-i18n="opt_climate">Climate / Thermostat</option>
+                            <option value="fan" data-i18n="opt_fan">Fan</option>
+                            <option value="scene" data-i18n="opt_scene">Scene</option>
                             <option value="input_select" data-i18n="opt_input_select">Input Select</option>
                             <option value="input_number" data-i18n="opt_input_number">Input Number</option>
-                            <option value="input_button" data-i18n="opt_input_button">Input Button / Przycisk</option>
+                            <option value="input_button" data-i18n="opt_input_button">Button / Scene</option>
                             <option value="script" data-i18n="opt_script">Script</option>
                             <option value="navigate" data-i18n="opt_navigate">Navigate / Button</option>
                             <option value="reload" data-i18n="opt_reload">Reload Dashboard</option>
-                            <option value="gauge" data-i18n="opt_gauge">Gauge / Wskaźnik</option>
+                            <option value="gauge" data-i18n="opt_gauge">Gauge / Radial</option>
+                            <option value="weather" data-i18n="opt_weather">Weather</option>
+                            <option value="alarm" data-i18n="opt_alarm">Alarm</option>
+                            <option value="camera" data-i18n="opt_camera">Camera</option>
+                            <option value="clock" data-i18n="opt_clock">Clock (Current Time)</option>
+                            <option value="label" data-i18n="opt_label">Static Label / Image</option>
+                            <option value="spacer" data-i18n="opt_spacer">Spacer (Blank)</option>
                         </select>
                     </div>
                 </div>
@@ -2180,12 +2186,13 @@
                 opt_medium: "Średni (40px) - dla 1000+",
                 opt_small: "Mały (32px) - dla 10000+",
                 opt_switch: "Przełącznik / Światło", opt_cover: "Roleta / Brama", opt_sensor: "Sensor",
-                opt_binary: "Sensor Binarny (On/Off)", opt_lock: "Lock / Zamek", opt_person: "Osoba / Tracker",
-                opt_media: "Media Player", opt_climate: "Climate / Klimatyzacja", opt_input_select: "Lista Wyboru",
+                opt_binary_sensor: "Sensor Binarny (On/Off)", opt_lock: "Lock / Zamek", opt_person: "Osoba / Tracker",
+                opt_media_player: "Media Player", opt_climate: "Climate / Klimatyzacja", opt_input_select: "Lista Wyboru",
                 opt_input_number: "Suwak", opt_script: "Skrypt", opt_navigate: "Przycisk Nawigacji",
                 opt_fan: "Wentylator", opt_scene: "Scena", opt_input_button: "Input Button / Przycisk",
                 opt_light: "Światło (Ściemniane)", opt_group: "Grupa (Świateł)", opt_input_boolean: "Przełącznik Boolean", opt_reload: "Odśwież Dashboard",
                 opt_gauge: "Wskaźnik (Gauge)",
+                opt_weather: "Pogoda", opt_alarm: "Alarm", opt_camera: "Kamera", opt_clock: "Zegar (Aktualny Czas)", opt_label: "Etykieta Statyczna / Obraz", opt_spacer: "Pusty (Spacer)",
                 lbl_show_state: "Pokaż stan (Tekst)",
                 grid_3x10: "Wysoki (3 kolumny x 10 wierszy)",
                 grid_3x6: "Kompakt (3 kolumny x 6 wierszy)",
@@ -2349,13 +2356,13 @@
                 opt_medium: "Medium (40px) - for 1000+",
                 opt_small: "Small (32px) - for 10000+",
                 opt_switch: "Switch / Light", opt_cover: "Cover / Gate", opt_sensor: "Sensor",
-                opt_binary: "Binary Sensor", opt_lock: "Lock", opt_person: "Person / Tracker",
-                opt_media: "Media Player", opt_climate: "Climate", opt_input_select: "Input Select",
+                opt_binary_sensor: "Binary Sensor (On/Off)", opt_lock: "Lock", opt_person: "Person / Tracker",
+                opt_media_player: "Media Player", opt_climate: "Climate / Thermostat", opt_input_select: "Input Select",
                 opt_input_number: "Input Number", opt_script: "Script", opt_navigate: "Navigation Button",
                 opt_fan: "Fan", opt_scene: "Scene", opt_input_button: "Input Button",
                 opt_light: "Light (Dimmable)", opt_group: "Group (Lights)", opt_input_boolean: "Input Boolean", opt_reload: "Reload Dashboard",
                 opt_gauge: "Gauge",
-                opt_gauge: "Gauge",
+                opt_weather: "Weather", opt_alarm: "Alarm", opt_camera: "Camera", opt_clock: "Clock (Current Time)", opt_label: "Static Label / Image", opt_spacer: "Spacer (Blank)",
                 lbl_show_state: "Show state (Text)",
                 grid_3x10: "Tall (3 cols x 10 rows)",
                 grid_3x6: "Compact (3 cols x 6 rows)",
@@ -2405,7 +2412,7 @@
                 btn_save_ad: "🚀 SAVE DIRECTLY TO APPDAEMON",
                 status_details: "Token: {token_source} • API: {api_url} • Entities: {entity_count} • AppDaemon: {appdaemon_slug}",
                 status_details_missing: "No connection info.",
-                battery_warning: "⚠️ <b>Battery Tip:</b> Avoid entities that update very frequently (e.g., real-time power/voltage). Frequent screen refreshes drain the battery quickly!",
+                battery_warning: "⚠️ <b>Battery Warning:</b> Avoid entities that change very frequently (e.g. real-time voltage). Frequent screen updates drain the battery quickly!",
                 import_success: "Import successful.",
                 import_error_layout: "Error: Layout not found.",
                 confirm_load_dash: "Load dashboard? Unsaved changes will be lost.",
@@ -2489,19 +2496,37 @@
         };
 
         const SMART_MAP = {
-            'light': { type: 'switch', size: '(2x1)', iconOn: 'mdi-lightbulb-on', iconOff: 'mdi-lightbulb-outline' },
+            'light': { type: 'light', size: '(2x1)', iconOn: 'mdi-lightbulb-on', iconOff: 'mdi-lightbulb-outline' },
             'switch': { type: 'switch', size: '(2x1)', iconOn: 'mdi-toggle-switch', iconOff: 'mdi-toggle-switch-off' },
             'cover': { type: 'cover', size: '(2x1)', iconOn: 'mdi-window-shutter-open', iconOff: 'mdi-window-shutter' },
             'garage': { type: 'cover', size: '(2x1)', iconOn: 'mdi-garage-open', iconOff: 'mdi-garage' },
             'binary_sensor': { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-checkbox-marked-circle', iconOff: 'mdi-checkbox-blank-circle-outline' },
             'sensor': { type: 'sensor', size: '(2x1)', icon: 'mdi-eye' },
-            'media_player': { type: 'media_player', size: '(2x2)', icon: '' },
-            'climate': { type: 'climate', size: '(2x1)', icon: '' },
+            'media_player': { type: 'media_player', size: '(2x2)', icon: 'mdi-cast' },
+            'climate': { type: 'climate', size: '(2x1)', icon: 'mdi-thermostat' },
             'lock': { type: 'lock', size: '(2x1)', iconOn: 'mdi-lock-open', iconOff: 'mdi-lock' },
-            'script': { type: 'script', size: '(2x1)', icon: 'mdi-script-text-outline' },
+            'script': { type: 'script', size: '(2x1)', iconOn: 'mdi-script-text-outline', iconOff: 'mdi-script-text-outline' },
             'fan': { type: 'fan', size: '(2x1)', iconOn: 'mdi-fan', iconOff: 'mdi-fan-off' },
             'automation': { type: 'switch', size: '(2x1)', icon: 'mdi-robot' },
-            'input_boolean': { type: 'switch', size: '(2x1)', icon: 'mdi-toggle-switch' }
+            'input_boolean': { type: 'input_boolean', size: '(2x1)', icon: 'mdi-toggle-switch' },
+            'scene': { type: 'scene', size: '(2x1)', icon: 'mdi-palette' },
+            'input_button': { type: 'input_button', size: '(2x1)', icon: 'mdi-gesture-tap-button' },
+            'vacuum': { type: 'switch', size: '(2x1)', iconOn: 'mdi-robot-vacuum', iconOff: 'mdi-robot-vacuum-variant' },
+            'alarm_control_panel': { type: 'alarm', size: '(2x2)', icon: 'mdi-shield-lock' },
+            'camera': { type: 'camera', size: '(2x2)', icon: 'mdi-camera' },
+            'input_text': { type: 'sensor', size: '(2x1)', icon: 'mdi-form-textbox' },
+            'input_datetime': { type: 'sensor', size: '(2x1)', icon: 'mdi-calendar-clock' },
+            'water_heater': { type: 'climate', size: '(2x1)', icon: 'mdi-water-boiler' },
+            'humidifier': { type: 'switch', size: '(2x1)', iconOn: 'mdi-air-humidifier', iconOff: 'mdi-air-humidifier-off' },
+            'group': { type: 'group', size: '(2x1)', iconOn: 'mdi-google-circles-communities', iconOff: 'mdi-google-circles-communities' },
+            'update': { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-update', iconOff: 'mdi-check-circle-outline' },
+            'weather': { type: 'weather', size: '(2x2)', icon: 'mdi-weather-cloudy' },
+            'sun': { type: 'sensor', size: '(2x1)', icon: 'mdi-weather-sunny' },
+            'proximity': { type: 'sensor', size: '(2x1)', icon: 'mdi-map-marker-distance' },
+            'zone': { type: 'sensor', size: '(2x1)', icon: 'mdi-map-marker-radius' },
+            'clock': { type: 'clock', size: '(2x1)', icon: 'mdi-clock' },
+            'label': { type: 'label', size: '(2x1)', icon: 'mdi-text-box-outline' },
+            'spacer': { type: 'spacer', size: '(1x1)', icon: 'mdi-blank' }
         };
 
         // Ulepszona normalizacja (usuwa polskie znaki, małe litery, usuwa zbędne spacje)
@@ -2590,7 +2615,7 @@
             // Blokada - poniżej 3 znaków nie zgadujemy typu ikony
             if (input.length < 3) return;
 
-            let conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-eye' };
+            let conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-eye' }; // Default config
 
             // --- POPRAWKA: Pobieramy dane o encji, żeby sprawdzić jej klasę (device_class) ---
             // Sprawdzamy najpierw czy wpis przypomina id encji (zawiera kropkę), w przeciwnosci razie
@@ -2620,73 +2645,104 @@
 
             // 1. Najpierw Device Class (najdokładniejsze)
             if (dClass === 'garage') conf = { type: 'cover', size: '(2x1)', iconOn: 'mdi-garage-open', iconOff: 'mdi-garage' };
-            else if (dClass === 'door') conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-door-open', iconOff: 'mdi-door-closed' };
-            else if (dClass === 'window') conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-window-open-variant', iconOff: 'mdi-window-closed-variant' };
-            else if (dClass === 'battery') conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-battery' };
+            else if (['door', 'opening', 'window'].includes(dClass)) conf = { type: 'binary_sensor', size: '(1x1)', iconOn: dClass === 'window' ? 'mdi-window-open-variant' : 'mdi-door-open', iconOff: dClass === 'window' ? 'mdi-window-closed-variant' : 'mdi-door-closed' };
+            else if (['battery', 'carbon_monoxide', 'gas', 'smoke', 'problem', 'safety', 'tamper', 'lock', 'vibration', 'sound', 'moving', 'cold', 'heat'].includes(dClass)) {
+                let icon = 'mdi-alert-circle';
+                if (dClass === 'battery') icon = 'mdi-battery-alert';
+                if (dClass === 'gas') icon = 'mdi-gas-cylinder';
+                if (dClass === 'smoke') icon = 'mdi-smoke-detector-variant';
+                if (dClass === 'lock') icon = 'mdi-lock';
+                if (dClass === 'vibration') icon = 'mdi-vibration';
+                if (dClass === 'sound') icon = 'mdi-volume-high';
+                if (dClass === 'moving') icon = 'mdi-walk';
+                if (dClass === 'cold') icon = 'mdi-snowflake';
+                if (dClass === 'heat') icon = 'mdi-fire';
+                conf = { type: 'binary_sensor', size: '(1x1)', iconOn: icon, iconOff: icon };
+            }
+            else if (['motion', 'occupancy', 'presence'].includes(dClass)) conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-motion-sensor', iconOff: 'mdi-motion-sensor-off' };
+            else if (['moisture', 'leak', 'water'].includes(dClass)) conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-water', iconOff: 'mdi-water-off' };
+            else if (['plug', 'power'].includes(dClass)) conf = { type: 'switch', size: '(2x1)', iconOn: 'mdi-power-plug', iconOff: 'mdi-power-plug-off' };
+            else if (['connectivity', 'running', 'update', 'safety'].includes(dClass)) conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-check-circle', iconOff: 'mdi-close-circle' };
+
+            // Sensors by device_class
             else if (dClass === 'temperature') conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-thermometer' };
             else if (dClass === 'humidity') conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-water-percent' };
-            else if (dClass === 'moisture' || dClass === 'water' || dClass === 'leak') conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-water-alert', iconOff: 'mdi-water' };
-            else if (dClass === 'smoke') conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-smoke-detector-alert', iconOff: 'mdi-smoke-detector' };
-            else if (dClass === 'gas') conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-fire-alert', iconOff: 'mdi-fire' };
-            else if (dClass === 'safety') conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-shield-check', iconOff: 'mdi-shield-off' };
-            else if (dClass === 'timestamp') conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-clock' };
-            else if (dClass === 'power' || dClass === 'plug') conf = { type: 'switch', size: '(2x1)', iconOn: 'mdi-power-plug', iconOff: 'mdi-power-plug-off' };
+            else if (dClass === 'battery') conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-battery' };
+            else if (dClass === 'illuminance') conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-brightness-5' };
             else if (dClass === 'energy') conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-lightning-bolt' };
-            else if (dClass === 'current') conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-current-ac' };
-
-            // 2. Jeśli brak device_class, sprawdzamy domenę z ID (np. switch.x, light.x)
-            else if (input.startsWith('switch.')) conf = SMART_MAP['switch'];
-            else if (input.startsWith('light.')) conf = SMART_MAP['light'];
-            else if (input.startsWith('cover.')) conf = SMART_MAP['cover'];
-            else if (input.startsWith('fan.')) conf = SMART_MAP['fan'];
-            else if (input.startsWith('media_player.')) conf = SMART_MAP['media_player'];
-            else if (input.startsWith('lock.')) conf = SMART_MAP['lock'];
-            else if (input.startsWith('climate.')) conf = SMART_MAP['climate'];
-            else if (input.startsWith('person.') || input.startsWith('device_tracker.')) conf = { type: 'person', size: '(2x1)', iconOn: 'mdi-account', iconOff: 'mdi-account-outline' };
-            else if (input.startsWith('input_boolean.')) conf = SMART_MAP['input_boolean'];
-            else if (input.startsWith('input_select.')) conf = { type: 'input_select', size: '(2x1)', icon: 'mdi-form-dropdown' };
-            else if (input.startsWith('input_number.')) conf = { type: 'input_number', size: '(2x1)', icon: 'mdi-ruler' };
-            else if (input.startsWith('input_button.')) conf = SMART_MAP['input_button'];
-            else if (input.startsWith('script.')) conf = SMART_MAP['script'];
-            else if (input.startsWith('scene.')) conf = SMART_MAP['scene'];
-            else if (input.startsWith('binary_sensor.')) conf = SMART_MAP['binary_sensor'];
+            else if (dClass === 'power') conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-flash' };
+            else if (['voltage', 'current', 'apparent_power', 'reactive_power'].includes(dClass)) conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-sine-wave' };
+            else if (['pressure', 'atmospheric_pressure'].includes(dClass)) conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-gauge' };
+            else if (['timestamp', 'date', 'duration'].includes(dClass)) conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-clock' };
+            else if (dClass === 'signal_strength') conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-wifi' };
+            else if (['pm1', 'pm10', 'pm25', 'aqi', 'carbon_dioxide', 'carbon_monoxide', 'nitrogen_dioxide', 'nitrogen_monoxide', 'nitrous_oxide', 'ozone', 'volatile_organic_compounds'].includes(dClass)) conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-molecule' };
+            else if (['distance', 'speed', 'wind_speed'].includes(dClass)) conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-speedometer' };
+            else if (dClass === 'monetary') conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-currency-usd' };
 
             const check = (keywords) => keywords.some(k => inputNorm.includes(k));
 
-            // Rozpoznawanie na podstawie słów kluczowych
-            if (check(['glosnik', 'speaker', 'audio', 'tv', 'odtwarzacz', 'radio', 'telewizor'])) conf = SMART_MAP['media_player'];
-            else if (check(['swiatlo', 'lamp', 'kinkiet', 'led', 'zarowka', 'lampa'])) conf = SMART_MAP['light'];
-            else if (check(['gniazdko', 'wtyczka', 'outlet', 'plug', 'socket'])) conf = SMART_MAP['switch'];
-            else if (check(['wiatrak', 'wentylator', 'fan', 'nawiew', 'cyrkulacja'])) conf = SMART_MAP['fan'];
-            else if (check(['scena', 'tryb', 'kino', 'wieczor', 'scene'])) conf = SMART_MAP['scene'];
-            else if (check(['przycisk', 'button', 'klik'])) conf = SMART_MAP['input_button'];
-            else if (check(['brama', 'garaz', 'gate'])) conf = { type: 'cover', size: '(2x1)', iconOn: 'mdi-garage-open', iconOff: 'mdi-garage' };
-            else if (check(['rolet', 'blind', 'shutter', 'zaslon'])) conf = SMART_MAP['cover'];
-            else if (check(['zamek', 'lock', 'rygiel'])) conf = SMART_MAP['lock'];
-            else if (check(['drzwi', 'door', 'furtka'])) conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-door-open', iconOff: 'mdi-door-closed' };
-            else if (check(['okno', 'window'])) conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-window-open-variant', iconOff: 'mdi-window-closed-variant' };
-            else if (check(['temp', 'therm', 'temperatur'])) conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-thermometer' };
-            else if (check(['wilg', 'humid', 'wilgotnosc'])) conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-water-percent' };
-            else if (check(['ruch', 'motion', 'pirs'])) conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-motion-sensor', iconOff: 'mdi-motion-sensor-off' };
-            else if (check(['pralka', 'washing', 'washer'])) conf = { type: 'switch', size: '(2x1)', iconOn: 'mdi-washing-machine', iconOff: 'mdi-washing-machine' };
-            else if (check(['suszarka', 'dryer', 'tumble'])) conf = { type: 'switch', size: '(2x1)', iconOn: 'mdi-tumble-dryer', iconOff: 'mdi-tumble-dryer' };
-            else if (check(['zmywarka', 'dishwasher'])) conf = { type: 'switch', size: '(2x1)', iconOn: 'mdi-dishwasher', iconOff: 'mdi-dishwasher' };
-            else if (check(['piec', 'kociol', 'boiler', 'heating'])) conf = { type: 'switch', size: '(2x1)', iconOn: 'mdi-fire', iconOff: 'mdi-fire-off' };
-            else if (check(['klima', 'ac', 'klimatyzacja', 'air-conditioner'])) conf = SMART_MAP['climate'];
-            else if (check(['rekuperator', 'reku', 'air-filter'])) conf = { type: 'switch', size: '(2x1)', iconOn: 'mdi-air-filter', iconOff: 'mdi-air-filter' };
-            else if (check(['grzejnik', 'radiator'])) conf = { type: 'switch', size: '(2x1)', iconOn: 'mdi-radiator', iconOff: 'mdi-radiator-off' };
-            else if (check(['zawor', 'valve'])) conf = { type: 'switch', size: '(2x1)', iconOn: 'mdi-valve-open', iconOff: 'mdi-valve-closed' };
-            else if (check(['pompa', 'pump'])) conf = { type: 'switch', size: '(2x1)', iconOn: 'mdi-pump', iconOff: 'mdi-pump-off' };
-            else if (check(['hydrofor', 'woda', 'water'])) conf = { type: 'switch', size: '(2x1)', iconOn: 'mdi-water-pump', iconOff: 'mdi-water-pump-off' };
-            else if (check(['gaz', 'gas'])) conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-fire-alert', iconOff: 'mdi-fire' };
-            else if (check(['dym', 'smoke'])) conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-smoke-detector-alert', iconOff: 'mdi-smoke-detector' };
-            else if (check(['zalanie', 'wyciek', 'leak', 'moisture'])) conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-water-alert', iconOff: 'mdi-water' };
-            else if (check(['alarm', 'bezpieczenstwo', 'safety'])) conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-shield-check', iconOff: 'mdi-shield-off' };
-            else if (check(['energia', 'energy', 'fazy', 'power'])) conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-lightning-bolt' };
-            else if (check(['licznik', 'counter'])) conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-counter' };
-            else if (check(['czas', 'time', 'timestamp'])) conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-clock' };
-            else if (check(['kamera', 'camera'])) conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-camera' };
-            else if (check(['wifi', 'zigbee'])) conf = { type: 'sensor', size: '(2x1)', icon: inputNorm.includes('zigbee') ? 'mdi-zigbee' : 'mdi-wifi' };
+            // Rozpoznawanie na podstawie słów kluczowych (Przed domeną domyślną, jeśli to sensor lub binary_sensor bez dClass)
+            if (conf.type === 'sensor' || (conf.type === 'binary_sensor' && !dClass)) {
+                if (check(['leak', 'wyciek', 'water', 'woda', 'zalanie', 'moisture'])) conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-water', iconOff: 'mdi-water-off' };
+                else if (check(['smoke', 'dym', 'fire', 'pozar'])) conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-fire', iconOff: 'mdi-smoke-detector' };
+                else if (check(['door', 'drzwi', 'gate', 'brama'])) conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-door-open', iconOff: 'mdi-door-closed' };
+                else if (check(['window', 'okno'])) conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-window-open-variant', iconOff: 'mdi-window-closed-variant' };
+                else if (check(['motion', 'ruch', 'pir', 'presence', 'obecnosc'])) conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-motion-sensor', iconOff: 'mdi-motion-sensor-off' };
+            }
+
+            // 2. Jeśli brak specyficznego dopasowania, sprawdzamy domenę
+            const domain = (targetEntity && targetEntity.id && targetEntity.id.includes('.'))
+                ? targetEntity.id.split('.')[0]
+                : (input.includes('.') ? input.split('.')[0] : "");
+
+            if (domain && SMART_MAP[domain] && (!conf || conf.type === 'sensor' || conf.type === 'binary_sensor')) { // Only override if current conf is generic sensor/binary_sensor
+                conf = SMART_MAP[domain];
+            } else if (domain === 'person' || domain === 'device_tracker') {
+                conf = { type: 'person', size: '(2x1)', iconOn: 'mdi-account', iconOff: 'mdi-account-outline' };
+            } else if (domain === 'input_select') {
+                conf = { type: 'input_select', size: '(2x1)', icon: 'mdi-form-dropdown' };
+            } else if (['input_number', 'number'].includes(domain)) {
+                conf = { type: 'input_number', size: '(2x1)', icon: 'mdi-ruler' };
+            } else if (['button', 'input_button'].includes(domain)) {
+                conf = SMART_MAP['input_button'];
+            }
+
+            // Rozpoznawanie na podstawie słów kluczowych (tylko jeśli wciąż mamy domyślny 'sensor')
+            if (conf.type === 'sensor') {
+                if (check(['glosnik', 'speaker', 'audio', 'tv', 'odtwarzacz', 'radio', 'telewizor'])) conf = SMART_MAP['media_player'];
+                else if (check(['swiatlo', 'lamp', 'kinkiet', 'led', 'zarowka', 'lampa'])) conf = SMART_MAP['light'];
+                else if (check(['gniazdko', 'wtyczka', 'outlet', 'plug', 'socket'])) conf = SMART_MAP['switch'];
+                else if (check(['wiatrak', 'wentylator', 'fan', 'nawiew', 'cyrkulacja'])) conf = SMART_MAP['fan'];
+                else if (check(['scena', 'tryb', 'kino', 'wieczor', 'scene'])) conf = SMART_MAP['scene'];
+                else if (check(['przycisk', 'button', 'klik'])) conf = SMART_MAP['input_button'];
+                else if (check(['brama', 'garaz', 'gate'])) conf = { type: 'cover', size: '(2x1)', iconOn: 'mdi-garage-open', iconOff: 'mdi-garage' };
+                else if (check(['rolet', 'blind', 'shutter', 'zaslon'])) conf = SMART_MAP['cover'];
+                else if (check(['zamek', 'lock', 'rygiel'])) conf = SMART_MAP['lock'];
+                else if (check(['drzwi', 'door', 'furtka'])) conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-door-open', iconOff: 'mdi-door-closed' };
+                else if (check(['okno', 'window'])) conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-window-open-variant', iconOff: 'mdi-window-closed-variant' };
+                else if (check(['temp', 'therm', 'temperatur'])) conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-thermometer' };
+                else if (check(['wilg', 'humid', 'wilgotnosc'])) conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-water-percent' };
+                else if (check(['ruch', 'motion', 'pirs'])) conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-motion-sensor', iconOff: 'mdi-motion-sensor-off' };
+                else if (check(['pralka', 'washing', 'washer'])) conf = { type: 'switch', size: '(2x1)', iconOn: 'mdi-washing-machine', iconOff: 'mdi-washing-machine' };
+                else if (check(['suszarka', 'dryer', 'tumble'])) conf = { type: 'switch', size: '(2x1)', iconOn: 'mdi-tumble-dryer', iconOff: 'mdi-tumble-dryer' };
+                else if (check(['zmywarka', 'dishwasher'])) conf = { type: 'switch', size: '(2x1)', iconOn: 'mdi-dishwasher', iconOff: 'mdi-dishwasher' };
+                else if (check(['piec', 'kociol', 'boiler', 'heating'])) conf = { type: 'switch', size: '(2x1)', iconOn: 'mdi-fire', iconOff: 'mdi-fire-off' };
+                else if (check(['klima', 'ac', 'klimatyzacja', 'air-conditioner'])) conf = SMART_MAP['climate'];
+                else if (check(['rekuperator', 'reku', 'air-filter'])) conf = { type: 'switch', size: '(2x1)', iconOn: 'mdi-air-filter', iconOff: 'mdi-air-filter' };
+                else if (check(['grzejnik', 'radiator'])) conf = { type: 'switch', size: '(2x1)', iconOn: 'mdi-radiator', iconOff: 'mdi-radiator-off' };
+                else if (check(['zawor', 'valve'])) conf = { type: 'switch', size: '(2x1)', iconOn: 'mdi-valve-open', iconOff: 'mdi-valve-closed' };
+                else if (check(['pompa', 'pump'])) conf = { type: 'switch', size: '(2x1)', iconOn: 'mdi-pump', iconOff: 'mdi-pump-off' };
+                else if (check(['hydrofor', 'woda', 'water'])) conf = { type: 'switch', size: '(2x1)', iconOn: 'mdi-water-pump', iconOff: 'mdi-water-pump-off' };
+                else if (check(['gaz', 'gas'])) conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-fire-alert', iconOff: 'mdi-fire' };
+                else if (check(['dym', 'smoke'])) conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-smoke-detector-alert', iconOff: 'mdi-smoke-detector' };
+                else if (check(['zalanie', 'wyciek', 'leak', 'moisture'])) conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-water-alert', iconOff: 'mdi-water' };
+                else if (check(['alarm', 'bezpieczenstwo', 'safety'])) conf = { type: 'binary_sensor', size: '(1x1)', iconOn: 'mdi-shield-check', iconOff: 'mdi-shield-off' };
+                else if (check(['energia', 'energy', 'fazy', 'power'])) conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-lightning-bolt' };
+                else if (check(['licznik', 'counter'])) conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-counter' };
+                else if (check(['czas', 'time', 'timestamp'])) conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-clock' };
+                else if (check(['kamera', 'camera'])) conf = { type: 'sensor', size: '(2x1)', icon: 'mdi-camera' };
+                else if (check(['wifi', 'zigbee'])) conf = { type: 'sensor', size: '(2x1)', icon: inputNorm.includes('zigbee') ? 'mdi-zigbee' : 'mdi-wifi' };
+            }
 
             const currentGrid = document.getElementById('grid-preset').value;
             if ((currentGrid === '3x8' || currentGrid === '4x8' || currentGrid === '4x6') && conf.size === '(1x1)' && conf.type !== 'binary_sensor') {
