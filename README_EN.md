@@ -82,17 +82,18 @@ Create a new `.dash` file in the AppDaemon configuration folder:
 ```
 ***
 
-<img width="758" height="1024" alt="snapshot_camera_kuchnia_podglad_ekranu_15 12 2025, 08_05_58" src="https://github.com/user-attachments/assets/87369049-29d1-4a22-b6e8-c7654e052266" />
----
-***
----
-<img width="1827" height="2900" alt="image" src="https://github.com/user-attachments/assets/ac61375f-647e-46ff-9a30-d1196b35885a" />
+<img width="1483" height="1831" alt="image" src="https://github.com/user-attachments/assets/40239037-5f5b-4f29-b8f8-6c0ba17853f3" />
 
 ---
 ***
 ---
 
-<img width="1747" height="4248" alt="image" src="https://github.com/user-attachments/assets/31ad1c4d-526c-4104-a8a1-218a1b13f458" />
+
+---
+***
+---
+
+
 
 
 
