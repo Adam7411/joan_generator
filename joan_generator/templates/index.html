@@ -2545,6 +2545,37 @@
             }
         };
 
+        // --- HELPER FUNCTIONS ---
+        function getTrans(key) {
+            if (TRANSLATIONS[currentLang] && TRANSLATIONS[currentLang][key]) return TRANSLATIONS[currentLang][key];
+            // Fallback to PL or EN
+            const fallback = TRANSLATIONS['pl'] || TRANSLATIONS['en'];
+            return (fallback && fallback[key]) ? fallback[key] : key;
+        }
+
+        function showToast(message, type = 'info') {
+            let toast = document.getElementById('toast-notification');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'toast-notification';
+                Object.assign(toast.style, {
+                    position: 'fixed', bottom: '20px', right: '20px', padding: '15px 25px',
+                    background: '#333', color: '#fff', borderRadius: '5px', zIndex: '1000000',
+                    transition: 'opacity 0.5s', opacity: '0', pointerEvents: 'none', fontWeight: 'bold'
+                });
+                document.body.appendChild(toast);
+            }
+
+            toast.innerText = message;
+            toast.style.background = type === 'error' ? '#d32f2f' : (type === 'success' ? '#43a047' : '#323232');
+            toast.style.opacity = '1';
+
+            // Reset timeout if exists? Simplification for now.
+            setTimeout(() => { toast.style.opacity = '0'; }, 4000);
+        }
+        // Alias for compatibility
+        const showNotification = showToast;
+
         const SMART_MAP = {
             'light': { type: 'light', size: '(2x1)', iconOn: 'mdi-lightbulb-on', iconOff: 'mdi-lightbulb-outline' },
             'switch': { type: 'switch', size: '(2x1)', iconOn: 'mdi-toggle-switch', iconOff: 'mdi-toggle-switch-off' },
