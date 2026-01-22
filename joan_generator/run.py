@@ -1259,72 +1259,121 @@ def get_joan_devices():
         # If user provided "1.2.3.4", add :8081. If "1.2.3.4:8081" or "example.com", leave as is.
         # This is tricky without a proper URL parser, but let's assume if no colon after the protocol part, we default to 8081
         domain_part = host.split('://')[-1]
-        if ':' not in domain_part:
-             host = f"{host}:8081"
-        
-        # API endpoint usually /api/device or /api/device/
-        # Removing verify=False if not using SSL, or adding it if using self-signed
-        url = f"{host}/api/device" 
-        
-        headers = _visionect_hmac_headers("GET", "/api/device")
-        # Retry with slash if 301/404? 
-        # Usually Visionect uses /api/device (no slash) for list or with slash. 
-        # Let's try without slash first as per const.py in integration
-        
-        print(f"🔍 Fetching Joan devices from: {url}")
-        try:
-            response = requests.get(url, headers=headers, timeout=10)
-        except requests.exceptions.ConnectionError:
-            return {"status": "error", "message": f"Connection failed to {host}. Check IP/Port.", "devices": []}
-            
-        if response.status_code == 404:
-            # Try with trailing slash
-            url_slash = f"{host}/api/device/"
-            headers_slash = _visionect_hmac_headers("GET", "/api/device/")
-            print(f"🔍 404 received, retrying with slash: {url_slash}")
-            response = requests.get(url_slash, headers=headers_slash, timeout=10)
+    host = connection_info.get("visionect_host")
+    api_key = connection_info.get("visionect_api_key")
+    api_secret = connection_info.get("visionect_api_secret")
 
-        if response.status_code == 200:
-            devices_data = response.json()
-            devices = []
+    if not host:
+        return {"status": "error", "message": "Visionect Host not configured"}
+
+    # Basic URL construction logic
+    if not host.startswith("http"):
+        host = f"http://{host}"
+    
+    # Auto-append port 8081 if missing and no port specified
+    if ":" not in host.split("://")[1]:
+        host = f"{host}:8081"
+        
+    # Strip trailing slash from host to be safe
+    host = host.rstrip("/")
+
+    # Try paths. Standard is /api/device
+    # Some users might have /api/v1/device or just /device depending on proxy
+    urls_to_try = [
+        f"{host}/api/device",
+        f"{host}/api/device/",  # Sometimes trailing slash matters
+        f"{host}/api/v1/device" # Alternative path
+    ]
+
+    last_error = ""
+
+    for api_url in urls_to_try:
+        try:
+            headers = _visionect_hmac_headers(api_key, api_secret, "GET", api_url) if api_key and api_secret else {}
             
-            for device in devices_data:
-                uuid = device.get("Uuid", "")
-                status = device.get("Status", {})
-                options = device.get("Options", {})
-                
-                # Calculate battery percentage (approximate from voltage)
-                battery_voltage = status.get("BatteryVoltage", 0)
-                if battery_voltage:
-                    battery_voltage = battery_voltage / 1000  # mV to V
-                    # Joan 6 battery: ~4.2V full, ~3.0V empty
-                    battery_pct = min(100, max(0, int((battery_voltage - 3.0) / 1.2 * 100)))
-                else:
-                    battery_pct = None
-                
-                # Get online status
-                online = status.get("Online", False)
-                
-                # Get device name
-                name = options.get("Name", "")
-                if not name or name.lower() in ["unknown", "none", ""]:
-                    name = f"Joan 6 ({uuid[:8]})"
-                
-                devices.append({
-                    "uuid": uuid,
-                    "name": name,
-                    "online": online,
-                    "battery": battery_pct,
-                    "battery_voltage": round(battery_voltage, 2) if battery_voltage else None,
-                    "ip": status.get("IPAddress", "unknown"),
-                })
+            print(f"🔭 DEBUG: Connecting to Visionect: {api_url}") # DEBUG LOG
             
-            return {"status": "success", "devices": devices}
-        else:
-            return {"status": "error", "message": f"API error: {response.status_code}", "devices": []}
-    except Exception as e:
-        print(f"❌ Error fetching Joan devices: {e}")
-        return {"status": "error", "message": str(e), "devices": []}
+            response = requests.get(api_url, headers=headers, timeout=5)
+            
+            # Print status for debug
+            print(f"🔭 DEBUG: Response {response.status_code} from {api_url}")
+            
+            if response.status_code == 200:
+                devices_data = response.json()
+                # Parse devices (supports list or dict with 'data')
+                if isinstance(devices_data, dict) and 'data' in devices_data:
+                    devices_data = devices_data['data']
+                
+                if not isinstance(devices_data, list):
+                    print(f"⚠️ Unexpected format from Visionect: {type(devices_data)}")
+                    return {"status": "error", "message": "Invalid response format from Visionect"}
+
+                devices_list = []
+                for d in devices_data:
+                     # Calculate battery percentage from voltage if 'Battery' field is missing or generic
+                    battery_level = d.get('Battery')
+                    voltage = d.get('Status', {}).get('Voltage') # Often in Status object
+                    
+                    # Fallback for voltage finding
+                    if voltage is None and 'Voltage' in d:
+                        voltage = d['Voltage']
+
+                    if battery_level is None and voltage:
+                        # Estimate: 4.2V = 100%, 3.6V = 0% (approx for E-Ink lipo)
+                        # Visionect often sends raw voltage e.g. 4150 (mV) or 4.15
+                        v = float(voltage)
+                        if v > 10: v = v / 1000.0 # Convert mV to V
+                        
+                        pct = int((v - 3.6) / (4.2 - 3.6) * 100)
+                        battery_level = max(0, min(100, pct))
+
+                    ip = "Unknown"
+                    if 'IP' in d: ip = d['IP']
+                    elif 'Status' in d and 'IP' in d['Status']: ip = d['Status']['IP']
+
+                    devices_list.append({
+                        "name": d.get('Name', d.get('Uuid', 'Unknown')),
+                        "uuid": d.get('Uuid'),
+                        "status": d.get('Status', {}), # Raw status object
+                        "online": d.get('Status', {}).get('Status') == 0 or d.get('Status', {}).get('LastSeen', 0) > 0, # Simplified online check
+                        "battery": battery_level,
+                        "battery_voltage": voltage,
+                        "ip": ip
+                    })
+                
+                print(f"✅ Found {len(devices_list)} Joan devices.")
+                return {"status": "success", "devices": devices_list}
+            
+            elif response.status_code == 404:
+                last_error = f"HTTP 404 (Not Found) at {api_url}"
+                # Continue loop to try next URL format
+                continue
+            elif response.status_code == 401:
+                print(f"❌ Visionect Auth Error: 401 Unauthorized")
+                return {"status": "error", "message": "HTTP 401 Unauthorized - Check API Key & Secret"}
+            else:
+                last_error = f"HTTP {response.status_code}: {response.text}"
+                break # Don't retry other paths for 500 errors etc
+
+        except requests.exceptions.ConnectionError:
+            last_error = f"Connection Failed to {host}"
+            break # Host matches, so path won't help if host is down
+        except Exception as e:
+            last_error = str(e)
+            print(f"❌ Unexpected error fetching Joan devices: {e}")
+            break
+
+    # If we are here, all tries failed
+    print(f"❌ Failed to fetch devices. Last error: {last_error}")
+    
+    # Enhance error message for user
+    final_message = last_error
+    if "404" in last_error:
+        final_message += " (Check Host/IP and API path)"
+    if "Connection Failed" in last_error:
+        final_message += " (Check Host IP/Port)"
+        
+    return {"status": "error", "message": final_message, "devices": []}
 
 def send_to_joan_device(uuid, dashboard_url):
     """Send dashboard URL to a Joan 6 device."""
