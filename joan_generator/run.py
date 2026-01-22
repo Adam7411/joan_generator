@@ -1361,7 +1361,7 @@ def get_joan_devices():
                             is_online = True
                     
                     devices_list.append({
-                        "name": d.get('Name', d.get('Uuid', 'Unknown')),
+                        "name": d.get('Name') or d.get('Uuid', 'Unknown'),
                         "uuid": d.get('Uuid'),
                         "status": status_obj,
                         "online": is_online,
