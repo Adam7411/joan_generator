@@ -1406,6 +1406,7 @@ def get_joan_devices():
 
 def send_to_joan_device(uuid, dashboard_url):
     """Send dashboard URL to a Joan 6 device."""
+    print(f"🛰️ Sending to Joan: Device {uuid} -> {dashboard_url}")
     if not VISIONECT_HOST:
         return {"status": "error", "message": "Visionect host not configured"}
     
@@ -1478,6 +1479,7 @@ def api_send_to_joan():
     data = request.get_json() or {}
     uuid = data.get('uuid')
     dashboard_url = data.get('url')
+    print(f"🛰️ API Request: send_to_joan [UUID: {uuid}, URL: {dashboard_url}]")
     
     if not uuid:
         return jsonify({"status": "error", "message": "Missing device UUID"})
