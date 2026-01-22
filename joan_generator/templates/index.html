@@ -4811,10 +4811,19 @@ class DashSaver(hass.Hass):
 
     // Joan 6 Devices Functions
     var joanDevices = [];
+    var visionectStatus = { dashboard_base_url: null };
 
     function refreshJoanDevices() {
         const container = document.getElementById('joan-devices-container');
         if (!container) return;
+
+        // Fetch visionect status first (for dashboard_base_url)
+        fetch('api/visionect_status')
+            .then(r => r.json())
+            .then(data => {
+                visionectStatus = data;
+            })
+            .catch(e => console.error("Error fetching visionect status:", e));
 
         container.innerHTML = `<div style="color: #999; font-style: italic;">${getTrans('msg_loading_devices')}</div>`;
 
@@ -4908,28 +4917,43 @@ visionect_api_secret: "YOUR_API_SECRET"</pre>
 
         devices.forEach(dev => {
             const isOnline = dev.online;
-            const statusColor = isOnline ? '#4caf50' : '#9e9e9e';
-            const statusText = isOnline ? 'ONLINE' : 'OFFLINE';
+            const statusColor = isOnline ? '#4caf50' : '#f44336';
+            const stateText = (dev.state || 'unknown').toUpperCase();
             const batteryIcon = getBatteryIcon(dev.battery);
+            const rssi = dev.rssi !== '?' ? dev.rssi + ' dBm' : '?';
+
+            // RSSI Icon logic
+            let rssiIcon = 'mdi-wifi-strength-outline';
+            if (dev.rssi !== '?') {
+                const r = parseInt(dev.rssi);
+                if (r > -60) rssiIcon = 'mdi-wifi-strength-4';
+                else if (r > -70) rssiIcon = 'mdi-wifi-strength-3';
+                else if (r > -80) rssiIcon = 'mdi-wifi-strength-2';
+                else rssiIcon = 'mdi-wifi-strength-1';
+            }
 
             html += `
-            <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px; border: 1px solid #ddd; border-radius: 6px; background: #fff;">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <div style="width: 10px; height: 10px; border-radius: 50%; background-color: ${statusColor};" title="${statusText}"></div>
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-input); margin-bottom: 8px;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 12px; height: 12px; border-radius: 50%; background-color: ${statusColor};" title="${stateText}"></div>
                     <div>
-                        <div style="font-weight: bold;">${dev.name}</div>
-                        <div style="font-size: 0.85em; color: #666;">
+                        <div style="font-weight: bold; color: var(--text-main);">${dev.name}</div>
+                        <div style="font-size: 0.8em; color: #888;">
                             UUID: <span style="font-family: monospace;">${dev.uuid.substring(0, 8)}...</span>
                              • IP: ${dev.ip}
+                        </div>
+                        <div style="display: flex; gap: 10px; margin-top: 4px; font-size: 0.75em; font-weight: bold;">
+                            <span style="color: ${isOnline ? '#4caf50' : '#f44336'};">${stateText}</span>
+                            <span style="color: #666;"><i class="mdi ${rssiIcon}"></i> ${rssi}</span>
                         </div>
                     </div>
                 </div>
                 <div style="display: flex; align-items: center; gap: 15px;">
-                    <div style="display: flex; align-items: center; gap: 4px; color: #666;" title="Bateria: ${dev.battery || '?'}% (${dev.battery_voltage || '?'}V)">
-                        <span style="font-size: 1.2em;">${batteryIcon}</span>
-                        <span style="font-size: 0.9em; font-weight: bold;">${dev.battery !== null ? dev.battery + '%' : '?'}</span>
+                    <div style="display: flex; align-items: center; gap: 4px; color: var(--text-main);" title="Bateria: ${dev.battery || '?'}% (${dev.battery_voltage || '?'}V)">
+                        <span style="font-size: 1.3em;">${batteryIcon}</span>
+                        <span style="font-size: 1em; font-weight: 900;">${dev.battery !== null && dev.battery !== '?' ? dev.battery + '%' : '?'}</span>
                     </div>
-                    <button class="btn" style="padding: 5px 12px; font-size: 0.85em; background: #2196f3;" 
+                    <button class="btn" style="padding: 8px 16px; font-size: 0.9em; background: #2196f3;" 
                         onclick="selectJoanDevice('${dev.uuid}', '${dev.name.replace(/'/g, "\\'")}')">
                         ${t_choose}
                     </button>
@@ -4955,19 +4979,21 @@ visionect_api_secret: "YOUR_API_SECRET"</pre>
         selectedJoanUuid = uuid;
         const btn = document.getElementById('btn-send-joan');
         if (btn) {
-            // Unhide if hidden (e.g. if logic changes)
             btn.style.display = 'block';
-
-            // Translate "SEND TO: {0}"
             let label = getTrans('btn_send_joan_with_name');
             label = label.replace('{0}', name);
             btn.innerText = label;
 
-            // Visual feedback in modal
+            // Visual feedback
             showNotification(getTrans('msg_device_selected').replace('{0}', name), 'success');
 
-            // Close modal to let user send
+            // Close modal
             closeJoanModal();
+
+            // NEW: Automatically trigger sending to improve UX
+            setTimeout(() => {
+                sendToJoan();
+            }, 300);
         }
     }
 
@@ -5013,9 +5039,17 @@ visionect_api_secret: "YOUR_API_SECRET"</pre>
         // Standard AD URL: http://[HOST]:5050/[DASH_NAME]
 
         // BETTER: Use window.location.protocol + // + window.location.hostname + :5050 + /joandashboard
-        // Check if there is a selected dash name
         const dashName = currentLoadedDashName ? currentLoadedDashName.replace('.dash', '') : 'joandashboard';
-        const dashboardUrl = `${window.location.protocol}//${window.location.hostname}:5050/${dashName}`;
+        let dashboardUrl = "";
+
+        if (visionectStatus && visionectStatus.dashboard_base_url) {
+            let baseUrl = visionectStatus.dashboard_base_url;
+            if (baseUrl.endsWith('/')) baseUrl = baseUrl.slice(0, -1);
+            dashboardUrl = `${baseUrl}/${dashName}`;
+        } else {
+            // Fallback: Use current hostname and port 5050
+            dashboardUrl = `${window.location.protocol}//${window.location.hostname}:5050/${dashName}`;
+        }
 
         fetch('api/send_to_joan', {
             method: 'POST',
