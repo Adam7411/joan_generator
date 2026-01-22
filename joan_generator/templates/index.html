@@ -4841,34 +4841,48 @@ class DashSaver(hass.Hass):
                     renderJoanDevices(container, data.devices);
                 } else if (data.status === 'success' && (!data.devices || data.devices.length === 0)) {
                     container.innerHTML = `<div style="color: #999;">${t_connected_no_dev}</div>`;
-                } else if (data.status === 'error' && data.message && (data.message.toLowerCase().includes('not configured') || data.message.toLowerCase().includes('missing'))) {
-                    container.innerHTML = `
-                        <div style="padding: 12px; background: #fff3cd; border: 1px solid #ffc107; border-radius: 6px; color: #856404;">
-                            <strong>${t_not_configured}</strong>
-                            <div style="margin-top: 8px; font-size: 0.9em;">
-                                ${t_config_hint}
-                                <ul style="margin: 8px 0 0 20px; padding: 0;">
-                                    <li><code>visionect_host</code> - (e.g. 192.168.1.100:8081)</li>
-                                    <li><code>visionect_api_key</code> - API Key</li>
-                                    <li><code>visionect_api_secret</code> - Secret Key</li>
-                                </ul>
-                            </div>
-                        </div>`;
                 } else if (data.status === 'error') {
-                    // Try to be helpful with specific error messages if possible
-                    let extraHint = t_check_ip;
-                    if (data.message.includes("401")) extraHint = "Check API Key and API Secret.";
+                    // Always show config hint if we have an error, because 404/401/Refused usually means bad config.
+                    const isConfigMissing = data.message && (data.message.toLowerCase().includes('not configured') || data.message.toLowerCase().includes('missing'));
 
-                    container.innerHTML = `
-                        <div style="padding: 12px; background: #ffebee; border: 1px solid #f44336; border-radius: 6px; color: #c62828;">
-                            <strong>${t_conn_error}</strong>
-                            <div style="margin-top: 8px; font-size: 0.85em;">
-                                ${data.message || 'Unknown Error'}
-                            </div>
-                            <div style="margin-top: 8px; font-size: 0.8em; color: #666;">
-                                ${extraHint}
-                            </div>
+                    let hintHtml = `
+                        <div style="margin-top: 12px; font-size: 0.9em; color: #856404; background: #fff3cd; padding: 10px; border-radius: 4px; border: 1px solid #ffeeba;">
+                            <strong>${t_config_hint}</strong>
+                            <ul style="margin: 5px 0 0 20px; padding: 0;">
+                                <li><code>visionect_host</code> - (e.g. 192.168.1.100:8081)</li>
+                                <li><code>visionect_api_key</code> - API Key</li>
+                                <li><code>visionect_api_secret</code> - API Secret</li>
+                            </ul>
                         </div>`;
+
+                    if (isConfigMissing) {
+                        // Yellow warning box (just the hint mostly)
+                        container.innerHTML = `
+                            <div style="padding: 12px; background: #fff3cd; border: 1px solid #ffc107; border-radius: 6px; color: #856404;">
+                                <strong>${t_not_configured}</strong>
+                                ${hintHtml}
+                            </div>`;
+                    } else {
+                        // Red error box + Hint
+                        let extraHint = t_check_ip;
+                        if (data.message.includes("401")) extraHint = "Check API Key and API Secret.";
+                        if (data.message.includes("404")) extraHint = "Check Host IP and Port.";
+
+                        container.innerHTML = `
+                            <div style="padding: 12px; background: #ffebee; border: 1px solid #f44336; border-radius: 6px; color: #c62828;">
+                                <strong>${t_conn_error}</strong>
+                                <div style="margin-top: 8px; font-size: 0.9em; font-weight: bold;">
+                                    ${data.message || 'Unknown Error'}
+                                </div>
+                                <div style="margin-top: 5px; font-size: 0.8em; color: #666;">
+                                    ${extraHint}
+                                </div>
+                                ${hintHtml}
+                                <div style="margin-top: 8px; font-size: 0.8em; color: #666;">
+                                    ${t_check_logs}
+                                </div>
+                            </div>`;
+                    }
                 } else {
                     container.innerHTML = `<div style="color: #999;">${t_no_devices}</div>`;
                 }
@@ -5075,8 +5089,8 @@ class DashSaver(hass.Hass):
             <p><strong><span data-i18n="info_lbl_dash_count">Liczba Dashboardów:</span></strong> <span
                     id="info-dash-count">-</span></p>
             <div id="info-dash-files"
-                style="max-height: 150px; overflow-y: auto; background: #f5f5f5; padding: 10px; border-radius: 4px; border: 1px solid #ddd; margin-bottom: 20px;">
-                <div style="color: #999; font-style: italic;" data-i18n="msg_loading_devices">⏳ Ładowanie...</div>
+                style="max-height: 150px; overflow-y: auto; background: #333; color: #eee; padding: 10px; border-radius: 4px; border: 1px solid #555; margin-bottom: 20px;">
+                <div style="color: #bbb; font-style: italic;" data-i18n="msg_loading_devices">⏳ Ładowanie...</div>
             </div>
 
             <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;">
