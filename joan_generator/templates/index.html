@@ -4792,6 +4792,23 @@ class DashSaver(hass.Hass):
             pathEl.textContent = pathEl.getAttribute('data-template').replace(/\[HA_IP\]/g, host);
         }
 
+        // Dashboard info
+        fetch('api/list_dashboards')
+            .then(r => r.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    document.getElementById('info-dash-count').innerText = data.files.length;
+                    const listEl = document.getElementById('info-dash-list');
+                    if (data.files.length > 0) {
+                        listEl.innerHTML = data.files.map(f => `<div style="padding: 2px 0;">📄 ${f}</div>`).join('');
+                        listEl.style.display = 'block';
+                    } else {
+                        listEl.style.display = 'none';
+                    }
+                }
+            })
+            .catch(e => console.error("Error fetching dashboard list:", e));
+
         m.style.display = 'block';
     }
 
@@ -4954,7 +4971,7 @@ visionect_api_secret: "YOUR_API_SECRET"</pre>
                         <span style="font-size: 1em; font-weight: 900;">${dev.battery !== null && dev.battery !== '?' ? dev.battery + '%' : '?'}</span>
                     </div>
                     <button class="btn" style="padding: 8px 16px; font-size: 0.9em; background: #2196f3;" 
-                        onclick="selectJoanDevice('${dev.uuid}', '${dev.name.replace(/'/g, "\\'")}')">
+                        onclick="selectJoanDevice('${dev.uuid}')">
                         ${t_choose}
                     </button>
                 </div>
@@ -4975,7 +4992,11 @@ visionect_api_secret: "YOUR_API_SECRET"</pre>
 
     let selectedJoanUuid = null;
 
-    function selectJoanDevice(uuid, name) {
+    function selectJoanDevice(uuid) {
+        const dev = joanDevices.find(d => d.uuid === uuid);
+        if (!dev) return;
+
+        const name = dev.name || dev.uuid;
         selectedJoanUuid = uuid;
         const btn = document.getElementById('btn-send-joan');
         if (btn) {
@@ -5119,6 +5140,13 @@ visionect_api_secret: "YOUR_API_SECRET"</pre>
                 <code id="info-path"
                     data-template="\\\[HA_IP]\addon_configs\a0d7b954_appdaemon\">\\HA_IP\addon_configs...</code>
             </p>
+
+            <hr style="margin: 15px 0; border: 0; border-top: 1px solid var(--border);">
+
+            <p><strong>Liczba Dashboardów (.dash):</strong> <span id="info-dash-count">-</span></p>
+            <div id="info-dash-list"
+                style="font-size: 0.85em; max-height: 150px; overflow-y: auto; background: var(--bg-input); padding: 10px; border-radius: 6px; border: 1px solid var(--border); display: none; margin-top: 8px;">
+            </div>
 
             <div
                 style="background-color: #fff3cd; color: #856404; padding: 10px; border-radius: 4px; margin-top: 15px; font-size: 0.9em;">
