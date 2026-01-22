@@ -4738,6 +4738,7 @@ class DashSaver(hass.Hass):
                         // Scroll to the import section
                         document.getElementById('import-section').scrollIntoView({ behavior: 'smooth' });
                         closeImportModal();
+                        currentLoadedDashName = filename;
                         showToast("✅ " + filename + " wczytany do edytora!", 'success');
                     }
                 } else {
@@ -4796,18 +4797,28 @@ class DashSaver(hass.Hass):
         fetch('api/list_dashboards')
             .then(r => r.json())
             .then(data => {
+                const countEl = document.getElementById('info-dash-count');
+                const listEl = document.getElementById('info-dash-list');
+
                 if (data.status === 'success') {
-                    document.getElementById('info-dash-count').innerText = data.files.length;
-                    const listEl = document.getElementById('info-dash-list');
-                    if (data.files.length > 0) {
-                        listEl.innerHTML = data.files.map(f => `<div style="padding: 2px 0;">📄 ${f}</div>`).join('');
+                    if (countEl) countEl.innerText = data.files ? data.files.length : '0';
+
+                    if (listEl && data.files && data.files.length > 0) {
+                        listEl.innerHTML = data.files.map(f => {
+                            let name = (typeof f === 'object' && f !== null) ? (f.name || JSON.stringify(f)) : f;
+                            return `<div style="padding: 2px 0;">📄 ${name}</div>`;
+                        }).join('');
                         listEl.style.display = 'block';
-                    } else {
+                    } else if (listEl) {
                         listEl.style.display = 'none';
                     }
                 }
             })
-            .catch(e => console.error("Error fetching dashboard list:", e));
+            .catch(e => {
+                console.error("Error fetching dashboard list:", e);
+                const countEl = document.getElementById('info-dash-count');
+                if (countEl) countEl.innerText = 'Error';
+            });
 
         m.style.display = 'block';
     }
@@ -4829,6 +4840,7 @@ class DashSaver(hass.Hass):
     // Joan 6 Devices Functions
     var joanDevices = [];
     var visionectStatus = { dashboard_base_url: null };
+    // currentLoadedDashName is already declared globally at line 1561
 
     function refreshJoanDevices() {
         const container = document.getElementById('joan-devices-container');
@@ -4993,28 +5005,41 @@ visionect_api_secret: "YOUR_API_SECRET"</pre>
     let selectedJoanUuid = null;
 
     function selectJoanDevice(uuid) {
+        if (!joanDevices || joanDevices.length === 0) {
+            console.warn("joanDevices list is empty");
+            // Try to find it in the global state if possible or show error
+            showNotification("Error: Device list is empty. Please refresh.", "error");
+            return;
+        }
+
         const dev = joanDevices.find(d => d.uuid === uuid);
-        if (!dev) return;
+        if (!dev) {
+            console.error("Device not found in local list:", uuid);
+            showNotification("Error: Device not found.", "error");
+            return;
+        }
 
         const name = dev.name || dev.uuid;
         selectedJoanUuid = uuid;
+
         const btn = document.getElementById('btn-send-joan');
         if (btn) {
             btn.style.display = 'block';
-            let label = getTrans('btn_send_joan_with_name');
+            let label = getTrans('btn_send_joan_with_name') || 'Send to {0}';
             label = label.replace('{0}', name);
             btn.innerText = label;
 
-            // Visual feedback
             showNotification(getTrans('msg_device_selected').replace('{0}', name), 'success');
-
-            // Close modal
             closeJoanModal();
 
-            // NEW: Automatically trigger sending to improve UX
+            console.log("🚀 Joan device selected:", name, uuid);
+            // Automatically trigger sending
             setTimeout(() => {
+                console.log("📤 Automatic send to Joan starting...");
                 sendToJoan();
             }, 300);
+        } else {
+            console.error("btn-send-joan not found");
         }
     }
 
