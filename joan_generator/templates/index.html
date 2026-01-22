@@ -1512,6 +1512,7 @@
                     .DASH</button>
             </div>
 
+            {% if connection_info.visionect_configured %}
             <!-- Row 3: Joan 6 Actions -->
             <div style="display:flex; gap:10px; margin-bottom:20px;">
                 <button type="button" class="btn" onclick="showInfoModal()"
@@ -1523,6 +1524,7 @@
                     📤 WYŚLIJ NA JOAN 6
                 </button>
             </div>
+            {% endif %}
             <textarea class="output" id="output-yaml" readonly>{{ generated_yaml }}</textarea>
         </div>
         {% endif %}
@@ -4749,18 +4751,42 @@ class DashSaver(hass.Hass):
                 if (data.status === 'success' && data.devices.length > 0) {
                     joanDevices = data.devices;
                     renderJoanDevices(container, data.devices);
+                } else if (data.status === 'error' && data.message && data.message.includes('not configured')) {
+                    container.innerHTML = `
+                        <div style="padding: 12px; background: #fff3cd; border: 1px solid #ffc107; border-radius: 6px; color: #856404;">
+                            <strong>⚠️ Visionect nie skonfigurowany</strong>
+                            <div style="margin-top: 8px; font-size: 0.9em;">
+                                W konfiguracji dodatku <b>Joan 6: AppDaemon Dashboard Generator</b> wpisz:
+                                <ul style="margin: 8px 0 0 20px; padding: 0;">
+                                    <li><code>visionect_host</code> - adres serwera (np. 192.168.1.100:8081)</li>
+                                    <li><code>visionect_api_key</code> - API Key</li>
+                                    <li><code>visionect_api_secret</code> - Secret Key</li>
+                                </ul>
+                            </div>
+                        </div>`;
                 } else if (data.status === 'error') {
-                    container.innerHTML = `<div style="color: #f57c00;">⚠️ ${data.message}</div>
-                        <div style="margin-top: 8px; font-size: 0.85em; color: #666;">
-                            Skonfiguruj połączenie w ustawieniach dodatku:<br>
-                            <code>visionect_host</code>, <code>visionect_api_key</code>, <code>visionect_api_secret</code>
+                    container.innerHTML = `
+                        <div style="padding: 12px; background: #ffebee; border: 1px solid #f44336; border-radius: 6px; color: #c62828;">
+                            <strong>❌ Błąd połączenia z Visionect</strong>
+                            <div style="margin-top: 8px; font-size: 0.85em;">${data.message}</div>
                         </div>`;
                 } else {
                     container.innerHTML = '<div style="color: #999;">Brak urządzeń Joan 6</div>';
                 }
             })
             .catch(err => {
-                container.innerHTML = `<div style="color: #d32f2f;">❌ Błąd: ${err.message}</div>`;
+                container.innerHTML = `
+                    <div style="padding: 12px; background: #fff3cd; border: 1px solid #ffc107; border-radius: 6px; color: #856404;">
+                        <strong>⚠️ Visionect nie skonfigurowany</strong>
+                        <div style="margin-top: 8px; font-size: 0.9em;">
+                            W konfiguracji dodatku <b>Joan 6: AppDaemon Dashboard Generator</b> wpisz:
+                            <ul style="margin: 8px 0 0 20px; padding: 0;">
+                                <li><code>visionect_host</code> - adres serwera (np. 192.168.1.100:8081)</li>
+                                <li><code>visionect_api_key</code> - API Key</li>
+                                <li><code>visionect_api_secret</code> - Secret Key</li>
+                            </ul>
+                        </div>
+                    </div>`;
             });
     }
 
