@@ -6,7 +6,7 @@ from pathlib import Path
 import io
 
 # Application Initialization
-print("📦 1. Initializing Joan 6 Generator app...")
+print("📦 1. Initializing Joan 6 Generator app (v1.5.0-HOTFIX-3)...", flush=True)
 app = Flask(__name__)
 
 def safe_int(val, default):
