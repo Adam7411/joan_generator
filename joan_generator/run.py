@@ -49,6 +49,26 @@ try:
 except Exception as e:
     print(f"ℹ️ Info: Could not read options file: {e}")
 
+# -------------------------------------------------------------------------
+# VISIONECT JOAN 6 CONFIGURATION
+# -------------------------------------------------------------------------
+VISIONECT_HOST = None
+VISIONECT_API_KEY = None
+VISIONECT_API_SECRET = None
+
+try:
+    options_path = '/data/options.json'
+    if os.path.exists(options_path):
+        with open(options_path, 'r') as f:
+            options = json.load(f)
+            VISIONECT_HOST = options.get('visionect_host', '').strip() or None
+            VISIONECT_API_KEY = options.get('visionect_api_key', '').strip() or None
+            VISIONECT_API_SECRET = options.get('visionect_api_secret', '').strip() or None
+            if VISIONECT_HOST:
+                print(f"🖥️ Visionect Server: {VISIONECT_HOST}")
+except Exception as e:
+    print(f"ℹ️ Info: Could not read Visionect config: {e}")
+
 if not TOKEN:
     print("❌ WARNING: No authorization token! Entity list will be empty.")
 
@@ -1063,7 +1083,9 @@ def index():
         "entity_count": len(ha_entities),
         "appdaemon_slug": APPDAEMON_SLUG,
         "bridge_active": bridge_active,
-        "has_dashboards": has_dashboards
+        "has_dashboards": has_dashboards,
+        "visionect_configured": bool(VISIONECT_HOST),
+        "visionect_host": VISIONECT_HOST or ""
     }
 
     current_ui_lang = request.form.get('ui_language', 'pl') if request.method == 'POST' else request.args.get('lang', 'pl')
@@ -1192,6 +1214,186 @@ def api_read_dashboard(filename):
         return jsonify({"status": "success", "content": content, "filename": filename})
     else:
         return jsonify({"status": "error", "message": f"Cannot read dashboard: {filename}"})
+
+# -------------------------------------------------------------------------
+# VISIONECT JOAN 6 API FUNCTIONS
+# -------------------------------------------------------------------------
+import hmac
+import hashlib
+import base64
+import wsgiref.handlers
+import time
+
+def _visionect_hmac_headers(method, endpoint):
+    """Build HMAC headers for Visionect API authentication."""
+    if not VISIONECT_API_KEY or not VISIONECT_API_SECRET:
+        return {}
+    
+    content_type = "application/json"
+    date_hdr = wsgiref.handlers.format_date_time(time.time())
+    
+    signature_base = f"{method.upper()}\n\n{content_type}\n{date_hdr}\n{endpoint}"
+    h = hmac.new(VISIONECT_API_SECRET.encode("utf-8"), signature_base.encode("utf-8"), hashlib.sha256)
+    auth = f"{VISIONECT_API_KEY}:{base64.b64encode(h.digest()).decode('ascii').strip()}"
+    
+    return {
+        "Date": date_hdr,
+        "Content-Type": content_type,
+        "Authorization": auth,
+    }
+
+def get_joan_devices():
+    """Fetch all Joan 6 devices from Visionect Server."""
+    if not VISIONECT_HOST:
+        return {"status": "error", "message": "Visionect host not configured", "devices": []}
+    
+    try:
+        host = VISIONECT_HOST
+        if not host.startswith(('http://', 'https://')):
+            host = f"http://{host}"
+        if ':' not in host.split('://')[-1]:
+            host = f"{host}:8081"
+        
+        url = f"{host}/api/device/"
+        headers = _visionect_hmac_headers("GET", "/api/device/")
+        
+        print(f"🔍 Fetching Joan devices from: {url}")
+        response = requests.get(url, headers=headers, timeout=10)
+        
+        if response.status_code == 200:
+            devices_data = response.json()
+            devices = []
+            
+            for device in devices_data:
+                uuid = device.get("Uuid", "")
+                status = device.get("Status", {})
+                options = device.get("Options", {})
+                
+                # Calculate battery percentage (approximate from voltage)
+                battery_voltage = status.get("BatteryVoltage", 0)
+                if battery_voltage:
+                    battery_voltage = battery_voltage / 1000  # mV to V
+                    # Joan 6 battery: ~4.2V full, ~3.0V empty
+                    battery_pct = min(100, max(0, int((battery_voltage - 3.0) / 1.2 * 100)))
+                else:
+                    battery_pct = None
+                
+                # Get online status
+                online = status.get("Online", False)
+                
+                # Get device name
+                name = options.get("Name", "")
+                if not name or name.lower() in ["unknown", "none", ""]:
+                    name = f"Joan 6 ({uuid[:8]})"
+                
+                devices.append({
+                    "uuid": uuid,
+                    "name": name,
+                    "online": online,
+                    "battery": battery_pct,
+                    "battery_voltage": round(battery_voltage, 2) if battery_voltage else None,
+                    "ip": status.get("IPAddress", "unknown"),
+                })
+            
+            return {"status": "success", "devices": devices}
+        else:
+            return {"status": "error", "message": f"API error: {response.status_code}", "devices": []}
+    except Exception as e:
+        print(f"❌ Error fetching Joan devices: {e}")
+        return {"status": "error", "message": str(e), "devices": []}
+
+def send_to_joan_device(uuid, dashboard_url):
+    """Send dashboard URL to a Joan 6 device."""
+    if not VISIONECT_HOST:
+        return {"status": "error", "message": "Visionect host not configured"}
+    
+    try:
+        host = VISIONECT_HOST
+        if not host.startswith(('http://', 'https://')):
+            host = f"http://{host}"
+        if ':' not in host.split('://')[-1]:
+            host = f"{host}:8081"
+        
+        # First, get current session data
+        session_url = f"{host}/api/session/{uuid}/"
+        headers = _visionect_hmac_headers("GET", f"/api/session/{uuid}/")
+        
+        print(f"📡 Fetching session for {uuid}")
+        response = requests.get(session_url, headers=headers, timeout=10)
+        
+        if response.status_code != 200:
+            return {"status": "error", "message": f"Cannot fetch session: {response.status_code}"}
+        
+        session_data = response.json()
+        
+        # Update session with new URL
+        if "Backend" not in session_data:
+            session_data["Backend"] = {}
+        if "Fields" not in session_data["Backend"]:
+            session_data["Backend"]["Fields"] = {}
+        
+        session_data["Backend"]["Name"] = "HTML"
+        session_data["Backend"]["Fields"]["url"] = dashboard_url
+        session_data["Backend"]["Fields"]["ReloadTimeout"] = "300"  # 5 minutes
+        
+        # Send updated session
+        put_headers = _visionect_hmac_headers("PUT", f"/api/session/{uuid}/")
+        put_headers["Content-Type"] = "application/json"
+        
+        print(f"📤 Setting URL for {uuid}: {dashboard_url}")
+        put_response = requests.put(
+            session_url, 
+            headers=put_headers, 
+            json=session_data, 
+            timeout=10
+        )
+        
+        if put_response.status_code in [200, 201, 204]:
+            # Restart session to apply changes
+            restart_url = f"{host}/api/session/{uuid}/restart"
+            restart_headers = _visionect_hmac_headers("POST", f"/api/session/{uuid}/restart")
+            requests.post(restart_url, headers=restart_headers, timeout=10)
+            
+            return {"status": "success", "message": f"Dashboard sent to device {uuid}"}
+        else:
+            return {"status": "error", "message": f"Failed to set URL: {put_response.status_code}"}
+    except Exception as e:
+        print(f"❌ Error sending to Joan device: {e}")
+        return {"status": "error", "message": str(e)}
+
+@app.route('/api/joan_devices')
+def api_joan_devices():
+    """Returns list of Joan 6 devices with status."""
+    from flask import jsonify
+    result = get_joan_devices()
+    return jsonify(result)
+
+@app.route('/api/send_to_joan', methods=['POST'])
+def api_send_to_joan():
+    """Send dashboard to a Joan 6 device."""
+    from flask import jsonify
+    
+    data = request.get_json() or {}
+    uuid = data.get('uuid')
+    dashboard_url = data.get('url')
+    
+    if not uuid:
+        return jsonify({"status": "error", "message": "Missing device UUID"})
+    if not dashboard_url:
+        return jsonify({"status": "error", "message": "Missing dashboard URL"})
+    
+    result = send_to_joan_device(uuid, dashboard_url)
+    return jsonify(result)
+
+@app.route('/api/visionect_status')
+def api_visionect_status():
+    """Returns Visionect connection status."""
+    from flask import jsonify
+    return jsonify({
+        "configured": bool(VISIONECT_HOST),
+        "host": VISIONECT_HOST or "",
+        "has_credentials": bool(VISIONECT_API_KEY and VISIONECT_API_SECRET)
+    })
 
 
 if __name__ == "__main__":
