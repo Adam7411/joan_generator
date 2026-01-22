@@ -1238,6 +1238,7 @@ def _visionect_hmac_headers(api_key, api_secret, method, endpoint):
     date_hdr = wsgiref.handlers.format_date_time(time.time())
     
     signature_base = f"{method.upper()}\n\n{content_type}\n{date_hdr}\n{sign_endpoint}"
+    print(f"🔐 DEBUG AUTH: Signing endpoint '{sign_endpoint}' for URL '{endpoint}'", flush=True)
     h = hmac.new(api_secret.encode("utf-8"), signature_base.encode("utf-8"), hashlib.sha256)
     auth = f"{api_key}:{base64.b64encode(h.digest()).decode('ascii').strip()}"
     
