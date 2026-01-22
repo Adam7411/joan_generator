@@ -1504,27 +1504,13 @@
             </div>
 
             <!-- Row 2: File Actions -->
-            <div style="display:flex; gap:10px; margin-bottom:10px;">
+            <div style="display:flex; gap:10px; margin-bottom:20px;">
                 <button type="button" class="btn btn-copy" onclick="copyToClipboard()" data-i18n="btn_copy"
                     style="flex:1;">📋 KOPIUJ KOD DO SCHOWKA</button>
                 <button type="button" class="btn btn-download-file" onclick="downloadDashFile()"
                     data-i18n="btn_download_file" style="flex:1; background-color: #2196f3;">⬇️ POBIERZ PLIK
                     .DASH</button>
             </div>
-
-            {% if connection_info.visionect_configured %}
-            <!-- Row 3: Joan 6 Actions -->
-            <div style="display:flex; gap:10px; margin-bottom:20px;">
-                <button type="button" class="btn" onclick="openJoanModal()"
-                    style="flex:1; background-color: #9c27b0; color: white;">
-                    🖥️ <span data-i18n="btn_select_joan">WYBIERZ URZĄDZENIE JOAN 6</span>
-                </button>
-                <button type="button" id="btn-send-joan" class="btn" onclick="sendToJoan()"
-                    style="flex:1; background-color: #00bcd4; color: white; display: none;">
-                    📤 <span data-i18n="btn_send_joan">WYŚLIJ NA JOAN 6</span>
-                </button>
-            </div>
-            {% endif %}
             <textarea class="output" id="output-yaml" readonly>{{ generated_yaml }}</textarea>
         </div>
         {% endif %}
@@ -1544,11 +1530,6 @@
     </div>
 
     <script>
-        window.onerror = function (msg, url, line, col, error) {
-            alert("JS ERROR: " + msg + " (line " + line + ")");
-            console.error(msg, url, line, col, error);
-            return false;
-        };
         let entitiesData = {{ entities | tojson | safe }};
         let validEntityIds = new Set(entitiesData.map(e => e.id));
         const connectionInfo = {{ connection_info | tojson | safe }};
@@ -1560,22 +1541,10 @@
         let blockSmart = false;
         let manualIconOverride = false;
         let currentLang = 'pl';
-        function getTrans(key) {
-            if (!TRANSLATIONS || !TRANSLATIONS[currentLang]) return key;
-            return TRANSLATIONS[currentLang][key] || key;
-        }
-        function showNotification(msg, type) {
-            console.log("NOTIFY:", type, msg);
-            if (typeof showToast === 'function') {
-                showToast(msg, type);
-            } else {
-                alert(msg);
-            }
-        }
         let rawImportedDefs = {{ custom_defs | tojson | safe }} || {};
         let dragSrc = null;
         let globalDefaultSize = { w: 2, h: 1 };
-        let currentLoadedDashName = "{{ filename }}";
+        let currentLoadedDashName = null;
         let currentIconInputId = null;
         let copiedRow = null;
         let copiedWidget = null;
@@ -2347,30 +2316,7 @@
                 msg_refreshing: "Odświeżanie listy encji...",
                 msg_refreshed: "✅ Lista encji odświeżona!",
                 btn_links: "🔗 PRZYDATNE LINKI",
-                modal_links_title: "Przydatne Linki i Dokumentacja",
-
-                // Joan 6 Integration
-                lbl_dash_files: "📁 Pliki Dashboardów (.dash):",
-                lbl_joan_devices: "🖥️ Urządzenia Joan 6:",
-                btn_select_joan: "🖥️ WYBIERZ URZĄDZENIE JOAN 6",
-                btn_send_joan: "📤 WYŚLIJ NA JOAN 6",
-                btn_send_joan_progress: "⏳ Wysyłanie...",
-                btn_send_joan_with_name: "📤 WYŚLIJ NA: {0}",
-                msg_visionect_not_configured: "⚠️ Visionect nie skonfigurowany",
-                msg_visionect_config_hint: "W konfiguracji dodatku <b>Joan 6: AppDaemon Dashboard Generator</b> wpisz:",
-                msg_visionect_error: "❌ Błąd połączenia z Visionect",
-                msg_visionect_check_logs: "Sprawdź logi dodatku Joan Generator aby zobaczyć szczegóły błędu.",
-                msg_visionect_check_ip: "Sprawdź czy serwer Visionect jest dostępny pod adresem podanym w konfiguracji.",
-                msg_new_entities_warning: "⚠️ Ważne: Jeśli dodałeś nowe encje w Home Assistant podczas tworzenia dashboardu, musisz zrestartować AppDaemon aby je wykryć!",
-                msg_no_devices: "Brak urządzeń Joan 6",
-                msg_loading_devices: "⏳ Pobieranie urządzeń...",
-                msg_connected_no_devices: "✅ Połączono z Visionect, ale brak urządzeń Joan 6",
-                btn_choose: "✓ Wybierz",
-                msg_select_device_first: "❌ Najpierw wybierz urządzenie Joan 6",
-                msg_dash_sent_success: "✅ Dashboard wysłany na {0}!",
-                msg_device_selected: "✅ Wybrano urządzenie: {0}",
-                msg_no_dash_files: "Brak plików .dash",
-                msg_visionect_config_hint_short: "Wybierz urządzenie, aby móc wysłać na nie wygenerowany dashboard."
+                modal_links_title: "Przydatne Linki i Dokumentacja"
             },
             en: {
                 btn_import_dash: "📥 IMPORT DASHBOARD",
@@ -2454,29 +2400,6 @@
                 btn_copy: "📋 COPY CODE TO CLIPBOARD",
                 btn_links: "🔗 USEFUL LINKS",
                 modal_links_title: "Useful Links & Documentation",
-
-                // Joan 6 Integration
-                lbl_dash_files: "📁 Dashboard Files (.dash):",
-                lbl_joan_devices: "🖥️ Joan 6 Devices:",
-                btn_select_joan: "🖥️ SELECT JOAN 6 DEVICE",
-                btn_send_joan: "📤 SEND TO JOAN 6",
-                btn_send_joan_progress: "⏳ Sending...",
-                btn_send_joan_with_name: "📤 SEND TO: {0}",
-                msg_visionect_not_configured: "⚠️ Visionect not configured",
-                msg_visionect_config_hint: "In <b>Joan 6: AppDaemon Dashboard Generator</b> add-on configuration, set:",
-                msg_visionect_error: "❌ Visionect Connection Error",
-                msg_visionect_check_logs: "Check Joan Generator add-on logs for details.",
-                msg_visionect_check_ip: "Check if Visionect Server is reachable at the configured address.",
-                msg_new_entities_warning: "⚠️ Important: If you added new entities in Home Assistant, wait for AppDaemon restart to see them here!",
-                msg_no_devices: "No Joan 6 devices found",
-                msg_loading_devices: "⏳ Loading devices...",
-                msg_connected_no_devices: "✅ Visionect connected, but no Joan 6 devices found",
-                btn_choose: "✓ Select",
-                msg_select_device_first: "❌ Select a Joan 6 device first",
-                msg_dash_sent_success: "✅ Dashboard sent to {0}!",
-                msg_device_selected: "✅ Device selected: {0}",
-                msg_no_dash_files: "No .dash files found",
-                msg_visionect_config_hint_short: "Select a device to send the generated dashboard to it.",
                 btn_download_file: "⬇️ DOWNLOAD .DASH FILE",
                 btn_save_ad: "🚀 SAVE DIRECTLY TO APPDAEMON",
                 status_details: "Token: {token_source} • API: {api_url} • Entities: {entity_count} • AppDaemon: {appdaemon_slug}",
@@ -2563,37 +2486,6 @@
                 msg_refreshed: "✅ Entity list refreshed!"
             }
         };
-
-        // --- HELPER FUNCTIONS ---
-        function getTrans(key) {
-            if (TRANSLATIONS[currentLang] && TRANSLATIONS[currentLang][key]) return TRANSLATIONS[currentLang][key];
-            // Fallback to PL or EN
-            const fallback = TRANSLATIONS['pl'] || TRANSLATIONS['en'];
-            return (fallback && fallback[key]) ? fallback[key] : key;
-        }
-
-        function showToast(message, type = 'info') {
-            let toast = document.getElementById('toast-notification');
-            if (!toast) {
-                toast = document.createElement('div');
-                toast.id = 'toast-notification';
-                Object.assign(toast.style, {
-                    position: 'fixed', bottom: '20px', right: '20px', padding: '15px 25px',
-                    background: '#333', color: '#fff', borderRadius: '5px', zIndex: '1000000',
-                    transition: 'opacity 0.5s', opacity: '0', pointerEvents: 'none', fontWeight: 'bold'
-                });
-                document.body.appendChild(toast);
-            }
-
-            toast.innerText = message;
-            toast.style.background = type === 'error' ? '#d32f2f' : (type === 'success' ? '#43a047' : '#323232');
-            toast.style.opacity = '1';
-
-            // Reset timeout if exists? Simplification for now.
-            setTimeout(() => { toast.style.opacity = '0'; }, 4000);
-        }
-        // Alias for compatibility
-        const showNotification = showToast;
 
         const SMART_MAP = {
             'light': { type: 'light', size: '(2x1)', iconOn: 'mdi-lightbulb-on', iconOff: 'mdi-lightbulb-outline' },
@@ -4290,55 +4182,55 @@
 
     </script>
     <div id="toast-container"></div>
+</body>
 
+</html>
 
-    <!-- MODAL INSTRUKCJI BATERII -->
-    <div id="battery-help-modal" class="icon-picker-modal">
-        <div class="icon-picker-content" style="max-width: 600px; height: auto; max-height: 85vh;">
-            <div class="ip-header">
-                <h2 id="help-title">Instrukcja</h2> <!-- Tekst zostanie zastąpiony przez JS -->
-                <span class="ip-close" onclick="closeBatteryHelp()">&times;</span>
-            </div>
-            <div id="battery-help-body"
-                style="overflow-y: auto; padding-right: 10px; font-size: 0.95em; line-height: 1.5;">
-                <!-- Treść instrukcji zostanie wstrzyknięta tutaj przez JS -->
-            </div>
-            <button type="button" id="btn-close-help" class="btn btn-gen" onclick="closeBatteryHelp()"
-                style="margin-top:20px;">OK</button>
+<!-- MODAL INSTRUKCJI BATERII -->
+<div id="battery-help-modal" class="icon-picker-modal">
+    <div class="icon-picker-content" style="max-width: 600px; height: auto; max-height: 85vh;">
+        <div class="ip-header">
+            <h2 id="help-title">Instrukcja</h2> <!-- Tekst zostanie zastąpiony przez JS -->
+            <span class="ip-close" onclick="closeBatteryHelp()">&times;</span>
         </div>
-    </div>
-
-    <!-- MODAL POMOCY VISIONECT JOAN -->
-    <div id="visionect-help-modal" class="icon-picker-modal">
-        <div class="icon-picker-content" style="max-width: 600px; height: auto; max-height: 85vh;">
-            <div class="ip-header">
-                <h2 id="visionect-help-title">Usługi dodatku Visionect Joan</h2>
-                <span class="ip-close" onclick="closeVisionectHelp()">&times;</span>
-            </div>
-            <div id="visionect-help-body"
-                style="overflow-y: auto; padding-right: 10px; font-size: 0.95em; line-height: 1.5;">
-                <!-- Content injected by JS -->
-            </div>
-            <button type="button" class="btn btn-gen" onclick="closeVisionectHelp()" style="margin-top:20px;"
-                id="btn-visionect-ok">ROZUMIEM</button>
+        <div id="battery-help-body" style="overflow-y: auto; padding-right: 10px; font-size: 0.95em; line-height: 1.5;">
+            <!-- Treść instrukcji zostanie wstrzyknięta tutaj przez JS -->
         </div>
+        <button type="button" id="btn-close-help" class="btn btn-gen" onclick="closeBatteryHelp()"
+            style="margin-top:20px;">OK</button>
     </div>
+</div>
 
-    <!-- MODAL KONFIGURACJI APPDAEMON (Bridge) -->
-    <div id="ad-config-modal" class="icon-picker-modal">
-        <div class="icon-picker-content" style="max-width: 800px; height: auto; max-height: 90vh;">
-            <div class="ip-header">
-                <h2 id="ad-config-title" data-i18n="modal_ad_config_title">Konfiguracja bezpośredniego zapisu</h2>
-                <span class="ip-close" onclick="closeAdConfig()">&times;</span>
-            </div>
-            <div style="overflow-y: auto; padding: 20px; font-size: 0.95em; line-height: 1.6;">
-                <p data-i18n="ad_config_step1">1. Wejdź w katalog <code>/addon_configs/a0d7b954_appdaemon/apps/</code>
-                    (użyj
-                    File Editor lub Samba).</p>
+<!-- MODAL POMOCY VISIONECT JOAN -->
+<div id="visionect-help-modal" class="icon-picker-modal">
+    <div class="icon-picker-content" style="max-width: 600px; height: auto; max-height: 85vh;">
+        <div class="ip-header">
+            <h2 id="visionect-help-title">Usługi dodatku Visionect Joan</h2>
+            <span class="ip-close" onclick="closeVisionectHelp()">&times;</span>
+        </div>
+        <div id="visionect-help-body"
+            style="overflow-y: auto; padding-right: 10px; font-size: 0.95em; line-height: 1.5;">
+            <!-- Content injected by JS -->
+        </div>
+        <button type="button" class="btn btn-gen" onclick="closeVisionectHelp()" style="margin-top:20px;"
+            id="btn-visionect-ok">ROZUMIEM</button>
+    </div>
+</div>
 
-                <p data-i18n="ad_config_step2">2. Stwórz plik <code>dash_saver.py</code> i wklej poniższą zawartość:</p>
-                <div style="position: relative;">
-                    <pre id="code-dash-saver">import hassapi as hass
+<!-- MODAL KONFIGURACJI APPDAEMON (Bridge) -->
+<div id="ad-config-modal" class="icon-picker-modal">
+    <div class="icon-picker-content" style="max-width: 800px; height: auto; max-height: 90vh;">
+        <div class="ip-header">
+            <h2 id="ad-config-title" data-i18n="modal_ad_config_title">Konfiguracja bezpośredniego zapisu</h2>
+            <span class="ip-close" onclick="closeAdConfig()">&times;</span>
+        </div>
+        <div style="overflow-y: auto; padding: 20px; font-size: 0.95em; line-height: 1.6;">
+            <p data-i18n="ad_config_step1">1. Wejdź w katalog <code>/addon_configs/a0d7b954_appdaemon/apps/</code> (użyj
+                File Editor lub Samba).</p>
+
+            <p data-i18n="ad_config_step2">2. Stwórz plik <code>dash_saver.py</code> i wklej poniższą zawartość:</p>
+            <div style="position: relative;">
+                <pre id="code-dash-saver">import hassapi as hass
 import os
 
 class DashSaver(hass.Hass):
@@ -4470,823 +4362,432 @@ class DashSaver(hass.Hass):
         except Exception as e:
             self.error(f"Error saving dashboard: {e}")
             return {"status": "error", "message": str(e)}, 500</pre>
-                    <button type="button" class="btn"
-                        style="position: absolute; top: 10px; right: 10px; font-size: 12px; background: #2196f3; color: white;"
-                        onclick="copyToClipboardText('code-dash-saver')" data-i18n="btn_copy_code">Kopiuj kod</button>
-                </div>
+                <button type="button" class="btn"
+                    style="position: absolute; top: 10px; right: 10px; font-size: 12px; background: #2196f3; color: white;"
+                    onclick="copyToClipboardText('code-dash-saver')" data-i18n="btn_copy_code">Kopiuj kod</button>
+            </div>
 
-                <p data-i18n="ad_config_step3" style="margin-top:20px;">3. W pliku <code>apps.yaml</code> dopisz:</p>
-                <div style="position: relative;">
-                    <pre id="code-apps-yaml">dash_saver_app:
+            <p data-i18n="ad_config_step3" style="margin-top:20px;">3. W pliku <code>apps.yaml</code> dopisz:</p>
+            <div style="position: relative;">
+                <pre id="code-apps-yaml">dash_saver_app:
   module: dash_saver
   class: DashSaver</pre>
-                    <button type="button" class="btn"
-                        style="position: absolute; top: 10px; right: 10px; font-size: 12px; background: #2196f3; color: white;"
-                        onclick="copyToClipboardText('code-apps-yaml')" data-i18n="btn_copy_code">Kopiuj kod</button>
-                </div>
-
-                <p data-i18n="ad_config_step4" style="margin-top:20px; font-weight: bold; color: #e91e63;">4. Zrestartuj
-                    AppDaemon i odśwież tę stronę.</p>
+                <button type="button" class="btn"
+                    style="position: absolute; top: 10px; right: 10px; font-size: 12px; background: #2196f3; color: white;"
+                    onclick="copyToClipboardText('code-apps-yaml')" data-i18n="btn_copy_code">Kopiuj kod</button>
             </div>
-            <button type="button" class="btn btn-gen" onclick="closeAdConfig()" style="margin:20px;">OK</button>
+
+            <p data-i18n="ad_config_step4" style="margin-top:20px; font-weight: bold; color: #e91e63;">4. Zrestartuj
+                AppDaemon i odśwież tę stronę.</p>
         </div>
+        <button type="button" class="btn btn-gen" onclick="closeAdConfig()" style="margin:20px;">OK</button>
     </div>
+</div>
 
-    <script>
-        function openBatteryHelp() {
-            const t = TRANSLATIONS[currentLang];
+<script>
+    function openBatteryHelp() {
+        const t = TRANSLATIONS[currentLang];
 
-            // Pobieramy elementy modala
-            const titleEl = document.getElementById('help-title');
-            const bodyEl = document.getElementById('battery-help-body');
-            const btnEl = document.getElementById('btn-close-help');
+        // Pobieramy elementy modala
+        const titleEl = document.getElementById('help-title');
+        const bodyEl = document.getElementById('battery-help-body');
+        const btnEl = document.getElementById('btn-close-help');
 
-            if (titleEl) titleEl.innerText = t.modal_battery_title;
-            if (bodyEl) bodyEl.innerHTML = t.modal_battery_body;
-            if (btnEl) btnEl.innerText = t.modal_battery_understand;
+        if (titleEl) titleEl.innerText = t.modal_battery_title;
+        if (bodyEl) bodyEl.innerHTML = t.modal_battery_body;
+        if (btnEl) btnEl.innerText = t.modal_battery_understand;
 
-            document.getElementById('battery-help-modal').style.display = 'block';
+        document.getElementById('battery-help-modal').style.display = 'block';
+    }
+
+    function closeBatteryHelp() {
+        document.getElementById('battery-help-modal').style.display = 'none';
+    }
+
+    function openVisionectHelp() {
+        const t = TRANSLATIONS[currentLang];
+        document.getElementById('visionect-help-title').innerText = t.modal_visionect_title;
+        document.getElementById('visionect-help-body').innerHTML = t.visionect_body;
+        document.getElementById('btn-visionect-ok').innerText = t.btn_understand;
+        document.getElementById('visionect-help-modal').style.display = 'block';
+    }
+
+    function closeVisionectHelp() {
+        document.getElementById('visionect-help-modal').style.display = 'none';
+    }
+
+    function openLinksModal() {
+        document.getElementById('links-modal').style.display = 'block';
+    }
+
+    function closeLinksModal() {
+        document.getElementById('links-modal').style.display = 'none';
+    }
+
+    function clearAll() {
+        if (confirm(TRANSLATIONS[currentLang].confirm_clear)) {
+            window.location.href = window.location.pathname;
         }
+    }
 
-        function closeBatteryHelp() {
-            document.getElementById('battery-help-modal').style.display = 'none';
-        }
+    function refreshEntities() {
+        const t = TRANSLATIONS[currentLang];
+        const btn = document.getElementById('btn-refresh-ent');
+        if (btn) btn.classList.add('rotating');
 
-        function openVisionectHelp() {
-            const t = TRANSLATIONS[currentLang];
-            document.getElementById('visionect-help-title').innerText = t.modal_visionect_title;
-            document.getElementById('visionect-help-body').innerHTML = t.visionect_body;
-            document.getElementById('btn-visionect-ok').innerText = t.btn_understand;
-            document.getElementById('visionect-help-modal').style.display = 'block';
-        }
+        showToast(t.msg_refreshing, 'info');
 
-        function closeVisionectHelp() {
-            document.getElementById('visionect-help-modal').style.display = 'none';
-        }
+        // Add timestamp to prevent caching
+        fetch(window.location.href.split('?')[0] + '?t=' + new Date().getTime())
+            .then(response => response.text())
+            .then(html => {
+                // Regex to extract the entitiesData JSON array
+                // Matches: let/const/var entitiesData = [...];
+                // We changed it to 'let' in the template, so we must match 'let'.
+                // Also capture everything until the semicolon to handle nested structures correctly.
+                const match = html.match(/(?:let|const|var)\s+entitiesData\s*=\s*(\[[\s\S]*?\]);/);
 
-        function openLinksModal() {
-            document.getElementById('links-modal').style.display = 'block';
-        }
-
-        function closeLinksModal() {
-            document.getElementById('links-modal').style.display = 'none';
-        }
-
-        function clearAll() {
-            if (confirm(TRANSLATIONS[currentLang].confirm_clear)) {
-                window.location.href = window.location.pathname;
-            }
-        }
-
-        function refreshEntities() {
-            const t = TRANSLATIONS[currentLang];
-            const btn = document.getElementById('btn-refresh-ent');
-            if (btn) btn.classList.add('rotating');
-
-            showToast(t.msg_refreshing, 'info');
-
-            // Add timestamp to prevent caching
-            fetch(window.location.href.split('?')[0] + '?t=' + new Date().getTime())
-                .then(response => response.text())
-                .then(html => {
-                    // Regex to extract the entitiesData JSON array
-                    // Matches: let/const/var entitiesData = [...];
-                    // We changed it to 'let' in the template, so we must match 'let'.
-                    // Also capture everything until the semicolon to handle nested structures correctly.
-                    const match = html.match(/(?:let|const|var)\s+entitiesData\s*=\s*(\[[\s\S]*?\]);/);
-
-                    if (match && match[1]) {
-                        try {
-                            const newEntities = JSON.parse(match[1]);
-                            if (Array.isArray(newEntities)) {
-                                // Update global variables
-                                entitiesData = newEntities; // Modify global let/const (if let) - entitiesData was const? check below.
-                                // If entitiesData is const, we can't reassign line 1517.
-                                // However, in standard JS 'const' prevents reassignment. 
-                                // Refactoring line 1517 to 'let' is required or we operate on object content.
-                                // But usually template renders 'const'.
-                                // Let's assume we can't reassign const. We will check line 1517 next.
-                                // For now, let's assume validEntityIds is what matters for validation
-                                // and searchEntities uses entitiesData.
-
-                                // Hack: we cannot reassign const. We must change line 1517 to let/var first.
-                                // Or we use a mutable global object property? 
-                                // Wait, I can verify if it is const.
-                                // It is 'const entitiesData = ...' in line 1517.
-                                // I MUST change line 1517 to 'let' in a separate chunk or same tool call.
-
-                                window.entitiesData = newEntities; // This won't override const in same scope but might work if global scope is window.
-                                // Better to change 'const' to 'var' or 'let'.
-
-                                validEntityIds = new Set(newEntities.map(e => e.id));
-
-                                // Re-run search/validation for current input
-                                const input = document.getElementById('w-id');
-                                if (input && input.value) {
-                                    searchEntities(input.value);
-                                    validateEntityInput(input.value);
-                                }
-
-                                showToast(t.msg_refreshed, 'success');
-                            } else {
-                                throw new Error("Parsed entities is not an array");
-                            }
-                        } catch (e) {
-                            console.error("JSON Parse Error", e);
-                            showToast("Error parsing new entities data.", 'error');
-                        }
-                    } else {
-                        console.error("Regex match failed for entitiesData");
-                        showToast("Could not find entity data in response.", 'error');
-                    }
-                })
-                .catch(err => {
-                    console.error(err);
-                    showToast("Refresh error: " + err, 'error');
-                })
-                .finally(() => {
-                    if (btn) btn.classList.remove('rotating');
-                });
-        }
-
-        function openAdConfig() {
-            document.getElementById('ad-config-modal').style.display = 'block';
-        }
-        function closeAdConfig() {
-            document.getElementById('ad-config-modal').style.display = 'none';
-        }
-        function copyToClipboardText(elementId) {
-            const textObj = document.getElementById(elementId);
-            if (!textObj) {
-                showToast("Error: Element not found " + elementId, 'error');
-                return;
-            }
-            const text = textObj.innerText;
-
-            if (navigator.clipboard && window.isSecureContext) {
-                navigator.clipboard.writeText(text).then(() => {
-                    showToast(TRANSLATIONS[currentLang].copy_success, 'success');
-                }).catch(err => {
-                    // Fallback
-                    fallbackCopyTextToClipboard(text);
-                });
-            } else {
-                fallbackCopyTextToClipboard(text);
-            }
-        }
-
-        function fallbackCopyTextToClipboard(text) {
-            var textArea = document.createElement("textarea");
-            textArea.value = text;
-            textArea.style.position = "fixed";  // Avoid scrolling to bottom
-            textArea.style.left = "-9999px";
-            document.body.appendChild(textArea);
-            textArea.focus();
-            textArea.select();
-
-            try {
-                var successful = document.execCommand('copy');
-                if (successful) {
-                    showToast(TRANSLATIONS[currentLang].copy_success, 'success');
-                } else {
-                    showToast(TRANSLATIONS[currentLang].copy_error + " (fallback failed)", 'error');
-                }
-            } catch (err) {
-                showToast(TRANSLATIONS[currentLang].copy_error + err, 'error');
-            }
-            document.body.removeChild(textArea);
-        }
-
-        // Opcjonalnie: Zamknij okno po kliknięciu poza nim
-        window.addEventListener('click', function (event) {
-            const helpModal = document.getElementById('battery-help-modal');
-            const visionectModal = document.getElementById('visionect-help-modal');
-            const configModal = document.getElementById('ad-config-modal');
-            const joanModal = document.getElementById('joan-modal');
-            if (event.target == helpModal) closeBatteryHelp();
-            if (event.target == visionectModal) closeVisionectHelp();
-            if (event.target == configModal) closeAdConfig();
-            if (event.target == joanModal) closeJoanModal();
-        });
-    </script>
-
-    <!-- Import Modal -->
-    <div id="import-modal" class="modal"
-        style="display:none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);">
-        <div class="modal-content"
-            style="background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 50%; max-width: 500px; border-radius: 8px;">
-            <h3 id="import-title" style="margin-top:0" data-i18n="modal_import_title">Wybierz Dashboard</h3>
-            <div id="dashboard-list"
-                style="max-height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; margin-bottom: 20px;">
-                <p data-i18n="modal_import_loading">Ładowanie listy...</p>
-            </div>
-            <div style="text-align: right;">
-                <button type="button" class="btn btn-gen" onclick="closeImportModal()" data-i18n="btn_cancel"
-                    style="background-color: #757575;">Anuluj</button>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        function openImportModal() {
-            document.getElementById('import-modal').style.display = 'block';
-
-            // Refresh translations for modal
-            const t = TRANSLATIONS[currentLang];
-            const titleEl = document.getElementById('import-title');
-            if (titleEl && t.modal_import_title) titleEl.innerText = t.modal_import_title;
-
-            const list = document.getElementById('dashboard-list');
-            list.innerHTML = `<p>${t.modal_import_loading || "Loading..."}</p>`;
-
-            fetch('api/list_dashboards')
-                .then(r => r.text())
-                .then(text => {
+                if (match && match[1]) {
                     try {
-                        return JSON.parse(text);
-                    } catch (e) {
-                        console.error("JSON Parse Error. Raw response:", text);
-                        throw new Error("Invalid JSON: " + text.substring(0, 50) + "... (" + e.message + ")");
-                    }
-                })
-                .then(data => {
-                    list.innerHTML = '';
-                    if (data.status === 'success' && data.files.length > 0) {
-                        data.files.forEach(f => {
-                            const div = document.createElement('div');
-                            div.style.padding = '8px';
-                            div.style.cursor = 'pointer';
-                            div.style.borderBottom = '1px solid #eee';
-                            div.style.color = '#333'; // Force dark text
-                            div.style.backgroundColor = '#fff'; // Force white background
-                            div.innerText = f.name; // Display name
+                        const newEntities = JSON.parse(match[1]);
+                        if (Array.isArray(newEntities)) {
+                            // Update global variables
+                            entitiesData = newEntities; // Modify global let/const (if let) - entitiesData was const? check below.
+                            // If entitiesData is const, we can't reassign line 1517.
+                            // However, in standard JS 'const' prevents reassignment. 
+                            // Refactoring line 1517 to 'let' is required or we operate on object content.
+                            // But usually template renders 'const'.
+                            // Let's assume we can't reassign const. We will check line 1517 next.
+                            // For now, let's assume validEntityIds is what matters for validation
+                            // and searchEntities uses entitiesData.
 
-                            div.onclick = () => loadDashboard(f.name);
-                            div.onmouseover = () => div.style.backgroundColor = '#e3f2fd';
-                            div.onmouseout = () => div.style.backgroundColor = '#fff';
+                            // Hack: we cannot reassign const. We must change line 1517 to let/var first.
+                            // Or we use a mutable global object property? 
+                            // Wait, I can verify if it is const.
+                            // It is 'const entitiesData = ...' in line 1517.
+                            // I MUST change line 1517 to 'let' in a separate chunk or same tool call.
 
-                            list.appendChild(div);
-                        });
-                    } else {
-                        list.innerText = t.modal_import_empty || "No files found.";
-                    }
-                })
-                .catch(err => {
-                    list.innerText = "Error: " + err;
-                });
-        }
+                            window.entitiesData = newEntities; // This won't override const in same scope but might work if global scope is window.
+                            // Better to change 'const' to 'var' or 'let'.
 
-        function closeImportModal() {
-            document.getElementById('import-modal').style.display = 'none';
-        }
+                            validEntityIds = new Set(newEntities.map(e => e.id));
 
-        function loadDashboard(filename) {
-            const t = TRANSLATIONS[currentLang];
-            // Confirm first? Maybe not needed for just viewing code, but good practice if checking overwrite
-            // User asked to just "load here", so we will fetch and put into textarea.
+                            // Re-run search/validation for current input
+                            const input = document.getElementById('w-id');
+                            if (input && input.value) {
+                                searchEntities(input.value);
+                                validateEntityInput(input.value);
+                            }
 
-            fetch('api/read_dashboard/' + encodeURIComponent(filename))
-                .then(r => r.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        const importArea = document.getElementById('import-code');
-                        if (importArea) {
-                            importArea.value = data.content;
-                            // Scroll to the import section
-                            document.getElementById('import-section').scrollIntoView({ behavior: 'smooth' });
-                            closeImportModal();
-                            currentLoadedDashName = filename;
-                            showToast("✅ " + filename + " wczytany do edytora!", 'success');
-                        }
-                    } else {
-                        alert("Error: " + data.message);
-                    }
-                })
-                .catch(err => {
-                    alert("Error loading file: " + err);
-                });
-        }
-
-        // Close modal when clicking outside (extended)
-        const existingWindowOnClick = window.onclick;
-        window.onclick = function (event) {
-            if (existingWindowOnClick) existingWindowOnClick(event);
-
-            const modal = document.getElementById('import-modal');
-            const linksModal = document.getElementById('links-modal');
-            if (event.target == modal) {
-                closeImportModal();
-            }
-            if (event.target == linksModal) {
-                closeLinksModal();
-            }
-        }
-
-        // Auto-run IP replacement on load
-        document.addEventListener('DOMContentLoaded', () => {
-            if (typeof updateResultPathsToHost === 'function') {
-                updateResultPathsToHost();
-            }
-        });
-        // Info Modal Logic
-        function showInfoModal() {
-            const m = document.getElementById('info-modal');
-            if (!m) return;
-
-            // Populate fields
-            document.getElementById('info-entities').innerText = typeof connectionInfo !== 'undefined' ? connectionInfo.entity_count : '-';
-            document.getElementById('info-ad-slug').innerText = typeof connectionInfo !== 'undefined' ? connectionInfo.appdaemon_slug : '-';
-            document.getElementById('info-api-source').innerText = typeof connectionInfo !== 'undefined' ? connectionInfo.token_source : '-';
-
-            const bridgeActive = typeof connectionInfo !== 'undefined' && connectionInfo.bridge_active;
-            const brText = bridgeActive ? TRANSLATIONS[currentLang].info_bridge_yes : TRANSLATIONS[currentLang].info_bridge_no;
-            document.getElementById('info-bridge').innerText = brText;
-            document.getElementById('info-bridge').style.color = bridgeActive ? 'green' : 'red';
-
-            // Update dynamic path
-            const pathEl = document.getElementById('info-path');
-            if (pathEl) {
-                const host = window.location.hostname || '[HA_IP]';
-                pathEl.textContent = pathEl.getAttribute('data-template').replace(/\[HA_IP\]/g, host);
-            }
-
-            // Dashboard info
-            fetch('api/list_dashboards')
-                .then(r => r.json())
-                .then(data => {
-                    const countEl = document.getElementById('info-dash-count');
-                    const listEl = document.getElementById('info-dash-list');
-
-                    if (data.status === 'success') {
-                        if (countEl) countEl.innerText = data.files ? data.files.length : '0';
-
-                        if (listEl && data.files && data.files.length > 0) {
-                            listEl.innerHTML = data.files.map(f => {
-                                let name = "";
-                                if (f && typeof f === 'object') {
-                                    name = f.name || f.filename || JSON.stringify(f);
-                                } else {
-                                    name = String(f);
-                                }
-                                return `<div style="padding: 2px 0;">📄 ${name}</div>`;
-                            }).join('');
-                            listEl.style.display = 'block';
-                        } else if (listEl) {
-                            listEl.style.display = 'none';
-                        }
-                    }
-                })
-                .catch(e => {
-                    console.error("Error fetching dashboard list:", e);
-                    const countEl = document.getElementById('info-dash-count');
-                    if (countEl) countEl.innerText = 'Error';
-                });
-
-            m.style.display = 'block';
-        }
-
-        function closeInfoModal() { document.getElementById('info-modal').style.display = 'none'; }
-
-        function openJoanModal() {
-            const m = document.getElementById('joan-modal');
-            if (!m) return;
-            m.style.display = 'block';
-            refreshJoanDevices();
-        }
-
-        function closeJoanModal() {
-            const m = document.getElementById('joan-modal');
-            if (m) m.style.display = 'none';
-        }
-
-        // Joan 6 Devices Functions
-        var joanDevices = [];
-        var visionectStatus = { dashboard_base_url: null };
-        // currentLoadedDashName is already declared globally at line 1561
-
-        function refreshJoanDevices() {
-            const container = document.getElementById('joan-devices-container');
-            if (!container) return;
-
-            // Fetch visionect status first (for dashboard_base_url)
-            fetch('api/visionect_status')
-                .then(r => r.json())
-                .then(data => {
-                    visionectStatus = data;
-                })
-                .catch(e => console.error("Error fetching visionect status:", e));
-
-            container.innerHTML = `<div style="color: #999; font-style: italic;">${getTrans('msg_loading_devices')}</div>`;
-
-            fetch('api/joan_devices')
-                .then(r => {
-                    if (!r.ok) {
-                        throw new Error(`HTTP ${r.status}`);
-                    }
-                    return r.json();
-                })
-                .then(data => {
-                    const t_not_configured = getTrans('msg_visionect_not_configured');
-                    const t_config_hint = getTrans('msg_visionect_config_hint');
-                    const t_conn_error = getTrans('msg_visionect_error');
-                    const t_check_logs = getTrans('msg_visionect_check_logs');
-                    const t_check_ip = getTrans('msg_visionect_check_ip');
-                    const t_no_devices = getTrans('msg_no_devices');
-                    const t_connected_no_dev = getTrans('msg_connected_no_devices');
-
-                    if (data.status === 'success' && data.devices && data.devices.length > 0) {
-                        joanDevices = data.devices;
-                        renderJoanDevices(container, data.devices);
-                    } else if (data.status === 'success' && (!data.devices || data.devices.length === 0)) {
-                        container.innerHTML = `<div style="color: #999;">${t_connected_no_dev}</div>`;
-                    } else if (data.status === 'error') {
-                        // Always show config hint if we have an error, because 404/401/Refused usually means bad config.
-                        const isConfigMissing = data.message && (data.message.toLowerCase().includes('not configured') || data.message.toLowerCase().includes('missing'));
-
-                        let hintHtml = `
-                        <div style="margin-top: 12px; font-size: 0.95em; color: #856404; background: #fff3cd; padding: 10px; border-radius: 4px; border: 1px solid #ffeeba;">
-                            <strong>${t_config_hint}</strong>
-                            <pre style="margin: 8px 0 0 0; padding: 10px; background: #fdfdfd; border: 1px solid #ddd; border-radius: 4px; font-family: monospace; white-space: pre-wrap;">visionect_host: "192.168.1.100:8081"
-visionect_api_key: "YOUR_API_KEY"
-visionect_api_secret: "YOUR_API_SECRET"</pre>
-                            <div style="margin-top: 5px; font-size: 0.85em;">(Znajdziesz to w konfiguracji dodatku)</div>
-                        </div>`;
-
-                        if (isConfigMissing) {
-                            // Yellow warning box (just the hint mostly)
-                            container.innerHTML = `
-                            <div style="padding: 12px; background: #fff3cd; border: 1px solid #ffc107; border-radius: 6px; color: #856404;">
-                                <strong>${t_not_configured}</strong>
-                                ${hintHtml}
-                            </div>`;
+                            showToast(t.msg_refreshed, 'success');
                         } else {
-                            // Red error box + Hint
-                            let extraHint = t_check_ip;
-                            if (data.message.includes("401")) extraHint = "Check API Key and API Secret.";
-                            if (data.message.includes("404")) extraHint = "Check Host IP and Port.";
-
-                            container.innerHTML = `
-                            <div style="padding: 12px; background: #ffebee; border: 1px solid #f44336; border-radius: 6px; color: #c62828;">
-                                <strong>${t_conn_error}</strong>
-                                <div style="margin-top: 8px; font-size: 0.9em; font-weight: bold;">
-                                    ${data.message || 'Unknown Error'}
-                                </div>
-                                <div style="margin-top: 5px; font-size: 0.8em; color: #666;">
-                                    ${extraHint}
-                                </div>
-                                ${hintHtml}
-                                <div style="margin-top: 8px; font-size: 0.8em; color: #666;">
-                                    ${t_check_logs}
-                                </div>
-                            </div>`;
+                            throw new Error("Parsed entities is not an array");
                         }
-                    } else {
-                        container.innerHTML = `<div style="color: #999;">${t_no_devices}</div>`;
+                    } catch (e) {
+                        console.error("JSON Parse Error", e);
+                        showToast("Error parsing new entities data.", 'error');
                     }
-                })
-                .catch(err => {
-                    console.error('Joan devices fetch error:', err);
-                    const t_conn_error = getTrans('msg_visionect_error');
-                    const t_check_logs = getTrans('msg_visionect_check_logs');
-
-                    container.innerHTML = `
-                    <div style="padding: 12px; background: #ffebee; border: 1px solid #f44336; border-radius: 6px; color: #c62828;">
-                        <strong>${t_conn_error}</strong>
-                        <div style="margin-top: 8px; font-size: 0.85em;">
-                            ${err.message}
-                        </div>
-                        <div style="margin-top: 8px; font-size: 0.8em; color: #666;">
-                            ${t_check_logs}
-                        </div>
-                    </div>`;
-                });
-        }
-
-        function renderJoanDevices(container, devices) {
-            let html = '<div style="display: flex; flex-direction: column; gap: 8px;">';
-            const t_choose = getTrans('btn_choose');
-
-            devices.forEach(dev => {
-                const isOnline = dev.online;
-                const statusColor = isOnline ? '#4caf50' : '#f44336';
-                const stateText = (dev.state || 'unknown').toUpperCase();
-                const batteryIcon = getBatteryIcon(dev.battery);
-                const rssi = dev.rssi !== '?' ? dev.rssi + ' dBm' : '?';
-
-                // RSSI Icon logic
-                let rssiIcon = 'mdi-wifi-strength-outline';
-                if (dev.rssi !== '?') {
-                    const r = parseInt(dev.rssi);
-                    if (r > -60) rssiIcon = 'mdi-wifi-strength-4';
-                    else if (r > -70) rssiIcon = 'mdi-wifi-strength-3';
-                    else if (r > -80) rssiIcon = 'mdi-wifi-strength-2';
-                    else rssiIcon = 'mdi-wifi-strength-1';
+                } else {
+                    console.error("Regex match failed for entitiesData");
+                    showToast("Could not find entity data in response.", 'error');
                 }
-
-                html += `
-            <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-input); margin-bottom: 8px;">
-                <div style="display: flex; align-items: center; gap: 12px;">
-                    <div style="width: 12px; height: 12px; border-radius: 50%; background-color: ${statusColor};" title="${stateText}"></div>
-                    <div>
-                        <div style="font-weight: bold; color: var(--text-main);">${dev.name}</div>
-                        <div style="font-size: 0.8em; color: #888;">
-                            UUID: <span style="font-family: monospace;">${dev.uuid.substring(0, 8)}...</span>
-                             • IP: ${dev.ip}
-                        </div>
-                        <div style="display: flex; gap: 10px; margin-top: 4px; font-size: 0.75em; font-weight: bold;">
-                            <span style="color: ${isOnline ? '#4caf50' : '#f44336'};">${stateText}</span>
-                            <span style="color: #666;"><i class="mdi ${rssiIcon}"></i> ${rssi}</span>
-                        </div>
-                    </div>
-                </div>
-                <div style="display: flex; align-items: center; gap: 15px;">
-                    <div style="display: flex; align-items: center; gap: 4px; color: var(--text-main);" title="Bateria: ${dev.battery || '?'}% (${dev.battery_voltage || '?'}V)">
-                        <span style="font-size: 1.3em;">${batteryIcon}</span>
-                        <span style="font-size: 1em; font-weight: 900;">${dev.battery !== null && dev.battery !== '?' ? dev.battery + '%' : '?'}</span>
-                    </div>
-                    <button class="btn" style="padding: 8px 16px; font-size: 0.9em; background: #2196f3;" 
-                        onclick="selectJoanDevice('${dev.uuid}')">
-                        ${t_choose}
-                    </button>
-                </div>
-            </div>`;
-            });
-
-            html += '</div>';
-            container.innerHTML = html;
-        }
-
-        function getBatteryIcon(level) {
-            if (level === null) return '🔋';
-            if (level >= 80) return '🔋';
-            if (level >= 50) return '🔋';
-            if (level >= 20) return '🪫';
-            return '🪫';
-        }
-
-        let selectedJoanUuid = null;
-
-        function selectJoanDevice(uuid) {
-            console.log("DEBUG: selectJoanDevice called with uuid:", uuid);
-            alert("Wykryto kliknięcie urządzenia: " + uuid);
-
-            if (!joanDevices || joanDevices.length === 0) {
-                alert(getTrans('msg_no_devices') || "BŁĄD: Lista urządzeń jest pusta.");
-                return;
-            }
-
-            const dev = joanDevices.find(d => d.uuid === uuid);
-            if (!dev) {
-                alert("BŁĄD: " + uuid);
-                return;
-            }
-
-            const name = dev.name || dev.uuid;
-            selectedJoanUuid = uuid;
-
-            const btn = document.getElementById('btn-send-joan');
-            if (btn) {
-                btn.style.display = 'block';
-                let label = getTrans('btn_send_joan_with_name') || 'Send to {0}';
-                label = label.replace('{0}', name);
-                btn.innerText = label;
-
-                showNotification(getTrans('msg_device_selected').replace('{0}', name), 'success');
-                closeJoanModal();
-
-                console.log("🚀 Joan device selected:", name, uuid);
-                // Automatically trigger sending
-                setTimeout(() => {
-                    console.log("📤 Automatic send to Joan starting...");
-                    sendToJoan();
-                }, 300);
-            } else {
-                console.error("btn-send-joan not found");
-            }
-        }
-
-        function sendToJoan() {
-            console.log("DEBUG: sendToJoan called for UUID:", selectedJoanUuid);
-            if (!selectedJoanUuid) {
-                alert(getTrans('msg_select_device_first') || "BŁĄD: Najpierw wybierz urządzenie!");
-                return;
-            }
-
-            const btn = document.getElementById('btn-send-joan');
-            const originalText = btn.innerText;
-            btn.disabled = true;
-            btn.innerText = getTrans('btn_send_joan_progress');
-
-            // We need the dashboard URL. We can construct it.
-            // Assuming the file name is 'joandashboard.dash' (default) or we need to pass the file name.
-            // But the user workflow suggests we generate code, then send.
-            // Ideally, we should save the dashboard first to ensure the URL is valid?
-            // For now, let's assume the user wants to send the CURRENT dashboard view (index 0 logic or by name).
-            // The most robust way is to send the URL to the HA dashboard.
-
-            // Construct URL: http://HA_IP:5050/joandashboard
-            // Or better, let the backend figure out the URL base if possible, OR send relative.
-            // Visionect needs ABSOLUTE URL.
-
-            // Let's use the current browser location to determine base, 
-            // but AppDaemon runs on port 5050 usually.
-            // Wait, the user accesses Generator on 5000/ingress. AppDaemon is on 5050.
-            // We need the AppDaemon URL.
-            // Let's try to infer it or just use a placeholder that the backend resolves?
-            // Actually, the backend `send_to_joan` expects `dashboard_url`.
-            // Let's try to construct it client-side.
-
-            const host = window.location.hostname;
-            // If via ingress, this might be tricky.
-            // Let's try a safe bet: Use the IP from connection_info if available, or just send the name
-            // and let backend handle it? No, backend takes URL.
-
-            // Simplified approach: Send the dashboard name. The backend doesn't know the full URL easily.
-            // Let's prompt user or just standard URL?
-            // Standard AD URL: http://[HOST]:5050/[DASH_NAME]
-
-            // BETTER: Use window.location.protocol + // + window.location.hostname + :5050 + /joandashboard
-            const dashName = currentLoadedDashName ? currentLoadedDashName.replace('.dash', '') : 'joandashboard';
-            let dashboardUrl = "";
-
-            if (visionectStatus && visionectStatus.dashboard_base_url) {
-                let baseUrl = visionectStatus.dashboard_base_url;
-                if (baseUrl.endsWith('/')) baseUrl = baseUrl.slice(0, -1);
-                dashboardUrl = `${baseUrl}/${dashName}`;
-            } else {
-                // Fallback: Use current hostname and port 5050
-                dashboardUrl = `${window.location.protocol}//${window.location.hostname}:5050/${dashName}`;
-            }
-
-            fetch('api/send_to_joan', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    uuid: selectedJoanUuid,
-                    url: dashboardUrl
-                })
             })
-                .then(r => r.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        showNotification(getTrans('msg_dash_sent_success').replace('{0}', ''), 'success');
-                    } else {
-                        showNotification("Error: " + data.message, 'error');
+            .catch(err => {
+                console.error(err);
+                showToast("Refresh error: " + err, 'error');
+            })
+            .finally(() => {
+                if (btn) btn.classList.remove('rotating');
+            });
+    }
+
+    function openAdConfig() {
+        document.getElementById('ad-config-modal').style.display = 'block';
+    }
+    function closeAdConfig() {
+        document.getElementById('ad-config-modal').style.display = 'none';
+    }
+    function copyToClipboardText(elementId) {
+        const textObj = document.getElementById(elementId);
+        if (!textObj) {
+            showToast("Error: Element not found " + elementId, 'error');
+            return;
+        }
+        const text = textObj.innerText;
+
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast(TRANSLATIONS[currentLang].copy_success, 'success');
+            }).catch(err => {
+                // Fallback
+                fallbackCopyTextToClipboard(text);
+            });
+        } else {
+            fallbackCopyTextToClipboard(text);
+        }
+    }
+
+    function fallbackCopyTextToClipboard(text) {
+        var textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.position = "fixed";  // Avoid scrolling to bottom
+        textArea.style.left = "-9999px";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+
+        try {
+            var successful = document.execCommand('copy');
+            if (successful) {
+                showToast(TRANSLATIONS[currentLang].copy_success, 'success');
+            } else {
+                showToast(TRANSLATIONS[currentLang].copy_error + " (fallback failed)", 'error');
+            }
+        } catch (err) {
+            showToast(TRANSLATIONS[currentLang].copy_error + err, 'error');
+        }
+        document.body.removeChild(textArea);
+    }
+
+    // Opcjonalnie: Zamknij okno po kliknięciu poza nim
+    window.addEventListener('click', function (event) {
+        const helpModal = document.getElementById('battery-help-modal');
+        const visionectModal = document.getElementById('visionect-help-modal');
+        const configModal = document.getElementById('ad-config-modal');
+        if (event.target == helpModal) closeBatteryHelp();
+        if (event.target == visionectModal) closeVisionectHelp();
+        if (event.target == configModal) closeAdConfig();
+    });
+</script>
+
+<!-- Import Modal -->
+<div id="import-modal" class="modal"
+    style="display:none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);">
+    <div class="modal-content"
+        style="background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 50%; max-width: 500px; border-radius: 8px;">
+        <h3 id="import-title" style="margin-top:0" data-i18n="modal_import_title">Wybierz Dashboard</h3>
+        <div id="dashboard-list"
+            style="max-height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; margin-bottom: 20px;">
+            <p data-i18n="modal_import_loading">Ładowanie listy...</p>
+        </div>
+        <div style="text-align: right;">
+            <button type="button" class="btn btn-gen" onclick="closeImportModal()" data-i18n="btn_cancel"
+                style="background-color: #757575;">Anuluj</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openImportModal() {
+        document.getElementById('import-modal').style.display = 'block';
+
+        // Refresh translations for modal
+        const t = TRANSLATIONS[currentLang];
+        const titleEl = document.getElementById('import-title');
+        if (titleEl && t.modal_import_title) titleEl.innerText = t.modal_import_title;
+
+        const list = document.getElementById('dashboard-list');
+        list.innerHTML = `<p>${t.modal_import_loading || "Loading..."}</p>`;
+
+        fetch('api/list_dashboards')
+            .then(r => r.text())
+            .then(text => {
+                try {
+                    return JSON.parse(text);
+                } catch (e) {
+                    console.error("JSON Parse Error. Raw response:", text);
+                    throw new Error("Invalid JSON: " + text.substring(0, 50) + "... (" + e.message + ")");
+                }
+            })
+            .then(data => {
+                list.innerHTML = '';
+                if (data.status === 'success' && data.files.length > 0) {
+                    data.files.forEach(f => {
+                        const div = document.createElement('div');
+                        div.style.padding = '8px';
+                        div.style.cursor = 'pointer';
+                        div.style.borderBottom = '1px solid #eee';
+                        div.style.color = '#333'; // Force dark text
+                        div.style.backgroundColor = '#fff'; // Force white background
+                        div.innerText = f.name; // Display name
+
+                        div.onclick = () => loadDashboard(f.name);
+                        div.onmouseover = () => div.style.backgroundColor = '#e3f2fd';
+                        div.onmouseout = () => div.style.backgroundColor = '#fff';
+
+                        list.appendChild(div);
+                    });
+                } else {
+                    list.innerText = t.modal_import_empty || "No files found.";
+                }
+            })
+            .catch(err => {
+                list.innerText = "Error: " + err;
+            });
+    }
+
+    function closeImportModal() {
+        document.getElementById('import-modal').style.display = 'none';
+    }
+
+    function loadDashboard(filename) {
+        const t = TRANSLATIONS[currentLang];
+        // Confirm first? Maybe not needed for just viewing code, but good practice if checking overwrite
+        // User asked to just "load here", so we will fetch and put into textarea.
+
+        fetch('api/read_dashboard/' + encodeURIComponent(filename))
+            .then(r => r.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const importArea = document.getElementById('import-code');
+                    if (importArea) {
+                        importArea.value = data.content;
+                        // Scroll to the import section
+                        document.getElementById('import-section').scrollIntoView({ behavior: 'smooth' });
+                        closeImportModal();
+                        showToast("✅ " + filename + " wczytany do edytora!", 'success');
                     }
-                })
-                .catch(err => {
-                    showNotification("Connection Error: " + err, 'error');
-                })
-                .finally(() => {
-                    btn.disabled = false;
-                    btn.innerText = originalText;
-                });
+                } else {
+                    alert("Error: " + data.message);
+                }
+            })
+            .catch(err => {
+                alert("Error loading file: " + err);
+            });
+    }
+
+    // Close modal when clicking outside (extended)
+    const existingWindowOnClick = window.onclick;
+    window.onclick = function (event) {
+        if (existingWindowOnClick) existingWindowOnClick(event);
+
+        const modal = document.getElementById('import-modal');
+        const linksModal = document.getElementById('links-modal');
+        if (event.target == modal) {
+            closeImportModal();
         }
-
-        function showNotification(message, type) {
-            // Simple notification
-            const existing = document.querySelector('.joan-notification');
-            if (existing) existing.remove();
-
-            const div = document.createElement('div');
-            div.className = 'joan-notification';
-            div.style.cssText = `
-            position: fixed; top: 20px; right: 20px; padding: 15px 25px; border-radius: 8px; z-index: 100010;
-            font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.3); animation: slideIn 0.3s ease;
-            ${type === 'success' ? 'background: #4caf50; color: white;' : 'background: #f44336; color: white;'}
-        `;
-            div.textContent = message;
-            document.body.appendChild(div);
-
-            setTimeout(() => div.remove(), 4000);
+        if (event.target == linksModal) {
+            closeLinksModal();
         }
-    </script>
+    }
 
-    <!-- INFO MODAL (System Details) -->
-    <div id="info-modal" class="modal">
-        <div class="modal-content" style="max-width: 700px;">
-            <div class="modal-header">
-                <h2 data-i18n="modal_info_title">Szczegóły Systemu</h2>
-                <span class="close" onclick="closeInfoModal()">&times;</span>
-            </div>
-            <div class="modal-body" style="line-height: 1.8;">
-                <p><strong><span data-i18n="info_lbl_entities">Liczba Encji:</span></strong> <span
-                        id="info-entities">-</span></p>
-                <p><strong><span data-i18n="info_lbl_slug">AppDaemon Slug:</span></strong> <span
-                        id="info-ad-slug">-</span>
-                </p>
-                <p><strong><span data-i18n="info_lbl_source">Źródło API:</span></strong> <span
-                        id="info-api-source">-</span>
-                </p>
-                <p><strong><span data-i18n="info_lbl_bridge">Plik dash_saver.py:</span></strong> <span
-                        id="info-bridge">-</span></p>
+    // Auto-run IP replacement on load
+    document.addEventListener('DOMContentLoaded', () => {
+        if (typeof updateResultPathsToHost === 'function') {
+            updateResultPathsToHost();
+        }
+    });
+    // Info Modal Logic
+    function showInfoModal() {
+        const m = document.getElementById('info-modal');
+        if (!m) return;
 
-                <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;">
+        // Populate fields
+        document.getElementById('info-entities').innerText = typeof connectionInfo !== 'undefined' ? connectionInfo.entity_count : '-';
+        document.getElementById('info-ad-slug').innerText = typeof connectionInfo !== 'undefined' ? connectionInfo.appdaemon_slug : '-';
+        document.getElementById('info-api-source').innerText = typeof connectionInfo !== 'undefined' ? connectionInfo.token_source : '-';
 
-                <p><strong>Ścieżka Config AppDaemon:</strong> <br>
-                    <code id="info-path"
-                        data-template="\\\[HA_IP]\addon_configs\a0d7b954_appdaemon\">\\HA_IP\addon_configs...</code>
-                </p>
+        const bridgeActive = typeof connectionInfo !== 'undefined' && connectionInfo.bridge_active;
+        const brText = bridgeActive ? TRANSLATIONS[currentLang].info_bridge_yes : TRANSLATIONS[currentLang].info_bridge_no;
+        document.getElementById('info-bridge').innerText = brText;
+        document.getElementById('info-bridge').style.color = bridgeActive ? 'green' : 'red';
 
-                <hr style="margin: 15px 0; border: 0; border-top: 1px solid var(--border);">
+        const dashCount = typeof dashboardsList !== 'undefined' ? dashboardsList.length : 0;
+        document.getElementById('info-dash-count').innerText = dashCount;
 
-                <p><strong>Liczba Dashboardów (.dash):</strong> <span id="info-dash-count">-</span></p>
-                <div id="info-dash-list"
-                    style="font-size: 0.85em; max-height: 150px; overflow-y: auto; background: var(--bg-input); padding: 10px; border-radius: 6px; border: 1px solid var(--border); display: none; margin-top: 8px;">
-                </div>
-
-                <div
-                    style="background-color: #fff3cd; color: #856404; padding: 10px; border-radius: 4px; margin-top: 15px; font-size: 0.9em;">
-                    <span data-i18n="msg_new_entities_warning">⚠️ Ważne: Jeśli dodałeś nowe encje w Home Assistant
-                        podczas
-                        tworzenia dashboardu, musisz zrestartować AppDaemon aby je wykryć!</span>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-cancel" onclick="closeInfoModal()"
-                    data-i18n="btn_cancel">Zamknij</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- JOAN 6 SELECTION MODAL -->
-    <div id="joan-modal" class="modal">
-        <div class="modal-content" style="max-width: 700px;">
-            <div class="modal-header">
-                <h2 data-i18n="lbl_joan_devices">URZĄDZENIA JOAN 6</h2>
-                <span class="close" onclick="closeJoanModal()">&times;</span>
-            </div>
-            <div class="modal-body">
-                <div style="display: flex; justify-content: flex-end; margin-bottom: 15px;">
-                    <button class="btn" style="padding: 5px 10px; font-size: 0.8em; background: #607d8b;"
-                        onclick="refreshJoanDevices()">
-                        🔄 <span data-i18n="btn_refresh_entities_title">Odśwież</span>
-                    </button>
-                </div>
-                <div id="joan-devices-container" style="min-height: 100px;">
-                    <div style="color: #bbb; font-style: italic;" data-i18n="msg_loading_devices">⏳ Ładowanie...</div>
-                </div>
-                <div
-                    style="margin-top: 20px; font-size: 0.85em; color: #666; background: #f5f5f5; padding: 10px; border-radius: 6px; border-left: 4px solid #9c27b0;">
-                    <i class="mdi mdi-information-outline"></i> <span
-                        data-i18n="msg_visionect_config_hint_short">Wybierz
-                        urządzenie, aby móc wysłać na nie wygenerowany dashboard.</span>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-cancel" onclick="closeJoanModal()"
-                    data-i18n="btn_cancel">Zamknij</button>
-            </div>
-        </div>
-    </div>
-    </div>
-
-    <!-- USEFUL LINKS MODAL -->
-    <div id="links-modal" class="modal" style="z-index: 100001;">
-        <div class="modal-content" style="max-width: 600px;">
-            <div class="modal-header">
-                <h2 data-i18n="modal_links_title">Przydatne Linki</h2>
-                <span class="close" onclick="closeLinksModal()">&times;</span>
-            </div>
-            <div class="modal-body" style="font-size: 0.95em; line-height: 1.6;">
-                <ul style="list-style: none; padding: 0;">
-                    <li
-                        style="margin-bottom: 15px; padding: 12px; background: #f9f9f9; border-left: 4px solid #4caf50; border-radius: 4px;">
-                        <a href="https://github.com/Adam7411/visionect-v3-allinone" target="_blank"
-                            style="text-decoration: none; color: #1565c0; font-weight: bold;">
-                            Visionect Software Suite Server v3 (All‑in‑One) installation in Home Assistant
-                        </a>
-                    </li>
-                    <li
-                        style="margin-bottom: 15px; padding: 12px; background: #f9f9f9; border-left: 4px solid #4caf50; border-radius: 4px;">
-                        <a href="https://github.com/Adam7411/Joan-6-Visionect_Home-Assistant_EN" target="_blank"
-                            style="text-decoration: none; color: #1565c0; font-weight: bold;">
-                            Visionect Software Suite - Installation in Proxmox
-                        </a>
-                    </li>
-                    <li
-                        style="margin-bottom: 15px; padding: 12px; background: #f9f9f9; border-left: 4px solid #4caf50; border-radius: 4px;">
-                        <a href="https://github.com/Adam7411/visionect_joan" target="_blank"
-                            style="text-decoration: none; color: #1565c0; font-weight: bold;">
-                            Visionect Joan for Home Assistant add-on
-                        </a>
-                    </li>
-                    <li
-                        style="margin-bottom: 15px; padding: 12px; background: #f9f9f9; border-left: 4px solid #4caf50; border-radius: 4px;">
-                        <a href="https://github.com/Adam7411/joan_generator" target="_blank"
-                            style="text-decoration: none; color: #1565c0; font-weight: bold;">
-                            Joan 6: AppDaemon Dashboard Generator add-on
-                        </a>
-                    </li>
-                </ul>
-            </div>
-            <div class="modal-footer"
-                style="padding-top: 10px; border-top: 1px solid #ddd; display: flex; justify-content: flex-end;">
-                <button type="button" class="btn" style="background: #607d8b; color: white;" onclick="closeLinksModal()"
-                    data-i18n="btn_cancel">Zamknij</button>
-            </div>
-        </div>
-    </div>
+        // Update dynamic path
+        const pathEl = document.getElementById('info-path');
+        if (pathEl) {
+            const host = window.location.hostname || '[HA_IP]';
+            pathEl.textContent = pathEl.getAttribute('data-template').replace(/\[HA_IP\]/g, host);
+        }
+        m.style.display = 'block';
+    }
+    function closeInfoModal() { document.getElementById('info-modal').style.display = 'none'; }
+</script>
 </body>
+
+<!-- INFO MODAL -->
+<div id="info-modal" class="modal" style="z-index: 100000;">
+    <div class="modal-content" style="max-width: 500px;">
+        <div class="modal-header">
+            <h2 data-i18n="modal_info_title">Szczegóły Systemu</h2>
+            <span class="close" onclick="closeInfoModal()">&times;</span>
+        </div>
+        <div class="modal-body" style="font-size: 0.95em; line-height: 1.6;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div><strong data-i18n="info_lbl_entities">Liczba Encji:</strong></div>
+                <div id="info-entities">...</div>
+
+                <div><strong data-i18n="info_lbl_slug">AppDaemon Slug:</strong></div>
+                <div id="info-ad-slug">...</div>
+
+                <div><strong data-i18n="info_lbl_source">Źródło API:</strong></div>
+                <div id="info-api-source">...</div>
+
+                <div><strong data-i18n="info_lbl_bridge">Plik dash_saver.py:</strong></div>
+                <div id="info-bridge" style="font-weight: bold;">...</div>
+
+                <div><strong data-i18n="info_lbl_dash_count">Liczba Dashboardów:</strong></div>
+                <div id="info-dash-count">...</div>
+            </div>
+            <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #ddd;">
+                <div><strong>Ścieżka Config AppDaemon:</strong></div>
+                <div id="info-path" data-template="\\[HA_IP]\addon_configs\{{ connection_info.appdaemon_slug }}\"
+                    style="font-family: monospace; background: #f5f5f5; padding: 5px; border-radius: 4px; margin-top: 5px; word-break: break-all; color: #333;">
+                    ...
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- USEFUL LINKS MODAL -->
+<div id="links-modal" class="modal" style="z-index: 100001;">
+    <div class="modal-content" style="max-width: 600px;">
+        <div class="modal-header">
+            <h2 data-i18n="modal_links_title">Przydatne Linki</h2>
+            <span class="close" onclick="closeLinksModal()">&times;</span>
+        </div>
+        <div class="modal-body" style="font-size: 0.95em; line-height: 1.6;">
+            <ul style="list-style: none; padding: 0;">
+                <li
+                    style="margin-bottom: 15px; padding: 12px; background: #f9f9f9; border-left: 4px solid #4caf50; border-radius: 4px;">
+                    <a href="https://github.com/Adam7411/visionect-v3-allinone" target="_blank"
+                        style="text-decoration: none; color: #1565c0; font-weight: bold;">
+                        Visionect Software Suite Server v3 (All‑in‑One) installation in Home Assistant
+                    </a>
+                </li>
+                <li
+                    style="margin-bottom: 15px; padding: 12px; background: #f9f9f9; border-left: 4px solid #4caf50; border-radius: 4px;">
+                    <a href="https://github.com/Adam7411/Joan-6-Visionect_Home-Assistant_EN" target="_blank"
+                        style="text-decoration: none; color: #1565c0; font-weight: bold;">
+                        Visionect Software Suite - Installation in Proxmox
+                    </a>
+                </li>
+                <li
+                    style="margin-bottom: 15px; padding: 12px; background: #f9f9f9; border-left: 4px solid #4caf50; border-radius: 4px;">
+                    <a href="https://github.com/Adam7411/visionect_joan" target="_blank"
+                        style="text-decoration: none; color: #1565c0; font-weight: bold;">
+                        Visionect Joan for Home Assistant add-on
+                    </a>
+                </li>
+                <li
+                    style="margin-bottom: 15px; padding: 12px; background: #f9f9f9; border-left: 4px solid #4caf50; border-radius: 4px;">
+                    <a href="https://github.com/Adam7411/joan_generator" target="_blank"
+                        style="text-decoration: none; color: #1565c0; font-weight: bold;">
+                        Joan 6: AppDaemon Dashboard Generator add-on
+                    </a>
+                </li>
+            </ul>
+        </div>
+        <div class="modal-footer"
+            style="padding-top: 10px; border-top: 1px solid #ddd; display: flex; justify-content: flex-end;">
+            <button type="button" class="btn" style="background: #607d8b; color: white;" onclick="closeLinksModal()"
+                data-i18n="btn_cancel">Zamknij</button>
+        </div>
+    </div>
+</div>
 
 </html>
