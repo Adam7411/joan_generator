@@ -1274,10 +1274,10 @@ def get_joan_devices():
     # Strip trailing slash from host to be safe
     host = host.rstrip("/")
 
-    # Try paths. Standard is /api/device
+    # Try paths. Standard is /api/device/ (trailing slash required by some servers)
     urls_to_try = [
-        f"{host}/api/device",
         f"{host}/api/device/",
+        f"{host}/api/device",
         f"{host}/api/v1/device"
     ]
 
