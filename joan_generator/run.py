@@ -55,6 +55,7 @@ except Exception as e:
 VISIONECT_HOST = None
 VISIONECT_API_KEY = None
 VISIONECT_API_SECRET = None
+DASHBOARD_BASE_URL = None
 
 try:
     options_path = '/data/options.json'
@@ -64,8 +65,11 @@ try:
             VISIONECT_HOST = options.get('visionect_host', '').strip() or None
             VISIONECT_API_KEY = options.get('visionect_api_key', '').strip() or None
             VISIONECT_API_SECRET = options.get('visionect_api_secret', '').strip() or None
+            DASHBOARD_BASE_URL = options.get('dashboard_base_url', '').strip() or None
             if VISIONECT_HOST:
                 print(f"🖥️ Visionect Server: {VISIONECT_HOST}")
+            if DASHBOARD_BASE_URL:
+                print(f"🔗 Dashboard Base URL: {DASHBOARD_BASE_URL}")
 except Exception as e:
     print(f"ℹ️ Info: Could not read Visionect config: {e}")
 
@@ -1224,26 +1228,38 @@ import base64
 import wsgiref.handlers
 import time
 
-def _visionect_hmac_headers(api_key, api_secret, method, endpoint):
+def _visionect_hmac_headers(api_key, api_secret, method, endpoint, body=None):
     """Build HMAC headers for Visionect API authentication."""
     if not api_key or not api_secret:
         return {}
     
-    # Extract path from URL if full URL is provided (Visionect expects signature on Path only)
+    # Extract path from URL if full URL is provided
     sign_endpoint = endpoint
     if "://" in sign_endpoint:
         from urllib.parse import urlparse
         sign_endpoint = urlparse(sign_endpoint).path
 
-    # Normalize endpoint logic to match visionect_joan (ensure trailing slash for signature)
-    if not sign_endpoint.endswith("/") and "/api" in sign_endpoint:
+    # Normalize endpoint logic to match visionect_joan
+    if not sign_endpoint.endswith("/") and "/api" in sign_endpoint and "restart" not in sign_endpoint:
          sign_endpoint += "/"
 
     content_type = "application/json"
     date_hdr = wsgiref.handlers.format_date_time(time.time())
     
-    signature_base = f"{method.upper()}\n\n{content_type}\n{date_hdr}\n{sign_endpoint}"
-    print(f"🔐 DEBUG AUTH: Signing endpoint '{sign_endpoint}' for URL '{endpoint}'", flush=True)
+    # Visionect requires SHA256 of body if present
+    content_md5 = ""
+    if body:
+        if isinstance(body, dict):
+            body_str = json.dumps(body, separators=(',', ':'))
+        else:
+            body_str = body
+        content_md5 = hashlib.sha256(body_str.encode('utf-8')).hexdigest()
+
+    signature_base = f"{method.upper()}\n{content_md5}\n{content_type}\n{date_hdr}\n{sign_endpoint}"
+    
+    # Debug logout for troubleshooting
+    # print(f"🔐 DEBUG AUTH: Base:\n{signature_base.replace('\n', '\\n')}")
+    
     h = hmac.new(api_secret.encode("utf-8"), signature_base.encode("utf-8"), hashlib.sha256)
     auth = f"{api_key}:{base64.b64encode(h.digest()).decode('ascii').strip()}"
     
@@ -1328,20 +1344,29 @@ def get_joan_devices():
                     # Robust IP detection
                     ip = d.get('IP') or status_obj.get('IP') or last_status_obj.get('IP') or "Unknown"
 
+                    # WiFi Signal (RSSI)
+                    rssi = status_obj.get('RSSI') or last_status_obj.get('RSSI') or d.get('RSSI')
+                    
+                    # State (online/offline)
+                    state = d.get('State', 'unknown')
+
                     # Check online status - simplified
                     # Status 0 is usually OK/Online in Visionect
-                    is_online = False
-                    current_status_code = status_obj.get('Status')
-                    if current_status_code == 0:
-                        is_online = True
-                    elif current_status_code is None and last_status_obj.get('Status') == 0:
-                        is_online = True
+                    is_online = (state.lower() == 'online')
+                    if not is_online:
+                        current_status_code = status_obj.get('Status')
+                        if current_status_code == 0:
+                            is_online = True
+                        elif current_status_code is None and last_status_obj.get('Status') == 0:
+                            is_online = True
                     
                     devices_list.append({
                         "name": d.get('Name', d.get('Uuid', 'Unknown')),
                         "uuid": d.get('Uuid'),
                         "status": status_obj,
                         "online": is_online,
+                        "state": state,
+                        "rssi": rssi if rssi is not None else "?",
                         "battery": battery_level if battery_level is not None else "?",
                         "battery_voltage": voltage if voltage is not None else "?",
                         "ip": ip
@@ -1414,14 +1439,14 @@ def send_to_joan_device(uuid, dashboard_url):
         session_data["Backend"]["Fields"]["ReloadTimeout"] = "300"  # 5 minutes
         
         # Send updated session
-        put_headers = _visionect_hmac_headers(VISIONECT_API_KEY, VISIONECT_API_SECRET, "PUT", f"/api/session/{uuid}/")
+        put_headers = _visionect_hmac_headers(VISIONECT_API_KEY, VISIONECT_API_SECRET, "PUT", f"/api/session/{uuid}/", body=session_data)
         put_headers["Content-Type"] = "application/json"
         
         print(f"📤 Setting URL for {uuid}: {dashboard_url}")
         put_response = requests.put(
             session_url, 
             headers=put_headers, 
-            json=session_data, 
+            data=json.dumps(session_data, separators=(',', ':')), 
             timeout=10
         )
         
@@ -1433,7 +1458,7 @@ def send_to_joan_device(uuid, dashboard_url):
             
             return {"status": "success", "message": f"Dashboard sent to device {uuid}"}
         else:
-            return {"status": "error", "message": f"Failed to set URL: {put_response.status_code}"}
+            return {"status": "error", "message": f"Failed to set URL: {put_response.status_code} - {put_response.text}"}
     except Exception as e:
         print(f"❌ Error sending to Joan device: {e}")
         return {"status": "error", "message": str(e)}
@@ -1469,7 +1494,8 @@ def api_visionect_status():
     return jsonify({
         "configured": bool(VISIONECT_HOST),
         "host": VISIONECT_HOST or "",
-        "has_credentials": bool(VISIONECT_API_KEY and VISIONECT_API_SECRET)
+        "has_credentials": bool(VISIONECT_API_KEY and VISIONECT_API_SECRET),
+        "dashboard_base_url": DASHBOARD_BASE_URL
     })
 
 
