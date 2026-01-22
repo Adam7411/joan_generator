@@ -4846,13 +4846,12 @@ class DashSaver(hass.Hass):
                     const isConfigMissing = data.message && (data.message.toLowerCase().includes('not configured') || data.message.toLowerCase().includes('missing'));
 
                     let hintHtml = `
-                        <div style="margin-top: 12px; font-size: 0.9em; color: #856404; background: #fff3cd; padding: 10px; border-radius: 4px; border: 1px solid #ffeeba;">
+                        <div style="margin-top: 12px; font-size: 0.95em; color: #856404; background: #fff3cd; padding: 10px; border-radius: 4px; border: 1px solid #ffeeba;">
                             <strong>${t_config_hint}</strong>
-                            <ul style="margin: 5px 0 0 20px; padding: 0;">
-                                <li><code>visionect_host</code> - (e.g. 192.168.1.100:8081)</li>
-                                <li><code>visionect_api_key</code> - API Key</li>
-                                <li><code>visionect_api_secret</code> - API Secret</li>
-                            </ul>
+                            <pre style="margin: 8px 0 0 0; padding: 10px; background: #fdfdfd; border: 1px solid #ddd; border-radius: 4px; font-family: monospace; white-space: pre-wrap;">visionect_host: "192.168.1.100:8081"
+visionect_api_key: "YOUR_API_KEY"
+visionect_api_secret: "YOUR_API_SECRET"</pre>
+                            <div style="margin-top: 5px; font-size: 0.85em;">(Znajdziesz to w konfiguracji dodatku)</div>
                         </div>`;
 
                     if (isConfigMissing) {
