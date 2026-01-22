@@ -1,14 +1,10 @@
 {
   "name": "Joan 6: AppDaemon Dashboard Generator",
-  "version": "1.5.0",
+  "version": "1.4.2",
   "slug": "joan_generator",
   "description": ".dash file creator for AppDaemon, optimized for Visionect Joan 6 screens.",
   "url": "https://github.com/Adam7411/joan_generator",
-  "arch": [
-    "aarch64",
-    "amd64",
-    "armv7"
-  ],
+  "arch": ["aarch64", "amd64", "armv7"],
   "startup": "application",
   "boot": "auto",
   "hassio_api": true,
@@ -24,15 +20,9 @@
   },
   "webui": "[PROTO:ssl]://[HOST]:[PORT:5000]/",
   "options": {
-    "manual_token": "",
-    "visionect_host": "",
-    "visionect_api_key": "",
-    "visionect_api_secret": ""
+    "manual_token": ""
   },
   "schema": {
-    "manual_token": "str?",
-    "visionect_host": "str?",
-    "visionect_api_key": "str?",
-    "visionect_api_secret": "str?"
+    "manual_token": "str"
   }
 }
