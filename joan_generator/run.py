@@ -1275,11 +1275,11 @@ def get_joan_devices():
         try:
             headers = _visionect_hmac_headers(api_key, api_secret, "GET", api_url) if api_key and api_secret else {}
             
-            print(f"🔭 DEBUG: Connecting to Visionect: {api_url}")
+            print(f"🔭 DEBUG: Connecting to Visionect: {api_url}", flush=True)
             
             response = requests.get(api_url, headers=headers, timeout=5)
             
-            print(f"🔭 DEBUG: Response {response.status_code} from {api_url}")
+            print(f"🔭 DEBUG: Response {response.status_code} from {api_url}", flush=True)
             
             if response.status_code == 200:
                 devices_data = response.json()
@@ -1350,13 +1350,14 @@ def get_joan_devices():
             print(f"❌ Unexpected error fetching Joan devices: {e}")
             break
 
-    print(f"❌ Failed to fetch devices. Last error: {last_error}")
+    print(f"❌ Failed to fetch devices. Last error: {last_error}", flush=True)
     
+    # Enhance error message for user
     final_message = last_error
     if "404" in last_error:
-        final_message += " (Check Host/IP and API path)"
+        final_message += f" (Checked: {host})"
     if "Connection Failed" in last_error:
-        final_message += " (Check Host IP/Port)"
+        final_message += f" (Failed to reach: {host})"
         
     return {"status": "error", "message": final_message, "devices": []}
 
