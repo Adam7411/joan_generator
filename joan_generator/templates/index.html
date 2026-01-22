@@ -1558,7 +1558,7 @@
         let rawImportedDefs = {{ custom_defs | tojson | safe }} || {};
         let dragSrc = null;
         let globalDefaultSize = { w: 2, h: 1 };
-        let currentLoadedDashName = null;
+        let currentLoadedDashName = "{{ filename }}";
         let currentIconInputId = null;
         let copiedRow = null;
         let copiedWidget = null;
@@ -5013,13 +5013,13 @@ visionect_api_secret: "YOUR_API_SECRET"</pre>
         console.log("DEBUG: selectJoanDevice called with uuid:", uuid);
 
         if (!joanDevices || joanDevices.length === 0) {
-            alert("BŁĄD: Lista urządzeń jest pusta. Odśwież urządzenia.");
+            alert(getTrans('msg_no_devices') || "BŁĄD: Lista urządzeń jest pusta.");
             return;
         }
 
         const dev = joanDevices.find(d => d.uuid === uuid);
         if (!dev) {
-            alert("BŁĄD: Nie znaleziono urządzenia o UUID: " + uuid);
+            alert("BŁĄD: " + uuid);
             return;
         }
 
@@ -5050,7 +5050,7 @@ visionect_api_secret: "YOUR_API_SECRET"</pre>
     function sendToJoan() {
         console.log("DEBUG: sendToJoan called for UUID:", selectedJoanUuid);
         if (!selectedJoanUuid) {
-            alert("BŁĄD: Najpierw wybierz urządzenie!");
+            alert(getTrans('msg_select_device_first') || "BŁĄD: Najpierw wybierz urządzenie!");
             return;
         }
 
