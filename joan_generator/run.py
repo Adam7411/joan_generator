@@ -1224,17 +1224,22 @@ import base64
 import wsgiref.handlers
 import time
 
-def _visionect_hmac_headers(method, endpoint):
+def _visionect_hmac_headers(api_key, api_secret, method, endpoint):
     """Build HMAC headers for Visionect API authentication."""
-    if not VISIONECT_API_KEY or not VISIONECT_API_SECRET:
+    if not api_key or not api_secret:
         return {}
     
+    # Normalize endpoint logic to match visionect_joan (ensure trailing slash for signature)
+    sign_endpoint = endpoint
+    if not sign_endpoint.endswith("/") and "/api" in sign_endpoint:
+         sign_endpoint += "/"
+
     content_type = "application/json"
     date_hdr = wsgiref.handlers.format_date_time(time.time())
     
-    signature_base = f"{method.upper()}\n\n{content_type}\n{date_hdr}\n{endpoint}"
-    h = hmac.new(VISIONECT_API_SECRET.encode("utf-8"), signature_base.encode("utf-8"), hashlib.sha256)
-    auth = f"{VISIONECT_API_KEY}:{base64.b64encode(h.digest()).decode('ascii').strip()}"
+    signature_base = f"{method.upper()}\n\n{content_type}\n{date_hdr}\n{sign_endpoint}"
+    h = hmac.new(api_secret.encode("utf-8"), signature_base.encode("utf-8"), hashlib.sha256)
+    auth = f"{api_key}:{base64.b64encode(h.digest()).decode('ascii').strip()}"
     
     return {
         "Date": date_hdr,
@@ -1244,9 +1249,10 @@ def _visionect_hmac_headers(method, endpoint):
 
 def get_joan_devices():
     """Fetch all Joan 6 devices from Visionect Server."""
-    host = connection_info.get("visionect_host")
-    api_key = connection_info.get("visionect_api_key")
-    api_secret = connection_info.get("visionect_api_secret")
+    # Use global configuration variables
+    host = VISIONECT_HOST
+    api_key = VISIONECT_API_KEY
+    api_secret = VISIONECT_API_SECRET
 
     if not host:
         return {"status": "error", "message": "Visionect Host not configured"}
@@ -1375,7 +1381,7 @@ def send_to_joan_device(uuid, dashboard_url):
         
         # First, get current session data
         session_url = f"{host}/api/session/{uuid}/"
-        headers = _visionect_hmac_headers("GET", f"/api/session/{uuid}/")
+        headers = _visionect_hmac_headers(VISIONECT_API_KEY, VISIONECT_API_SECRET, "GET", f"/api/session/{uuid}/")
         
         print(f"📡 Fetching session for {uuid}")
         response = requests.get(session_url, headers=headers, timeout=10)
@@ -1396,7 +1402,7 @@ def send_to_joan_device(uuid, dashboard_url):
         session_data["Backend"]["Fields"]["ReloadTimeout"] = "300"  # 5 minutes
         
         # Send updated session
-        put_headers = _visionect_hmac_headers("PUT", f"/api/session/{uuid}/")
+        put_headers = _visionect_hmac_headers(VISIONECT_API_KEY, VISIONECT_API_SECRET, "PUT", f"/api/session/{uuid}/")
         put_headers["Content-Type"] = "application/json"
         
         print(f"📤 Setting URL for {uuid}: {dashboard_url}")
@@ -1410,7 +1416,7 @@ def send_to_joan_device(uuid, dashboard_url):
         if put_response.status_code in [200, 201, 204]:
             # Restart session to apply changes
             restart_url = f"{host}/api/session/{uuid}/restart"
-            restart_headers = _visionect_hmac_headers("POST", f"/api/session/{uuid}/restart")
+            restart_headers = _visionect_hmac_headers(VISIONECT_API_KEY, VISIONECT_API_SECRET, "POST", f"/api/session/{uuid}/restart")
             requests.post(restart_url, headers=restart_headers, timeout=10)
             
             return {"status": "success", "message": f"Dashboard sent to device {uuid}"}
