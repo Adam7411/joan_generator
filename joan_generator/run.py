@@ -1304,11 +1304,17 @@ def get_joan_devices():
 
                 devices_list = []
                 for d in devices_data:
+                    # Robust battery detection
                     battery_level = d.get('Battery')
-                    voltage = d.get('Status', {}).get('Voltage')
+                    status_obj = d.get('Status', {})
+                    last_status_obj = d.get('LastStatus', {})
                     
-                    if voltage is None and 'Voltage' in d:
-                        voltage = d['Voltage']
+                    voltage = d.get('Voltage')
+                    if voltage is None:
+                        voltage = status_obj.get('Voltage') or last_status_obj.get('Voltage')
+
+                    if battery_level is None:
+                        battery_level = status_obj.get('Battery') or last_status_obj.get('Battery')
 
                     if battery_level is None and voltage:
                         try:
@@ -1317,27 +1323,27 @@ def get_joan_devices():
                             pct = int((v - 3.6) / (4.2 - 3.6) * 100)
                             battery_level = max(0, min(100, pct))
                         except (ValueError, TypeError):
-                            battery_level = 0
+                            battery_level = None
 
-                    ip = "Unknown"
-                    if 'IP' in d: ip = d['IP']
-                    elif 'Status' in d and 'IP' in d['Status']: ip = d['Status']['IP']
+                    # Robust IP detection
+                    ip = d.get('IP') or status_obj.get('IP') or last_status_obj.get('IP') or "Unknown"
 
                     # Check online status - simplified
+                    # Status 0 is usually OK/Online in Visionect
                     is_online = False
-                    status_obj = d.get('Status', {})
-                    if status_obj:
-                         # LastSeen is timestamp. If recent (e.g. 1h) -> online?
-                         # Or verify Status code. 0 is OK.
-                         if status_obj.get('Status') == 0: is_online = True
+                    current_status_code = status_obj.get('Status')
+                    if current_status_code == 0:
+                        is_online = True
+                    elif current_status_code is None and last_status_obj.get('Status') == 0:
+                        is_online = True
                     
                     devices_list.append({
                         "name": d.get('Name', d.get('Uuid', 'Unknown')),
                         "uuid": d.get('Uuid'),
                         "status": status_obj,
                         "online": is_online,
-                        "battery": battery_level,
-                        "battery_voltage": voltage,
+                        "battery": battery_level if battery_level is not None else "?",
+                        "battery_voltage": voltage if voltage is not None else "?",
                         "ip": ip
                     })
                 
