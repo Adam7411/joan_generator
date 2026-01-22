@@ -4746,12 +4746,19 @@ class DashSaver(hass.Hass):
         container.innerHTML = '<div style="color: #999; font-style: italic;">⏳ Pobieranie urządzeń...</div>';
 
         fetch('/api/joan_devices')
-            .then(r => r.json())
+            .then(r => {
+                if (!r.ok) {
+                    throw new Error(`HTTP ${r.status}`);
+                }
+                return r.json();
+            })
             .then(data => {
-                if (data.status === 'success' && data.devices.length > 0) {
+                if (data.status === 'success' && data.devices && data.devices.length > 0) {
                     joanDevices = data.devices;
                     renderJoanDevices(container, data.devices);
-                } else if (data.status === 'error' && data.message && data.message.includes('not configured')) {
+                } else if (data.status === 'success' && (!data.devices || data.devices.length === 0)) {
+                    container.innerHTML = '<div style="color: #999;">✅ Połączono z Visionect, ale brak urządzeń Joan 6</div>';
+                } else if (data.status === 'error' && data.message && data.message.toLowerCase().includes('not configured')) {
                     container.innerHTML = `
                         <div style="padding: 12px; background: #fff3cd; border: 1px solid #ffc107; border-radius: 6px; color: #856404;">
                             <strong>⚠️ Visionect nie skonfigurowany</strong>
@@ -4768,23 +4775,27 @@ class DashSaver(hass.Hass):
                     container.innerHTML = `
                         <div style="padding: 12px; background: #ffebee; border: 1px solid #f44336; border-radius: 6px; color: #c62828;">
                             <strong>❌ Błąd połączenia z Visionect</strong>
-                            <div style="margin-top: 8px; font-size: 0.85em;">${data.message}</div>
+                            <div style="margin-top: 8px; font-size: 0.85em;">
+                                ${data.message || 'Nieznany błąd'}
+                            </div>
+                            <div style="margin-top: 8px; font-size: 0.8em; color: #666;">
+                                Sprawdź czy serwer Visionect jest dostępny pod adresem podanym w konfiguracji.
+                            </div>
                         </div>`;
                 } else {
-                    container.innerHTML = '<div style="color: #999;">Brak urządzeń Joan 6</div>';
+                    container.innerHTML = '<div style="color: #999;">Brak odpowiedzi z serwera</div>';
                 }
             })
             .catch(err => {
+                console.error('Joan devices fetch error:', err);
                 container.innerHTML = `
-                    <div style="padding: 12px; background: #fff3cd; border: 1px solid #ffc107; border-radius: 6px; color: #856404;">
-                        <strong>⚠️ Visionect nie skonfigurowany</strong>
-                        <div style="margin-top: 8px; font-size: 0.9em;">
-                            W konfiguracji dodatku <b>Joan 6: AppDaemon Dashboard Generator</b> wpisz:
-                            <ul style="margin: 8px 0 0 20px; padding: 0;">
-                                <li><code>visionect_host</code> - adres serwera (np. 192.168.1.100:8081)</li>
-                                <li><code>visionect_api_key</code> - API Key</li>
-                                <li><code>visionect_api_secret</code> - Secret Key</li>
-                            </ul>
+                    <div style="padding: 12px; background: #ffebee; border: 1px solid #f44336; border-radius: 6px; color: #c62828;">
+                        <strong>❌ Błąd komunikacji</strong>
+                        <div style="margin-top: 8px; font-size: 0.85em;">
+                            ${err.message}
+                        </div>
+                        <div style="margin-top: 8px; font-size: 0.8em; color: #666;">
+                            Sprawdź logi dodatku Joan Generator aby zobaczyć szczegóły błędu.
                         </div>
                     </div>`;
             });
