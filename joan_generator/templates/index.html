@@ -4820,7 +4820,7 @@ class DashSaver(hass.Hass):
 
         container.innerHTML = `<div style="color: #999; font-style: italic;">${getTrans('msg_loading_devices')}</div>`;
 
-        fetch('/api/joan_devices')
+        fetch('api/joan_devices')
             .then(r => {
                 if (!r.ok) {
                     throw new Error(`HTTP ${r.status}`);
@@ -5019,7 +5019,7 @@ visionect_api_secret: "YOUR_API_SECRET"</pre>
         const dashName = currentLoadedDashName ? currentLoadedDashName.replace('.dash', '') : 'joandashboard';
         const dashboardUrl = `${window.location.protocol}//${window.location.hostname}:5050/${dashName}`;
 
-        fetch('/api/send_to_joan', {
+        fetch('api/send_to_joan', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
