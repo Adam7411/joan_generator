@@ -1515,13 +1515,13 @@
             {% if connection_info.visionect_configured %}
             <!-- Row 3: Joan 6 Actions -->
             <div style="display:flex; gap:10px; margin-bottom:20px;">
-                <button type="button" class="btn" onclick="showInfoModal()"
+                <button type="button" class="btn" onclick="openJoanModal()"
                     style="flex:1; background-color: #9c27b0; color: white;">
-                    🖥️ WYBIERZ URZĄDZENIE JOAN 6
+                    🖥️ <span data-i18n="btn_select_joan">WYBIERZ URZĄDZENIE JOAN 6</span>
                 </button>
                 <button type="button" id="btn-send-joan" class="btn" onclick="sendToJoan()"
                     style="flex:1; background-color: #00bcd4; color: white; display: none;">
-                    📤 WYŚLIJ NA JOAN 6
+                    📤 <span data-i18n="btn_send_joan">WYŚLIJ NA JOAN 6</span>
                 </button>
             </div>
             {% endif %}
@@ -2352,7 +2352,8 @@
                 msg_select_device_first: "❌ Najpierw wybierz urządzenie Joan 6",
                 msg_dash_sent_success: "✅ Dashboard wysłany na {0}!",
                 msg_device_selected: "✅ Wybrano urządzenie: {0}",
-                msg_no_dash_files: "Brak plików .dash"
+                msg_no_dash_files: "Brak plików .dash",
+                msg_visionect_config_hint_short: "Wybierz urządzenie, aby móc wysłać na nie wygenerowany dashboard."
             },
             en: {
                 btn_import_dash: "📥 IMPORT DASHBOARD",
@@ -2458,6 +2459,7 @@
                 msg_dash_sent_success: "✅ Dashboard sent to {0}!",
                 msg_device_selected: "✅ Device selected: {0}",
                 msg_no_dash_files: "No .dash files found",
+                msg_visionect_config_hint_short: "Select a device to send the generated dashboard to it.",
                 btn_download_file: "⬇️ DOWNLOAD .DASH FILE",
                 btn_save_ad: "🚀 SAVE DIRECTLY TO APPDAEMON",
                 status_details: "Token: {token_source} • API: {api_url} • Entities: {entity_count} • AppDaemon: {appdaemon_slug}",
@@ -4643,9 +4645,11 @@ class DashSaver(hass.Hass):
         const helpModal = document.getElementById('battery-help-modal');
         const visionectModal = document.getElementById('visionect-help-modal');
         const configModal = document.getElementById('ad-config-modal');
+        const joanModal = document.getElementById('joan-modal');
         if (event.target == helpModal) closeBatteryHelp();
         if (event.target == visionectModal) closeVisionectHelp();
         if (event.target == configModal) closeAdConfig();
+        if (event.target == joanModal) closeJoanModal();
     });
 </script>
 
@@ -4781,21 +4785,6 @@ class DashSaver(hass.Hass):
         document.getElementById('info-bridge').innerText = brText;
         document.getElementById('info-bridge').style.color = bridgeActive ? 'green' : 'red';
 
-        const dashCount = typeof dashboardsList !== 'undefined' ? dashboardsList.length : 0;
-        document.getElementById('info-dash-count').innerText = dashCount;
-
-        // Populate dashboard files list
-        const dashFilesEl = document.getElementById('info-dash-files');
-        if (dashFilesEl) {
-            if (typeof dashboardsList !== 'undefined' && dashboardsList.length > 0) {
-                dashFilesEl.innerHTML = dashboardsList.map(f =>
-                    `<div style="padding: 2px 0;">📄 ${f.name || f}</div>`
-                ).join('');
-            } else {
-                dashFilesEl.innerHTML = '<div style="color: #999; font-style: italic;">Brak plików .dash</div>';
-            }
-        }
-
         // Update dynamic path
         const pathEl = document.getElementById('info-path');
         if (pathEl) {
@@ -4803,19 +4792,28 @@ class DashSaver(hass.Hass):
             pathEl.textContent = pathEl.getAttribute('data-template').replace(/\[HA_IP\]/g, host);
         }
 
-        // Load Joan 6 devices
-        refreshJoanDevices();
-
         m.style.display = 'block';
     }
 
     function closeInfoModal() { document.getElementById('info-modal').style.display = 'none'; }
 
+    function openJoanModal() {
+        const m = document.getElementById('joan-modal');
+        if (!m) return;
+        m.style.display = 'block';
+        refreshJoanDevices();
+    }
+
+    function closeJoanModal() {
+        const m = document.getElementById('joan-modal');
+        if (m) m.style.display = 'none';
+    }
+
     // Joan 6 Devices Functions
     var joanDevices = [];
 
     function refreshJoanDevices() {
-        const container = document.getElementById('info-joan-devices');
+        const container = document.getElementById('joan-devices-container');
         if (!container) return;
 
         container.innerHTML = `<div style="color: #999; font-style: italic;">${getTrans('msg_loading_devices')}</div>`;
@@ -4969,7 +4967,7 @@ visionect_api_secret: "YOUR_API_SECRET"</pre>
             showNotification(getTrans('msg_device_selected').replace('{0}', name), 'success');
 
             // Close modal to let user send
-            closeInfoModal();
+            closeJoanModal();
         }
     }
 
@@ -5083,32 +5081,6 @@ visionect_api_secret: "YOUR_API_SECRET"</pre>
 
             <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;">
 
-            <!-- Dashboard Files Section -->
-            <h3 style="margin-top: 0;" data-i18n="lbl_dash_files">📁 Pliki Dashboardów (.dash):</h3>
-            <p><strong><span data-i18n="info_lbl_dash_count">Liczba Dashboardów:</span></strong> <span
-                    id="info-dash-count">-</span></p>
-            <div id="info-dash-files"
-                style="max-height: 150px; overflow-y: auto; background: #333; color: #eee; padding: 10px; border-radius: 4px; border: 1px solid #555; margin-bottom: 20px;">
-                <div style="color: #bbb; font-style: italic;" data-i18n="msg_loading_devices">⏳ Ładowanie...</div>
-            </div>
-
-            <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;">
-
-            <!-- Joan 6 Devices Section -->
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                <h3 style="margin: 0;" data-i18n="lbl_joan_devices">🖥️ Urządzenia Joan 6:</h3>
-                <button class="btn" style="padding: 5px 10px; font-size: 0.8em; background: #607d8b;"
-                    onclick="refreshJoanDevices()">
-                    🔄
-                </button>
-            </div>
-
-            <div id="info-joan-devices" style="min-height: 50px; margin-bottom: 15px;">
-                <!-- Devices will be injected here -->
-            </div>
-
-            <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;">
-
             <p><strong>Ścieżka Config AppDaemon:</strong> <br>
                 <code id="info-path"
                     data-template="\\\[HA_IP]\addon_configs\a0d7b954_appdaemon\">\\HA_IP\addon_configs...</code>
@@ -5122,6 +5094,36 @@ visionect_api_secret: "YOUR_API_SECRET"</pre>
         </div>
         <div class="modal-footer">
             <button type="button" class="btn btn-cancel" onclick="closeInfoModal()"
+                data-i18n="btn_cancel">Zamknij</button>
+        </div>
+    </div>
+</div>
+
+<!-- JOAN 6 SELECTION MODAL -->
+<div id="joan-modal" class="modal">
+    <div class="modal-content" style="max-width: 700px;">
+        <div class="modal-header">
+            <h2 data-i18n="lbl_joan_devices">URZĄDZENIA JOAN 6</h2>
+            <span class="close" onclick="closeJoanModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div style="display: flex; justify-content: flex-end; margin-bottom: 15px;">
+                <button class="btn" style="padding: 5px 10px; font-size: 0.8em; background: #607d8b;"
+                    onclick="refreshJoanDevices()">
+                    🔄 <span data-i18n="btn_refresh_entities_title">Odśwież</span>
+                </button>
+            </div>
+            <div id="joan-devices-container" style="min-height: 100px;">
+                <div style="color: #bbb; font-style: italic;" data-i18n="msg_loading_devices">⏳ Ładowanie...</div>
+            </div>
+            <div
+                style="margin-top: 20px; font-size: 0.85em; color: #666; background: #f5f5f5; padding: 10px; border-radius: 6px; border-left: 4px solid #9c27b0;">
+                <i class="mdi mdi-information-outline"></i> <span data-i18n="msg_visionect_config_hint_short">Wybierz
+                    urządzenie, aby móc wysłać na nie wygenerowany dashboard.</span>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-cancel" onclick="closeJoanModal()"
                 data-i18n="btn_cancel">Zamknij</button>
         </div>
     </div>
