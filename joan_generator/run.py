@@ -1247,19 +1247,43 @@ def get_joan_devices():
     if not VISIONECT_HOST:
         return {"status": "error", "message": "Visionect host not configured", "devices": []}
     
+    if not VISIONECT_API_KEY or not VISIONECT_API_SECRET:
+         return {"status": "error", "message": "API Key or Secret missing. Please configure them in add-on settings.", "devices": []}
+
     try:
-        host = VISIONECT_HOST
+        host = VISIONECT_HOST.strip().rstrip('/')
         if not host.startswith(('http://', 'https://')):
             host = f"http://{host}"
-        if ':' not in host.split('://')[-1]:
-            host = f"{host}:8081"
         
-        url = f"{host}/api/device/"
-        headers = _visionect_hmac_headers("GET", "/api/device/")
+        # Check if port is missing (rudimentary check)
+        # If user provided "1.2.3.4", add :8081. If "1.2.3.4:8081" or "example.com", leave as is.
+        # This is tricky without a proper URL parser, but let's assume if no colon after the protocol part, we default to 8081
+        domain_part = host.split('://')[-1]
+        if ':' not in domain_part:
+             host = f"{host}:8081"
+        
+        # API endpoint usually /api/device or /api/device/
+        # Removing verify=False if not using SSL, or adding it if using self-signed
+        url = f"{host}/api/device" 
+        
+        headers = _visionect_hmac_headers("GET", "/api/device")
+        # Retry with slash if 301/404? 
+        # Usually Visionect uses /api/device (no slash) for list or with slash. 
+        # Let's try without slash first as per const.py in integration
         
         print(f"🔍 Fetching Joan devices from: {url}")
-        response = requests.get(url, headers=headers, timeout=10)
-        
+        try:
+            response = requests.get(url, headers=headers, timeout=10)
+        except requests.exceptions.ConnectionError:
+            return {"status": "error", "message": f"Connection failed to {host}. Check IP/Port.", "devices": []}
+            
+        if response.status_code == 404:
+            # Try with trailing slash
+            url_slash = f"{host}/api/device/"
+            headers_slash = _visionect_hmac_headers("GET", "/api/device/")
+            print(f"🔍 404 received, retrying with slash: {url_slash}")
+            response = requests.get(url_slash, headers=headers_slash, timeout=10)
+
         if response.status_code == 200:
             devices_data = response.json()
             devices = []
