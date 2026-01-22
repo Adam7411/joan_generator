@@ -1504,12 +1504,24 @@
             </div>
 
             <!-- Row 2: File Actions -->
-            <div style="display:flex; gap:10px; margin-bottom:20px;">
+            <div style="display:flex; gap:10px; margin-bottom:10px;">
                 <button type="button" class="btn btn-copy" onclick="copyToClipboard()" data-i18n="btn_copy"
                     style="flex:1;">📋 KOPIUJ KOD DO SCHOWKA</button>
                 <button type="button" class="btn btn-download-file" onclick="downloadDashFile()"
                     data-i18n="btn_download_file" style="flex:1; background-color: #2196f3;">⬇️ POBIERZ PLIK
                     .DASH</button>
+            </div>
+
+            <!-- Row 3: Joan 6 Actions -->
+            <div style="display:flex; gap:10px; margin-bottom:20px;">
+                <button type="button" class="btn" onclick="showInfoModal()"
+                    style="flex:1; background-color: #9c27b0; color: white;">
+                    🖥️ WYBIERZ URZĄDZENIE JOAN 6
+                </button>
+                <button type="button" id="btn-send-joan" class="btn" onclick="sendToJoan()"
+                    style="flex:1; background-color: #00bcd4; color: white; display: none;">
+                    📤 WYŚLIJ NA JOAN 6
+                </button>
             </div>
             <textarea class="output" id="output-yaml" readonly>{{ generated_yaml }}</textarea>
         </div>
@@ -4695,21 +4707,182 @@ class DashSaver(hass.Hass):
         const dashCount = typeof dashboardsList !== 'undefined' ? dashboardsList.length : 0;
         document.getElementById('info-dash-count').innerText = dashCount;
 
+        // Populate dashboard files list
+        const dashFilesEl = document.getElementById('info-dash-files');
+        if (dashFilesEl) {
+            if (typeof dashboardsList !== 'undefined' && dashboardsList.length > 0) {
+                dashFilesEl.innerHTML = dashboardsList.map(f =>
+                    `<div style="padding: 2px 0;">📄 ${f.name || f}</div>`
+                ).join('');
+            } else {
+                dashFilesEl.innerHTML = '<div style="color: #999; font-style: italic;">Brak plików .dash</div>';
+            }
+        }
+
         // Update dynamic path
         const pathEl = document.getElementById('info-path');
         if (pathEl) {
             const host = window.location.hostname || '[HA_IP]';
             pathEl.textContent = pathEl.getAttribute('data-template').replace(/\[HA_IP\]/g, host);
         }
+
+        // Load Joan 6 devices
+        refreshJoanDevices();
+
         m.style.display = 'block';
     }
+
     function closeInfoModal() { document.getElementById('info-modal').style.display = 'none'; }
+
+    // Joan 6 Devices Functions
+    let joanDevices = [];
+
+    function refreshJoanDevices() {
+        const container = document.getElementById('info-joan-devices');
+        if (!container) return;
+
+        container.innerHTML = '<div style="color: #999; font-style: italic;">⏳ Pobieranie urządzeń...</div>';
+
+        fetch('/api/joan_devices')
+            .then(r => r.json())
+            .then(data => {
+                if (data.status === 'success' && data.devices.length > 0) {
+                    joanDevices = data.devices;
+                    renderJoanDevices(container, data.devices);
+                } else if (data.status === 'error') {
+                    container.innerHTML = `<div style="color: #f57c00;">⚠️ ${data.message}</div>
+                        <div style="margin-top: 8px; font-size: 0.85em; color: #666;">
+                            Skonfiguruj połączenie w ustawieniach dodatku:<br>
+                            <code>visionect_host</code>, <code>visionect_api_key</code>, <code>visionect_api_secret</code>
+                        </div>`;
+                } else {
+                    container.innerHTML = '<div style="color: #999;">Brak urządzeń Joan 6</div>';
+                }
+            })
+            .catch(err => {
+                container.innerHTML = `<div style="color: #d32f2f;">❌ Błąd: ${err.message}</div>`;
+            });
+    }
+
+    function renderJoanDevices(container, devices) {
+        let html = '<div style="display: flex; flex-direction: column; gap: 8px;">';
+
+        devices.forEach(dev => {
+            const statusIcon = dev.online ? '🟢' : '🔴';
+            const statusText = dev.online ? 'Online' : 'Offline';
+            const batteryIcon = getBatteryIcon(dev.battery);
+            const batteryText = dev.battery !== null ? `${dev.battery}%` : 'N/A';
+
+            html += `
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px; background: var(--bg-section); border: 1px solid var(--border); border-radius: 6px;">
+                    <div style="flex: 1;">
+                        <div style="font-weight: bold;">${statusIcon} ${dev.name}</div>
+                        <div style="font-size: 0.8em; color: #666;">${batteryIcon} ${batteryText} | IP: ${dev.ip}</div>
+                    </div>
+                    <button type="button" onclick="selectJoanDevice('${dev.uuid}', '${dev.name}')" 
+                        style="background: #4caf50; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold;">
+                        ✓ Wybierz
+                    </button>
+                </div>
+            `;
+        });
+
+        html += '</div>';
+        container.innerHTML = html;
+    }
+
+    function getBatteryIcon(level) {
+        if (level === null) return '🔋';
+        if (level >= 80) return '🔋';
+        if (level >= 50) return '🔋';
+        if (level >= 20) return '🪫';
+        return '🪫';
+    }
+
+    let selectedJoanDevice = null;
+
+    function selectJoanDevice(uuid, name) {
+        selectedJoanDevice = { uuid, name };
+        closeInfoModal();
+
+        // Update send button
+        const sendBtn = document.getElementById('btn-send-joan');
+        if (sendBtn) {
+            sendBtn.textContent = `📤 WYŚLIJ NA: ${name}`;
+            sendBtn.style.display = 'block';
+            sendBtn.disabled = false;
+        }
+
+        showNotification(`✅ Wybrano urządzenie: ${name}`, 'success');
+    }
+
+    function sendToJoan() {
+        if (!selectedJoanDevice) {
+            showNotification('❌ Najpierw wybierz urządzenie Joan 6', 'error');
+            return;
+        }
+
+        // Get dashboard URL
+        const dashName = document.querySelector('#form-title')?.value || 'joandashboard';
+        const host = window.location.hostname || '[HA_IP]';
+        const dashboardUrl = `http://${host}:5050/${dashName.toLowerCase().replace(/ /g, '_')}`;
+
+        const sendBtn = document.getElementById('btn-send-joan');
+        if (sendBtn) {
+            sendBtn.disabled = true;
+            sendBtn.textContent = '⏳ Wysyłanie...';
+        }
+
+        fetch('/api/send_to_joan', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                uuid: selectedJoanDevice.uuid,
+                url: dashboardUrl
+            })
+        })
+            .then(r => r.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showNotification(`✅ Dashboard wysłany na ${selectedJoanDevice.name}!`, 'success');
+                } else {
+                    showNotification(`❌ Błąd: ${data.message}`, 'error');
+                }
+            })
+            .catch(err => {
+                showNotification(`❌ Błąd: ${err.message}`, 'error');
+            })
+            .finally(() => {
+                if (sendBtn) {
+                    sendBtn.disabled = false;
+                    sendBtn.textContent = `📤 WYŚLIJ NA: ${selectedJoanDevice.name}`;
+                }
+            });
+    }
+
+    function showNotification(message, type) {
+        // Simple notification
+        const existing = document.querySelector('.joan-notification');
+        if (existing) existing.remove();
+
+        const div = document.createElement('div');
+        div.className = 'joan-notification';
+        div.style.cssText = `
+            position: fixed; top: 20px; right: 20px; padding: 15px 25px; border-radius: 8px; z-index: 100010;
+            font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.3); animation: slideIn 0.3s ease;
+            ${type === 'success' ? 'background: #4caf50; color: white;' : 'background: #f44336; color: white;'}
+        `;
+        div.textContent = message;
+        document.body.appendChild(div);
+
+        setTimeout(() => div.remove(), 4000);
+    }
 </script>
 </body>
 
 <!-- INFO MODAL -->
 <div id="info-modal" class="modal" style="z-index: 100000;">
-    <div class="modal-content" style="max-width: 500px;">
+    <div class="modal-content" style="max-width: 600px;">
         <div class="modal-header">
             <h2 data-i18n="modal_info_title">Szczegóły Systemu</h2>
             <span class="close" onclick="closeInfoModal()">&times;</span>
@@ -4731,12 +4904,42 @@ class DashSaver(hass.Hass):
                 <div><strong data-i18n="info_lbl_dash_count">Liczba Dashboardów:</strong></div>
                 <div id="info-dash-count">...</div>
             </div>
+
+            <!-- Dashboard Files List -->
+            <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #ddd;">
+                <div><strong>📁 Pliki Dashboardów (.dash):</strong></div>
+                <div id="info-dash-files"
+                    style="margin-top: 8px; max-height: 100px; overflow-y: auto; background: var(--bg-input); padding: 8px; border-radius: 4px; font-family: monospace; font-size: 0.85em;">
+                    Ładowanie...
+                </div>
+            </div>
+
+            <!-- Joan 6 Devices Section -->
+            <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #ddd;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <strong>🖥️ Urządzenia Joan 6:</strong>
+                    <button type="button" onclick="refreshJoanDevices()"
+                        style="background: none; border: none; cursor: pointer; font-size: 1.1em;"
+                        title="Odśwież">🔄</button>
+                </div>
+                <div id="info-joan-devices" style="margin-top: 8px;">
+                    <div style="color: #999; font-style: italic;">Sprawdzanie...</div>
+                </div>
+            </div>
+
             <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #ddd;">
                 <div><strong>Ścieżka Config AppDaemon:</strong></div>
                 <div id="info-path" data-template="\\[HA_IP]\addon_configs\{{ connection_info.appdaemon_slug }}\"
                     style="font-family: monospace; background: #f5f5f5; padding: 5px; border-radius: 4px; margin-top: 5px; word-break: break-all; color: #333;">
                     ...
                 </div>
+            </div>
+
+            <!-- Info about new entities -->
+            <div
+                style="margin-top: 15px; padding: 12px; background: #fff3cd; border: 1px solid #ffc107; border-radius: 6px; color: #856404;">
+                <strong>⚠️ Ważne:</strong> Jeśli dodałeś nowe encje w Home Assistant podczas tworzenia dashboardu,
+                musisz zrestartować AppDaemon aby je wykryć!
             </div>
         </div>
     </div>
