@@ -1229,8 +1229,13 @@ def _visionect_hmac_headers(api_key, api_secret, method, endpoint):
     if not api_key or not api_secret:
         return {}
     
-    # Normalize endpoint logic to match visionect_joan (ensure trailing slash for signature)
+    # Extract path from URL if full URL is provided (Visionect expects signature on Path only)
     sign_endpoint = endpoint
+    if "://" in sign_endpoint:
+        from urllib.parse import urlparse
+        sign_endpoint = urlparse(sign_endpoint).path
+
+    # Normalize endpoint logic to match visionect_joan (ensure trailing slash for signature)
     if not sign_endpoint.endswith("/") and "/api" in sign_endpoint:
          sign_endpoint += "/"
 
