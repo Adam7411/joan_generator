@@ -2330,7 +2330,29 @@
                 msg_refreshing: "Odświeżanie listy encji...",
                 msg_refreshed: "✅ Lista encji odświeżona!",
                 btn_links: "🔗 PRZYDATNE LINKI",
-                modal_links_title: "Przydatne Linki i Dokumentacja"
+                modal_links_title: "Przydatne Linki i Dokumentacja",
+
+                // Joan 6 Integration
+                lbl_dash_files: "📁 Pliki Dashboardów (.dash):",
+                lbl_joan_devices: "🖥️ Urządzenia Joan 6:",
+                btn_select_joan: "🖥️ WYBIERZ URZĄDZENIE JOAN 6",
+                btn_send_joan: "📤 WYŚLIJ NA JOAN 6",
+                btn_send_joan_progress: "⏳ Wysyłanie...",
+                btn_send_joan_with_name: "📤 WYŚLIJ NA: {0}",
+                msg_visionect_not_configured: "⚠️ Visionect nie skonfigurowany",
+                msg_visionect_config_hint: "W konfiguracji dodatku <b>Joan 6: AppDaemon Dashboard Generator</b> wpisz:",
+                msg_visionect_error: "❌ Błąd połączenia z Visionect",
+                msg_visionect_check_logs: "Sprawdź logi dodatku Joan Generator aby zobaczyć szczegóły błędu.",
+                msg_visionect_check_ip: "Sprawdź czy serwer Visionect jest dostępny pod adresem podanym w konfiguracji.",
+                msg_new_entities_warning: "⚠️ Ważne: Jeśli dodałeś nowe encje w Home Assistant podczas tworzenia dashboardu, musisz zrestartować AppDaemon aby je wykryć!",
+                msg_no_devices: "Brak urządzeń Joan 6",
+                msg_loading_devices: "⏳ Pobieranie urządzeń...",
+                msg_connected_no_devices: "✅ Połączono z Visionect, ale brak urządzeń Joan 6",
+                btn_choose: "✓ Wybierz",
+                msg_select_device_first: "❌ Najpierw wybierz urządzenie Joan 6",
+                msg_dash_sent_success: "✅ Dashboard wysłany na {0}!",
+                msg_device_selected: "✅ Wybrano urządzenie: {0}",
+                msg_no_dash_files: "Brak plików .dash"
             },
             en: {
                 btn_import_dash: "📥 IMPORT DASHBOARD",
@@ -2414,6 +2436,28 @@
                 btn_copy: "📋 COPY CODE TO CLIPBOARD",
                 btn_links: "🔗 USEFUL LINKS",
                 modal_links_title: "Useful Links & Documentation",
+
+                // Joan 6 Integration
+                lbl_dash_files: "📁 Dashboard Files (.dash):",
+                lbl_joan_devices: "🖥️ Joan 6 Devices:",
+                btn_select_joan: "🖥️ SELECT JOAN 6 DEVICE",
+                btn_send_joan: "📤 SEND TO JOAN 6",
+                btn_send_joan_progress: "⏳ Sending...",
+                btn_send_joan_with_name: "📤 SEND TO: {0}",
+                msg_visionect_not_configured: "⚠️ Visionect not configured",
+                msg_visionect_config_hint: "In <b>Joan 6: AppDaemon Dashboard Generator</b> add-on configuration, set:",
+                msg_visionect_error: "❌ Visionect Connection Error",
+                msg_visionect_check_logs: "Check Joan Generator add-on logs for details.",
+                msg_visionect_check_ip: "Check if Visionect Server is reachable at the configured address.",
+                msg_new_entities_warning: "⚠️ Important: If you added new entities in Home Assistant, wait for AppDaemon restart to see them here!",
+                msg_no_devices: "No Joan 6 devices found",
+                msg_loading_devices: "⏳ Loading devices...",
+                msg_connected_no_devices: "✅ Visionect connected, but no Joan 6 devices found",
+                btn_choose: "✓ Select",
+                msg_select_device_first: "❌ Select a Joan 6 device first",
+                msg_dash_sent_success: "✅ Dashboard sent to {0}!",
+                msg_device_selected: "✅ Device selected: {0}",
+                msg_no_dash_files: "No .dash files found",
                 btn_download_file: "⬇️ DOWNLOAD .DASH FILE",
                 btn_save_ad: "🚀 SAVE DIRECTLY TO APPDAEMON",
                 status_details: "Token: {token_source} • API: {api_url} • Entities: {entity_count} • AppDaemon: {appdaemon_slug}",
@@ -4743,7 +4787,7 @@ class DashSaver(hass.Hass):
         const container = document.getElementById('info-joan-devices');
         if (!container) return;
 
-        container.innerHTML = '<div style="color: #999; font-style: italic;">⏳ Pobieranie urządzeń...</div>';
+        container.innerHTML = `<div style="color: #999; font-style: italic;">${getTrans('msg_loading_devices')}</div>`;
 
         fetch('/api/joan_devices')
             .then(r => {
@@ -4753,49 +4797,64 @@ class DashSaver(hass.Hass):
                 return r.json();
             })
             .then(data => {
+                const t_not_configured = getTrans('msg_visionect_not_configured');
+                const t_config_hint = getTrans('msg_visionect_config_hint');
+                const t_conn_error = getTrans('msg_visionect_error');
+                const t_check_logs = getTrans('msg_visionect_check_logs');
+                const t_check_ip = getTrans('msg_visionect_check_ip');
+                const t_no_devices = getTrans('msg_no_devices');
+                const t_connected_no_dev = getTrans('msg_connected_no_devices');
+
                 if (data.status === 'success' && data.devices && data.devices.length > 0) {
                     joanDevices = data.devices;
                     renderJoanDevices(container, data.devices);
                 } else if (data.status === 'success' && (!data.devices || data.devices.length === 0)) {
-                    container.innerHTML = '<div style="color: #999;">✅ Połączono z Visionect, ale brak urządzeń Joan 6</div>';
-                } else if (data.status === 'error' && data.message && data.message.toLowerCase().includes('not configured')) {
+                    container.innerHTML = `<div style="color: #999;">${t_connected_no_dev}</div>`;
+                } else if (data.status === 'error' && data.message && (data.message.toLowerCase().includes('not configured') || data.message.toLowerCase().includes('missing'))) {
                     container.innerHTML = `
                         <div style="padding: 12px; background: #fff3cd; border: 1px solid #ffc107; border-radius: 6px; color: #856404;">
-                            <strong>⚠️ Visionect nie skonfigurowany</strong>
+                            <strong>${t_not_configured}</strong>
                             <div style="margin-top: 8px; font-size: 0.9em;">
-                                W konfiguracji dodatku <b>Joan 6: AppDaemon Dashboard Generator</b> wpisz:
+                                ${t_config_hint}
                                 <ul style="margin: 8px 0 0 20px; padding: 0;">
-                                    <li><code>visionect_host</code> - adres serwera (np. 192.168.1.100:8081)</li>
+                                    <li><code>visionect_host</code> - (e.g. 192.168.1.100:8081)</li>
                                     <li><code>visionect_api_key</code> - API Key</li>
                                     <li><code>visionect_api_secret</code> - Secret Key</li>
                                 </ul>
                             </div>
                         </div>`;
                 } else if (data.status === 'error') {
+                    // Try to be helpful with specific error messages if possible
+                    let extraHint = t_check_ip;
+                    if (data.message.includes("401")) extraHint = "Check API Key and API Secret.";
+
                     container.innerHTML = `
                         <div style="padding: 12px; background: #ffebee; border: 1px solid #f44336; border-radius: 6px; color: #c62828;">
-                            <strong>❌ Błąd połączenia z Visionect</strong>
+                            <strong>${t_conn_error}</strong>
                             <div style="margin-top: 8px; font-size: 0.85em;">
-                                ${data.message || 'Nieznany błąd'}
+                                ${data.message || 'Unknown Error'}
                             </div>
                             <div style="margin-top: 8px; font-size: 0.8em; color: #666;">
-                                Sprawdź czy serwer Visionect jest dostępny pod adresem podanym w konfiguracji.
+                                ${extraHint}
                             </div>
                         </div>`;
                 } else {
-                    container.innerHTML = '<div style="color: #999;">Brak odpowiedzi z serwera</div>';
+                    container.innerHTML = `<div style="color: #999;">${t_no_devices}</div>`;
                 }
             })
             .catch(err => {
                 console.error('Joan devices fetch error:', err);
+                const t_conn_error = getTrans('msg_visionect_error');
+                const t_check_logs = getTrans('msg_visionect_check_logs');
+
                 container.innerHTML = `
                     <div style="padding: 12px; background: #ffebee; border: 1px solid #f44336; border-radius: 6px; color: #c62828;">
-                        <strong>❌ Błąd komunikacji</strong>
+                        <strong>${t_conn_error}</strong>
                         <div style="margin-top: 8px; font-size: 0.85em;">
                             ${err.message}
                         </div>
                         <div style="margin-top: 8px; font-size: 0.8em; color: #666;">
-                            Sprawdź logi dodatku Joan Generator aby zobaczyć szczegóły błędu.
+                            ${t_check_logs}
                         </div>
                     </div>`;
             });
@@ -4803,25 +4862,37 @@ class DashSaver(hass.Hass):
 
     function renderJoanDevices(container, devices) {
         let html = '<div style="display: flex; flex-direction: column; gap: 8px;">';
+        const t_choose = getTrans('btn_choose');
 
         devices.forEach(dev => {
-            const statusIcon = dev.online ? '🟢' : '🔴';
-            const statusText = dev.online ? 'Online' : 'Offline';
+            const isOnline = dev.online;
+            const statusColor = isOnline ? '#4caf50' : '#9e9e9e';
+            const statusText = isOnline ? 'ONLINE' : 'OFFLINE';
             const batteryIcon = getBatteryIcon(dev.battery);
-            const batteryText = dev.battery !== null ? `${dev.battery}%` : 'N/A';
 
             html += `
-                <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px; background: var(--bg-section); border: 1px solid var(--border); border-radius: 6px;">
-                    <div style="flex: 1;">
-                        <div style="font-weight: bold;">${statusIcon} ${dev.name}</div>
-                        <div style="font-size: 0.8em; color: #666;">${batteryIcon} ${batteryText} | IP: ${dev.ip}</div>
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px; border: 1px solid #ddd; border-radius: 6px; background: #fff;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 10px; height: 10px; border-radius: 50%; background-color: ${statusColor};" title="${statusText}"></div>
+                    <div>
+                        <div style="font-weight: bold;">${dev.name}</div>
+                        <div style="font-size: 0.85em; color: #666;">
+                            UUID: <span style="font-family: monospace;">${dev.uuid.substring(0, 8)}...</span>
+                             • IP: ${dev.ip}
+                        </div>
                     </div>
-                    <button type="button" onclick="selectJoanDevice('${dev.uuid}', '${dev.name}')" 
-                        style="background: #4caf50; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold;">
-                        ✓ Wybierz
+                </div>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div style="display: flex; align-items: center; gap: 4px; color: #666;" title="Bateria: ${dev.battery || '?'}% (${dev.battery_voltage || '?'}V)">
+                        <span style="font-size: 1.2em;">${batteryIcon}</span>
+                        <span style="font-size: 0.9em; font-weight: bold;">${dev.battery !== null ? dev.battery + '%' : '?'}</span>
+                    </div>
+                    <button class="btn" style="padding: 5px 12px; font-size: 0.85em; background: #2196f3;" 
+                        onclick="selectJoanDevice('${dev.uuid}', '${dev.name.replace(/'/g, "\\'")}')">
+                        ${t_choose}
                     </button>
                 </div>
-            `;
+            </div>`;
         });
 
         html += '</div>';
@@ -4836,64 +4907,96 @@ class DashSaver(hass.Hass):
         return '🪫';
     }
 
-    let selectedJoanDevice = null;
+    let selectedJoanUuid = null;
 
     function selectJoanDevice(uuid, name) {
-        selectedJoanDevice = { uuid, name };
-        closeInfoModal();
+        selectedJoanUuid = uuid;
+        const btn = document.getElementById('btn-send-joan');
+        if (btn) {
+            // Unhide if hidden (e.g. if logic changes)
+            btn.style.display = 'block';
 
-        // Update send button
-        const sendBtn = document.getElementById('btn-send-joan');
-        if (sendBtn) {
-            sendBtn.textContent = `📤 WYŚLIJ NA: ${name}`;
-            sendBtn.style.display = 'block';
-            sendBtn.disabled = false;
+            // Translate "SEND TO: {0}"
+            let label = getTrans('btn_send_joan_with_name');
+            label = label.replace('{0}', name);
+            btn.innerText = label;
+
+            // Visual feedback in modal
+            showNotification(getTrans('msg_device_selected').replace('{0}', name), 'success');
+
+            // Close modal to let user send
+            closeInfoModal();
         }
-
-        showNotification(`✅ Wybrano urządzenie: ${name}`, 'success');
     }
 
     function sendToJoan() {
-        if (!selectedJoanDevice) {
-            showNotification('❌ Najpierw wybierz urządzenie Joan 6', 'error');
+        if (!selectedJoanUuid) {
+            showNotification(getTrans('msg_select_device_first'), 'error');
+            // Open modal to let user select
+            showInfoModal();
             return;
         }
 
-        // Get dashboard URL
-        const dashName = document.querySelector('#form-title')?.value || 'joandashboard';
-        const host = window.location.hostname || '[HA_IP]';
-        const dashboardUrl = `http://${host}:5050/${dashName.toLowerCase().replace(/ /g, '_')}`;
+        const btn = document.getElementById('btn-send-joan');
+        const originalText = btn.innerText;
+        btn.disabled = true;
+        btn.innerText = getTrans('btn_send_joan_progress');
 
-        const sendBtn = document.getElementById('btn-send-joan');
-        if (sendBtn) {
-            sendBtn.disabled = true;
-            sendBtn.textContent = '⏳ Wysyłanie...';
-        }
+        // We need the dashboard URL. We can construct it.
+        // Assuming the file name is 'joandashboard.dash' (default) or we need to pass the file name.
+        // But the user workflow suggests we generate code, then send.
+        // Ideally, we should save the dashboard first to ensure the URL is valid?
+        // For now, let's assume the user wants to send the CURRENT dashboard view (index 0 logic or by name).
+        // The most robust way is to send the URL to the HA dashboard.
+
+        // Construct URL: http://HA_IP:5050/joandashboard
+        // Or better, let the backend figure out the URL base if possible, OR send relative.
+        // Visionect needs ABSOLUTE URL.
+
+        // Let's use the current browser location to determine base, 
+        // but AppDaemon runs on port 5050 usually.
+        // Wait, the user accesses Generator on 5000/ingress. AppDaemon is on 5050.
+        // We need the AppDaemon URL.
+        // Let's try to infer it or just use a placeholder that the backend resolves?
+        // Actually, the backend `send_to_joan` expects `dashboard_url`.
+        // Let's try to construct it client-side.
+
+        const host = window.location.hostname;
+        // If via ingress, this might be tricky.
+        // Let's try a safe bet: Use the IP from connection_info if available, or just send the name
+        // and let backend handle it? No, backend takes URL.
+
+        // Simplified approach: Send the dashboard name. The backend doesn't know the full URL easily.
+        // Let's prompt user or just standard URL?
+        // Standard AD URL: http://[HOST]:5050/[DASH_NAME]
+
+        // BETTER: Use window.location.protocol + // + window.location.hostname + :5050 + /joandashboard
+        // Check if there is a selected dash name
+        const dashName = currentLoadedDashName ? currentLoadedDashName.replace('.dash', '') : 'joandashboard';
+        const dashboardUrl = `${window.location.protocol}//${window.location.hostname}:5050/${dashName}`;
 
         fetch('/api/send_to_joan', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                uuid: selectedJoanDevice.uuid,
+                uuid: selectedJoanUuid,
                 url: dashboardUrl
             })
         })
             .then(r => r.json())
             .then(data => {
                 if (data.status === 'success') {
-                    showNotification(`✅ Dashboard wysłany na ${selectedJoanDevice.name}!`, 'success');
+                    showNotification(getTrans('msg_dash_sent_success').replace('{0}', ''), 'success');
                 } else {
-                    showNotification(`❌ Błąd: ${data.message}`, 'error');
+                    showNotification("Error: " + data.message, 'error');
                 }
             })
             .catch(err => {
-                showNotification(`❌ Błąd: ${err.message}`, 'error');
+                showNotification("Connection Error: " + err, 'error');
             })
             .finally(() => {
-                if (sendBtn) {
-                    sendBtn.disabled = false;
-                    sendBtn.textContent = `📤 WYŚLIJ NA: ${selectedJoanDevice.name}`;
-                }
+                btn.disabled = false;
+                btn.innerText = originalText;
             });
     }
 
@@ -4917,67 +5020,65 @@ class DashSaver(hass.Hass):
 </script>
 </body>
 
-<!-- INFO MODAL -->
-<div id="info-modal" class="modal" style="z-index: 100000;">
-    <div class="modal-content" style="max-width: 600px;">
+<!-- INFO MODAL (System Details) -->
+<div id="info-modal" class="modal">
+    <div class="modal-content" style="max-width: 700px;">
         <div class="modal-header">
             <h2 data-i18n="modal_info_title">Szczegóły Systemu</h2>
             <span class="close" onclick="closeInfoModal()">&times;</span>
         </div>
-        <div class="modal-body" style="font-size: 0.95em; line-height: 1.6;">
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                <div><strong data-i18n="info_lbl_entities">Liczba Encji:</strong></div>
-                <div id="info-entities">...</div>
+        <div class="modal-body" style="line-height: 1.8;">
+            <p><strong><span data-i18n="info_lbl_entities">Liczba Encji:</span></strong> <span
+                    id="info-entities">-</span></p>
+            <p><strong><span data-i18n="info_lbl_slug">AppDaemon Slug:</span></strong> <span id="info-ad-slug">-</span>
+            </p>
+            <p><strong><span data-i18n="info_lbl_source">Źródło API:</span></strong> <span id="info-api-source">-</span>
+            </p>
+            <p><strong><span data-i18n="info_lbl_bridge">Plik dash_saver.py:</span></strong> <span
+                    id="info-bridge">-</span></p>
 
-                <div><strong data-i18n="info_lbl_slug">AppDaemon Slug:</strong></div>
-                <div id="info-ad-slug">...</div>
+            <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;">
 
-                <div><strong data-i18n="info_lbl_source">Źródło API:</strong></div>
-                <div id="info-api-source">...</div>
-
-                <div><strong data-i18n="info_lbl_bridge">Plik dash_saver.py:</strong></div>
-                <div id="info-bridge" style="font-weight: bold;">...</div>
-
-                <div><strong data-i18n="info_lbl_dash_count">Liczba Dashboardów:</strong></div>
-                <div id="info-dash-count">...</div>
+            <!-- Dashboard Files Section -->
+            <h3 style="margin-top: 0;" data-i18n="lbl_dash_files">📁 Pliki Dashboardów (.dash):</h3>
+            <p><strong><span data-i18n="info_lbl_dash_count">Liczba Dashboardów:</span></strong> <span
+                    id="info-dash-count">-</span></p>
+            <div id="info-dash-files"
+                style="max-height: 150px; overflow-y: auto; background: #f5f5f5; padding: 10px; border-radius: 4px; border: 1px solid #ddd; margin-bottom: 20px;">
+                <div style="color: #999; font-style: italic;" data-i18n="msg_loading_devices">⏳ Ładowanie...</div>
             </div>
 
-            <!-- Dashboard Files List -->
-            <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #ddd;">
-                <div><strong>📁 Pliki Dashboardów (.dash):</strong></div>
-                <div id="info-dash-files"
-                    style="margin-top: 8px; max-height: 100px; overflow-y: auto; background: var(--bg-input); padding: 8px; border-radius: 4px; font-family: monospace; font-size: 0.85em;">
-                    Ładowanie...
-                </div>
-            </div>
+            <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;">
 
             <!-- Joan 6 Devices Section -->
-            <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #ddd;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <strong>🖥️ Urządzenia Joan 6:</strong>
-                    <button type="button" onclick="refreshJoanDevices()"
-                        style="background: none; border: none; cursor: pointer; font-size: 1.1em;"
-                        title="Odśwież">🔄</button>
-                </div>
-                <div id="info-joan-devices" style="margin-top: 8px;">
-                    <div style="color: #999; font-style: italic;">Sprawdzanie...</div>
-                </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <h3 style="margin: 0;" data-i18n="lbl_joan_devices">🖥️ Urządzenia Joan 6:</h3>
+                <button class="btn" style="padding: 5px 10px; font-size: 0.8em; background: #607d8b;"
+                    onclick="refreshJoanDevices()">
+                    🔄
+                </button>
             </div>
 
-            <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #ddd;">
-                <div><strong>Ścieżka Config AppDaemon:</strong></div>
-                <div id="info-path" data-template="\\[HA_IP]\addon_configs\{{ connection_info.appdaemon_slug }}\"
-                    style="font-family: monospace; background: #f5f5f5; padding: 5px; border-radius: 4px; margin-top: 5px; word-break: break-all; color: #333;">
-                    ...
-                </div>
+            <div id="info-joan-devices" style="min-height: 50px; margin-bottom: 15px;">
+                <!-- Devices will be injected here -->
             </div>
 
-            <!-- Info about new entities -->
+            <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;">
+
+            <p><strong>Ścieżka Config AppDaemon:</strong> <br>
+                <code id="info-path"
+                    data-template="\\\[HA_IP]\addon_configs\a0d7b954_appdaemon\">\\HA_IP\addon_configs...</code>
+            </p>
+
             <div
-                style="margin-top: 15px; padding: 12px; background: #fff3cd; border: 1px solid #ffc107; border-radius: 6px; color: #856404;">
-                <strong>⚠️ Ważne:</strong> Jeśli dodałeś nowe encje w Home Assistant podczas tworzenia dashboardu,
-                musisz zrestartować AppDaemon aby je wykryć!
+                style="background-color: #fff3cd; color: #856404; padding: 10px; border-radius: 4px; margin-top: 15px; font-size: 0.9em;">
+                <span data-i18n="msg_new_entities_warning">⚠️ Ważne: Jeśli dodałeś nowe encje w Home Assistant podczas
+                    tworzenia dashboardu, musisz zrestartować AppDaemon aby je wykryć!</span>
             </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-cancel" onclick="closeInfoModal()"
+                data-i18n="btn_cancel">Zamknij</button>
         </div>
     </div>
 </div>
