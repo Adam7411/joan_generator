@@ -4805,7 +4805,12 @@ class DashSaver(hass.Hass):
 
                     if (listEl && data.files && data.files.length > 0) {
                         listEl.innerHTML = data.files.map(f => {
-                            let name = (typeof f === 'object' && f !== null) ? (f.name || JSON.stringify(f)) : f;
+                            let name = "";
+                            if (f && typeof f === 'object') {
+                                name = f.name || f.filename || JSON.stringify(f);
+                            } else {
+                                name = String(f);
+                            }
                             return `<div style="padding: 2px 0;">📄 ${name}</div>`;
                         }).join('');
                         listEl.style.display = 'block';
@@ -5005,17 +5010,16 @@ visionect_api_secret: "YOUR_API_SECRET"</pre>
     let selectedJoanUuid = null;
 
     function selectJoanDevice(uuid) {
+        console.log("DEBUG: selectJoanDevice called with uuid:", uuid);
+
         if (!joanDevices || joanDevices.length === 0) {
-            console.warn("joanDevices list is empty");
-            // Try to find it in the global state if possible or show error
-            showNotification("Error: Device list is empty. Please refresh.", "error");
+            alert("BŁĄD: Lista urządzeń jest pusta. Odśwież urządzenia.");
             return;
         }
 
         const dev = joanDevices.find(d => d.uuid === uuid);
         if (!dev) {
-            console.error("Device not found in local list:", uuid);
-            showNotification("Error: Device not found.", "error");
+            alert("BŁĄD: Nie znaleziono urządzenia o UUID: " + uuid);
             return;
         }
 
@@ -5044,10 +5048,9 @@ visionect_api_secret: "YOUR_API_SECRET"</pre>
     }
 
     function sendToJoan() {
+        console.log("DEBUG: sendToJoan called for UUID:", selectedJoanUuid);
         if (!selectedJoanUuid) {
-            showNotification(getTrans('msg_select_device_first'), 'error');
-            // Open modal to let user select
-            showInfoModal();
+            alert("BŁĄD: Najpierw wybierz urządzenie!");
             return;
         }
 
