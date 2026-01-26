@@ -7,7 +7,8 @@
     <title>Joan 6 E-Ink Generator</title>
 
     <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap&subset=latin,latin-ext"
+        rel="stylesheet">
 
     <script>
         // 1. Natychmiast ustaw klasę dark-mode (zanim pojawi się białe tło)
@@ -608,7 +609,7 @@
         }
 
         .ew-title {
-            font-weight: 900;
+            font-weight: 700;
             font-size: 13px;
             text-align: center;
             width: 100%;
@@ -621,7 +622,7 @@
             overflow: hidden;
             text-overflow: ellipsis;
             display: -webkit-box;
-            -webkit-line-clamp: 2;
+            -webkit-line-clamp: 3;
             -webkit-box-orient: vertical;
             flex-grow: 0;
         }
@@ -635,7 +636,7 @@
         }
 
         .ew-value {
-            font-weight: 900;
+            font-weight: 700;
             font-size: 15px;
             /* text-transform: uppercase; */
             margin-bottom: 2px;
@@ -2853,7 +2854,7 @@
         function runSmartLogic(val, isTitleSearch) {
             if (blockSmart) return;
             if (!val) return;
-            const input = String(val).toLowerCase();
+            const input = String(val);
             const inputNorm = normalizeString(input);
 
             // Blokada - poniżej 3 znaków nie zgadujemy typu ikony
@@ -3674,8 +3675,9 @@
                             titlePx = isSmall ? 16 : 20;
                         }
 
-                        // Apply Scale
-                        titleStyle = `font-size: ${Math.round(titlePx * PREVIEW_SCALE)}px;`;
+                        // Apply Scale (Bigger scale for title for better readability in preview as requested)
+                        const TITLE_PREVIEW_SCALE = 0.7;
+                        titleStyle = `font-size: ${Math.round(titlePx * TITLE_PREVIEW_SCALE)}px;`;
 
                         let valueStyle = '';
                         let valuePx = 54;
