@@ -616,7 +616,7 @@
             margin-top: 8px;
             margin-bottom: 4px;
             white-space: normal;
-            text-transform: uppercase;
+            /* text-transform: uppercase; */
             pointer-events: none;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -637,7 +637,7 @@
         .ew-value {
             font-weight: 900;
             font-size: 15px;
-            text-transform: uppercase;
+            /* text-transform: uppercase; */
             margin-bottom: 2px;
             text-align: center;
             border-top: 2px solid #000;
@@ -1404,7 +1404,7 @@
                     <div class="flex-col" style="flex: 2;">
                         <label data-i18n="lbl_name">Tytuł na ekranie</label>
                         <input type="text" id="w-name" placeholder="np. Salon"
-                            oninput="checkTitleLimit(); searchEntities(this.value, true)">
+                            oninput="checkTitleLimit(); renderPreview(); searchEntities(this.value, true)">
                         <div id="char-count" class="char-counter">0/20</div>
                     </div>
                     <div class="flex-col" style="flex: 0 0 100px;">
@@ -2773,12 +2773,13 @@
         // =========================================================================
 
         // Ulepszona normalizacja (usuwa polskie znaki, małe litery, usuwa zbędne spacje)
-        function normalizeString(str) {
+        function normalizeString(str, preserveAccents = false) {
             if (!str) return "";
-            return str.toString().toLowerCase()
-                .normalize("NFD")
-                .replace(/[\u0300-\u036f]/g, "")
-                .trim();
+            let normalized = str.toString().toLowerCase().trim();
+            if (!preserveAccents) {
+                normalized = normalized.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            }
+            return normalized;
         }
 
         function rebuildGridOptions(orientation) {
@@ -3006,7 +3007,7 @@
             if (!isTitleSearch) {
                 let name = input.split('.').pop();
                 name = name.replace(/_[lvr]\d+$/i, '').replace(/_state$/i, '').replace(/_/g, ' ');
-                name = name.replace(/\b\w/g, l => l.toUpperCase());
+                name = name.replace(/(^|\s)\S/g, l => l.toUpperCase());
                 document.getElementById('w-name').value = name;
             }
             if (!manualIconOverride) {
@@ -3696,14 +3697,21 @@
                         const valDisplay = r_state_enabled ? realState : "";
                         const valStyleFinal = r_state_enabled ? valueStyle : "display:none;";
 
+                        // Create title element separately to ensure proper UTF-8 encoding
+                        const titleDiv = document.createElement('div');
+                        titleDiv.className = 'ew-title';
+                        titleDiv.style.cssText = titleStyle;
+                        titleDiv.textContent = r_name || w.id;
+
                         div.innerHTML = `
-                            <div class="ew-title" style="${titleStyle}">${r_name || w.id}</div>
                             ${iconHtml}
                             <div class="ew-value" style="${valStyleFinal}">${valDisplay}</div>
                             <div class="ew-del" onclick="deleteWidget(${rI}, ${wI}, event)">X</div>
                             <div class="ew-copy" onclick="copyWidget(${rI}, ${wI}, event)">📄</div>
                             ${copyTagHtml}
                         `;
+                        // Insert title element at the beginning to preserve UTF-8 characters
+                        div.insertBefore(titleDiv, div.firstChild);
                     }
                     div.onclick = (e) => { e.stopPropagation(); editWidget(rI, wI); };
                     wrapper.appendChild(div);
