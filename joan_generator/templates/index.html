@@ -1156,11 +1156,24 @@
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.3s;
-            z-index: 1000;
+            z-index: 99999;
             margin-bottom: 5px;
             max-width: 250px;
             white-space: normal;
             text-align: center;
+            /* Ensure it stays on top */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Mobile adjustments for tooltip */
+        @media (max-width: 768px) {
+            .battery-indicator::before {
+                right: -10px;
+                bottom: 120%;
+                font-size: 12px;
+                background-color: #222;
+                max-width: 200px;
+            }
         }
 
         .battery-indicator:hover::before {
