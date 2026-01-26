@@ -3613,10 +3613,34 @@
                             copyTagHtml = `<div class="ew-copy-tag">copy${copyMatch[1]}</div>`;
                         }
 
+                        // Calculate Font Styles for Preview
+                        let titleStyle = '';
+                        if (w.title_size_custom) titleStyle = `font-size: ${w.title_size_custom}px;`;
+                        else {
+                            const isSmall = (cols === 1 && rw === 1) || (cols === 1 && rw === 2);
+                            titleStyle = isSmall ? 'font-size: 16px;' : 'font-size: 20px;';
+                        }
+
+                        let valueStyle = '';
+                        let valuePx = 54;
+                        if (w.value_size_custom) valuePx = parseInt(w.value_size_custom);
+                        else {
+                            if (w.value_size_hint === 'medium') valuePx = 40;
+                            else if (w.value_size_hint === 'small') valuePx = 32;
+                            else if (w.value_size_hint === 'normal') valuePx = 54;
+                            else if (w.value_size_hint === 'auto') valuePx = 54; // Default auto
+                        }
+
+                        // Fallback for small widgets logic like in run.py
+                        const isSmallVal = (cols === 1 && rw === 1) || (cols === 1 && rw === 2);
+                        if (isSmallVal && !w.value_size_custom && (!w.value_size_hint || w.value_size_hint === 'auto')) valuePx = 34;
+
+                        valueStyle = `font-size: ${valuePx}px;`;
+
                         div.innerHTML = `
-                            <div class="ew-title">${w.name || w.id}</div>
+                            <div class="ew-title" style="${titleStyle}">${w.name || w.id}</div>
                             ${iconHtml}
-                            <div class="ew-value">${realState}</div>
+                            <div class="ew-value" style="${valueStyle}">${realState}</div>
                             <div class="ew-del" onclick="deleteWidget(${rI}, ${wI}, event)">X</div>
                             <div class="ew-copy" onclick="copyWidget(${rI}, ${wI}, event)">📄</div>
                             ${copyTagHtml}
@@ -3864,6 +3888,10 @@
                             let icon_off = '';
 
                             let state_text_enabled = true;
+                            let title_size_custom = '';
+                            let value_size_custom = '';
+                            let value_size_hint = 'auto';
+
                             if (rawDefs[id]) {
                                 const d = rawDefs[id];
 
@@ -3887,6 +3915,28 @@
                                     state_text_enabled = false;
                                 }
 
+                                // PARSE FONT SIZES
+                                const titleStyleMatch = d.match(/title_style:\s*"(.*)"/);
+                                if (titleStyleMatch) {
+                                    const fsMatch = titleStyleMatch[1].match(/font-size:\s*(\d+)px/);
+                                    if (fsMatch) title_size_custom = fsMatch[1];
+                                }
+
+                                const valueStyleMatch = d.match(/value_style:\s*"(.*)"/);
+                                if (valueStyleMatch) {
+                                    const fsMatch = valueStyleMatch[1].match(/font-size:\s*(\d+)px/);
+                                    if (fsMatch) {
+                                        const px = parseInt(fsMatch[1]);
+                                        if (px === 54) value_size_hint = 'normal';
+                                        else if (px === 40) value_size_hint = 'medium';
+                                        else if (px === 32) value_size_hint = 'small';
+                                        else {
+                                            value_size_hint = 'auto';
+                                            value_size_custom = px;
+                                        }
+                                    }
+                                }
+
                                 // FORCE INPUT_BUTTON DETECTION
                                 const entMatch = d.match(/entity:\s*(.*)/);
                                 if (entMatch) {
@@ -3908,7 +3958,9 @@
                                 icon,
                                 icon_on,
                                 icon_off,
-                                value_size_hint: 'auto',
+                                value_size_hint,
+                                value_size_custom,
+                                title_size_custom,
                                 state_text_enabled,
                                 was_edited: false
                             };
