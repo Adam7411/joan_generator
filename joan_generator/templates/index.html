@@ -1113,6 +1113,23 @@
             /* Bring hovered row to front */
         }
 
+        /* STRICT LAYERING FOR OVERLAPS */
+        .row-controls {
+            position: relative;
+            z-index: 5 !important;
+        }
+
+        .widget-wrapper {
+            position: relative;
+            z-index: 10 !important;
+        }
+
+        /* Ensure battery indicator is above everything in widget */
+        .battery-indicator {
+            z-index: 100 !important;
+        }
+
+
 
 
         @keyframes spin {
@@ -4984,7 +5001,9 @@ class DashSaver(hass.Hass):
                     const div = document.createElement('div');
                     div.style.padding = '4px 0';
                     div.style.borderBottom = '1px solid #eee';
-                    div.innerText = '📄 ' + d; // d is filename
+                    // Fix [object Object]: d might be object {name: "foo.dash"} or string
+                    const name = typeof d === 'object' ? (d.name || d.filename || JSON.stringify(d)) : d;
+                    div.innerText = '📄 ' + name;
                     listDiv.appendChild(div);
                 });
             } else {
