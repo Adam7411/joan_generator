@@ -2595,7 +2595,8 @@
             }
 
             try {
-                const response = await fetch(`/api/entity_frequency/${encodeURIComponent(baseEntity)}`);
+                // Use relative path for Ingress compatibility
+                const response = await fetch(`api/entity_frequency/${encodeURIComponent(baseEntity)}`);
                 const data = await response.json();
 
                 // Store in cache
@@ -2603,7 +2604,7 @@
                 return data;
             } catch (error) {
                 console.error('Battery analysis error for', baseEntity, ':', error);
-                return { level: 'unknown', changes_per_hour: 0 };
+                return { level: 'unknown', changes_per_hour: 0, error: error.toString() };
             }
         }
 
