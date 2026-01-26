@@ -2619,7 +2619,7 @@
         }
 
         // Get battery message for tooltip
-        function getBatteryMessage(level, changesPerHour) {
+        function getBatteryMessage(level, changesPerHour, errorMsg) {
             const lang = currentLang || 'pl';
             const t = TRANSLATIONS[lang] || TRANSLATIONS['pl'];
             const rate = (changesPerHour || 0).toFixed(2);
@@ -2631,6 +2631,8 @@
                 return t.freq_warning.replace('{0}', rate).replace(/<a[^>]*>(.*?)<\/a>/g, '$1');
             } else if (level === 'ok') {
                 return t.freq_ok.replace('{0}', rate);
+            } else if (level === 'unknown' && errorMsg) {
+                return (lang === 'pl' ? "Błąd analizy: " : "Analysis Error: ") + errorMsg;
             }
             return t.freq_analyzing;
         }
@@ -3570,9 +3572,12 @@
                         wrapper.appendChild(batteryIndicator);
 
                         // Analyze battery consumption asynchronously
+                        // Analyze battery consumption asynchronously
                         analyzeBatteryConsumption(w.id).then(analysis => {
                             const icon = getBatteryIndicatorIcon(analysis.level);
-                            const message = getBatteryMessage(analysis.level, analysis.changes_per_hour);
+                            // Pass the whole analysis object to get error details
+                            const message = getBatteryMessage(analysis.level, analysis.changes_per_hour, analysis.error);
+
                             batteryIndicator.innerHTML = icon;
                             batteryIndicator.setAttribute('data-tooltip', message);
                             batteryIndicator.setAttribute('data-level', analysis.level);
