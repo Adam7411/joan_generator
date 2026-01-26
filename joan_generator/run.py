@@ -43,6 +43,7 @@ try:
                 API_URL = "http://homeassistant:8123/api"
                 TOKEN_SOURCE = "Manual (Konfiguracja)"
                 print(f"🔧 Manual token detected. Switching API to: {API_URL}")
+                print(f"🔑 Token loaded (starts with: {TOKEN[:10]}...)")
             opt_slug = options.get('appdaemon_slug')
             if opt_slug:
                 APPDAEMON_SLUG = opt_slug
