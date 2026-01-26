@@ -1098,10 +1098,22 @@
         }
 
         html.dark-mode .tip-box {
-            background: #263238;
-            color: #eceff1;
-            border: 1px solid #546e7a;
+            background: #1a2327;
+            color: #90caf9;
         }
+
+        /* Fix overlapping tooltips */
+        .eink-row {
+            position: relative;
+            z-index: 1;
+        }
+
+        .eink-row:hover {
+            z-index: 1000;
+            /* Bring hovered row to front */
+        }
+
+
 
         @keyframes spin {
             from {
@@ -1221,13 +1233,13 @@
                 <div class="controls" style="display:flex; align-items:center;">
                     <button type="button" onclick="toggleTheme()" id="btn-theme" title="Zmień motyw">🌙</button>
                     <button type="button" onclick="showInfoModal()" id="btn-info" title="Informacje o systemie"
-                        style="padding: 8px 12px;"><i class="mdi mdi-information-variant"
-                            style="font-size:1.2em; line-height:1;"></i></button>
+                        data-i18n-title="modal_info_title" style="padding: 8px 12px;"><i
+                            class="mdi mdi-information-variant" style="font-size:1.2em; line-height:1;"></i></button>
                     <button type="button" onclick="openLinksModal()" id="btn-links-top" title="Przydatne Linki"
-                        style="padding: 8px 12px;"><i class="mdi mdi-link-variant"
+                        data-i18n-title="modal_links_title" style="padding: 8px 12px;"><i class="mdi mdi-link-variant"
                             style="font-size:1.2em; line-height:1;"></i></button>
                     <button type="button" onclick="openVisionectHelp()" id="btn-joan-help" title="Pomoc Visionect Joan"
-                        style="font-size: 0.9em;">JOAN</button>
+                        data-i18n-title="modal_visionect_title" style="font-size: 0.9em;">JOAN</button>
                     <div style="width:1px; height:24px; background:#ccc; margin:0 8px;"></div>
                     <button type="button" onclick="setLang('pl')" id="btn-pl" class="active">PL</button>
                     <button type="button" onclick="setLang('en')" id="btn-en">EN</button>
@@ -2385,7 +2397,13 @@
                 msg_refreshing: "Odświeżanie listy encji...",
                 msg_refreshed: "✅ Lista encji odświeżona!",
                 btn_links: "🔗 PRZYDATNE LINKI",
-                modal_links_title: "Przydatne Linki i Dokumentacja"
+                modal_links_title: "Przydatne Linki i Dokumentacja",
+                link_v3_aio: "Instalacja serwera Visionect v3 (All-in-One) w Home Assistant",
+                link_v3_proxmox: "Instalacja serwera Visionect w Proxmox",
+                link_addon: "Dodatek Visionect Joan dla Home Assistant",
+                link_generator: "Ten generator (Dokumentacja i kod)",
+                list_dashboards_title: "Lista Dashboardów:",
+                dash_list_empty: "(brak)"
             },
             en: {
                 btn_import_dash: "📥 IMPORT DASHBOARD",
@@ -2552,7 +2570,13 @@
                 info_bridge_no: "NO / MISSING",
                 btn_refresh_entities_title: "Refresh entity list",
                 msg_refreshing: "Refreshing entity list...",
-                msg_refreshed: "✅ Entity list refreshed!"
+                msg_refreshed: "✅ Entity list refreshed!",
+                link_v3_aio: "Visionect Software Suite Server v3 (All-in-One) installation in Home Assistant",
+                link_v3_proxmox: "Visionect Software Suite - Installation in Proxmox",
+                link_addon: "Visionect Joan for Home Assistant add-on",
+                link_generator: "This Generator (Documentation & Code)",
+                list_dashboards_title: "Dashboard List:",
+                dash_list_empty: "(none)"
             }
         };
 
@@ -4949,6 +4973,25 @@ class DashSaver(hass.Hass):
             const host = window.location.hostname || '[HA_IP]';
             pathEl.textContent = pathEl.getAttribute('data-template').replace(/\[HA_IP\]/g, host);
         }
+
+        // Populate Dashboard List
+        const listDiv = document.getElementById('info-dash-list');
+        if (listDiv) {
+            listDiv.innerHTML = '';
+            const dashes = typeof dashboardsList !== 'undefined' ? dashboardsList : [];
+            if (dashes.length > 0) {
+                dashes.forEach(d => {
+                    const div = document.createElement('div');
+                    div.style.padding = '4px 0';
+                    div.style.borderBottom = '1px solid #eee';
+                    div.innerText = '📄 ' + d; // d is filename
+                    listDiv.appendChild(div);
+                });
+            } else {
+                listDiv.innerText = TRANSLATIONS[currentLang].dash_list_empty || '(none)';
+            }
+        }
+
         m.style.display = 'block';
     }
     function closeInfoModal() { document.getElementById('info-modal').style.display = 'none'; }
@@ -4989,11 +5032,22 @@ class DashSaver(hass.Hass):
                 <div id="info-path" data-template="\\[HA_IP]\addon_configs\{{ connection_info.appdaemon_slug }}\"
                     style="font-family: monospace; background: #f5f5f5; padding: 5px; border-radius: 4px; margin-top: 5px; word-break: break-all; color: #333;">
                     ...
+                    <div id="info-path" data-template="\\[HA_IP]\addon_configs\{{ connection_info.appdaemon_slug }}\"
+                        style="font-family: monospace; background: #f5f5f5; padding: 5px; border-radius: 4px; margin-top: 5px; word-break: break-all; color: #333;">
+                        ...
+                    </div>
+                </div>
+
+                <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #ddd;">
+                    <div><strong data-i18n="list_dashboards_title">Lista Dashboardów:</strong></div>
+                    <div id="info-dash-list"
+                        style="margin-top: 5px; max-height: 150px; overflow-y: auto; font-size: 0.9em; color: #555;">
+                        ...
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 </div>
 
 <!-- USEFUL LINKS MODAL -->
@@ -5008,28 +5062,28 @@ class DashSaver(hass.Hass):
                 <li
                     style="margin-bottom: 15px; padding: 12px; background: #f9f9f9; border-left: 4px solid #4caf50; border-radius: 4px;">
                     <a href="https://github.com/Adam7411/visionect-v3-allinone" target="_blank"
-                        style="text-decoration: none; color: #1565c0; font-weight: bold;">
+                        style="text-decoration: none; color: #1565c0; font-weight: bold;" data-i18n="link_v3_aio">
                         Visionect Software Suite Server v3 (All‑in‑One) installation in Home Assistant
                     </a>
                 </li>
                 <li
                     style="margin-bottom: 15px; padding: 12px; background: #f9f9f9; border-left: 4px solid #4caf50; border-radius: 4px;">
                     <a href="https://github.com/Adam7411/Joan-6-Visionect_Home-Assistant_EN" target="_blank"
-                        style="text-decoration: none; color: #1565c0; font-weight: bold;">
+                        style="text-decoration: none; color: #1565c0; font-weight: bold;" data-i18n="link_v3_proxmox">
                         Visionect Software Suite - Installation in Proxmox
                     </a>
                 </li>
                 <li
                     style="margin-bottom: 15px; padding: 12px; background: #f9f9f9; border-left: 4px solid #4caf50; border-radius: 4px;">
                     <a href="https://github.com/Adam7411/visionect_joan" target="_blank"
-                        style="text-decoration: none; color: #1565c0; font-weight: bold;">
+                        style="text-decoration: none; color: #1565c0; font-weight: bold;" data-i18n="link_addon">
                         Visionect Joan for Home Assistant add-on
                     </a>
                 </li>
                 <li
                     style="margin-bottom: 15px; padding: 12px; background: #f9f9f9; border-left: 4px solid #4caf50; border-radius: 4px;">
                     <a href="https://github.com/Adam7411/joan_generator" target="_blank"
-                        style="text-decoration: none; color: #1565c0; font-weight: bold;">
+                        style="text-decoration: none; color: #1565c0; font-weight: bold;" data-i18n="link_generator">
                         Joan 6: AppDaemon Dashboard Generator add-on
                     </a>
                 </li>
