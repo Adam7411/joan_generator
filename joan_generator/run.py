@@ -586,6 +586,8 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                         output.append(f"  value_style: \"display: none !important;\"")
                     else:
                         output.append(f"  state_text: 1")
+                        v_size_custom = w.get('value_size_custom')
+                        output.append(f"  value_style: \"{build_value_style(final_size_hint, is_small, v_size_custom)}\"")
                     
                     t_size_custom = w.get('title_size_custom')
                     output.append(f"  title_style: \"{build_title_style(is_small, t_size_custom)}\"")
@@ -782,6 +784,8 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                         output.append(f"  value_style: \"display: none !important;\"")
                     else:
                         output.append(f"  state_text: 1")
+                        v_size_custom = w.get('value_size_custom')
+                        output.append(f"  value_style: \"{build_value_style(final_size_hint, is_small, v_size_custom)}\"")
                     output.append("  state_map:")
                     output.append(f"    \"on\": \"{dic['on']}\"")
                     output.append(f"    \"off\": \"{dic['off']}\"")
@@ -910,6 +914,8 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                         output.append(f"  value_style: \"display: none !important;\"")
                     else:
                         output.append(f"  state_text: 1")
+                        v_size_custom = w.get('value_size_custom')
+                        output.append(f"  value_style: \"{build_value_style(final_size_hint, is_small, v_size_custom)}\"")
                     output.append("  state_map:")
                     output.append(f"    \"open\": \"{dic.get('cover_open', dic['open'])}\"")
                     output.append(f"    \"closed\": \"{dic.get('cover_closed', dic['closed'])}\"")
