@@ -3367,7 +3367,7 @@
 
             document.getElementById('btn-submit').innerText = TRANSLATIONS[currentLang].btn_update;
             document.getElementById('w-type').value = data.type;
-            toggleInputs();
+            // toggleInputs() moved to end of function to reflect data state correctly
             if (data.type === 'navigate') document.getElementById('w-dash').value = data.id.replace('navigate.', '');
             else {
                 // Strip _copy\d+ for user readability as requested
@@ -3388,6 +3388,8 @@
             document.getElementById('w-title-size').value = data.title_size_custom || '';
             manualIconOverride = true;
             updateIconPreview(); updateTitleLimit();
+            // Call toggleInputs after setting checkbox state
+            toggleInputs();
             setTimeout(() => blockSmart = false, 500); renderPreview();
         }
 
@@ -3412,6 +3414,7 @@
             if (document.getElementById('w-min')) document.getElementById('w-min').value = '';
             if (document.getElementById('w-max')) document.getElementById('w-max').value = '';
             manualIconOverride = false; updateIconPreview(); updateTitleLimit();
+            toggleInputs();
         }
 
         function deleteWidget(r, w, e) { e.stopPropagation(); rows[r].splice(w, 1); if (editIdx && editIdx.r === r && editIdx.w === w) cancelEdit(); renderPreview(); }
