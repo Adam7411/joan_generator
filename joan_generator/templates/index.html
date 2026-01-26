@@ -1409,7 +1409,8 @@
                     </div>
                     <div class="flex-col" style="flex: 0 0 100px;">
                         <label data-i18n="lbl_title_size">Rozmiar PX</label>
-                        <input type="number" id="w-title-size" placeholder="20" style="width: 100%;">
+                        <input type="number" id="w-title-size" placeholder="20" style="width: 100%;"
+                            oninput="renderPreview()">
                     </div>
                     <div class="flex-col" style="flex: 1;">
                         <label data-i18n="lbl_type">Typ Widgetu</label>
@@ -1453,14 +1454,14 @@
                     <div class="flex-col" id="grp-value-size" style="display: none;">
                         <label data-i18n="lbl_value_size">Rozmiar czcionki wartości</label>
                         <div style="display: flex; gap: 5px;">
-                            <select id="w-value-size" style="flex: 2;">
+                            <select id="w-value-size" style="flex: 2;" onchange="renderPreview()">
                                 <option value="auto" data-i18n="opt_auto">Auto (na podstawie wartości)</option>
                                 <option value="normal" data-i18n="opt_normal">Normalny (54px)</option>
                                 <option value="medium" data-i18n="opt_medium">Średni (40px) - dla 1000+</option>
                                 <option value="small" data-i18n="opt_small">Mały (32px) - dla 10000+</option>
                             </select>
                             <input type="number" id="w-value-size-custom" placeholder="px" style="flex: 1;"
-                                title="Własny rozmiar (opcjonalnie)">
+                                title="Własny rozmiar (opcjonalnie)" oninput="renderPreview()">
                         </div>
                     </div>
                     <div class="flex-col" id="grp-show-state" style="display: none;">
