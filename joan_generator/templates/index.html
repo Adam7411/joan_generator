@@ -1106,11 +1106,19 @@
         .eink-row {
             position: relative;
             z-index: 1;
+            display: flex;
+            flex-wrap: wrap;
+            /* NEW: Allow wrapping for header effect */
+            align-items: flex-start;
+            border-bottom: 1px dashed #eee;
+            padding-bottom: 5px;
+            margin-bottom: 10px;
         }
 
         .eink-row:hover {
             z-index: 1000;
             /* Bring hovered row to front */
+            border-bottom: 1px dashed #aaa;
         }
 
         /* STRICT LAYERING FOR OVERLAPS */
@@ -1118,12 +1126,17 @@
             position: relative;
             z-index: 5 !important;
             width: 100%;
-            /* Force full width to sit on top */
+            /* Force full width */
+            flex-basis: 100%;
+            /* Flex requirement */
             display: flex;
-            /* Ensure buttons align nicely inside */
             align-items: center;
+            justify-content: flex-start;
+            /* Left align buttons */
             margin-bottom: 5px;
-            /* Spacing */
+            background: rgba(0, 0, 0, 0.03);
+            padding: 4px 8px;
+            border-radius: 4px;
         }
 
         .widget-wrapper {
