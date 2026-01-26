@@ -3555,9 +3555,17 @@
                         batteryIndicator.innerHTML = '⏳'; // Loading indicator initially
                         batteryIndicator.style.fontSize = '14px';
                         batteryIndicator.setAttribute('data-tooltip', TRANSLATIONS[currentLang || 'pl'].freq_analyzing);
+                        batteryIndicator.setAttribute('data-level', 'loading');
+
+                        // Click handler - open modal ONLY for danger and warning
                         batteryIndicator.onclick = (e) => {
                             e.stopPropagation();
-                            openBatteryHelp();
+                            const level = batteryIndicator.getAttribute('data-level');
+                            // Only open help modal for danger or warning levels
+                            if (level === 'danger' || level === 'warning') {
+                                openBatteryHelp();
+                            }
+                            // For 'ok' and 'unknown', do nothing (tooltip is enough)
                         };
                         wrapper.appendChild(batteryIndicator);
 
@@ -3567,10 +3575,20 @@
                             const message = getBatteryMessage(analysis.level, analysis.changes_per_hour);
                             batteryIndicator.innerHTML = icon;
                             batteryIndicator.setAttribute('data-tooltip', message);
+                            batteryIndicator.setAttribute('data-level', analysis.level);
+
+                            // Update cursor style - pointer only for danger/warning
+                            if (analysis.level === 'danger' || analysis.level === 'warning') {
+                                batteryIndicator.style.cursor = 'pointer';
+                            } else {
+                                batteryIndicator.style.cursor = 'default';
+                            }
                         }).catch(err => {
                             console.error('Battery analysis failed for', w.id, err);
                             batteryIndicator.innerHTML = '❓';
                             batteryIndicator.setAttribute('data-tooltip', 'Analysis failed');
+                            batteryIndicator.setAttribute('data-level', 'unknown');
+                            batteryIndicator.style.cursor = 'default';
                         });
                     }
                     // ===========================================================
