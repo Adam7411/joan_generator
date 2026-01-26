@@ -1468,8 +1468,8 @@
                         <label style="font-size: 0.9em; margin-bottom: 5px;" data-i18n="lbl_show_state">Pokaż stan
                             (Tekst)</label>
                         <div>
-                            <input type="checkbox" id="w-show-state" checked
-                                style="transform: scale(1.5); margin: 5px;">
+                            <input type="checkbox" id="w-show-state" checked style="transform: scale(1.5); margin: 5px;"
+                                onchange="handleStateVisibility()">
                         </div>
                     </div>
                     <div class="flex-col" style="flex: 0 0 60px;">
@@ -3323,14 +3323,25 @@
             // Pokaż opcję rozmiaru czcionki tylko dla sensorów
             const grpValueSize = document.getElementById('grp-value-size');
             if (grpValueSize) {
-                // Determine if we should show value size controls
-                // Basically any widget that shows state text
                 const showSizeTypes = ['sensor', 'switch', 'light', 'binary_sensor', 'cover', 'lock', 'fan', 'input_number', 'input_boolean', 'group', 'climate', 'person'];
-                grpValueSize.style.display = showSizeTypes.includes(type) ? 'block' : 'none';
+                const stateCheck = document.getElementById('w-show-state');
+                const stateEnabled = stateCheck ? stateCheck.checked : true;
+                const isSensor = (type === 'sensor');
+
+                if (showSizeTypes.includes(type)) {
+                    grpValueSize.style.display = (isSensor || stateEnabled) ? 'block' : 'none';
+                } else {
+                    grpValueSize.style.display = 'none';
+                }
             }
 
             const showStateTypes = ['switch', 'light', 'input_boolean', 'binary_sensor', 'lock', 'fan', 'group', 'automation', 'script'];
             document.getElementById('grp-show-state').style.display = showStateTypes.includes(type) ? 'block' : 'none';
+        }
+
+        function handleStateVisibility() {
+            toggleInputs();
+            renderPreview();
         }
 
         function updateTitleLimit() {
@@ -3574,6 +3585,32 @@
                 rowDiv.appendChild(controls);
 
                 row.forEach((w, wI) => {
+                    const isEditingThis = (editIdx && editIdx.r === rI && editIdx.w === wI);
+
+                    // Peeking logic: If editing, use current form values for rendering
+                    let r_name = w.name;
+                    let r_title_size = w.title_size_custom;
+                    let r_value_size_hint = w.value_size_hint;
+                    let r_value_size_custom = w.value_size_custom;
+                    let r_state_enabled = (w.state_text_enabled !== false);
+                    let r_icon = w.icon;
+                    let r_icon_on = w.icon_on;
+                    let r_icon_off = w.icon_off;
+                    let r_type = w.type;
+
+                    if (isEditingThis) {
+                        r_name = document.getElementById('w-name').value;
+                        r_title_size = document.getElementById('w-title-size').value;
+                        r_value_size_hint = document.getElementById('w-value-size').value;
+                        r_value_size_custom = document.getElementById('w-value-size-custom').value;
+                        const chk = document.getElementById('w-show-state');
+                        if (chk) r_state_enabled = chk.checked;
+                        r_icon = document.getElementById('w-icon').value;
+                        r_icon_on = document.getElementById('w-icon-on').value;
+                        r_icon_off = document.getElementById('w-icon-off').value;
+                        r_type = document.getElementById('w-type').value;
+                    }
+
                     const wrapper = document.createElement('div');
                     wrapper.className = 'widget-wrapper';
                     wrapper.draggable = true;
@@ -3581,11 +3618,11 @@
                     wrapper.ondragend = handleDragEnd;
                     wrapper.ondrop = (e) => handleWidgetDrop(e, rI, wI);
 
-                    const typeLabel = document.createElement('div'); typeLabel.className = 'ew-type-label'; typeLabel.innerText = w.type;
+                    const typeLabel = document.createElement('div'); typeLabel.className = 'ew-type-label'; typeLabel.innerText = r_type;
                     wrapper.appendChild(typeLabel);
 
                     const div = document.createElement('div'); div.className = 'eink-widget';
-                    if (editIdx && editIdx.r === rI && editIdx.w === wI) div.classList.add('editing');
+                    if (isEditingThis) div.classList.add('editing');
 
                     let cols = 2, rw = 1;
                     if (w.size) {
@@ -3602,12 +3639,14 @@
 
                     if (cols === 1 && rw === 1) div.classList.add('is-small');
 
-                    if (w.type === 'spacer') {
+                    if (r_type === 'spacer') {
                         div.style.border = '1px dashed #aaa'; div.style.boxShadow = 'none'; div.style.opacity = '0.5';
                         div.innerHTML = '<span style="font-size:10px; color:#999;">SPACER</span>';
                     } else {
-                        const icon = getRealIcon(w); const realState = getRealState(w);
-                        const showIcon = (w.type !== 'sensor') && icon;
+                        // Use peeking values for icon and state logic
+                        const peek_w = { ...w, type: r_type, icon: r_icon, icon_on: r_icon_on, icon_off: r_icon_off };
+                        const icon = getRealIcon(peek_w); const realState = getRealState(peek_w);
+                        const showIcon = (r_type !== 'sensor') && icon;
                         const iconHtml = showIcon ? `<i class="mdi ${icon} ew-icon"></i>` : `<div style="height:38px;"></div>`;
 
                         // Check for copy suffix to show a subtle indicator
@@ -3624,8 +3663,8 @@
                         let titleStyle = '';
                         let titlePx = 20; // Default logical px
 
-                        if (w.title_size_custom) {
-                            titlePx = parseInt(w.title_size_custom);
+                        if (r_title_size) {
+                            titlePx = parseInt(r_title_size);
                         } else {
                             const isSmall = (cols === 1 && rw === 1) || (cols === 1 && rw === 2);
                             titlePx = isSmall ? 16 : 20;
@@ -3636,25 +3675,28 @@
 
                         let valueStyle = '';
                         let valuePx = 54;
-                        if (w.value_size_custom) valuePx = parseInt(w.value_size_custom);
+                        if (r_value_size_custom) valuePx = parseInt(r_value_size_custom);
                         else {
-                            if (w.value_size_hint === 'medium') valuePx = 40;
-                            else if (w.value_size_hint === 'small') valuePx = 32;
-                            else if (w.value_size_hint === 'normal') valuePx = 54;
-                            else if (w.value_size_hint === 'auto') valuePx = 54; // Default auto
+                            if (r_value_size_hint === 'medium') valuePx = 40;
+                            else if (r_value_size_hint === 'small') valuePx = 32;
+                            else if (r_value_size_hint === 'normal') valuePx = 54;
+                            else if (r_value_size_hint === 'auto') valuePx = 54; // Default auto
                         }
 
                         // Fallback for small widgets logic like in run.py
                         const isSmallVal = (cols === 1 && rw === 1) || (cols === 1 && rw === 2);
-                        if (isSmallVal && !w.value_size_custom && (!w.value_size_hint || w.value_size_hint === 'auto')) valuePx = 34;
+                        if (isSmallVal && !r_value_size_custom && (!r_value_size_hint || r_value_size_hint === 'auto')) valuePx = 34;
 
                         // Apply Scale for Value
                         valueStyle = `font-size: ${Math.round(valuePx * PREVIEW_SCALE)}px;`;
 
+                        const valDisplay = r_state_enabled ? realState : "";
+                        const valStyleFinal = r_state_enabled ? valueStyle : "display:none;";
+
                         div.innerHTML = `
-                            <div class="ew-title" style="${titleStyle}">${w.name || w.id}</div>
+                            <div class="ew-title" style="${titleStyle}">${r_name || w.id}</div>
                             ${iconHtml}
-                            <div class="ew-value" style="${valueStyle}">${realState}</div>
+                            <div class="ew-value" style="${valStyleFinal}">${valDisplay}</div>
                             <div class="ew-del" onclick="deleteWidget(${rI}, ${wI}, event)">X</div>
                             <div class="ew-copy" onclick="copyWidget(${rI}, ${wI}, event)">📄</div>
                             ${copyTagHtml}
