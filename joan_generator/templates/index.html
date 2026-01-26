@@ -1116,6 +1116,61 @@
         .rotating i {
             animation: spin 1s linear infinite;
         }
+
+        /* Battery Consumption Indicators */
+        .battery-indicator {
+            position: absolute;
+            top: -8px;
+            right: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            z-index: 50;
+            background: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s;
+        }
+
+        .battery-indicator:hover {
+            transform: scale(1.3);
+        }
+
+        /* Tooltip for battery indicator */
+        .battery-indicator::before {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            right: 0;
+            background-color: #333;
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 4px;
+            white-space: nowrap;
+            font-size: 11px;
+            font-weight: normal;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+            z-index: 1000;
+            margin-bottom: 5px;
+            max-width: 250px;
+            white-space: normal;
+            text-align: center;
+        }
+
+        .battery-indicator:hover::before {
+            opacity: 1;
+        }
+
+        html.dark-mode .battery-indicator {
+            background: #2c2c2c;
+            box-shadow: 0 2px 4px rgba(255, 255, 255, 0.2);
+        }
     </style>
 </head>
 
@@ -2517,6 +2572,126 @@
             'zone': { type: 'sensor', size: '(2x1)', icon: 'mdi-map-marker-radius' }
         };
 
+        // =========================================================================
+        // BATTERY CONSUMPTION ANALYSIS
+        // =========================================================================
+
+        // Cache to avoid repeated API calls for the same entity
+        const batteryAnalysisCache = {};
+
+        // Analyze entity battery consumption using backend API
+        async function analyzeBatteryConsumption(entityId) {
+            // Skip for spacer and navigate widgets (they don't have entities)
+            if (!entityId || entityId === 'spacer' || entityId.startsWith('navigate.')) {
+                return { level: 'ok', changes_per_hour: 0 };
+            }
+
+            // Remove _copyX suffix to get base entity
+            const baseEntity = entityId.replace(/_copy\d+$/, '');
+
+            // Check cache first
+            if (batteryAnalysisCache[baseEntity]) {
+                return batteryAnalysisCache[baseEntity];
+            }
+
+            try {
+                const response = await fetch(`/api/entity_frequency/${encodeURIComponent(baseEntity)}`);
+                const data = await response.json();
+
+                // Store in cache
+                batteryAnalysisCache[baseEntity] = data;
+                return data;
+            } catch (error) {
+                console.error('Battery analysis error for', baseEntity, ':', error);
+                return { level: 'unknown', changes_per_hour: 0 };
+            }
+        }
+
+        // Get battery indicator icon based on level
+        function getBatteryIndicatorIcon(level) {
+            const indicators = {
+                'ok': '✅',
+                'warning': '⚠️',
+                'danger': '🔴',
+                'unknown': '❓'
+            };
+            return indicators[level] || indicators['unknown'];
+        }
+
+        // Get battery message for tooltip
+        function getBatteryMessage(level, changesPerHour) {
+            const lang = currentLang || 'pl';
+            const t = TRANSLATIONS[lang] || TRANSLATIONS['pl'];
+            const rate = (changesPerHour || 0).toFixed(2);
+
+            if (level === 'danger') {
+                // Remove HTML link from tooltip (just show message)
+                return t.freq_danger.replace('{0}', rate).replace(/<a[^>]*>(.*?)<\/a>/g, '$1');
+            } else if (level === 'warning') {
+                return t.freq_warning.replace('{0}', rate).replace(/<a[^>]*>(.*?)<\/a>/g, '$1');
+            } else if (level === 'ok') {
+                return t.freq_ok.replace('{0}', rate);
+            }
+            return t.freq_analyzing;
+        }
+
+        // Open battery help modal
+        function openBatteryHelp() {
+            const lang = currentLang || 'pl';
+            const t = TRANSLATIONS[lang] || TRANSLATIONS['pl'];
+
+            // Get or create modal
+            let modal = document.getElementById('battery-help-modal');
+            if (!modal) {
+                // Create modal if it doesn't exist
+                modal = document.createElement('div');
+                modal.id = 'battery-help-modal';
+                modal.className = 'modal';
+                modal.innerHTML = `
+                    <div class="modal-content" style="max-width: 700px;">
+                        <div class="modal-header">
+                            <h2 id="battery-modal-title"></h2>
+                            <span class="close" onclick="closeBatteryHelp()">&times;</span>
+                        </div>
+                        <div id="battery-help-body"></div>
+                        <button class="btn btn-cancel" onclick="closeBatteryHelp()" style="margin-top: 15px;">
+                            <span id="battery-modal-btn"></span>
+                        </button>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+
+                // Close on background click
+                modal.addEventListener('click', function (e) {
+                    if (e.target === modal) {
+                        closeBatteryHelp();
+                    }
+                });
+            }
+
+            document.getElementById('battery-modal-title').innerHTML = t.modal_battery_title;
+            document.getElementById('battery-help-body').innerHTML = t.modal_battery_body;
+            document.getElementById('battery-modal-btn').textContent = t.modal_battery_understand;
+            modal.style.display = 'block';
+
+            return false; // Prevent default link behavior
+        }
+
+        // Close battery help modal
+        function closeBatteryHelp() {
+            const modal = document.getElementById('battery-help-modal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        // Clear battery analysis cache (call when refreshing entities)
+        function clearBatteryCache() {
+            Object.keys(batteryAnalysisCache).forEach(key => delete batteryAnalysisCache[key]);
+        }
+
+        // =========================================================================
+
         // Ulepszona normalizacja (usuwa polskie znaki, małe litery, usuwa zbędne spacje)
         function normalizeString(str) {
             if (!str) return "";
@@ -3369,7 +3544,38 @@
                         `;
                     }
                     div.onclick = (e) => { e.stopPropagation(); editWidget(rI, wI); };
-                    wrapper.appendChild(div); rowDiv.appendChild(wrapper);
+                    wrapper.appendChild(div);
+
+                    // ============== BATTERY CONSUMPTION INDICATOR ==============
+                    // Add battery analysis indicator for entities (not spacers/navigators)
+                    if (w.type !== 'spacer' && w.id && !w.id.startsWith('navigate.')) {
+                        // Create battery indicator element
+                        const batteryIndicator = document.createElement('div');
+                        batteryIndicator.className = 'battery-indicator';
+                        batteryIndicator.innerHTML = '⏳'; // Loading indicator initially
+                        batteryIndicator.style.fontSize = '14px';
+                        batteryIndicator.setAttribute('data-tooltip', TRANSLATIONS[currentLang || 'pl'].freq_analyzing);
+                        batteryIndicator.onclick = (e) => {
+                            e.stopPropagation();
+                            openBatteryHelp();
+                        };
+                        wrapper.appendChild(batteryIndicator);
+
+                        // Analyze battery consumption asynchronously
+                        analyzeBatteryConsumption(w.id).then(analysis => {
+                            const icon = getBatteryIndicatorIcon(analysis.level);
+                            const message = getBatteryMessage(analysis.level, analysis.changes_per_hour);
+                            batteryIndicator.innerHTML = icon;
+                            batteryIndicator.setAttribute('data-tooltip', message);
+                        }).catch(err => {
+                            console.error('Battery analysis failed for', w.id, err);
+                            batteryIndicator.innerHTML = '❓';
+                            batteryIndicator.setAttribute('data-tooltip', 'Analysis failed');
+                        });
+                    }
+                    // ===========================================================
+
+                    rowDiv.appendChild(wrapper);
                 });
                 container.appendChild(rowDiv);
             });
