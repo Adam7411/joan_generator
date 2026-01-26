@@ -3613,13 +3613,22 @@
                             copyTagHtml = `<div class="ew-copy-tag">copy${copyMatch[1]}</div>`;
                         }
 
+                        // Scale fonts for preview (approx 0.5x to match 117px box vs high-PPI device)
+                        const PREVIEW_SCALE = 0.5;
+
                         // Calculate Font Styles for Preview
                         let titleStyle = '';
-                        if (w.title_size_custom) titleStyle = `font-size: ${w.title_size_custom}px;`;
-                        else {
+                        let titlePx = 20; // Default logical px
+
+                        if (w.title_size_custom) {
+                            titlePx = parseInt(w.title_size_custom);
+                        } else {
                             const isSmall = (cols === 1 && rw === 1) || (cols === 1 && rw === 2);
-                            titleStyle = isSmall ? 'font-size: 16px;' : 'font-size: 20px;';
+                            titlePx = isSmall ? 16 : 20;
                         }
+
+                        // Apply Scale
+                        titleStyle = `font-size: ${Math.round(titlePx * PREVIEW_SCALE)}px;`;
 
                         let valueStyle = '';
                         let valuePx = 54;
@@ -3635,7 +3644,8 @@
                         const isSmallVal = (cols === 1 && rw === 1) || (cols === 1 && rw === 2);
                         if (isSmallVal && !w.value_size_custom && (!w.value_size_hint || w.value_size_hint === 'auto')) valuePx = 34;
 
-                        valueStyle = `font-size: ${valuePx}px;`;
+                        // Apply Scale for Value
+                        valueStyle = `font-size: ${Math.round(valuePx * PREVIEW_SCALE)}px;`;
 
                         div.innerHTML = `
                             <div class="ew-title" style="${titleStyle}">${w.name || w.id}</div>
