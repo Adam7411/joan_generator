@@ -3893,7 +3893,9 @@
 
                         let tooltipText = "";
                         tooltipText += `${t.info_size_px}: ${width}x${height} px (${cols}x${rw})\n`;
-                        tooltipText += `${t.info_font_value}: ${vPx} px\n`;
+                        if (r_state_enabled || r_type === 'sensor' || r_type === 'climate') {
+                            tooltipText += `${t.info_font_value}: ${vPx} px\n`;
+                        }
                         tooltipText += `${t.info_font_title}: ${tPx} px\n`;
                         tooltipText += `${t.info_type}: ${r_type}\n`;
                         tooltipText += `${t.info_id}: ${w.id}`;
