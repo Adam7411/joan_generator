@@ -9,6 +9,10 @@
     <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap&subset=latin,latin-ext"
         rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({ startOnLoad: false, theme: 'neutral' });
+    </script>
 
     <script>
         // 1. Natychmiast ustaw klasę dark-mode (zanim pojawi się białe tło)
@@ -681,6 +685,20 @@
             border-radius: 2px;
             pointer-events: none;
             line-height: 1;
+        }
+
+        .ew-sub-entity {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            font-size: 10px;
+            color: #000;
+            background: rgba(255, 255, 255, 0.7);
+            padding: 0 4px;
+            border-radius: 2px;
+            pointer-events: none;
+            font-weight: bold;
+            border: 1px solid #ddd;
         }
 
         .ew-copy {
@@ -1433,6 +1451,46 @@
             </details>
         </div>
 
+        <div class="section">
+            <div class="section-title">
+                <span>4. Multi-Dashboard Manager</span>
+            </div>
+            <p style="font-size: 0.9em; color: #666;">Zapisuj układy w przeglądarce i podglądaj powiązania między nimi.
+            </p>
+
+            <div class="flex-row">
+                <div class="flex-col">
+                    <label>Zapisz obecny jako:</label>
+                    <div style="display:flex; gap:5px;">
+                        <input type="text" id="save-dash-name" placeholder="np. Salon">
+                        <button class="btn" style="background:#4caf50; color:white;"
+                            onclick="saveToBrowser()">ZAPISZ</button>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top:20px; display:flex; gap:20px;">
+                <!-- Lista -->
+                <div style="flex:1;">
+                    <strong>Zapisane układy:</strong>
+                    <div id="saved-dash-list" class="dash-list"></div>
+                </div>
+
+                <!-- NOWE: Mapa Wizualna -->
+                <div style="flex:2; border: 1px solid #ccc; padding:10px; border-radius:8px; background: white;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                        <strong>Mapa Powiązań (Flow):</strong>
+                        <button class="btn-tool" style="background:#2196f3; width:auto; padding:2px 10px;"
+                            onclick="renderDashboardFlow()">ODŚWIEŻ MAPĘ</button>
+                    </div>
+                    <div class="mermaid" id="dash-flow-chart" style="text-align:center;">
+                        graph TD;
+                        Start[Brak danych] --> Stop[Zapisz dashboardy];
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <form method="POST" id="main-form">
             <input type="hidden" name="action" id="form-action" value="generate">
             <input type="hidden" name="title" id="form-title" value="JoanDashboard">
@@ -1448,9 +1506,10 @@
                 </div>
 
                 <div class="flex-row" style="margin-bottom: 20px;">
-                    <div class="flex-col" id="grp-entity" style="flex: 100%;">
+                    <!-- Główna Encja -->
+                    <div class="flex-col" id="grp-entity" style="flex: 2;">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <label data-i18n="lbl_entity">Encja (Wyszukaj po nazwie lub ID)</label>
+                            <label data-i18n="lbl_entity">Encja Główna</label>
                             <button type="button" onclick="refreshEntities()" id="btn-refresh-ent"
                                 style="background: none; border: none; cursor: pointer; padding: 0 5px; opacity: 0.7; transition: opacity 0.3s;"
                                 onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.7"
@@ -1468,12 +1527,16 @@
                             <span id="freq-icon"></span>
                             <span id="freq-text"></span>
                         </div>
-
-                        <div class="battery-warning" data-i18n="battery_warning" style="display: none;">⚠️ <b>Uwaga
-                                Bateria:</b> Unikaj encji
-                            zmieniających się bardzo często (np. napięcie w czasie rzeczywistym). Częste odświeżanie
-                            ekranu szybko zużywa baterię!</div>
                     </div>
+
+                    <!-- NOWE: Sub-Entity -->
+                    <div class="flex-col" id="grp-sub-entity" style="flex: 1;">
+                        <label>Sub-Entity (Opcja)</label>
+                        <input list="entity-list" id="w-sub-entity" placeholder="np. sensor.wilgotnosc"
+                            oninput="renderPreview()">
+                        <small style="color:#666; font-size:10px;">Np. Wilgotność w rogu</small>
+                    </div>
+
                     <div class="flex-col hidden" id="grp-nav" style="flex: 100%;">
                         <label data-i18n="lbl_dash_name">Nazwa Dashboardu (target)</label>
                         <input type="text" id="w-dash" placeholder="np. main" list="nav-dash-suggestions"
@@ -3251,6 +3314,7 @@
             const w = {
                 type: document.getElementById('w-type').value,
                 id: document.getElementById('w-id').value,
+                sub_entity: document.getElementById('w-sub-entity').value, // NOWE
                 dash: document.getElementById('w-dash').value,
                 name: document.getElementById('w-name').value,
                 size: document.getElementById('w-size').value,
@@ -3477,6 +3541,7 @@
                 // Strip _copy\d+ for user readability as requested
                 document.getElementById('w-id').value = data.id.replace(/_copy\d+$/, '');
             }
+            document.getElementById('w-sub-entity').value = data.sub_entity || ''; // NOWE
             if (data.min) document.getElementById('w-min').value = data.min;
             if (data.max) document.getElementById('w-max').value = data.max;
 
@@ -3513,7 +3578,9 @@
         }
 
         function clearForm() {
-            document.getElementById('w-id').value = ''; document.getElementById('w-name').value = '';
+            document.getElementById('w-id').value = '';
+            document.getElementById('w-sub-entity').value = ''; // NOWE
+            document.getElementById('w-name').value = '';
             document.getElementById('w-icon').value = ''; document.getElementById('w-icon-on').value = ''; document.getElementById('w-icon-off').value = '';
             const valueSizeSelect = document.getElementById('w-value-size');
             if (valueSizeSelect) valueSizeSelect.value = 'normal'; // Domyślnie normal
@@ -3725,6 +3792,9 @@
                         r_icon_on = document.getElementById('w-icon-on').value;
                         r_icon_off = document.getElementById('w-icon-off').value;
                         r_type = document.getElementById('w-type').value;
+                        r_sub = document.getElementById('w-sub-entity').value;
+                    } else {
+                        r_sub = w.sub_entity;
                     }
 
                     const wrapper = document.createElement('div');
@@ -3816,12 +3886,20 @@
                         titleDiv.style.cssText = titleStyle;
                         titleDiv.textContent = r_name || w.id;
 
+                        // Sub-entity indicator
+                        let subHtml = "";
+                        if (r_sub) {
+                            const subName = r_sub.split('.').pop().replace(/_/g, ' ');
+                            subHtml = `<div class="ew-sub-entity">${subName}</div>`;
+                        }
+
                         div.innerHTML = `
                             ${iconHtml}
                             <div class="ew-value" style="${valStyleFinal}">${valDisplay}</div>
                             <div class="ew-del" onclick="deleteWidget(${rI}, ${wI}, event)">X</div>
                             <div class="ew-copy" onclick="copyWidget(${rI}, ${wI}, event)">📄</div>
                             ${copyTagHtml}
+                            ${subHtml}
                         `;
                         // Insert title element at the beginning to preserve UTF-8 characters
                         div.insertBefore(titleDiv, div.firstChild);
@@ -4295,6 +4373,7 @@
             all[name] = saveData;
             localStorage.setItem('joan_dashboards', JSON.stringify(all));
             loadSavedList();
+            renderDashboardFlow(); // NOWE
             alert((currentLang === 'pl' ? "Zapisano w przeglądarce: " : "Saved in browser: ") + name);
         }
 
@@ -4701,6 +4780,7 @@
         initOrientationAndGrid();
         applyGrid();
         loadSavedList();
+        renderDashboardFlow(); // NOWE (Inicjalizacja mapy)
 
         // Inicjalizacja domyślnego rozmiaru z backendu
         const defSizeStr = '{{ def_size|default("2, 1") }}';
@@ -5130,6 +5210,54 @@ class DashSaver(hass.Hass):
             showToast(TRANSLATIONS[currentLang].copy_error + err, 'error');
         }
         document.body.removeChild(textArea);
+    }
+
+    function renderDashboardFlow() {
+        const all = JSON.parse(localStorage.getItem('joan_dashboards') || '{}');
+        const container = document.getElementById('dash-flow-chart');
+
+        if (Object.keys(all).length === 0) {
+            container.innerHTML = '<p style="padding:20px; color:#666;">Zapisz kilka dashboardów, aby zobaczyć mapę powiązań.</p>';
+            return;
+        }
+
+        let graphDefinition = 'graph TD;\n';
+        let hasLinks = false;
+
+        // Create nodes for all dashboards
+        for (const dashName in all) {
+            const dashData = all[dashName];
+            // Format node label: Dashboard Name [Title]
+            const label = dashName + '["' + (dashData.title || dashName) + '"]';
+            graphDefinition += `  ${dashName.replace(/[^a-zA-Z0-9]/g, '_')}${label}\n`;
+
+            // Find navigation links in this dashboard
+            if (dashData.rows) {
+                dashData.rows.forEach(row => {
+                    row.forEach(w => {
+                        if (w.type === 'navigate' && w.dash) {
+                            const target = w.dash.replace(/[^a-zA-Z0-9]/g, '_');
+                            const source = dashName.replace(/[^a-zA-Z0-9]/g, '_');
+                            graphDefinition += `  ${source} --> ${target}\n`;
+                            hasLinks = true;
+                        }
+                    });
+                });
+            }
+        }
+
+        if (!hasLinks) {
+            graphDefinition += '  Start[Dodaj przyciski Navigate] --> End[Aby połączyć mapę]';
+        }
+
+        // Use mermaid.render to generate SVG
+        const uniqueId = 'mermaid-' + Date.now();
+        mermaid.render(uniqueId, graphDefinition).then(({ svg }) => {
+            container.innerHTML = svg;
+        }).catch(err => {
+            console.error("Mermaid Render Error:", err);
+            container.innerHTML = '<p style="color:red;">Błąd renderowania mapy. Sprawdź nazwy dashboardów.</p>';
+        });
     }
 
     // Opcjonalnie: Zamknij okno po kliknięciu poza nim
