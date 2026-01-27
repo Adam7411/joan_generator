@@ -1170,8 +1170,8 @@
         /* Battery Consumption Indicators */
         .battery-indicator {
             position: absolute;
-            bottom: -8px;
-            right: -8px;
+            bottom: 4px;
+            right: 4px;
             font-size: 14px;
             cursor: pointer;
             z-index: 50;
@@ -1179,16 +1179,12 @@
             border-radius: 50%;
             width: 20px;
             height: 20px;
-            display: none;
+            display: flex;
             align-items: center;
             justify-content: center;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
             transition: transform 0.2s;
             border: 1px solid #ddd;
-        }
-
-        .eink-widget:hover .battery-indicator {
-            display: flex;
         }
 
         .battery-indicator:hover {
