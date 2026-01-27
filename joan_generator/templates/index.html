@@ -1235,6 +1235,84 @@
             background: #2c2c2c;
             box-shadow: 0 2px 4px rgba(255, 255, 255, 0.2);
         }
+
+        /* Widget Info Icons */
+        .widget-info {
+            position: absolute;
+            top: auto;
+            bottom: 5px;
+            left: 5px;
+            font-size: 14px;
+            cursor: pointer;
+            z-index: 50;
+            background: white;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, background-color 0.2s;
+            border: 1px solid #ddd;
+            color: #2196f3;
+        }
+
+        .widget-info:hover {
+            transform: scale(1.2);
+            background-color: #e3f2fd;
+        }
+
+        .widget-info::before {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            background-color: rgba(33, 33, 33, 0.95);
+            color: #fff;
+            padding: 10px 14px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: normal;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s, transform 0.3s;
+            z-index: 99999;
+            margin-bottom: 8px;
+            min-width: 180px;
+            max-width: 280px;
+            white-space: pre-wrap;
+            text-align: left;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            transform: translateY(5px);
+            line-height: 1.5;
+            border: 1px solid #444;
+        }
+
+        .widget-info:hover::before {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        html.dark-mode .widget-info {
+            background: #2c2c2c;
+            border-color: #444;
+            color: #90caf9;
+        }
+
+        html.dark-mode .widget-info:hover {
+            background-color: #1a2327;
+        }
+
+        .info-label {
+            font-weight: bold;
+            color: #81d4fa;
+            margin-right: 5px;
+        }
+
+        html:not(.dark-mode) .info-label {
+            color: #0277bd;
+        }
     </style>
 </head>
 
@@ -2617,6 +2695,22 @@
                 link_generator: "This Generator (Documentation & Code)",
                 list_dashboards_title: "Dashboard List:",
                 dash_list_empty: "(none)"
+            },
+            pl_extra: {
+                info_size_px: "Rozmiar PX",
+                info_font_value: "Czcionka wartości",
+                info_font_title: "Czcionka tytułu",
+                info_type: "Typ",
+                info_id: "ID widżetu",
+                info_icons: "Ikony"
+            },
+            en_extra: {
+                info_size_px: "Size PX",
+                info_font_value: "Value font",
+                info_font_title: "Title font",
+                info_type: "Type",
+                info_id: "Widget ID",
+                info_icons: "Icons"
             }
         };
 
@@ -3776,6 +3870,42 @@
                         });
                     }
                     // ===========================================================
+
+                    // ============== WIDGET INFO ICON (NEW) ==============
+                    if (w.type !== 'spacer') {
+                        const infoIcon = document.createElement('div');
+                        infoIcon.className = 'widget-info';
+                        infoIcon.innerHTML = '<i class="mdi mdi-information-variant"></i>';
+
+                        const lang = currentLang || 'pl';
+                        const t = TRANSLATIONS[lang === 'pl' ? 'pl_extra' : 'en_extra'];
+
+                        // Font size calculation as in preview
+                        let vPx = 54;
+                        if (r_value_size_custom) vPx = parseInt(r_value_size_custom);
+                        else {
+                            if (r_value_size_hint === 'medium') vPx = 40;
+                            else if (r_value_size_hint === 'small') vPx = 32;
+                            else if (r_value_size_hint === 'auto') vPx = ((cols === 1 && rw === 1) || (cols === 1 && rw === 2)) ? 34 : 54;
+                        }
+
+                        let tPx = r_title_size ? parseInt(r_title_size) : (((cols === 1 && rw === 1) || (cols === 1 && rw === 2)) ? 16 : 20);
+
+                        let tooltipText = "";
+                        tooltipText += `${t.info_size_px}: ${width}x${height} px (${cols}x${rw})\n`;
+                        tooltipText += `${t.info_font_value}: ${vPx} px\n`;
+                        tooltipText += `${t.info_font_title}: ${tPx} px\n`;
+                        tooltipText += `${t.info_type}: ${r_type}\n`;
+                        tooltipText += `${t.info_id}: ${w.id}`;
+
+                        if (r_icon || r_icon_on || r_icon_off) {
+                            tooltipText += `\n${t.info_icons}: ${r_icon || (r_icon_on + " / " + r_icon_off)}`;
+                        }
+
+                        infoIcon.setAttribute('data-tooltip', tooltipText);
+                        div.appendChild(infoIcon);
+                    }
+                    // ===================================================
 
                     rowDiv.appendChild(wrapper);
                 });
