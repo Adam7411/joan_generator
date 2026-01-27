@@ -646,6 +646,63 @@
             padding-top: 2px;
             margin-top: auto;
             pointer-events: none;
+            transition: all 0.3s;
+        }
+
+        .sub-entity-section {
+            background: rgba(0, 0, 0, 0.03);
+            border: 1px dashed #ccc;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0 20px 0;
+            display: none;
+        }
+
+        .sub-entity-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            color: #007bff;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+            user-select: none;
+            transition: color 0.3s;
+        }
+
+        .sub-entity-toggle:hover {
+            color: #0056b3;
+            text-decoration: underline;
+        }
+
+        .sub-entity-toggle i {
+            transition: transform 0.3s;
+        }
+
+        .sub-entity-toggle.active i {
+            transform: rotate(180deg);
+        }
+
+        .ew-sub-entity {
+            position: absolute;
+            font-weight: bold;
+            font-size: 14px;
+            color: #444;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+
+        .ew-sub-entity.pos-top {
+            top: 5px;
+            right: 5px;
+            text-align: right;
+        }
+
+        .ew-sub-entity.pos-bottom {
+            bottom: 35px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
         }
 
         .ew-del {
@@ -1483,14 +1540,27 @@
                     </div>
                 </div>
 
-                <div class="flex-row" style="margin-bottom: 20px;">
-                    <div class="flex-col" style="flex: 2; display: flex; gap: 5px;">
-                        <div style="flex: 2;">
+                <!-- Sub-Entity Section Toggle -->
+                <div id="grp-sub-toggle" style="display: none;">
+                    <div class="sub-entity-toggle" onclick="toggleSubEntitySection()" id="sub-toggle-btn">
+                        <i class="mdi mdi-chevron-down"></i>
+                        <span data-i18n="btn_toggle_sub">Ustawienia Sub-Encji (Opcjonalnie)</span>
+                    </div>
+                </div>
+
+                <!-- Sub-Entity Section Content -->
+                <div class="sub-entity-section" id="sub-entity-section">
+                    <div class="flex-row">
+                        <div class="flex-col" style="flex: 2;">
                             <label data-i18n="lbl_sub_entity">Sub-Encja (Dodatkowa)</label>
                             <input list="entity-list" id="w-sub-entity" placeholder="np. sensor.temp"
                                 oninput="searchEntities(this.value); renderPreview()" autocomplete="off">
                         </div>
-                        <div style="flex: 1;">
+                        <div class="flex-col" style="flex: 1;">
+                            <label data-i18n="lbl_sub_name">Etykieta Sub-Encji</label>
+                            <input type="text" id="w-sub-name" placeholder="np. Temp" oninput="renderPreview()">
+                        </div>
+                        <div class="flex-col" style="flex: 1;">
                             <label data-i18n="lbl_sub_pos">Pozycja</label>
                             <select id="w-sub-pos" onchange="renderPreview()">
                                 <option value="top" data-i18n="opt_pos_top">Góra (Róg)</option>
@@ -2392,7 +2462,8 @@
                 lbl_type: "Typ Widgetu", lbl_entity: "Encja (Wyszukaj po nazwie lub ID)", lbl_dash_name: "Nazwa Dashboardu (target)",
                 lbl_name: "Tytuł na ekranie", lbl_size: "Rozmiar", lbl_preview: "Podgląd",
                 lbl_icon: "Ikona (Standard)", lbl_icon_on: "Ikona ON", lbl_icon_off: "Ikona OFF",
-                lbl_sub_entity: "Sub-Encja (Dodatkowa)", lbl_sub_pos: "Pozycja",
+                lbl_sub_entity: "Sub-Encja (Dodatkowa)", lbl_sub_name: "Etykieta Sub-Encji", lbl_sub_pos: "Pozycja",
+                btn_toggle_sub: "Ustawienia Sub-Encji (Opcjonalnie)",
                 opt_pos_top: "Góra (Róg)", opt_pos_bottom: "Dół (Środek)",
                 lbl_value_size: "Rozmiar czcionki wartości",
                 lbl_title_size: "Rozmiar PX",
@@ -2570,7 +2641,8 @@
                 lbl_type: "Widget Type", lbl_entity: "Entity (Search by name/ID)", lbl_dash_name: "Dashboard Name (target)",
                 lbl_name: "Title on Screen", lbl_size: "Size", lbl_preview: "Preview",
                 lbl_icon: "Icon (Standard)", lbl_icon_on: "Icon ON", lbl_icon_off: "Icon OFF",
-                lbl_sub_entity: "Sub-Entity (Additional)", lbl_sub_pos: "Position",
+                lbl_sub_entity: "Sub-Entity (Additional)", lbl_sub_name: "Sub-Entity Label", lbl_sub_pos: "Position",
+                btn_toggle_sub: "Sub-Entity Settings (Optional)",
                 opt_pos_top: "Top (Corner)", opt_pos_bottom: "Bottom (Center)",
                 lbl_value_size: "Value font size",
                 lbl_title_size: "Size PX",
@@ -3282,6 +3354,7 @@
                 value_size_custom: document.getElementById('w-value-size-custom')?.value || '',
                 title_size_custom: document.getElementById('w-title-size')?.value || '',
                 sub_entity: document.getElementById('w-sub-entity')?.value || '',
+                sub_name: document.getElementById('w-sub-name')?.value || '',
                 sub_pos: document.getElementById('w-sub-pos')?.value || 'top',
                 min: document.getElementById('w-min')?.value || '',
                 max: document.getElementById('w-max')?.value || '',
@@ -3375,10 +3448,32 @@
                 pOff.style.color = i3 ? '#f44336' : '#444'; // Red if set, dark if default
             }
         }
+        function toggleSubEntitySection() {
+            const section = document.getElementById('sub-entity-section');
+            const btn = document.getElementById('sub-toggle-btn');
+            if (section.style.display === 'block') {
+                section.style.display = 'none';
+                btn.classList.remove('active');
+            } else {
+                section.style.display = 'block';
+                btn.classList.add('active');
+            }
+        }
 
         function handleTypeChange() {
             toggleInputs();
             const type = document.getElementById('w-type').value;
+
+            // Sub-entity restricted to sensor widgets
+            const subToggle = document.getElementById('grp-sub-toggle');
+            if (type === 'sensor') {
+                subToggle.style.display = 'block';
+            } else {
+                subToggle.style.display = 'none';
+                document.getElementById('sub-entity-section').style.display = 'none';
+                document.getElementById('sub-toggle-btn').classList.remove('active');
+            }
+
             if (type === 'gauge') {
                 document.getElementById('w-icon').value = 'mdi-gauge';
                 manualIconOverride = true;
@@ -3514,7 +3609,21 @@
             document.getElementById('w-value-size-custom').value = data.value_size_custom || '';
             document.getElementById('w-title-size').value = data.title_size_custom || '';
             document.getElementById('w-sub-entity').value = data.sub_entity || '';
+            document.getElementById('w-sub-name').value = data.sub_name || '';
             document.getElementById('w-sub-pos').value = data.sub_pos || 'top';
+
+            // Show sub-toggle if sensor
+            if (data.type === 'sensor') {
+                document.getElementById('grp-sub-toggle').style.display = 'block';
+                if (data.sub_entity) {
+                    document.getElementById('sub-entity-section').style.display = 'block';
+                    document.getElementById('sub-toggle-btn').classList.add('active');
+                }
+            } else {
+                document.getElementById('grp-sub-toggle').style.display = 'none';
+                document.getElementById('sub-entity-section').style.display = 'none';
+            }
+
             manualIconOverride = true;
             updateIconPreview(); updateTitleLimit();
             // Call toggleInputs after setting checkbox state
@@ -3545,7 +3654,11 @@
             document.getElementById('w-value-size-custom').value = '';
             document.getElementById('w-title-size').value = '';
             document.getElementById('w-sub-entity').value = '';
+            document.getElementById('w-sub-name').value = '';
             document.getElementById('w-sub-pos').value = 'top';
+            document.getElementById('grp-sub-toggle').style.display = 'none';
+            document.getElementById('sub-entity-section').style.display = 'none';
+            document.getElementById('sub-toggle-btn').classList.remove('active');
             if (document.getElementById('w-min')) document.getElementById('w-min').value = '';
             if (document.getElementById('w-max')) document.getElementById('w-max').value = '';
             manualIconOverride = false; updateIconPreview(); updateTitleLimit();
@@ -3832,27 +3945,33 @@
                         if (isSmallVal && !r_value_size_custom && (!r_value_size_hint || r_value_size_hint === 'auto')) valuePx = 34;
 
                         // Apply Scale for Value
-                        valueStyle = `font-size: ${Math.round(valuePx * PREVIEW_SCALE)}px;`;
-
-                        const valDisplay = r_state_enabled ? realState : "";
-                        const valStyleFinal = r_state_enabled ? valueStyle : "display:none;";
-
-                        // Create title element separately to ensure proper UTF-8 encoding
-                        const titleDiv = document.createElement('div');
-                        titleDiv.className = 'ew-title';
-                        titleDiv.style.cssText = titleStyle;
-                        titleDiv.textContent = r_name || w.id;
+                        let finalValuePx = Math.round(valuePx * PREVIEW_SCALE);
+                        let valueTransform = "";
 
                         // Sub-Entity Preview logic
                         let subHtml = "";
                         const r_sub_entity = isEditingThis ? document.getElementById('w-sub-entity').value : w.sub_entity;
+                        const r_sub_name = isEditingThis ? document.getElementById('w-sub-name').value : w.sub_name;
                         const r_sub_pos = isEditingThis ? document.getElementById('w-sub-pos').value : w.sub_pos;
-                        if (r_sub_entity) {
-                            const subBase = r_sub_entity.split('.')[1] || r_sub_entity;
+
+                        // Shrink and shift main value if sub-entity present (only for sensors)
+                        if (r_sub_entity && r_type === 'sensor') {
+                            finalValuePx = Math.round(finalValuePx * 0.8);
+                            valueTransform = "transform: translateY(-4px);";
+                        }
+
+                        valueStyle = `font-size: ${finalValuePx}px; ${valueTransform}`;
+
+                        const valDisplay = r_state_enabled ? realState : "";
+                        const valStyleFinal = r_state_enabled ? valueStyle : "display:none;";
+
+                        if (r_sub_entity && r_type === 'sensor') {
+                            const subLabel = r_sub_name || (r_sub_entity.split('.')[1] || r_sub_entity);
+                            const mockSubState = getRealState({ id: r_sub_entity, type: 'sensor' });
                             const subStyle = (r_sub_pos === 'bottom')
-                                ? "position:absolute; bottom:2px; left:0; width:100%; text-align:center; font-size:9px; font-weight:bold; color:#d32f2f; z-index:5;"
-                                : "position:absolute; top:2px; right:2px; font-size:9px; font-weight:bold; color:#d32f2f; z-index:5;";
-                            subHtml = `<div style="${subStyle}">${subBase}</div>`;
+                                ? "position:absolute; bottom:30px; left:0; width:100%; text-align:center; font-size:9px; font-weight:bold; color:#757575; z-index:5;"
+                                : "position:absolute; top:2px; right:2px; font-size:9px; font-weight:bold; color:#757575; z-index:5; text-align:right;";
+                            subHtml = `<div style="${subStyle}">${subLabel}: ${mockSubState}</div>`;
                         }
 
                         div.innerHTML = `
