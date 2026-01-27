@@ -348,6 +348,9 @@ STYLE_STATE_TEXT = "color: #000000 !important; font-weight: 700 !important; font
 STYLE_TITLE2 = "color: #000000 !important; font-size: 16px; font-weight: 700; text-align: center; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif"
 STYLE_TITLE_SMALL = "color: #000000 !important; font-size: 16px; font-weight: 700; text-align: center; padding-top: 5px; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif"
 
+# Styl dla sub-entity (mały tekst w prawym górnym rogu)
+STYLE_SUB = "color: #000000 !important; font-size: 14px !important; font-weight: normal !important; position: absolute !important; top: 2px !important; right: 2px !important;"
+
 def build_value_style(size_hint: str, is_small: bool = False, custom_px: str = None) -> str:
     """
     Returns style for value based on hint or custom px.
@@ -536,11 +539,22 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                 seen_ids.add(w_id)
                 real_entity_id = get_real_entity(w_id)
 
+                # --- NOWE: Obsługa Sub-Entity ---
+                sub_entity = w.get('sub_entity', '').strip()
+                # -------------------------------
+
                 if w_id in custom_defs and not w.get('was_edited', False):
                     output.append(f"{w_id}:")
                     for line in custom_defs[w_id].split('\n'):
                         if line.strip():
                             output.append(f"  {line}")
+                    
+                    # --- NOWE: Wstrzykiwanie do YAML dla custom defs ---
+                    if sub_entity:
+                        output.append(f"  sub_entity: {sub_entity}")
+                        output.append(f"  sub_entity_style: \"{STYLE_SUB}\"")
+                    # -----------------------------------
+
                     output.append("")
                     continue
 
@@ -555,6 +569,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                 w_icon = normalize_icon_format(w.get('icon'))
                 i_on = normalize_icon_format(w.get('icon_on'))
                 i_off = normalize_icon_format(w.get('icon_off'))
+
                 value_size_hint = w.get('value_size_hint', 'auto')
                 # Calculate real hint (auto -> medium/small/normal based on state)
                 final_size_hint = pick_auto_size(value_size_hint, real_entity_id, entities_map)
@@ -1048,6 +1063,16 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                         else:
                             output.append(f"    \"on\": \"{dic['on']}\"")
                             output.append(f"    \"off\": \"{dic['off']}\"")
+
+                # --- NOWE: Wstrzykiwanie do YAML ---
+                if sub_entity:
+                    output.append(f"  sub_entity: {sub_entity}")
+                    output.append(f"  sub_entity_style: \"{STYLE_SUB}\"")
+                    if w_type in ['light', 'switch', 'cover']:
+                         output.append(f"  sub_entity_map:")
+                         output.append(f"    \"on\": \"ON\"")
+                         output.append(f"    \"off\": \"OFF\"")
+                # -----------------------------------
 
                 output.append("")
     except Exception as e:
