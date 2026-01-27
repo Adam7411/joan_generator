@@ -3392,7 +3392,11 @@
             updateIconPreview(); updateTitleLimit();
             // Call toggleInputs after setting checkbox state
             toggleInputs();
-            setTimeout(() => blockSmart = false, 500); renderPreview();
+            setTimeout(() => {
+                blockSmart = false;
+                // Wywołaj analizę częstotliwości dla edytowanej encji
+                if (data.id) checkEntityFrequency(data.id);
+            }, 500); renderPreview();
         }
 
         function cancelEdit() {
@@ -3416,6 +3420,11 @@
             if (document.getElementById('w-min')) document.getElementById('w-min').value = '';
             if (document.getElementById('w-max')) document.getElementById('w-max').value = '';
             manualIconOverride = false; updateIconPreview(); updateTitleLimit();
+            // Ukryj plakietkę częstotliwości
+            const badge = document.getElementById('freq-badge');
+            if (badge) badge.classList.add('hidden');
+            if (typeof freqDebounceTimer !== 'undefined') clearTimeout(freqDebounceTimer);
+
             toggleInputs();
         }
 
@@ -4072,6 +4081,9 @@
             // Debounce - czekaj 500ms po ostatnim wpisaniu, aby nie przeciążać API
             clearTimeout(freqDebounceTimer);
 
+            // Normalizacja ID (usuwamy suffix _copyX jeśli istnieje)
+            const normalizedId = entityId.replace(/_copy\d+$/, '');
+
             freqDebounceTimer = setTimeout(() => {
                 // Pokaż stan ładowania (Analiza...)
                 badge.className = 'freq-badge freq-warning';
@@ -4080,7 +4092,7 @@
                 text.innerHTML = TRANSLATIONS[currentLang] ? TRANSLATIONS[currentLang].freq_analyzing : "Analiza...";
 
                 // Fetch bez początkowego ukośnika "/" dla poprawnego działania w Ingress
-                fetch(`api/entity_frequency/${encodeURIComponent(entityId)}`)
+                fetch(`api/entity_frequency/${encodeURIComponent(normalizedId)}`)
                     .then(response => {
                         if (!response.ok) throw new Error('Błąd połączenia');
                         return response.json();
