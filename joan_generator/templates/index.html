@@ -683,20 +683,6 @@
             line-height: 1;
         }
 
-        .ew-sub-entity {
-            position: absolute;
-            top: 2px;
-            right: 2px;
-            font-size: 10px;
-            color: #000;
-            background: rgba(255, 255, 255, 0.7);
-            padding: 0 4px;
-            border-radius: 2px;
-            pointer-events: none;
-            font-weight: bold;
-            border: 1px solid #ddd;
-        }
-
         .ew-copy {
             position: absolute;
             top: -8px;
@@ -1447,33 +1433,6 @@
             </details>
         </div>
 
-        <div class="section">
-            <div class="section-title">
-                <span>4. Multi-Dashboard Manager</span>
-            </div>
-            <p style="font-size: 0.9em; color: #666;">Zapisuj układy w przeglądarce i podglądaj powiązania między nimi.
-            </p>
-
-            <div class="flex-row">
-                <div class="flex-col">
-                    <label>Zapisz obecny jako:</label>
-                    <div style="display:flex; gap:5px;">
-                        <input type="text" id="save-dash-name" placeholder="np. Salon">
-                        <button class="btn" style="background:#4caf50; color:white;"
-                            onclick="saveToBrowser()">ZAPISZ</button>
-                    </div>
-                </div>
-            </div>
-
-            <div style="margin-top:20px;">
-                <!-- Lista -->
-                <div style="flex:1;">
-                    <strong>Zapisane układy:</strong>
-                    <div id="saved-dash-list" class="dash-list"></div>
-                </div>
-            </div>
-        </div>
-
         <form method="POST" id="main-form">
             <input type="hidden" name="action" id="form-action" value="generate">
             <input type="hidden" name="title" id="form-title" value="JoanDashboard">
@@ -1489,10 +1448,9 @@
                 </div>
 
                 <div class="flex-row" style="margin-bottom: 20px;">
-                    <!-- Główna Encja -->
-                    <div class="flex-col" id="grp-entity" style="flex: 2;">
+                    <div class="flex-col" id="grp-entity" style="flex: 100%;">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <label data-i18n="lbl_entity">Encja Główna</label>
+                            <label data-i18n="lbl_entity">Encja (Wyszukaj po nazwie lub ID)</label>
                             <button type="button" onclick="refreshEntities()" id="btn-refresh-ent"
                                 style="background: none; border: none; cursor: pointer; padding: 0 5px; opacity: 0.7; transition: opacity 0.3s;"
                                 onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.7"
@@ -1510,22 +1468,35 @@
                             <span id="freq-icon"></span>
                             <span id="freq-text"></span>
                         </div>
-                    </div>
 
-                    <!-- NOWE: Sub-Entity -->
-                    <div class="flex-col" id="grp-sub-entity" style="flex: 1;">
-                        <label>Sub-Entity / Atrybut (Opcja)</label>
-                        <input list="entity-list" id="w-sub-entity" placeholder="np. sensor.wilgotnosc"
-                            oninput="renderPreview()">
-                        <small style="color:#666; font-size:10px;">Np. Wilgotność w rogu</small>
+                        <div class="battery-warning" data-i18n="battery_warning" style="display: none;">⚠️ <b>Uwaga
+                                Bateria:</b> Unikaj encji
+                            zmieniających się bardzo często (np. napięcie w czasie rzeczywistym). Częste odświeżanie
+                            ekranu szybko zużywa baterię!</div>
                     </div>
-
                     <div class="flex-col hidden" id="grp-nav" style="flex: 100%;">
                         <label data-i18n="lbl_dash_name">Nazwa Dashboardu (target)</label>
                         <input type="text" id="w-dash" placeholder="np. main" list="nav-dash-suggestions"
                             oninput="autoNameNav()">
                         <datalist id="nav-dash-suggestions"></datalist>
                         <small id="nav-hint" class="input-hint"></small>
+                    </div>
+                </div>
+
+                <div class="flex-row" style="margin-bottom: 20px;">
+                    <div class="flex-col" style="flex: 2; display: flex; gap: 5px;">
+                        <div style="flex: 2;">
+                            <label data-i18n="lbl_sub_entity">Sub-Encja (Dodatkowa)</label>
+                            <input list="entity-list" id="w-sub-entity" placeholder="np. sensor.temp"
+                                oninput="searchEntities(this.value); renderPreview()" autocomplete="off">
+                        </div>
+                        <div style="flex: 1;">
+                            <label data-i18n="lbl_sub_pos">Pozycja</label>
+                            <select id="w-sub-pos" onchange="renderPreview()">
+                                <option value="top" data-i18n="opt_pos_top">Góra (Róg)</option>
+                                <option value="bottom" data-i18n="opt_pos_bottom">Dół (Środek)</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 
@@ -2421,6 +2392,8 @@
                 lbl_type: "Typ Widgetu", lbl_entity: "Encja (Wyszukaj po nazwie lub ID)", lbl_dash_name: "Nazwa Dashboardu (target)",
                 lbl_name: "Tytuł na ekranie", lbl_size: "Rozmiar", lbl_preview: "Podgląd",
                 lbl_icon: "Ikona (Standard)", lbl_icon_on: "Ikona ON", lbl_icon_off: "Ikona OFF",
+                lbl_sub_entity: "Sub-Encja (Dodatkowa)", lbl_sub_pos: "Pozycja",
+                opt_pos_top: "Góra (Róg)", opt_pos_bottom: "Dół (Środek)",
                 lbl_value_size: "Rozmiar czcionki wartości",
                 lbl_title_size: "Rozmiar PX",
                 lbl_value_size_custom: "Własny (px)",
@@ -2597,6 +2570,8 @@
                 lbl_type: "Widget Type", lbl_entity: "Entity (Search by name/ID)", lbl_dash_name: "Dashboard Name (target)",
                 lbl_name: "Title on Screen", lbl_size: "Size", lbl_preview: "Preview",
                 lbl_icon: "Icon (Standard)", lbl_icon_on: "Icon ON", lbl_icon_off: "Icon OFF",
+                lbl_sub_entity: "Sub-Entity (Additional)", lbl_sub_pos: "Position",
+                opt_pos_top: "Top (Corner)", opt_pos_bottom: "Bottom (Center)",
                 lbl_value_size: "Value font size",
                 lbl_title_size: "Size PX",
                 lbl_value_size_custom: "Custom (px)",
@@ -3297,7 +3272,6 @@
             const w = {
                 type: document.getElementById('w-type').value,
                 id: document.getElementById('w-id').value,
-                sub_entity: document.getElementById('w-sub-entity').value, // NOWE
                 dash: document.getElementById('w-dash').value,
                 name: document.getElementById('w-name').value,
                 size: document.getElementById('w-size').value,
@@ -3307,6 +3281,8 @@
                 value_size_hint: document.getElementById('w-value-size')?.value || 'auto',
                 value_size_custom: document.getElementById('w-value-size-custom')?.value || '',
                 title_size_custom: document.getElementById('w-title-size')?.value || '',
+                sub_entity: document.getElementById('w-sub-entity')?.value || '',
+                sub_pos: document.getElementById('w-sub-pos')?.value || 'top',
                 min: document.getElementById('w-min')?.value || '',
                 max: document.getElementById('w-max')?.value || '',
                 state_text_enabled: document.getElementById('w-show-state')?.checked || false,
@@ -3419,7 +3395,6 @@
             const hideEntity = ['clock', 'label', 'spacer', 'reload'].includes(type);
 
             document.getElementById('grp-entity').style.display = (isNav || hideEntity) ? 'none' : 'block';
-            document.getElementById('grp-sub-entity').style.display = (isNav || hideEntity) ? 'none' : 'block';
             document.getElementById('grp-nav').style.display = isNav ? 'block' : 'none';
             document.getElementById('grp-nav').classList.toggle('hidden', !isNav);
 
@@ -3525,7 +3500,6 @@
                 // Strip _copy\d+ for user readability as requested
                 document.getElementById('w-id').value = data.id.replace(/_copy\d+$/, '');
             }
-            document.getElementById('w-sub-entity').value = data.sub_entity || ''; // NOWE
             if (data.min) document.getElementById('w-min').value = data.min;
             if (data.max) document.getElementById('w-max').value = data.max;
 
@@ -3539,6 +3513,8 @@
             document.getElementById('w-value-size').value = data.value_size_hint || 'auto';
             document.getElementById('w-value-size-custom').value = data.value_size_custom || '';
             document.getElementById('w-title-size').value = data.title_size_custom || '';
+            document.getElementById('w-sub-entity').value = data.sub_entity || '';
+            document.getElementById('w-sub-pos').value = data.sub_pos || 'top';
             manualIconOverride = true;
             updateIconPreview(); updateTitleLimit();
             // Call toggleInputs after setting checkbox state
@@ -3562,14 +3538,14 @@
         }
 
         function clearForm() {
-            document.getElementById('w-id').value = '';
-            document.getElementById('w-sub-entity').value = ''; // NOWE
-            document.getElementById('w-name').value = '';
+            document.getElementById('w-id').value = ''; document.getElementById('w-name').value = '';
             document.getElementById('w-icon').value = ''; document.getElementById('w-icon-on').value = ''; document.getElementById('w-icon-off').value = '';
             const valueSizeSelect = document.getElementById('w-value-size');
             if (valueSizeSelect) valueSizeSelect.value = 'normal'; // Domyślnie normal
             document.getElementById('w-value-size-custom').value = '';
             document.getElementById('w-title-size').value = '';
+            document.getElementById('w-sub-entity').value = '';
+            document.getElementById('w-sub-pos').value = 'top';
             if (document.getElementById('w-min')) document.getElementById('w-min').value = '';
             if (document.getElementById('w-max')) document.getElementById('w-max').value = '';
             manualIconOverride = false; updateIconPreview(); updateTitleLimit();
@@ -3776,9 +3752,6 @@
                         r_icon_on = document.getElementById('w-icon-on').value;
                         r_icon_off = document.getElementById('w-icon-off').value;
                         r_type = document.getElementById('w-type').value;
-                        r_sub = document.getElementById('w-sub-entity').value;
-                    } else {
-                        r_sub = w.sub_entity;
                     }
 
                     const wrapper = document.createElement('div');
@@ -3870,11 +3843,16 @@
                         titleDiv.style.cssText = titleStyle;
                         titleDiv.textContent = r_name || w.id;
 
-                        // Sub-entity indicator
+                        // Sub-Entity Preview logic
                         let subHtml = "";
-                        if (r_sub) {
-                            const subName = r_sub.split('.').pop().replace(/_/g, ' ');
-                            subHtml = `<div class="ew-sub-entity">${subName}</div>`;
+                        const r_sub_entity = isEditingThis ? document.getElementById('w-sub-entity').value : w.sub_entity;
+                        const r_sub_pos = isEditingThis ? document.getElementById('w-sub-pos').value : w.sub_pos;
+                        if (r_sub_entity) {
+                            const subBase = r_sub_entity.split('.')[1] || r_sub_entity;
+                            const subStyle = (r_sub_pos === 'bottom')
+                                ? "position:absolute; bottom:2px; left:0; width:100%; text-align:center; font-size:9px; font-weight:bold; color:#d32f2f; z-index:5;"
+                                : "position:absolute; top:2px; right:2px; font-size:9px; font-weight:bold; color:#d32f2f; z-index:5;";
+                            subHtml = `<div style="${subStyle}">${subBase}</div>`;
                         }
 
                         div.innerHTML = `
@@ -5192,54 +5170,6 @@ class DashSaver(hass.Hass):
             showToast(TRANSLATIONS[currentLang].copy_error + err, 'error');
         }
         document.body.removeChild(textArea);
-    }
-
-    function renderDashboardFlow() {
-        const all = JSON.parse(localStorage.getItem('joan_dashboards') || '{}');
-        const container = document.getElementById('dash-flow-chart');
-
-        if (Object.keys(all).length === 0) {
-            container.innerHTML = '<p style="padding:20px; color:#666;">Zapisz kilka dashboardów, aby zobaczyć mapę powiązań.</p>';
-            return;
-        }
-
-        let graphDefinition = 'graph TD;\n';
-        let hasLinks = false;
-
-        // Create nodes for all dashboards
-        for (const dashName in all) {
-            const dashData = all[dashName];
-            // Format node label: Dashboard Name [Title]
-            const label = dashName + '["' + (dashData.title || dashName) + '"]';
-            graphDefinition += `  ${dashName.replace(/[^a-zA-Z0-9]/g, '_')}${label}\n`;
-
-            // Find navigation links in this dashboard
-            if (dashData.rows) {
-                dashData.rows.forEach(row => {
-                    row.forEach(w => {
-                        if (w.type === 'navigate' && w.dash) {
-                            const target = w.dash.replace(/[^a-zA-Z0-9]/g, '_');
-                            const source = dashName.replace(/[^a-zA-Z0-9]/g, '_');
-                            graphDefinition += `  ${source} --> ${target}\n`;
-                            hasLinks = true;
-                        }
-                    });
-                });
-            }
-        }
-
-        if (!hasLinks) {
-            graphDefinition += '  Start[Dodaj przyciski Navigate] --> End[Aby połączyć mapę]';
-        }
-
-        // Use mermaid.render to generate SVG
-        const uniqueId = 'mermaid-' + Date.now();
-        mermaid.render(uniqueId, graphDefinition).then(({ svg }) => {
-            container.innerHTML = svg;
-        }).catch(err => {
-            console.error("Mermaid Render Error:", err);
-            container.innerHTML = '<p style="color:red;">Błąd renderowania mapy. Sprawdź nazwy dashboardów.</p>';
-        });
     }
 
     // Opcjonalnie: Zamknij okno po kliknięciu poza nim
