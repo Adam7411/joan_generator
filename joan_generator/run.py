@@ -56,9 +56,157 @@ if not TOKEN:
 # -------------------------------------------------------------------------
 # FETCHING DATA FROM HOME ASSISTANT
 # -------------------------------------------------------------------------
+def get_ha_areas():
+    """Fetch all areas from Home Assistant using WebSocket API."""
+    if not TOKEN:
+        print("⚠️ No TOKEN - skipping area fetch")
+        return []
+    
+    try:
+        import websocket
+        import json
+        
+        # WebSocket URL for Home Assistant
+        ws_url = API_URL.replace('/api', '/api/websocket').replace('http://', 'ws://')
+        print(f"🔌 Connecting to WebSocket: {ws_url}")
+        
+        ws = websocket.create_connection(ws_url, timeout=10)
+        
+        # Receive auth_required message
+        auth_msg = json.loads(ws.recv())
+        if auth_msg.get('type') != 'auth_required':
+            print(f"❌ Unexpected message: {auth_msg}")
+            ws.close()
+            return []
+        
+        # Send auth token
+        ws.send(json.dumps({
+            'type': 'auth',
+            'access_token': TOKEN
+        }))
+        
+        # Receive auth result
+        auth_result = json.loads(ws.recv())
+        if auth_result.get('type') != 'auth_ok':
+            print(f"❌ Auth failed: {auth_result}")
+            ws.close()
+            return []
+        
+        # Request area registry list
+        ws.send(json.dumps({
+            'id': 1,
+            'type': 'config/area_registry/list'
+        }))
+        
+        # Receive response
+        response = json.loads(ws.recv())
+        ws.close()
+        
+        if response.get('success'):
+            areas_data = response.get('result', [])
+            areas = []
+            for area in areas_data:
+                areas.append({
+                    'id': area.get('area_id'),
+                    'name': area.get('name', area.get('area_id'))
+                })
+            areas.sort(key=lambda x: x['name'])
+            print(f"✅ Fetched {len(areas)} areas via WebSocket")
+            return areas
+        else:
+            print(f"❌ WebSocket request failed: {response}")
+            return []
+            
+    except ImportError:
+        print("⚠️ websocket-client not installed, area filtering unavailable")
+        print("💡 Install with: pip install websocket-client")
+        return []
+    except Exception as e:
+        print(f"❌ Exception while fetching areas via WebSocket: {e}")
+        return []
+
+def get_entity_area_mapping():
+    """Create mapping of entity_id -> area_id using WebSocket API."""
+    if not TOKEN:
+        return {}
+    
+    try:
+        import websocket
+        import json
+        
+        # WebSocket URL for Home Assistant
+        ws_url = API_URL.replace('/api', '/api/websocket').replace('http://', 'ws://')
+        ws = websocket.create_connection(ws_url, timeout=10)
+        
+        # Auth handshake
+        auth_msg = json.loads(ws.recv())
+        if auth_msg.get('type') != 'auth_required':
+            ws.close()
+            return {}
+        
+        ws.send(json.dumps({'type': 'auth', 'access_token': TOKEN}))
+        auth_result = json.loads(ws.recv())
+        if auth_result.get('type') != 'auth_ok':
+            ws.close()
+            return {}
+        
+        # Fetch entity registry
+        ws.send(json.dumps({'id': 1, 'type': 'config/entity_registry/list'}))
+        entity_response = json.loads(ws.recv())
+        
+        # Fetch device registry
+        ws.send(json.dumps({'id': 2, 'type': 'config/device_registry/list'}))
+        device_response = json.loads(ws.recv())
+        
+        ws.close()
+        
+        if not entity_response.get('success') or not device_response.get('success'):
+            print(f"⚠️ Could not fetch entity/device registry via WebSocket")
+            return {}
+        
+        entity_registry = entity_response.get('result', [])
+        device_registry = device_response.get('result', [])
+        
+        # Create device_id -> area_id mapping
+        device_to_area = {}
+        for device in device_registry:
+            device_id = device.get('id')
+            area_id = device.get('area_id')
+            if device_id and area_id:
+                device_to_area[device_id] = area_id
+        
+        # Create entity_id -> area_id mapping
+        entity_to_area = {}
+        for entity in entity_registry:
+            entity_id = entity.get('entity_id')
+            # Direct area assignment takes precedence
+            area_id = entity.get('area_id')
+            if not area_id:
+                # Fall back to device area
+                device_id = entity.get('device_id')
+                if device_id:
+                    area_id = device_to_area.get(device_id)
+            
+            if entity_id and area_id:
+                entity_to_area[entity_id] = area_id
+        
+        print(f"✅ Created area mapping for {len(entity_to_area)} entities via WebSocket")
+        return entity_to_area
+        
+    except ImportError:
+        print("⚠️ websocket-client not installed, area mapping unavailable")
+        return {}
+    except Exception as e:
+        print(f"❌ Exception while creating area mapping via WebSocket: {e}")
+        return {}
+
 def get_ha_entities():
     if not TOKEN:
         return []
+    
+    # Get area mapping first
+    entity_area_map = get_entity_area_mapping()
+    
     headers = {"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json"}
     try:
         response = requests.get(f"{API_URL}/states", headers=headers, timeout=10)
@@ -68,15 +216,18 @@ def get_ha_entities():
             for state in data:
                 attributes = state.get('attributes', {})
                 unit = attributes.get('unit_of_measurement', '')
+                entity_id = state['entity_id']
+                
                 entity_obj = {
-                    'id': state['entity_id'],
+                    'id': entity_id,
                     'state': state['state'],
                     'attributes': {
-                        'friendly_name': attributes.get('friendly_name', state['entity_id']),
+                        'friendly_name': attributes.get('friendly_name', entity_id),
                         'device_class': attributes.get('device_class', ''),
                         'unit_of_measurement': unit
                     },
-                    'unit': unit
+                    'unit': unit,
+                    'area_id': entity_area_map.get(entity_id, None)
                 }
                 entities.append(entity_obj)
             entities.sort(key=lambda x: x['id'])
@@ -1062,6 +1213,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
 def index():
     generated_yaml = ""
     ha_entities = get_ha_entities()
+    ha_areas = get_ha_areas()  # Fetch areas
     entities_map = {e['id']: e for e in ha_entities}
     dashboard_filename = "joandashboard.dash"
     dashboard_slug = "joandashboard"
@@ -1169,6 +1321,7 @@ def index():
         'index.html',
         generated_yaml=generated_yaml,
         entities=ha_entities,
+        areas=ha_areas,
         filename=dashboard_filename,
         dash_name=dashboard_slug,
         has_token=has_token,
