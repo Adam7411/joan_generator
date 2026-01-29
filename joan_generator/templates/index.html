@@ -1770,1217 +1770,373 @@
     </div>
 
     <script>
+        const TRANSLATIONS = {
+            pl: {
+                btn_import_dash: "📥 IMPORTUJ DASHBOARD",
+                btn_config_autosave: "⚙️ KONFIGURUJ ZAPIS/ODCZYT",
+                modal_import_title: "Wybierz Dashboard do Edycji",
+                modal_import_loading: "Ładowanie listy...",
+                modal_import_empty: "Nie znaleziono plików .dash lub błąd połączenia.",
+                modal_import_confirm: "Czy na pewno chcesz wczytać ten dashboard? Obecny wynik zostanie nadpisany.",
+                btn_cancel: "Anuluj",
+                title_main: "Joan 6 E-Ink Generator",
+                sec_settings: "1. Ustawienia Dashboardu", lbl_dash_title: "Tytuł Dashboardu", lbl_grid: "Układ Siatki (Smart Grid)",
+                lbl_orientation: "Orientacja ekranu",
+                opt_orientation_portrait: "Pion (3 kolumny bazowo)",
+                opt_orientation_landscape: "Poziom (szerszy układ)",
+                grid_3x8: "Standard (3 kolumny x 8 wierszy) - DOMYŚLNY",
+                grid_4x8: "Szeroki (4 kolumny x 8 wierszy)",
+                grid_4x6: "Luźny (4 kolumny x 6 wierszy)",
+                grid_4x4: "Duże kafle (4 kolumny x 4 wiersze)",
+                grid_custom: "Układ własny",
+                sec_import: "📂 Import / Eksport Kodu .DASH", btn_import: "Wczytaj Kod",
+                sec_add: "2. Dodaj Widget", sec_edit: "2. Edytuj Widget",
+                lbl_type: "Typ Widgetu", lbl_entity: "Encja (Wyszukaj po nazwie lub ID)", lbl_dash_name: "Nazwa Dashboardu (target)",
+                lbl_name: "Tytuł na ekranie", lbl_size: "Rozmiar", lbl_preview: "Podgląd",
+                lbl_icon: "Ikona (Standard)", lbl_icon_on: "Ikona ON", lbl_icon_off: "Ikona OFF",
+                lbl_value_size: "Rozmiar czcionki wartości",
+                lbl_title_size: "Rozmiar PX",
+                lbl_value_size_custom: "Własny (px)",
+                opt_auto: "Auto (na podstawie wartości)",
+                opt_normal: "Normalny (54px)",
+                opt_medium: "Średni (40px) - dla 1000+",
+                opt_small: "Mały (32px) - dla 10000+",
+                opt_switch: "Przełącznik / Światło", opt_cover: "Roleta / Brama", opt_sensor: "Sensor",
+                opt_binary_sensor: "Sensor Binarny (On/Off)", opt_lock: "Lock / Zamek", opt_person: "Osoba / Tracker",
+                opt_media_player: "Media Player", opt_climate: "Climate / Klimatyzacja", opt_input_select: "Lista Wyboru",
+                opt_input_number: "Suwak", opt_script: "Skrypt", opt_navigate: "Przycisk Nawigacji",
+                opt_fan: "Wentylator", opt_scene: "Scena", opt_input_button: "Input Button / Przycisk",
+                opt_light: "Światło (Ściemniane)", opt_group: "Grupa (Świateł)", opt_input_boolean: "Przełącznik Boolean", opt_reload: "Odśwież Dashboard",
+                opt_gauge: "Wskaźnik (Gauge)",
+                lbl_show_state: "Pokaż stan (Tekst)",
+                grid_3x10: "Wysoki (3 kolumny x 10 wierszy)",
+                grid_3x6: "Kompakt (3 kolumny x 6 wierszy)",
+                grid_6x4: "Panorama (6 kolumn x 4 wiersze)",
+                grid_8x3: "Ultra szeroki (8 kolumn x 3 wiersze)",
+                lbl_min: "Min", lbl_max: "Max",
+                size_2x1: "2x1 (Szeroki Przycisk)", size_1x1: "1x1 (Mały)", size_2x2: "2x2 (Duży)",
+                size_3x1: "3x1 (Bardzo Szeroki)", size_1x2: "1x2 (Wysoki)", size_3x2: "3x2 (Ogromny)",
+                btn_add: "+ DODAJ WIDGET", btn_update: "ZAPISZ ZMIANY", btn_cancel: "ANULUJ",
+                sec_preview: "3. Podgląd Dashboardu", btn_row: "+ Dodaj Wiersz", btn_gen: "GENERUJ KOD .DASH",
+                sec_result: "Wynikowy Kod YAML", lbl_save_path: "1. Zapisz kod w pliku:", lbl_open_link: "2. Uruchom ponownie AppDaemon i sprawdź:",
+                limit_15: "Maks 15 znaków", limit_20: "Maks 20 znaków", alert_full: "Brak miejsca w tym wierszu! Zmień siatkę lub dodaj nowy wiersz.",
+                alert_rows_limit: "Osiągnięto maksymalną ilość wierszy w wybranym układzie! Zmień układ siatki na większy.",
+                confirm_grid_shrink: "Nowy układ ma mniej wierszy niż obecnie posiadasz ({0} vs {1}). Czy usunąć nadmiarowe wiersze z dołu?",
+
+                hint_nav: "<b>Wskazówka:</b> Wpisz nazwę pliku <code>.dash</code> (bez rozszerzenia), który znajduje się w folderze <code>\\\\[HA_HOST]\\addon_configs\\appdaemon\\dashboards\\</code>.<br>Służy do przechodzenia między ekranami.",
+
+                lbl_current_small: "(AKTUALNIE PRACUJESZ NA DASHBOARDZIE: {0})",
+                sec_manager: "Multi-Dashboard Manager (Browser)",
+                manager_desc: "Zapisz swoje układy w przeglądarce, aby łatwo się między nimi przełączać. Aby przełączać strony na samym urządzeniu Joan 6, użyj widgetu 'Przycisk Nawigacji' (Navigate).",
+                manager_save_as: "Zapisz obecny układ jako:",
+                manager_save_btn: "ZAPISZ",
+                manager_saved_list: "Twoje zapisane dashboardy:",
+
+                status_ok: "Połączono z Home Assistant (Token OK)",
+                status_err: "Brak tokena API! Lista encji jest pusta. Sprawdź konfigurację dodatku.",
+                modal_title: "Wybierz Ikonę",
+                sec_backup: "📂 Project Management (Disk Backup)",
+                backup_desc: "Pobierz plik .json na dysk swojego komputera. To pełna kopia zapasowa, która pozwala przenieść projekt na inne urządzenie.",
+                btn_download: "⬇️ POBIERZ PROJEKT (.JSON)",
+                btn_upload: "⬆️ WGRAJ PROJEKT Z DYSKU",
+
+                res_step1: "1. Zapisz wygenerowany kod w pliku albo skonfiguruj konfigurację zapisu:",
+                res_step1_bridge: "1. Zapisz bezpośrednio w AppDaemon:",
+                res_step2: "2. Zrestartuj dodatek AppDaemon:",
+                res_step2_desc: "(Wymagane, aby nowy plik został wczytany)",
+                res_step3: "3. Sprawdź w przeglądarce:",
+                save_info_host_notice: "Ścieżka jest względna względem HA_HOST (adres IP/nazwa hosta Home Assistanta).",
+
+                preview_hint: "Możesz przeciągać przyciski między wierszami oraz zmieniać ich kolejność w wierszu (Drag&Drop).",
+                btn_restart: "RESTART APPDAEMON",
+                btn_copy: "📋 KOPIUJ KOD DO SCHOWKA",
+                btn_download_file: "⬇️ POBIERZ PLIK .DASH",
+                btn_save_ad: "🚀 ZAPISZ BEZPOŚREDNIO W APPDAEMON",
+                status_details: "Token: {token_source} • API: {api_url} • Encje: {entity_count} • AppDaemon: {appdaemon_slug}",
+                status_details_missing: "Brak danych połączenia.",
+                battery_warning: "⚠️ <b>Uwaga Bateria:</b> Unikaj encji zmieniających się bardzo często (np. napięcie w czasie rzeczywistym). Częste odświeżanie ekranu szybko zużywa baterię!",
+                import_success: "Pomyślnie zaimportowano układ.",
+                import_error_layout: "Błąd: Nie znaleziono layoutu.",
+                confirm_load_dash: "Wczytać dashboard? Niezapisane zmiany przepadną.",
+                alert_name_required: "Wpisz nazwę!",
+                json_load_success: "Pomyślnie wczytano projekt z pliku JSON!",
+                json_load_error: "Błąd pliku JSON: ",
+                confirm_restart: "Czy na pewno zrestartować AppDaemon?",
+                btn_ad_config: "⚙️ KONFIGURACJA ZAPISU",
+                modal_ad_config_title: "Konfiguracja bezpośredniego zapisu",
+                ad_config_step1: "1. Wejdź w katalog <code>/addon_configs/a0d7b954_appdaemon/apps/</code> (np. przez File Editor).",
+                ad_config_step2: "2. Stwórz plik <code>dash_saver.py</code> i wklej poniższą zawartość:",
+                ad_config_step3: "3. W pliku <code>apps.yaml</code> w tym samym folderze dopisz:",
+                ad_config_step4: "4. Zrestartuj AppDaemon i odśwież tą stronę.",
+                btn_copy_code: "Kopiuj kod",
+                copy_success: "✅ SKOPIOWANO!",
+                copy_error: "❌ Błąd kopiowania: ",
+                btn_clear: "🧹 WYCZYŚĆ WSZYSTKO",
+                confirm_clear: "Czy na pewno chcesz WYCZYŚĆ WSZYSTKO? Skasuje to obecny układ i zrestartuje generator (nie dotyczy plików na dysku/serwerze).",
+                btn_gen_again: "GENERUJ PONOWNIE (ODŚWIEŻ)",
+                freq_ok: "✅ Bateria OK (rzadkie zmiany: {0}/h). Bezpieczne dla e-ink.",
+                freq_danger: "🦖 POŻERACZ BATERII! ({0}/h). Ta encja zmienia się zbyt często. <a href='#' onclick='openBatteryHelp()' style='color:inherit; font-weight:bold; text-decoration:underline;'>Niezbędna naprawa KLIKNIJ?</a>",
+                freq_warning: "⚠️ Średnie zużycie ({0}/h). Może wpływać na baterię. <a href='#' onclick='openBatteryHelp()' style='color:inherit; text-decoration:underline;'>Opcjonalna naprawa KLIKNIJ</a>",
+                freq_analyzing: "⏳ Analiza historii zmian encji (ostatnie 24h)...",
+                modal_battery_title: "Jak oszczędzać baterię Joan 6?",
+                modal_battery_understand: "ROZUMIEM",
+                confirm_duplicate: "Ta encja (ID) już istnieje na dashboardzie.\n\nCzy chcesz dodać jej KOPIĘ (z końcówką _copy)?\nKliknij OK, aby dodać kopię.\nKliknij Anuluj, aby przerwać.",
+                modal_battery_body: `
+                    <p>Twoja encja zmienia się bardzo często, co wymusza na ekranie E-Ink ciągłe odświeżanie. Aby Joan 6 działał dłużej na baterii, stwórz <b>Sensor Statystyk</b>:</p>
+                    <ol>
+                        <li>W Home Assistant przejdź do: <b>Ustawienia</b> → <b>Urządzenia oraz usługi</b> → <b>Pomocnicy</b> → <b>Utwórz pomocnika</b>.</li>
+                        <li>Wyszukaj <b>Statystyki</b> (Statistics).</li>
+                        <li>Wypełnij formularz:
+                            <ul>
+                                <li><b>Nazwa:</b> Wpisz nazwę pomocnika.</li>
+                                <li><b>Encja wejściowa:</b> Twoja szybka encja (pożeracz).</li>
+                                <li><b>Charakterystyka:</b> Średnia (Mean).</li>
+                                <li><b>Wielkość próby:</b> 100.</li>
+                                <li><b>Maksymalny wiek:</b> 00:15:00 (15 minut).</li>
+                                <li><b>Precyzja:</b> 1 (Kluczowe! Zaokrągla do 0.1).</li>
+                            </ul>
+                        </li>
+                        <li>Kliknij <b>Zatwierdź</b>.</li>
+                        <li>Zapisz i użyj nowej encji (np. <i>sensor.mean_...</i>) w tym generatorze.</li>
+                    </ol>
+                    <p>Oficjalna dokumentacja: <a href="https://www.home-assistant.io/integrations/statistics/" target="_blank">Home Assistant Statistics</a></p>
+                `,
+                modal_visionect_title: "Usługi dodatku Visionect Joan",
+                visionect_body: `
+                    <p>Najlepiej i najszybciej uruchamiać usługi dodatku Visionect Joan przez widget <b>Skrypty</b>. Skrypt tworzymy w Home Assistant.</p>
+                    <p><b>Krok po kroku:</b></p>
+                    <ol style="margin-left: 20px;">
+                        <li>Ustawienia</li>
+                        <li>Automatyzacje oraz sceny</li>
+                        <li>Skrypty</li>
+                        <li><b>Utwórz skrypt</b>
+                            <ul style="margin-top:5px; margin-bottom:10px;">
+                                <li>a. Utwórz nowy skrypt</li>
+                                <li>b. Sekwencja + Dodaj akcję</li>
+                                <li>c. Wpisz <code>visionect</code> - pokażą się wszystkie usługi dodatku Visionect Joan</li>
+                                <li>d. Wybierz daną usługę visionect i skonfiguruj ją (np. clear_screen, show_image itp.)</li>
+                                <li>e. Kliknij <b>Zapisz</b> i nadaj nazwę skryptu.</li>
+                            </ul>
+                        </li>
+                    </ol>
+                    <p class="tip-box">
+                        <b>Wskazówka:</b> Po stworzeniu skryptu, wróć tutaj (Joan 6 Generator), dodaj widget typu <b>Script</b> i wybierz encję swojego nowego skryptu. Możesz też dodać przycisk do dashboardu, który go wywoła.<br><br>
+                        Oficjalne repozytorium: <a href="https://github.com/Adam7411/visionect_joan" target="_blank">Visionect Joan Add-on</a>
+                    </p>
+                `,
+                btn_understand: "ROZUMIEM",
+                modal_info_title: "Szczegóły Systemu",
+                info_lbl_entities: "Liczba Encji:",
+                info_lbl_slug: "AppDaemon Slug:",
+                info_lbl_source: "Źródło API:",
+                info_lbl_bridge: "Plik dash_saver.py:",
+                info_lbl_dash_count: "Liczba Dashboardów:",
+                info_bridge_yes: "TAK (Aktywny)",
+                info_bridge_no: "NIE / BRAK",
+                btn_refresh_entities_title: "Odśwież listę encji",
+                msg_refreshing: "Odświeżanie listy encji...",
+                msg_refreshed: "✅ Lista encji odświeżona!",
+                btn_links: "🔗 PRZYDATNE LINKI",
+                modal_links_title: "Przydatne Linki i Dokumentacja",
+                link_v3_aio: "Instalacja serwera Visionect v3 (All-in-One) w Home Assistant",
+                link_v3_proxmox: "Instalacja serwera Visionect w Proxmox",
+                link_addon: "Dodatek Visionect Joan dla Home Assistant",
+                link_generator: "Ten generator (Dokumentacja i kod)",
+                list_dashboards_title: "Lista Dashboardów:",
+                dash_list_empty: "(brak)"
+            },
+            en: {
+                btn_import_dash: "📥 IMPORT DASHBOARD",
+                btn_config_autosave: "⚙️ CONFIGURE AUTO-SAVE/READ",
+                modal_import_title: "Select Dashboard to Edit",
+                modal_import_loading: "Loading list...",
+                modal_import_empty: "No .dash files found or connection error.",
+                modal_import_confirm: "Are you sure you want to load this dashboard? Current result will be overwritten.",
+                btn_cancel: "Cancel",
+                title_main: "Joan 6 E-Ink Generator",
+                sec_settings: "1. Dashboard Settings", lbl_dash_title: "Dashboard Title", lbl_grid: "Grid Layout (Smart Grid)",
+                lbl_orientation: "Screen orientation",
+                opt_orientation_portrait: "Portrait (3 cols default)",
+                opt_orientation_landscape: "Landscape (wider layout)",
+                grid_3x8: "Standard (3 cols x 8 rows) - DEFAULT",
+                grid_4x8: "Wide (4 cols x 8 rows)",
+                grid_4x6: "Loose (4 cols x 6 rows)",
+                grid_4x4: "Large Tiles (4 cols x 4 rows)",
+                grid_custom: "Custom Layout",
+                sec_import: "📂 Import / Export .DASH Code", btn_import: "Load Code",
+                sec_add: "2. Add Widget", sec_edit: "2. Edit Widget",
+                lbl_type: "Widget Type", lbl_entity: "Entity (Search by name/ID)", lbl_dash_name: "Dashboard Name (target)",
+                lbl_name: "Title on Screen", lbl_size: "Size", lbl_preview: "Preview",
+                lbl_icon: "Icon (Standard)", lbl_icon_on: "Icon ON", lbl_icon_off: "Icon OFF",
+                lbl_value_size: "Value font size",
+                lbl_title_size: "Size PX",
+                lbl_value_size_custom: "Custom (px)",
+                opt_auto: "Auto (based on value)",
+                opt_normal: "Normal (54px)",
+                opt_medium: "Medium (40px) - for 1000+",
+                opt_small: "Small (32px) - for 10000+",
+                opt_switch: "Switch / Light", opt_cover: "Cover / Gate", opt_sensor: "Sensor",
+                opt_binary_sensor: "Binary Sensor (On/Off)", opt_lock: "Lock", opt_person: "Person / Tracker",
+                opt_media_player: "Media Player", opt_climate: "Climate / Thermostat", opt_input_select: "Input Select",
+                opt_input_number: "Input Number", opt_script: "Script", opt_navigate: "Navigation Button",
+                opt_fan: "Fan", opt_scene: "Scene", opt_input_button: "Input Button",
+                opt_light: "Light (Dimmable)", opt_group: "Group (Lights)", opt_input_boolean: "Input Boolean", opt_reload: "Reload Dashboard",
+                opt_gauge: "Gauge",
+                lbl_show_state: "Show state (Text)",
+                grid_3x10: "Tall (3 cols x 10 rows)",
+                grid_3x6: "Compact (3 cols x 6 rows)",
+                grid_6x4: "Panorama (6 cols x 4 rows)",
+                grid_8x3: "Ultra wide (8 cols x 3 rows)",
+                lbl_min: "Min", lbl_max: "Max",
+                size_2x1: "2x1 (Wide Button)", size_1x1: "1x1 (Small)", size_2x2: "2x2 (Large)",
+                size_3x1: "3x1 (Extra Wide)", size_1x2: "1x2 (Tall)", size_3x2: "3x2 (Huge)",
+                btn_add: "+ ADD WIDGET", btn_update: "SAVE CHANGES", btn_cancel: "CANCEL",
+                sec_preview: "3. Dashboard Preview", btn_row: "+ Add Row", btn_gen: "GENERATE .DASH CODE",
+                sec_result: "Generated YAML Code", lbl_save_path: "1. Save code to file:", lbl_open_link: "2. Restart AppDaemon and check:",
+                limit_15: "Max 15 chars", limit_20: "Max 20 chars", alert_full: "No space in this row! Change grid or add new row.",
+                alert_rows_limit: "Maximum row limit reached for this layout! Switch to a larger grid layout.",
+                confirm_grid_shrink: "New layout has fewer rows than currently used ({0} vs {1}). Delete excess rows from bottom?",
+
+                hint_nav: "<b>Hint:</b> Enter the <code>.dash</code> filename (without extension) located in <code>\\\\[HA_HOST]\\addon_configs\\appdaemon\\dashboards\\</code>.<br>Used for dashboard navigation.",
+
+                lbl_current_small: "(CURRENTLY WORKING ON DASHBOARD: {0})",
+                sec_manager: "Multi-Dashboard Manager (Browser)",
+                manager_desc: "Save your layouts in the browser to switch between them easily. To change pages on the Joan 6 device itself, use the 'Navigation Button' (Navigate) widget.",
+                manager_save_as: "Save current layout as:",
+                manager_save_btn: "SAVE",
+                manager_saved_list: "Your saved dashboards:",
+
+                status_ok: "Connected to Home Assistant (Token OK)",
+                status_err: "No API Token! Entity list is empty. Check add-on configuration.",
+                modal_title: "Select Icon",
+                sec_backup: "📂 Project Management (Disk Backup)",
+                backup_desc: "Download the .json file to your computer drive. This is a full backup that allows you to transfer the project to another device.",
+                btn_download: "⬇️ DOWNLOAD PROJECT (.JSON)",
+                btn_upload: "⬆️ UPLOAD PROJECT FROM DISK",
+
+                res_step1: "1. Save code to file or configure save settings:",
+                res_step1_bridge: "1. Save directly in AppDaemon:",
+                res_step2: "2. Restart AppDaemon add-on:",
+                res_step2_desc: "(Required for the new file to load)",
+                res_step3: "3. Check in browser:",
+                save_info_host_notice: "Path is relative to HA_HOST (Home Assistant host/IP).",
+
+                preview_hint: "You can drag buttons between rows and reorder them within a row (Drag & Drop).",
+                btn_restart: "RESTART APPDAEMON",
+                btn_copy: "📋 COPY CODE TO CLIPBOARD",
+                btn_links: "🔗 USEFUL LINKS",
+                modal_links_title: "Useful Links & Documentation",
+                btn_download_file: "⬇️ DOWNLOAD .DASH FILE",
+                btn_save_ad: "🚀 SAVE DIRECTLY TO APPDAEMON",
+                status_details: "Token: {token_source} • API: {api_url} • Entities: {entity_count} • AppDaemon: {appdaemon_slug}",
+                status_details_missing: "No connection info.",
+                battery_warning: "⚠️ <b>Battery Warning:</b> Avoid entities that change very frequently (e.g. real-time voltage). Frequent screen updates drain the battery quickly!",
+                import_success: "Import successful.",
+                import_error_layout: "Error: Layout not found.",
+                confirm_load_dash: "Load dashboard? Unsaved changes will be lost.",
+                alert_name_required: "Enter a name!",
+                json_load_success: "Project loaded from JSON!",
+                json_load_error: "JSON file error: ",
+                confirm_restart: "Restart AppDaemon?",
+                btn_ad_config: "⚙️ SAVE CONFIGURATION",
+                modal_ad_config_title: "Direct Save Configuration",
+                ad_config_step1: "1. Go to <code>/addon_configs/a0d7b954_appdaemon/apps/</code> (e.g. via File Editor).",
+                ad_config_step2: "2. Create <code>dash_saver.py</code> file and paste the content below:",
+                ad_config_step3: "3. In <code>apps.yaml</code> file (same folder) add:",
+                ad_config_step4: "4. Restart AppDaemon and refresh this page.",
+                btn_copy_code: "Copy code",
+                copy_success: "✅ COPIED!",
+                copy_error: "❌ Copy error: ",
+                btn_clear: "🧹 CLEAR EVERYTHING",
+                confirm_clear: "Are you sure you want to CLEAR EVERYTHING? This will reset the current layout (does not affect files on disk/server).",
+                btn_gen_again: "GENERATE AGAIN (REFRESH)",
+                freq_ok: "✅ Battery OK (rare updates: {0}/h). Safe for e-ink.",
+                freq_danger: "🦖 BATTERY EATER! ({0}/h). This entity updates too often. <a href='#' onclick='openBatteryHelp()' style='color:inherit; font-weight:bold; text-decoration:underline;'>Click to Fix</a>",
+                freq_warning: "⚠️ Medium drain ({0}/h). May impact battery life. <a href='#' onclick='openBatteryHelp()' style='color:inherit; text-decoration:underline;'>Optional Click to Fix</a>",
+                freq_analyzing: "⏳ Analyzing entity history (last 24h)...",
+                modal_battery_title: "How to save Joan 6 battery?",
+                modal_battery_understand: "I UNDERSTAND",
+                confirm_duplicate: "This entity (ID) already exists on the dashboard.\n\nDo you want to add a COPY (with _copy suffix)?\nClick OK to add a copy.\nClick Cancel to abort.",
+                modal_battery_body: `
+                    <p>Your entity updates very frequently, forcing constant E-Ink screen refreshes. To keep Joan 6 running longer on battery, create a <b>Statistics Sensor</b>:</p>
+                    <ol>
+                        <li>In Home Assistant, go to: <b>Settings</b> → <b>Devices & Services</b> → <b>Helpers</b> → <b>Create Helper</b>.</li>
+                        <li>Search for <b>Statistics</b>.</li>
+                        <li>Fill out the form:
+                            <ul>
+                                <li><b>Name:</b> Enter a name for the helper.</li>
+                                <li><b>Input entity:</b> Your fast entity (battery eater).</li>
+                                <li><b>Characteristic:</b> Mean.</li>
+                                <li><b>Sampling size:</b> 100.</li>
+                                <li><b>Max age:</b> 00:15:00 (15 minutes).</li>
+                                <li><b>Precision:</b> 1 (Crucial! Rounds to 0.1).</li>
+                            </ul>
+                        </li>
+                        <li>Click <b>Submit</b>.</li>
+                        <li>Save and use the new entity (e.g., <i>sensor.mean_...</i>) in this generator.</li>
+                    </ol>
+                    <p>Official documentation: <a href="https://www.home-assistant.io/integrations/statistics/" target="_blank">Home Assistant Statistics</a></p>
+                `,
+                modal_visionect_title: "Visionect Joan Add-on Services",
+                visionect_body: `
+                    <p>The best and fastest way to trigger Visionect Joan services is via the <b>Scripts</b> widget. Not sure how? Follow these steps:</p>
+                    <ol style="margin-left: 20px;">
+                        <li>Settings</li>
+                        <li>Automations & Scenes</li>
+                        <li>Scripts</li>
+                        <li><b>Create Script</b>
+                            <ul style="margin-top:5px; margin-bottom:10px;">
+                                <li>a. Create new script</li>
+                                <li>b. Sequence + Add Action</li>
+                                <li>c. Type <code>visionect</code> - all Visionect Joan services will appear</li>
+                                <li>d. Select a service and configure it (e.g. clear_screen, show_image, etc.)</li>
+                                <li>e. Click <b>Save</b> and name your script.</li>
+                            </ul>
+                        </li>
+                    </ol>
+                    <p class="tip-box">
+                        <b>Hint:</b> After creating the script, come back here (Joan 6 Generator), add a <b>Script</b> widget and select your new script entity. You can also add a button to the dashboard to trigger it.<br><br>
+                        Official repository: <a href="https://github.com/Adam7411/visionect_joan" target="_blank">Visionect Joan Add-on</a>
+                    </p>
+                `,
+                btn_understand: "I UNDERSTAND",
+                modal_info_title: "System Details",
+                info_lbl_entities: "Entity Count:",
+                info_lbl_slug: "AppDaemon Slug:",
+                info_lbl_source: "API Source:",
+                info_lbl_bridge: "dash_saver.py file:",
+                info_lbl_dash_count: "Dashboard Count:",
+                info_bridge_yes: "YES (Active)",
+                info_bridge_no: "NO / MISSING",
+                btn_refresh_entities_title: "Refresh entity list",
+                msg_refreshing: "Refreshing entity list...",
+                msg_refreshed: "✅ Entity list refreshed!",
+                btn_links: "🔗 USEFUL LINKS",
+                modal_links_title: "Useful Links & Documentation",
+                link_v3_aio: "Visionect Software Suite Server v3 (All-in-One) installation in Home Assistant",
+                link_v3_proxmox: "Visionect Software Suite - Installation in Proxmox",
+                link_addon: "Visionect Joan for Home Assistant add-on",
+                link_generator: "This generator (docs & code)",
+                list_dashboards_title: "Dashboard List:",
+                dash_list_empty: "(none)"
+            }
+        };
+
+        // Backwards-compat for code paths that expect pl_extra/en_extra
+        TRANSLATIONS.pl_extra = TRANSLATIONS.pl;
+        TRANSLATIONS.en_extra = TRANSLATIONS.en;
+
         let entitiesData = {{ entities | tojson | safe }};
         let validEntityIds = new Set(entitiesData.map(e => e.id));
         const connectionInfo = {{ connection_info | tojson | safe }};
         const dashboardsList = {{ dashboards_list | tojson | safe }};
         let initialRows = {{ layout_data | tojson | safe }};
+
         let rows = (initialRows && initialRows.length > 0) ? initialRows : [[]];
         let editIdx = null;
         let selectedRowIdx = null;
         let blockSmart = false;
         let manualIconOverride = false;
-        // Try to load language from storage, default to 'pl'
-        let currentLang = localStorage.getItem('joan_lang') || 'pl';
-        let rawImportedDefs = {{ custom_defs | tojson | safe }} || {};
-        let dragSrc = null;
-        let globalDefaultSize = { w: 2, h: 1 };
-        let currentLoadedDashName = null;
-        let currentIconInputId = null;
-        let copiedRow = null;
-        let copiedWidget = null;
-
-        let enableAreaFilter = false;
-        try {
-            enableAreaFilter = JSON.parse(localStorage.getItem('joan_filter_area_enabled') || 'false');
-        } catch (e) {
-            enableAreaFilter = false;
-        }
-
-        function setAreaFilterEnabled(enabled) {
-            enableAreaFilter = !!enabled;
-            try {
-                localStorage.setItem('joan_filter_area_enabled', JSON.stringify(enableAreaFilter));
-            } catch (e) { }
-            const areaSelect = document.getElementById('area-select');
-            if (areaSelect) {
-                areaSelect.disabled = !enableAreaFilter;
-            }
-            filterEntities();
-        }
-
-        function getSelectedDomain() {
-            const domainSelect = document.getElementById('domain-select');
-            return domainSelect ? String(domainSelect.value || '') : '';
-        }
-
-        function getSelectedAreaId() {
-            const areaSelect = document.getElementById('area-select');
-            return areaSelect ? String(areaSelect.value || '') : '';
-        }
-
-        function filterEntities() {
-            const input = document.getElementById('w-id');
-            searchEntities(input ? input.value : '');
-        }
-
-        const GRID_OPTION_SETS = {
-            portrait: [
-                { value: '3x8', i18n: 'grid_3x8' },
-                { value: '3x10', i18n: 'grid_3x10' },
-                { value: '3x6', i18n: 'grid_3x6' },
-                { value: 'custom', i18n: 'grid_custom' }
-            ],
-            landscape: [
-                { value: '4x6', i18n: 'grid_4x6' },
-                { value: '4x8', i18n: 'grid_4x8' },
-                { value: '6x4', i18n: 'grid_6x4' },
-                { value: '8x3', i18n: 'grid_8x3' },
-                { value: 'custom', i18n: 'grid_custom' }
-            ]
-        };
-
-        const POPULAR_ICONS = [
-            // === DOM / POKOJE ===
-            "mdi-home", "mdi-home-outline", "mdi-home-floor-1", "mdi-home-floor-2", "mdi-home-floor-3",
-            "mdi-sofa", "mdi-sofa-outline", "mdi-bed", "mdi-bed-outline", "mdi-bunk-bed", "mdi-bunk-bed-outline",
-            "mdi-silverware-fork-knife", "mdi-stove", "mdi-fridge", "mdi-fridge-outline", "mdi-microwave",
-            "mdi-dishwasher", "mdi-washing-machine", "mdi-tumble-dryer", "mdi-iron", "mdi-iron-outline",
-            "mdi-shower", "mdi-shower-head", "mdi-toilet", "mdi-bathtub", "mdi-bathtub-outline",
-            "mdi-desk", "mdi-desk-lamp", "mdi-chair-rolling", "mdi-bookshelf",
-            "mdi-baby-carriage", "mdi-baby-face", "mdi-baby-face-outline", "mdi-teddy-bear", "mdi-hanger", "mdi-wardrobe", "mdi-wardrobe-outline",
-            "mdi-stairs", "mdi-stairs-up", "mdi-stairs-down", "mdi-elevator", "mdi-elevator-passenger",
-
-            // === OŚWIETLENIE ===
-            "mdi-lightbulb", "mdi-lightbulb-on", "mdi-lightbulb-on-outline", "mdi-lightbulb-outline", "mdi-lightbulb-off", "mdi-lightbulb-off-outline",
-            "mdi-lightbulb-group", "mdi-lightbulb-group-outline", "mdi-lightbulb-group-off", "mdi-lightbulb-group-off-outline",
-            "mdi-lamp", "mdi-lamps", "mdi-lamps-outline", "mdi-floor-lamp", "mdi-floor-lamp-dual", "mdi-floor-lamp-outline",
-            "mdi-ceiling-light", "mdi-ceiling-light-outline", "mdi-ceiling-light-multiple", "mdi-ceiling-light-multiple-outline",
-            "mdi-wall-sconce", "mdi-wall-sconce-flat", "mdi-wall-sconce-round",
-            "mdi-track-light", "mdi-vanity-light", "mdi-outdoor-lamp", "mdi-post-lamp",
-            "mdi-led-strip", "mdi-led-strip-variant", "mdi-string-lights", "mdi-string-lights-off",
-            "mdi-spotlight", "mdi-spotlight-beam", "mdi-light-recessed",
-            "mdi-chandelier", "mdi-coach-lamp", "mdi-coach-lamp-variant", "mdi-lava-lamp",
-            "mdi-brightness-5", "mdi-brightness-6", "mdi-brightness-7", "mdi-brightness-auto",
-
-            // === WŁĄCZNIKI / ZASILANIE ===
-            "mdi-power", "mdi-power-off", "mdi-power-on", "mdi-power-plug", "mdi-power-plug-off", "mdi-power-plug-outline",
-            "mdi-power-socket", "mdi-power-socket-eu", "mdi-power-socket-us", "mdi-power-socket-uk", "mdi-power-socket-de",
-            "mdi-toggle-switch", "mdi-toggle-switch-off", "mdi-toggle-switch-outline", "mdi-toggle-switch-off-outline",
-            "mdi-electric-switch", "mdi-electric-switch-closed", "mdi-light-switch",
-            "mdi-lightning-bolt", "mdi-lightning-bolt-outline", "mdi-flash", "mdi-flash-off", "mdi-flash-outline",
-            "mdi-battery", "mdi-battery-charging", "mdi-battery-outline", "mdi-battery-50", "mdi-battery-low", "mdi-battery-alert",
-
-            // === DRZWI / OKNA / BRAMY ===
-            "mdi-door", "mdi-door-open", "mdi-door-closed", "mdi-door-closed-lock",
-            "mdi-door-sliding", "mdi-door-sliding-open", "mdi-door-sliding-lock",
-            "mdi-gate", "mdi-gate-open", "mdi-gate-arrow-right", "mdi-boom-gate", "mdi-boom-gate-up", "mdi-boom-gate-outline",
-            "mdi-garage", "mdi-garage-open", "mdi-garage-variant", "mdi-garage-open-variant", "mdi-garage-alert", "mdi-garage-lock",
-            "mdi-window-closed", "mdi-window-closed-variant", "mdi-window-open", "mdi-window-open-variant",
-            "mdi-window-shutter", "mdi-window-shutter-open", "mdi-window-shutter-alert", "mdi-window-shutter-cog",
-            "mdi-blinds", "mdi-blinds-open", "mdi-blinds-horizontal", "mdi-blinds-horizontal-closed", "mdi-blinds-vertical", "mdi-blinds-vertical-closed",
-            "mdi-curtains", "mdi-curtains-closed", "mdi-roller-shade", "mdi-roller-shade-closed",
-
-            // === ZAMKI / BEZPIECZEŃSTWO ===
-            "mdi-lock", "mdi-lock-open", "mdi-lock-open-outline", "mdi-lock-outline", "mdi-lock-off", "mdi-lock-off-outline",
-            "mdi-lock-alert", "mdi-lock-alert-outline", "mdi-lock-clock", "mdi-lock-check", "mdi-lock-reset",
-            "mdi-shield", "mdi-shield-home", "mdi-shield-home-outline", "mdi-shield-lock", "mdi-shield-lock-outline",
-            "mdi-shield-check", "mdi-shield-check-outline", "mdi-shield-alert", "mdi-shield-alert-outline",
-            "mdi-security", "mdi-security-network", "mdi-alarm-light", "mdi-alarm-light-outline", "mdi-alarm-light-off", "mdi-alarm-light-off-outline",
-            "mdi-alarm-bell", "mdi-bell", "mdi-bell-ring", "mdi-bell-ring-outline", "mdi-bell-outline", "mdi-bell-off", "mdi-bell-alert",
-            "mdi-cctv", "mdi-cctv-off", "mdi-webcam", "mdi-webcam-off", "mdi-video", "mdi-video-off", "mdi-video-outline",
-            "mdi-motion-sensor", "mdi-motion-sensor-off", "mdi-run", "mdi-run-fast", "mdi-walk",
-            "mdi-eye", "mdi-eye-off", "mdi-eye-outline", "mdi-eye-off-outline",
-
-            // === KLIMATYZACJA / TEMPERATURA ===
-            "mdi-thermometer", "mdi-thermometer-lines", "mdi-thermometer-high", "mdi-thermometer-low", "mdi-thermometer-alert",
-            "mdi-temperature-celsius", "mdi-temperature-fahrenheit", "mdi-temperature-kelvin",
-            "mdi-thermostat", "mdi-thermostat-box", "mdi-home-thermometer", "mdi-home-thermometer-outline",
-            "mdi-air-conditioner", "mdi-air-filter", "mdi-air-purifier", "mdi-air-humidifier", "mdi-air-humidifier-off",
-            "mdi-fan", "mdi-fan-off", "mdi-fan-speed-1", "mdi-fan-speed-2", "mdi-fan-speed-3",
-            "mdi-hvac", "mdi-hvac-off", "mdi-heat-wave", "mdi-coolant-temperature",
-            "mdi-radiator", "mdi-radiator-off", "mdi-radiator-disabled", "mdi-heating-coil",
-            "mdi-fire", "mdi-fireplace", "mdi-fireplace-off", "mdi-campfire",
-            "mdi-snowflake", "mdi-snowflake-variant", "mdi-snowflake-off", "mdi-snowflake-alert", "mdi-snowflake-thermometer",
-            "mdi-water-percent", "mdi-water-thermometer", "mdi-water-thermometer-outline",
-            "mdi-sun-thermometer", "mdi-sun-thermometer-outline",
-
-            // === POGODA ===
-            "mdi-weather-sunny", "mdi-weather-night", "mdi-weather-partly-cloudy", "mdi-weather-cloudy",
-            "mdi-weather-rainy", "mdi-weather-pouring", "mdi-weather-lightning", "mdi-weather-lightning-rainy",
-            "mdi-weather-snowy", "mdi-weather-snowy-heavy", "mdi-weather-snowy-rainy",
-            "mdi-weather-fog", "mdi-weather-hazy", "mdi-weather-windy", "mdi-weather-windy-variant",
-            "mdi-weather-hurricane", "mdi-weather-tornado",
-            "mdi-cloud", "mdi-cloud-outline", "mdi-clouds",
-            "mdi-sun-wireless", "mdi-sun-wireless-outline", "mdi-moon-waning-crescent", "mdi-moon-full",
-            "mdi-umbrella", "mdi-umbrella-outline", "mdi-umbrella-closed", "mdi-umbrella-closed-outline",
-
-            // === WODA / PODLEWANIE ===
-            "mdi-water", "mdi-water-outline", "mdi-water-off", "mdi-water-off-outline",
-            "mdi-water-pump", "mdi-water-pump-off", "mdi-water-well", "mdi-water-well-outline",
-            "mdi-watering-can", "mdi-watering-can-outline", "mdi-sprinkler", "mdi-sprinkler-variant", "mdi-sprinkler-fire",
-            "mdi-fountain", "mdi-pool", "mdi-hot-tub", "mdi-waves",
-            "mdi-pipe", "mdi-pipe-leak", "mdi-pipe-disconnected", "mdi-pipe-valve",
-            "mdi-valve", "mdi-valve-open", "mdi-valve-closed",
-            "mdi-faucet", "mdi-faucet-variant", "mdi-water-boiler", "mdi-water-boiler-alert",
-
-            // === MULTIMEDIA / RTV ===
-            "mdi-television", "mdi-television-off", "mdi-television-classic", "mdi-television-classic-off",
-            "mdi-monitor", "mdi-monitor-speaker", "mdi-monitor-speaker-off", "mdi-projector", "mdi-projector-screen",
-            "mdi-speaker", "mdi-speaker-off", "mdi-speaker-wireless", "mdi-speaker-multiple",
-            "mdi-volume-high", "mdi-volume-medium", "mdi-volume-low", "mdi-volume-off", "mdi-volume-mute",
-            "mdi-play", "mdi-pause", "mdi-stop", "mdi-skip-next", "mdi-skip-previous", "mdi-fast-forward", "mdi-rewind",
-            "mdi-play-pause", "mdi-play-circle", "mdi-pause-circle", "mdi-stop-circle",
-            "mdi-music", "mdi-music-note", "mdi-music-off", "mdi-playlist-music", "mdi-playlist-play",
-            "mdi-radio", "mdi-radio-tower", "mdi-microphone", "mdi-microphone-off",
-            "mdi-headphones", "mdi-headphones-off", "mdi-headphones-bluetooth", "mdi-earbuds", "mdi-earbuds-outline",
-            "mdi-cast", "mdi-cast-connected", "mdi-cast-off",
-            "mdi-gamepad", "mdi-gamepad-variant", "mdi-controller-classic",
-
-            // === OSOBY / OBECNOŚĆ ===
-            "mdi-account", "mdi-account-outline", "mdi-account-circle", "mdi-account-circle-outline",
-            "mdi-account-multiple", "mdi-account-multiple-outline", "mdi-account-group", "mdi-account-group-outline",
-            "mdi-account-check", "mdi-account-check-outline",
-
-            // === NEW ICONS (USER REQUEST) ===
-            // === HARDWARE / IT ===
-            "mdi-server", "mdi-server-network", "mdi-nas", "mdi-router-wireless", "mdi-router-network", "mdi-access-point",
-            "mdi-laptop", "mdi-laptop-off", "mdi-tablet",
-            "mdi-cellphone", "mdi-cellphone-charging", "mdi-deskphone",
-            "mdi-printer", "mdi-printer-3d", "mdi-scanner",
-            "mdi-usb", "mdi-usb-flash-drive", "mdi-harddisk", "mdi-cpu-64-bit", "mdi-memory",
-            "mdi-network", "mdi-ethernet-cable", "mdi-lan",
-
-            // === TRANSPORT / AUTO ===
-            "mdi-car", "mdi-car-side", "mdi-car-electric", "mdi-car-battery", "mdi-car-connected",
-            "mdi-bus", "mdi-truck", "mdi-train", "mdi-bike", "mdi-motorbike", "mdi-moped",
-            "mdi-scooter", "mdi-scooter-electric", "mdi-airplane",
-            "mdi-gas-station", "mdi-ev-station", "mdi-parking",
-
-            // === OFFICE / WORK ===
-            "mdi-briefcase", "mdi-briefcase-outline", "mdi-briefcase-check",
-            "mdi-clipboard", "mdi-clipboard-check", "mdi-clipboard-text",
-            "mdi-file", "mdi-file-document", "mdi-file-excel", "mdi-file-pdf-box",
-            "mdi-calendar", "mdi-calendar-check", "mdi-calendar-clock", "mdi-calendar-blank",
-            "mdi-email", "mdi-email-open", "mdi-email-outline", "mdi-send",
-
-            // === GARDEN / NATURE ===
-            "mdi-flower", "mdi-flower-tulip", "mdi-flower-outline", "mdi-tree", "mdi-tree-outline",
-            "mdi-leaf", "mdi-grass", "mdi-sprout", "mdi-pine-tree",
-            "mdi-shovel", "mdi-rake", "mdi-axe", "mdi-hammer", "mdi-wrench", "mdi-screwdriver",
-            "mdi-grill", "mdi-grill-outline", "mdi-patio-heater",
-            "mdi-fence", "mdi-fence-electric", "mdi-greenhouse",
-            "mdi-mailbox", "mdi-mailbox-open", "mdi-mailbox-outline", "mdi-mailbox-open-outline",
-            "mdi-trash-can", "mdi-trash-can-outline", "mdi-recycle", "mdi-recycle-variant",
-
-            // === CZAS / ZEGAR ===
-            "mdi-clock", "mdi-clock-outline", "mdi-clock-digital", "mdi-clock-alert", "mdi-clock-alert-outline",
-            "mdi-timer", "mdi-timer-outline", "mdi-timer-sand", "mdi-timer-sand-empty",
-            "mdi-alarm", "mdi-alarm-check", "mdi-alarm-off", "mdi-alarm-plus",
-            "mdi-calendar", "mdi-calendar-today", "mdi-calendar-clock", "mdi-calendar-check", "mdi-calendar-alert",
-            "mdi-calendar-month", "mdi-calendar-week", "mdi-calendar-blank",
-            "mdi-update", "mdi-sync", "mdi-refresh", "mdi-reload", "mdi-autorenew",
-
-            // === NAWIGACJA / STRZAŁKI ===
-            "mdi-arrow-up", "mdi-arrow-down", "mdi-arrow-left", "mdi-arrow-right",
-            "mdi-arrow-up-bold", "mdi-arrow-down-bold", "mdi-arrow-left-bold", "mdi-arrow-right-bold",
-            "mdi-arrow-up-circle", "mdi-arrow-down-circle", "mdi-arrow-left-circle", "mdi-arrow-right-circle",
-            "mdi-arrow-expand", "mdi-arrow-collapse", "mdi-arrow-expand-all", "mdi-arrow-collapse-all",
-            "mdi-chevron-up", "mdi-chevron-down", "mdi-chevron-left", "mdi-chevron-right",
-            "mdi-chevron-double-up", "mdi-chevron-double-down", "mdi-chevron-double-left", "mdi-chevron-double-right",
-            "mdi-menu", "mdi-menu-open", "mdi-menu-up", "mdi-menu-down", "mdi-menu-left", "mdi-menu-right",
-            "mdi-dots-horizontal", "mdi-dots-vertical", "mdi-plus", "mdi-minus", "mdi-close",
-            "mdi-check", "mdi-check-circle", "mdi-check-circle-outline", "mdi-checkbox-marked", "mdi-checkbox-blank-outline",
-
-            // === INFORMACJE / STATUSY ===
-            "mdi-information", "mdi-information-outline", "mdi-help", "mdi-help-circle", "mdi-help-circle-outline",
-            "mdi-alert", "mdi-alert-outline", "mdi-alert-circle", "mdi-alert-circle-outline",
-            "mdi-alert-octagon", "mdi-alert-octagram", "mdi-alert-decagram",
-            "mdi-exclamation", "mdi-exclamation-thick",
-            "mdi-thumb-up", "mdi-thumb-down", "mdi-thumb-up-outline", "mdi-thumb-down-outline",
-            "mdi-star", "mdi-star-outline", "mdi-star-half", "mdi-star-off",
-            "mdi-heart", "mdi-heart-outline", "mdi-heart-off", "mdi-heart-pulse",
-            "mdi-emoticon-happy", "mdi-emoticon-sad", "mdi-emoticon-neutral", "mdi-emoticon-cool",
-
-            // === KSZTAŁTY / SYMBOLE ===
-            "mdi-circle", "mdi-circle-outline", "mdi-circle-double", "mdi-circle-half-full",
-            "mdi-square", "mdi-square-outline", "mdi-square-rounded", "mdi-square-rounded-outline",
-            "mdi-triangle", "mdi-triangle-outline", "mdi-hexagon", "mdi-hexagon-outline",
-            "mdi-rhombus", "mdi-rhombus-outline", "mdi-octagon", "mdi-octagon-outline",
-            "mdi-shape", "mdi-shape-outline", "mdi-shape-plus",
-            "mdi-ray-vertex", "mdi-ray-start", "mdi-ray-end",
-            "mdi-vector-point", "mdi-vector-line", "mdi-vector-circle",
-            "mdi-palette", "mdi-palette-swatch", "mdi-movie", "mdi-movie-open",
-
-            // === MEDICAL / HEALTH (NEW) ===
-            "mdi-medical-bag", "mdi-doctor", "mdi-ambulance", "mdi-hospital", "mdi-hospital-box",
-            "mdi-pill", "mdi-pill-off", "mdi-needle", "mdi-bandage", "mdi-stethoscope",
-            "mdi-heart-pulse", "mdi-heart-broken", "mdi-blood-bag", "mdi-virus", "mdi-bacteria",
-            "mdi-tooth", "mdi-tooth-outline", "mdi-glasses", "mdi-sunglasses",
-            "mdi-wheelchair", "mdi-human-cane",
-
-            // === SOCIAL / BRANDS (NEW) ===
-            "mdi-facebook", "mdi-facebook-messenger", "mdi-twitter", "mdi-instagram", "mdi-snapchat",
-            "mdi-whatsapp", "mdi-youtube", "mdi-twitch", "mdi-slack",
-            "mdi-google", "mdi-google-chrome", "mdi-apple", "mdi-microsoft", "mdi-microsoft-windows", "mdi-android",
-            "mdi-github", "mdi-gitlab", "mdi-bitbucket", "mdi-reddit", "mdi-linkedin",
-            "mdi-spotify", "mdi-netflix", "mdi-hulu", "mdi-kodi", "mdi-plex",
-            "mdi-steam", "mdi-nintendo-switch",
-
-            // === WEATHER EXTENDED (NEW) ===
-            "mdi-weather-hail", "mdi-weather-cloudy-alert", "mdi-weather-cloudy-arrow-right",
-            "mdi-weather-fog", "mdi-weather-partly-cloudy", "mdi-weather-night-partly-cloudy",
-            "mdi-windsock", "mdi-weather-sunset", "mdi-weather-sunset-up", "mdi-weather-sunset-down",
-
-            // === FOOD / DRINK EXTENDED (NEW) ===
-            "mdi-food-apple", "mdi-food-croissant", "mdi-food-drumstick", "mdi-food-fork-drink",
-            "mdi-food-steak", "mdi-food-turkey", "mdi-food-variant", "mdi-fruit-cherries",
-            "mdi-fruit-citrus", "mdi-fruit-grapes", "mdi-fruit-pineapple", "mdi-fruit-watermelon",
-            "mdi-cupcake", "mdi-ice-cream", "mdi-muffin", "mdi-pizza",
-            "mdi-glass-cocktail", "mdi-glass-flute", "mdi-glass-mug", "mdi-glass-stange", "mdi-glass-tulip",
-            "mdi-glass-wine", "mdi-bottle-wine", "mdi-beer", "mdi-coffee-to-go",
-
-            // === FINANCE / SHOPPING (NEW) ===
-            "mdi-cash", "mdi-cash-multiple", "mdi-cash-100", "mdi-credit-card", "mdi-credit-card-outline",
-            "mdi-bank", "mdi-finance", "mdi-wallet", "mdi-wallet-outline", "mdi-wallet-travel",
-            "mdi-basket", "mdi-basket-outline", "mdi-cart", "mdi-cart-outline", "mdi-cart-off",
-            "mdi-store", "mdi-store-24-hour", "mdi-shopping", "mdi-tag", "mdi-tag-outline",
-            "mdi-sale", "mdi-barcode", "mdi-barcode-scan", "mdi-qrcode", "mdi-qrcode-scan",
-
-            // === MEDIA CONTROL (NEW) ===
-            "mdi-play-pause", "mdi-play-circle-outline", "mdi-pause-circle-outline", "mdi-stop-circle-outline",
-            "mdi-skip-next-circle-outline", "mdi-skip-previous-circle-outline", "mdi-fast-forward-5", "mdi-rewind-5",
-            "mdi-repeat", "mdi-repeat-once", "mdi-shuffle", "mdi-shuffle-variant",
-            "mdi-volume-high", "mdi-volume-medium", "mdi-volume-low", "mdi-volume-mute", "mdi-volume-off",
-            "mdi-volume-plus", "mdi-volume-minus", "mdi-volume-equal", "mdi-speaker", "mdi-speaker-bluetooth",
-            "mdi-speaker-wireless", "mdi-speaker-multiple", "mdi-cast", "mdi-cast-connected", "mdi-television",
-            "mdi-television-classic", "mdi-television-play", "mdi-video-input-hdmi", "mdi-video-input-antenna",
-            "mdi-remote", "mdi-remote-tv", "mdi-kodi", "mdi-plex", "mdi-netflix", "mdi-youtube", "mdi-spotify",
-
-            // === NAVIGATION / GUI (NEW) ===
-            "mdi-chevron-left", "mdi-chevron-right", "mdi-chevron-up", "mdi-chevron-down",
-            "mdi-chevron-double-left", "mdi-chevron-double-right", "mdi-chevron-double-up", "mdi-chevron-double-down",
-            "mdi-arrow-left-bold-outline", "mdi-arrow-right-bold-outline", "mdi-arrow-up-bold-outline", "mdi-arrow-down-bold-outline",
-            "mdi-arrow-left-circle-outline", "mdi-arrow-right-circle-outline", "mdi-arrow-up-circle-outline", "mdi-arrow-down-circle-outline",
-            "mdi-arrow-expand-all", "mdi-arrow-collapse-all", "mdi-dots-horizontal", "mdi-dots-vertical",
-            "mdi-menu", "mdi-apps", "mdi-view-grid-outline", "mdi-view-list-outline", "mdi-home-outline",
-            "mdi-backburger", "mdi-forwardburger", "mdi-history", "mdi-cached", "mdi-sync", "mdi-refresh", "mdi-reload",
-
-            // === AUTOMATION & SMART HOME (NEW) ===
-            "mdi-robot", "mdi-robot-outline", "mdi-robot-vacuum", "mdi-robot-vacuum-variant", "mdi-robot-mower",
-            "mdi-auto-fix", "mdi-auto-upload", "mdi-creation", "mdi-lightning-bolt-circle", "mdi-flash-auto",
-            "mdi-connection", "mdi-transit-connection", "mdi-transit-connection-variant", "mdi-api", "mdi-web",
-            "mdi-lan", "mdi-lan-connect", "mdi-lan-disconnect", "mdi-router-wireless", "mdi-access-point",
-            "mdi-access-point-network", "mdi-server", "mdi-server-network", "mdi-database",
-            "mdi-cloud-outline", "mdi-cloud-sync-outline", "mdi-cloud-check-outline", "mdi-cloud-alert-outline",
-            "mdi-wifi-strength-4", "mdi-wifi-strength-3", "mdi-wifi-strength-2", "mdi-wifi-strength-1", "mdi-wifi-strength-outline",
-            "mdi-bluetooth", "mdi-bluetooth-connect", "mdi-bluetooth-off", "mdi-zigbee", "mdi-z-wave",
-            "mdi-home-assistant", "mdi-nfc", "mdi-nfc-variant",
-
-            // === SYSTEM & SETTINGS (NEW) ===
-            "mdi-cog-outline", "mdi-cogs", "mdi-tools", "mdi-wrench", "mdi-hammer",
-            "mdi-screwdriver", "mdi-pickaxe", "mdi-tune", "mdi-tune-vertical", "mdi-filter-variant",
-            "mdi-sort-variant", "mdi-eye", "mdi-eye-off", "mdi-eye-outline", "mdi-eye-off-outline",
-            "mdi-pencil", "mdi-pencil-outline", "mdi-delete", "mdi-delete-outline",
-            "mdi-content-save", "mdi-content-save-outline", "mdi-content-copy", "mdi-content-paste",
-            "mdi-download", "mdi-upload", "mdi-export", "mdi-import", "mdi-share-variant",
-            "mdi-link-variant", "mdi-magnify", "mdi-magnify-plus", "mdi-magnify-minus",
-
-            // === NUMBERS & SYMBOLS (NEW) ===
-            "mdi-numeric-0", "mdi-numeric-1", "mdi-numeric-2", "mdi-numeric-3", "mdi-numeric-4",
-            "mdi-numeric-5", "mdi-numeric-6", "mdi-numeric-7", "mdi-numeric-8", "mdi-numeric-9",
-            "mdi-numeric-10", "mdi-alpha-a", "mdi-alpha-b", "mdi-alpha-c",
-            "mdi-plus-thick", "mdi-minus-thick", "mdi-equal", "mdi-equal-box", "mdi-not-equal-variant",
-            "mdi-infinity", "mdi-percent",
-
-            // === OTHER USEFUL (NEW) ===
-            "mdi-curtains", "mdi-curtains-closed", "mdi-door-open", "mdi-door-closed",
-            "mdi-garage", "mdi-garage-open", "mdi-garage-variant", "mdi-gate", "mdi-gate-open",
-            "mdi-shield-home", "mdi-shield-check", "mdi-shield-alert", "mdi-bell", "mdi-bell-outline",
-            "mdi-bell-ring", "mdi-bell-off", "mdi-video", "mdi-video-outline", "mdi-video-off",
-            "mdi-webcam", "mdi-cctv", "mdi-smoke-detector", "mdi-water-boiler", "mdi-radiator",
-            "mdi-air-conditioner", "mdi-air-filter", "mdi-air-purifier", "mdi-fan", "mdi-fan-off",
-
-            // === SPORTS & FITNESS (NEW) ===
-            "mdi-soccer", "mdi-basketball", "mdi-football", "mdi-tennis", "mdi-baseball", "mdi-volleyball",
-            "mdi-cricket", "mdi-hockey-sticks", "mdi-golf", "mdi-bowling", "mdi-billiards",
-            "mdi-table-tennis", "mdi-badminton", "mdi-karate", "mdi-fencing",
-            "mdi-dumbbell", "mdi-weight-lifter", "mdi-kettlebell", "mdi-yoga", "mdi-run", "mdi-walk",
-            "mdi-bike", "mdi-bicycle", "mdi-swim", "mdi-skate", "mdi-roller-skate",
-            "mdi-snowboard", "mdi-sledding", "mdi-hiking", "mdi-pool",
-
-            // === TRAVEL & OUTDOORS (NEW) ===
-            "mdi-airplane-takeoff", "mdi-airplane-landing", "mdi-airport", "mdi-train-variant",
-            "mdi-bus-stop", "mdi-ferry", "mdi-car-hatchback", "mdi-car-estate", "mdi-car-convertible",
-            "mdi-car-pickup", "mdi-truck-cargo-container", "mdi-caravan", "mdi-tent", "mdi-campfire",
-            "mdi-image-filter-hdr", "mdi-beach", "mdi-island",
-            "mdi-palm-tree", "mdi-map-clock", "mdi-map-search", "mdi-compass", "mdi-compass-outline",
-            "mdi-passport", "mdi-bed-outline",
-
-            // === HOBBIES & CREATIVITY (NEW) ===
-            "mdi-camera", "mdi-camera-outline", "mdi-camera-iris", "mdi-image-multiple", "mdi-palette",
-            "mdi-brush", "mdi-brush-variant", "mdi-format-paint", "mdi-pen", "mdi-draw",
-            "mdi-guitar-acoustic", "mdi-guitar-electric", "mdi-piano", "mdi-violin",
-            "mdi-saxophone", "mdi-trumpet", "mdi-music-clef-treble", "mdi-metronome",
-            "mdi-microphone-variant", "mdi-controller-classic",
-            "mdi-chess-knight", "mdi-dice-5", "mdi-cards-outline", "mdi-poker-chip",
-
-            // === SCIENCE & EDUCATION (NEW) ===
-            "mdi-school", "mdi-school-outline", "mdi-book-open-variant",
-            "mdi-library", "mdi-notebook-edit", "mdi-pencil-ruler", "mdi-microscope", "mdi-telescope",
-            "mdi-flask", "mdi-flask-outline", "mdi-test-tube", "mdi-dna", "mdi-atom", "mdi-molecule",
-            "mdi-rocket", "mdi-rocket-launch", "mdi-satellite-variant", "mdi-earth", "mdi-globe-model",
-            "mdi-brain", "mdi-head-lightbulb-outline", "mdi-abacus", "mdi-calculator",
-
-            // === FAMILY & LIFE EVENTS (NEW) ===
-            "mdi-human-male-female", "mdi-human-female-boy", "mdi-human-male-boy", "mdi-baby-carriage",
-            "mdi-cradle", "mdi-toy-brick-outline", "mdi-teddy-bear", "mdi-ring",
-            "mdi-cards-heart", "mdi-cake-variant", "mdi-candle", "mdi-party-popper", "mdi-balloon",
-            "mdi-gift", "mdi-home-heart", "mdi-hand-heart", "mdi-account-heart", "mdi-account-star",
-            "mdi-emoticon-happy-outline", "mdi-emoticon-cool-outline", "mdi-face-man", "mdi-face-woman",
-
-            // === PHOTOGRAPHY & NEWS (NEW) ===
-            "mdi-camera-enhance", "mdi-camera-flip", "mdi-camera-gopro", "mdi-camera-metering-center",
-            "mdi-camera-metering-matrix", "mdi-camera-metering-partial", "mdi-camera-metering-spot",
-            "mdi-camera-off", "mdi-camera-party-mode", "mdi-camera-plus", "mdi-camera-plus-outline",
-            "mdi-camera-front", "mdi-camera-front-variant", "mdi-camera-rear", "mdi-camera-rear-variant",
-            "mdi-camera-retake", "mdi-camera-switch", "mdi-camera-switch-outline", "mdi-camera-timer",
-            "mdi-camera-wireless", "mdi-camera-wireless-outline", "mdi-video-plus", "mdi-video-minus",
-            "mdi-video-check", "mdi-video-stabilization", "mdi-image-filter-black-white",
-            "mdi-image-filter-center-focus", "mdi-image-filter-frames", "mdi-image-edit",
-            "mdi-rss", "mdi-rss-box", "mdi-rss-off", "mdi-newspaper-variant-outline", "mdi-post-outline",
-
-            // === ADVANCED HARDWARE & AUTOMATION (NEW) ===
-            "mdi-home-automation", "mdi-chip", "mdi-cpu-32-bit", "mdi-cpu-64-bit",
-            "mdi-memory", "mdi-expansion-card",
-            "mdi-raspberry-pi", "mdi-developer-board", "mdi-usb", "mdi-usb-port",
-            "mdi-ip-network", "mdi-ip-network-outline", "mdi-ethernet-cable", "mdi-ethernet-cable-off",
-            "mdi-wifi-alert", "mdi-wifi-lock", "mdi-bluetooth-audio", "mdi-bluetooth-transfer",
-
-            // === SPECIFIC SENSORS & ALARMS (NEW) ===
-            "mdi-leak", "mdi-gas-cylinder", "mdi-smoke-detector-variant",
-            "mdi-fire-alert", "mdi-water-alert", "mdi-wind-power-outline", "mdi-home-thermometer",
-            "mdi-thermometer-lines", "mdi-thermometer-low", "mdi-thermometer-high", "mdi-thermometer-alert",
-            "mdi-hydro-power", "mdi-wind-power", "mdi-solar-power-variant", "mdi-lightning-bolt-outline",
-
-            // === UTILITIES & VALVES (NEW) ===
-            "mdi-pool-thermometer", "mdi-sprinkler", "mdi-sprinkler-variant", "mdi-valve", "mdi-valve-closed",
-            "mdi-power-plug-outline", "mdi-power-socket-uk", "mdi-power-socket-us", "mdi-power-socket-au",
-            "mdi-hammer-wrench", "mdi-hammer-screwdriver", "mdi-toolbox", "mdi-toolbox-outline",
-
-            // === MISC SMARTHOME (NEW) ===
-            "mdi-key-variant", "mdi-key-wireless", "mdi-key-alert", "mdi-home-lock", "mdi-home-lock-open",
-            "mdi-mower", "mdi-mower-bag", "mdi-leaf", "mdi-tree", "mdi-flower", "mdi-flower-outline",
-            "mdi-weather-pouring", "mdi-weather-snowy-heavy", "mdi-weather-tornado", "mdi-weather-hurricane",
-            "mdi-shield-bug", "mdi-bug-outline", "mdi-spider", "mdi-skull-outline",
-
-            // === MORE LIFESTYLE / UI SYMBOLS (NEW) ===
-            "mdi-account-group", "mdi-account-multiple-plus", "mdi-account-voice", "mdi-account-question",
-            "mdi-star-face", "mdi-medal", "mdi-trophy", "mdi-handshake", "mdi-handshake-outline",
-            "mdi-heart-multiple", "mdi-heart-settings", "mdi-chat-question", "mdi-comment-alert",
-            "mdi-alert-octagon", "mdi-alert-decagram", "mdi-check-decagram", "mdi-check-bold",
-
-            // === TECHNICAL / HARDWARE / AUTOMATION (NEW +250) ===
-            "mdi-cpu-32-bit", "mdi-cpu-64-bit", "mdi-memory", "mdi-harddisk", "mdi-expansion-card",
-            "mdi-ethernet", "mdi-usb", "mdi-usb-port", "mdi-serial-port", "mdi-hdmi-port",
-            "mdi-resistor", "mdi-electronic-components",
-            "mdi-screwdriver", "mdi-wrench", "mdi-hammer", "mdi-pliers", "mdi-tape-measure", "mdi-spirit-level",
-            "mdi-compass", "mdi-ruler", "mdi-ladder",
-            "mdi-crane", "mdi-forklift", "mdi-excavator", "mdi-truck-cargo-container", "mdi-robot",
-            "mdi-robot-mower", "mdi-robot-vacuum", "mdi-robot-industrial", "mdi-home-automation",
-            "mdi-thermometer", "mdi-water-percent", "mdi-gauge", "mdi-speedometer",
-            "mdi-printer-3d", "mdi-printer-search", "mdi-printer-settings", "mdi-router-wireless", "mdi-router-network",
-            "mdi-lan", "mdi-lan-connect", "mdi-lan-disconnect", "mdi-lan-pending", "mdi-lan-check",
-            "mdi-wifi", "mdi-wifi-strength-4", "mdi-wifi-strength-3", "mdi-wifi-strength-2", "mdi-wifi-strength-1",
-            "mdi-bluetooth", "mdi-bluetooth-connect", "mdi-bluetooth-settings", "mdi-nfc", "mdi-nfc-tap",
-            "mdi-identifier", "mdi-camera-control", "mdi-cctv", "mdi-video-input-hdmi",
-            "mdi-video-input-component", "mdi-video-input-svideo", "mdi-remote", "mdi-remote-tv",
-            "mdi-cog-sync", "mdi-sync-alert", "mdi-wrench-check",
-            "mdi-shield-check", "mdi-shield-alert-outline", "mdi-alarm-panel", "mdi-alarm-panel-outline",
-            "mdi-access-point-check", "mdi-server-security", "mdi-server-off", "mdi-database-alert",
-            "mdi-database-check", "mdi-factory", "mdi-warehouse", "mdi-oil", "mdi-fuel-cell",
-            "mdi-molecule-co", "mdi-molecule-co2", "mdi-gas-burner", "mdi-induction",
-            "mdi-microwave-off", "mdi-fridge-alert", "mdi-fridge-industrial", "mdi-fridge-industrial-outline",
-            "mdi-washing-machine-alert", "mdi-washing-machine-off", "mdi-tumble-dryer-alert",
-            "mdi-tumble-dryer-off", "mdi-dishwasher-alert", "mdi-dishwasher-off", "mdi-coffee-maker-check",
-            "mdi-kettle-alert", "mdi-kettle-off", "mdi-toaster-off",
-            "mdi-fan-chevron-up", "mdi-fan-chevron-down", "mdi-fan-minus", "mdi-fan-plus",
-            "mdi-air-purifier-off",
-            "mdi-fire-circle", "mdi-fire-hydrant", "mdi-fire-off", "mdi-water-boiler-off",
-            "mdi-water-check", "mdi-water-sync", "mdi-water-minus", "mdi-water-plus",
-            "mdi-water-percent-alert", "mdi-smoke-detector-off", "mdi-motion-sensor-off",
-            "mdi-light-switch-off", "mdi-lightbulb-alert", "mdi-lightbulb-multiple",
-            "mdi-lightbulb-variant", "mdi-lightbulb-variant-outline", "mdi-spotlight-beam",
-            "mdi-led-on", "mdi-led-off", "mdi-led-variant-on", "mdi-led-variant-off",
-            "mdi-battery-check-outline", "mdi-battery-sync", "mdi-battery-sync-outline",
-            "mdi-battery-lock", "mdi-battery-minus", "mdi-battery-plus", "mdi-battery-remove",
-            "mdi-solar-power-variant-outline", "mdi-solar-panel-large",
-            "mdi-wind-turbine-check", "mdi-hydro-power", "mdi-transmission-tower-export",
-            "mdi-transmission-tower-import", "mdi-transmission-tower-off", "mdi-gate-open",
-            "mdi-window-open",
-            "mdi-window-shutter-alert", "mdi-window-shutter-open", "mdi-lock-open-alert",
-            "mdi-lock-check-outline", "mdi-shield-key", "mdi-shield-key-outline",
-            "mdi-shield-moon", "mdi-shield-moon-outline", "mdi-shield-sun", "mdi-shield-sun-outline",
-            "mdi-cctv-off", "mdi-doorbell-video", "mdi-ip-network-outline", "mdi-router-network",
-            "mdi-router-wireless-settings", "mdi-wifi-strength-4-alert", "mdi-wifi-sync",
-            "mdi-nfc-search-variant",
-            "mdi-zigbee", "mdi-z-wave", "mdi-home-assistant", "mdi-home-automation",
-            "mdi-lightbulb-on", "mdi-lightbulb-outline", "mdi-lightbulb-group", "mdi-lamp", "mdi-led-on",
-            "mdi-power", "mdi-power-plug", "mdi-power-socket-eu", "mdi-battery-charging", "mdi-battery-check",
-            "mdi-solar-panel", "mdi-solar-panel-large", "mdi-solar-power", "mdi-wind-turbine",
-            "mdi-water-boiler", "mdi-radiator", "mdi-air-conditioner", "mdi-air-filter", "mdi-fan",
-            "mdi-valve", "mdi-valve-closed", "mdi-sprinkler", "mdi-pump", "mdi-water-pump",
-            "mdi-leak", "mdi-pipe", "mdi-pipe-leak", "mdi-faucet", "mdi-faucet-variant",
-            "mdi-thermometer-chevron-up", "mdi-thermometer-chevron-down", "mdi-thermometer-alert",
-            "mdi-speedometer-slow", "mdi-speedometer-medium", "mdi-speedometer", "mdi-timer",
-            "mdi-counter", "mdi-numeric", "mdi-percent", "mdi-pulse", "mdi-sine-wave",
-            "mdi-chart-line", "mdi-chart-bar", "mdi-chart-areaspline", "mdi-signal", "mdi-signal-variant",
-            "mdi-antenna", "mdi-satellite-variant", "mdi-earth", "mdi-globe-model", "mdi-map-marker-radius",
-            "mdi-crosshairs-gps", "mdi-compass-outline", "mdi-ruler", "mdi-pencil-ruler", "mdi-brush",
-            "mdi-format-paint", "mdi-format-color-fill", "mdi-opacity", "mdi-eyedropper",
-            "mdi-vector-point", "mdi-vector-line", "mdi-vector-circle", "mdi-vector-square",
-            "mdi-layers", "mdi-layers-outline", "mdi-layers-plus", "mdi-layers-minus",
-            "mdi-cube", "mdi-cube-outline", "mdi-box", "mdi-package-variant",
-            "mdi-package-variant-closed", "mdi-truck-delivery", "mdi-forklift", "mdi-excavator", "mdi-truck-cargo-container", "mdi-robot",
-            "mdi-robot-mower", "mdi-robot-vacuum", "mdi-robot-industrial", "mdi-home-automation",
-            "mdi-thermometer", "mdi-water-percent", "mdi-gauge", "mdi-speedometer",
-            "mdi-printer-3d", "mdi-printer-search", "mdi-printer-settings", "mdi-router-wireless", "mdi-router-network",
-            "mdi-lan", "mdi-lan-connect", "mdi-lan-disconnect", "mdi-lan-pending", "mdi-lan-check",
-            "mdi-wifi", "mdi-wifi-strength-4", "mdi-wifi-strength-3", "mdi-wifi-strength-2", "mdi-wifi-strength-1",
-            "mdi-bluetooth", "mdi-bluetooth-connect", "mdi-bluetooth-settings", "mdi-nfc", "mdi-nfc-tap",
-            "mdi-identifier", "mdi-camera-control", "mdi-cctv", "mdi-video-input-hdmi",
-            "mdi-video-input-component", "mdi-video-input-svideo", "mdi-remote", "mdi-remote-tv",
-            "mdi-cog-sync", "mdi-sync-alert", "mdi-wrench-check",
-            "mdi-shield-check", "mdi-shield-alert-outline", "mdi-alarm-panel", "mdi-alarm-panel-outline",
-            "mdi-access-point-check", "mdi-server-security", "mdi-server-off", "mdi-database-alert",
-            "mdi-database-check", "mdi-factory", "mdi-warehouse", "mdi-oil", "mdi-fuel-cell",
-            "mdi-molecule-co", "mdi-molecule-co2", "mdi-gas-burner", "mdi-induction",
-            "mdi-microwave-off", "mdi-fridge-alert", "mdi-fridge-industrial", "mdi-fridge-industrial-outline",
-            "mdi-washing-machine-alert", "mdi-washing-machine-off", "mdi-tumble-dryer-alert",
-            "mdi-tumble-dryer-off", "mdi-dishwasher-alert", "mdi-dishwasher-off", "mdi-coffee-maker-check",
-            "mdi-kettle-alert", "mdi-kettle-off", "mdi-toaster-off",
-            "mdi-fan-chevron-up", "mdi-fan-chevron-down", "mdi-fan-minus", "mdi-fan-plus",
-            "mdi-air-purifier-off",
-            "mdi-fire-circle", "mdi-fire-hydrant", "mdi-fire-off", "mdi-water-boiler-off",
-            "mdi-water-check", "mdi-water-sync", "mdi-water-minus", "mdi-water-plus",
-            "mdi-water-percent-alert", "mdi-smoke-detector-off", "mdi-motion-sensor-off",
-            "mdi-light-switch-off", "mdi-lightbulb-alert", "mdi-lightbulb-multiple",
-            "mdi-lightbulb-variant", "mdi-lightbulb-variant-outline", "mdi-spotlight-beam",
-            "mdi-led-on", "mdi-led-off", "mdi-led-variant-on", "mdi-led-variant-off",
-            "mdi-battery-check-outline", "mdi-battery-sync", "mdi-battery-sync-outline",
-            "mdi-battery-lock", "mdi-battery-minus", "mdi-battery-plus", "mdi-battery-remove",
-            "mdi-solar-power-variant-outline", "mdi-solar-panel-large",
-            "mdi-wind-turbine-check", "mdi-hydro-power", "mdi-transmission-tower-export",
-            "mdi-transmission-tower-import", "mdi-transmission-tower-off", "mdi-gate-open",
-            "mdi-window-open",
-            "mdi-window-shutter-alert", "mdi-window-shutter-open", "mdi-lock-open-alert",
-            "mdi-lock-check-outline", "mdi-shield-key", "mdi-shield-key-outline",
-            "mdi-shield-moon", "mdi-shield-moon-outline", "mdi-shield-sun", "mdi-shield-sun-outline",
-            "mdi-cctv-off", "mdi-doorbell-video", "mdi-ip-network-outline", "mdi-router-network",
-            "mdi-router-wireless-settings", "mdi-wifi-strength-4-alert", "mdi-wifi-sync",
-            "mdi-nfc-search-variant",
-            "mdi-zigbee", "mdi-z-wave", "mdi-home-assistant", "mdi-home-automation",
-            "mdi-lightbulb-on", "mdi-lightbulb-outline", "mdi-lightbulb-group", "mdi-lamp", "mdi-led-on",
-            "mdi-power", "mdi-power-plug", "mdi-power-socket-eu", "mdi-battery-charging", "mdi-battery-check",
-            "mdi-solar-panel", "mdi-solar-panel-large", "mdi-solar-power", "mdi-wind-turbine",
-            "mdi-water-boiler", "mdi-radiator", "mdi-air-conditioner", "mdi-air-filter", "mdi-fan",
-            "mdi-valve", "mdi-valve-closed", "mdi-sprinkler", "mdi-pump", "mdi-water-pump",
-            "mdi-leak", "mdi-pipe", "mdi-pipe-leak", "mdi-faucet", "mdi-faucet-variant",
-            "mdi-thermometer-chevron-up", "mdi-thermometer-chevron-down", "mdi-thermometer-alert",
-            "mdi-speedometer-slow", "mdi-speedometer-medium", "mdi-speedometer", "mdi-timer",
-            "mdi-counter", "mdi-numeric", "mdi-percent", "mdi-pulse", "mdi-sine-wave",
-            "mdi-chart-line", "mdi-chart-bar", "mdi-chart-areaspline", "mdi-signal", "mdi-signal-variant",
-            "mdi-antenna", "mdi-satellite-variant", "mdi-earth", "mdi-globe-model", "mdi-map-marker-radius",
-            "mdi-crosshairs-gps", "mdi-compass-outline", "mdi-ruler", "mdi-pencil-ruler", "mdi-brush",
-            "mdi-format-paint", "mdi-format-color-fill", "mdi-opacity", "mdi-eyedropper",
-            "mdi-vector-point", "mdi-vector-line", "mdi-vector-circle", "mdi-vector-square",
-            "mdi-layers", "mdi-layers-outline", "mdi-layers-plus", "mdi-layers-minus",
-            "mdi-cube", "mdi-cube-outline", "mdi-box", "mdi-package-variant",
-            "mdi-package-variant-closed", "mdi-truck-delivery", "mdi-forklift", "mdi-excavator", "mdi-truck-cargo-container", "mdi-robot",
-            "mdi-robot-mower", "mdi-robot-vacuum", "mdi-robot-industrial", "mdi-home-automation",
-            "mdi-thermometer", "mdi-water-percent", "mdi-gauge", "mdi-speedometer",
-            "mdi-printer-3d", "mdi-printer-search", "mdi-printer-settings", "mdi-router-wireless", "mdi-router-network",
-            "mdi-lan", "mdi-lan-connect", "mdi-lan-disconnect", "mdi-lan-pending", "mdi-lan-check",
-            "mdi-wifi", "mdi-wifi-strength-4", "mdi-wifi-strength-3", "mdi-wifi-strength-2", "mdi-wifi-strength-1",
-            "mdi-bluetooth", "mdi-bluetooth-connect", "mdi-bluetooth-settings", "mdi-nfc", "mdi-nfc-tap",
-            "mdi-identifier", "mdi-camera-control", "mdi-cctv", "mdi-video-input-hdmi",
-            "mdi-video-input-component", "mdi-video-input-svideo", "mdi-remote", "mdi-remote-tv",
-            "mdi-cog-sync", "mdi-sync-alert", "mdi-wrench-check",
-            "mdi-shield-check", "mdi-shield-alert-outline", "mdi-alarm-panel", "mdi-alarm-panel-outline",
-            "mdi-access-point-check", "mdi-server-security", "mdi-server-off", "mdi-database-alert",
-            "mdi-database-check", "mdi-factory", "mdi-warehouse", "mdi-oil", "mdi-fuel-cell",
-            "mdi-molecule-co", "mdi-molecule-co2", "mdi-gas-burner", "mdi-induction",
-            "mdi-microwave-off", "mdi-fridge-alert", "mdi-fridge-industrial", "mdi-fridge-industrial-outline",
-            "mdi-washing-machine-alert", "mdi-washing-machine-off", "mdi-tumble-dryer-alert",
-            "mdi-tumble-dryer-off", "mdi-dishwasher-alert", "mdi-dishwasher-off", "mdi-coffee-maker-check",
-            "mdi-kettle-alert", "mdi-kettle-off", "mdi-toaster-off",
-            "mdi-fan-chevron-up", "mdi-fan-chevron-down", "mdi-fan-minus", "mdi-fan-plus",
-            "mdi-air-purifier-off",
-            "mdi-fire-circle", "mdi-fire-hydrant", "mdi-fire-off", "mdi-water-boiler-off",
-            "mdi-water-check", "mdi-water-sync", "mdi-water-minus", "mdi-water-plus",
-            "mdi-water-percent-alert", "mdi-smoke-detector-off", "mdi-motion-sensor-off",
-            "mdi-light-switch-off", "mdi-lightbulb-alert", "mdi-lightbulb-multiple",
-            "mdi-lightbulb-variant", "mdi-lightbulb-variant-outline", "mdi-spotlight-beam",
-            "mdi-led-on", "mdi-led-off", "mdi-led-variant-on", "mdi-led-variant-off",
-            "mdi-battery-check-outline", "mdi-battery-sync", "mdi-battery-sync-outline",
-            "mdi-battery-lock", "mdi-battery-minus", "mdi-battery-plus", "mdi-battery-remove",
-            "mdi-solar-power-variant-outline", "mdi-solar-panel-large",
-            "mdi-wind-turbine-check", "mdi-hydro-power", "mdi-transmission-tower-export",
-            "mdi-transmission-tower-import", "mdi-transmission-tower-off", "mdi-gate-open",
-            "mdi-window-open",
-            "mdi-window-shutter-alert", "mdi-window-shutter-open", "mdi-lock-open-alert",
-            "mdi-lock-check-outline", "mdi-shield-key", "mdi-shield-key-outline",
-            "mdi-shield-moon", "mdi-shield-moon-outline", "mdi-shield-sun", "mdi-shield-sun-outline",
-            "mdi-cctv-off", "mdi-doorbell-video", "mdi-ip-network-outline", "mdi-router-network",
-            "mdi-router-wireless-settings", "mdi-wifi-strength-4-alert", "mdi-wifi-sync",
-            "mdi-nfc-search-variant",
-            "mdi-zigbee", "mdi-z-wave", "mdi-home-assistant", "mdi-home-automation",
-            "mdi-lightbulb-on", "mdi-lightbulb-outline", "mdi-lightbulb-group", "mdi-lamp", "mdi-led-on",
-            "mdi-power", "mdi-power-plug", "mdi-power-socket-eu", "mdi-battery-charging", "mdi-battery-check",
-            "mdi-solar-panel", "mdi-solar-panel-large", "mdi-solar-power", "mdi-wind-turbine",
-            "mdi-water-boiler", "mdi-radiator", "mdi-air-conditioner", "mdi-air-filter", "mdi-fan",
-            "mdi-valve", "mdi-valve-closed", "mdi-sprinkler", "mdi-pump", "mdi-water-pump",
-            "mdi-leak", "mdi-pipe", "mdi-pipe-leak", "mdi-faucet", "mdi-faucet-variant",
-            "mdi-thermometer-chevron-up", "mdi-thermometer-chevron-down", "mdi-thermometer-alert",
-            "mdi-speedometer-slow", "mdi-speedometer-medium", "mdi-speedometer", "mdi-timer",
-            "mdi-counter", "mdi-numeric", "mdi-percent", "mdi-pulse", "mdi-sine-wave",
-            "mdi-chart-line", "mdi-chart-bar", "mdi-chart-areaspline", "mdi-signal", "mdi-signal-variant",
-            "mdi-antenna", "mdi-satellite-variant", "mdi-earth", "mdi-globe-model", "mdi-map-marker-radius",
-            "mdi-crosshairs-gps", "mdi-compass-outline", "mdi-ruler", "mdi-pencil-ruler", "mdi-brush",
-            "mdi-format-paint", "mdi-format-color-fill", "mdi-opacity", "mdi-eyedropper",
-            "mdi-vector-point", "mdi-vector-line", "mdi-vector-circle", "mdi-vector-square",
-            "mdi-layers", "mdi-layers-outline", "mdi-layers-plus", "mdi-layers-minus",
-            "mdi-cube", "mdi-cube-outline", "mdi-box", "mdi-package-variant",
-            "mdi-package-variant-closed", "mdi-truck-delivery", "mdi-forklift", "mdi-excavator", "mdi-truck-cargo-container", "mdi-robot",
-            "mdi-robot-mower", "mdi-robot-vacuum", "mdi-robot-industrial", "mdi-home-automation",
-            "mdi-thermometer", "mdi-water-percent", "mdi-gauge", "mdi-speedometer",
-            "mdi-printer-3d", "mdi-printer-search", "mdi-printer-settings", "mdi-router-wireless", "mdi-router-network",
-            "mdi-lan", "mdi-lan-connect", "mdi-lan-disconnect", "mdi-lan-pending", "mdi-lan-check",
-            "mdi-wifi", "mdi-wifi-strength-4", "mdi-wifi-strength-3", "mdi-wifi-strength-2", "mdi-wifi-strength-1",
-            "mdi-bluetooth", "mdi-bluetooth-connect", "mdi-bluetooth-settings", "mdi-nfc", "mdi-nfc-tap",
-            "mdi-identifier", "mdi-camera-control", "mdi-cctv", "mdi-video-input-hdmi",
-            "mdi-video-input-component", "mdi-video-input-svideo", "mdi-remote", "mdi-remote-tv",
-            "mdi-cog-sync", "mdi-sync-alert", "mdi-wrench-check",
-            "mdi-shield-check", "mdi-shield-alert-outline", "mdi-alarm-panel", "mdi-alarm-panel-outline",
-            "mdi-access-point-check", "mdi-server-security", "mdi-server-off", "mdi-database-alert",
-            "mdi-database-check", "mdi-factory", "mdi-warehouse", "mdi-oil", "mdi-fuel-cell",
-            "mdi-molecule-co", "mdi-molecule-co2", "mdi-gas-burner", "mdi-induction",
-            "mdi-microwave-off", "mdi-fridge-alert", "mdi-fridge-industrial", "mdi-fridge-industrial-outline",
-            "mdi-washing-machine-alert", "mdi-washing-machine-off", "mdi-tumble-dryer-alert",
-            "mdi-tumble-dryer-off", "mdi-dishwasher-alert", "mdi-dishwasher-off", "mdi-coffee-maker-check",
-            "mdi-kettle-alert", "mdi-kettle-off", "mdi-toaster-off",
-            "mdi-fan-chevron-up", "mdi-fan-chevron-down", "mdi-fan-minus", "mdi-fan-plus",
-            "mdi-air-purifier-off",
-            "mdi-fire-circle", "mdi-fire-hydrant", "mdi-fire-off", "mdi-water-boiler-off",
-            "mdi-water-check", "mdi-water-sync", "mdi-water-minus", "mdi-water-plus",
-            "mdi-water-percent-alert", "mdi-smoke-detector-off", "mdi-motion-sensor-off",
-            "mdi-light-switch-off", "mdi-lightbulb-alert", "mdi-lightbulb-multiple",
-            "mdi-lightbulb-variant", "mdi-lightbulb-variant-outline", "mdi-spotlight-beam",
-            "mdi-led-on", "mdi-led-off", "mdi-led-variant-on", "mdi-led-variant-off",
-            "mdi-battery-check-outline", "mdi-battery-sync", "mdi-battery-sync-outline",
-            "mdi-battery-lock", "mdi-battery-minus", "mdi-battery-plus", "mdi-battery-remove",
-            "mdi-solar-power-variant-outline", "mdi-solar-panel-large",
-            "mdi-wind-turbine-check", "mdi-hydro-power", "mdi-transmission-tower-export",
-            "mdi-transmission-tower-import", "mdi-transmission-tower-off", "mdi-gate-open",
-            "mdi-window-open",
-            "mdi-window-shutter-alert", "mdi-window-shutter-open", "mdi-lock-open-alert",
-            "mdi-lock-check-outline", "mdi-shield-key", "mdi-shield-key-outline",
-            "mdi-shield-moon", "mdi-shield-moon-outline", "mdi-shield-sun", "mdi-shield-sun-outline",
-            "mdi-cctv-off", "mdi-doorbell-video", "mdi-ip-network-outline", "mdi-router-network",
-            "mdi-router-wireless-settings", "mdi-wifi-strength-4-alert", "mdi-wifi-sync",
-            "mdi-nfc-search-variant",
-            "mdi-zigbee", "mdi-z-wave", "mdi-home-assistant", "mdi-home-automation",
-            "mdi-lightbulb-on", "mdi-lightbulb-outline", "mdi-lightbulb-group", "mdi-lamp", "mdi-led-on",
-            "mdi-power", "mdi-power-plug", "mdi-power-socket-eu", "mdi-battery-charging", "mdi-battery-check",
-            "mdi-solar-panel", "mdi-solar-panel-large", "mdi-solar-power", "mdi-wind-turbine",
-            "mdi-water-boiler", "mdi-radiator", "mdi-air-conditioner", "mdi-air-filter", "mdi-fan",
-            "mdi-valve", "mdi-valve-closed", "mdi-sprinkler", "mdi-pump", "mdi-water-pump",
-            "mdi-leak", "mdi-pipe", "mdi-pipe-leak", "mdi-faucet", "mdi-faucet-variant",
-            "mdi-thermometer-chevron-up", "mdi-thermometer-chevron-down", "mdi-thermometer-alert",
-            "mdi-speedometer-slow", "mdi-speedometer-medium", "mdi-speedometer", "mdi-timer",
-            "mdi-counter", "mdi-numeric", "mdi-percent", "mdi-pulse", "mdi-sine-wave",
-            "mdi-chart-line", "mdi-chart-bar", "mdi-chart-areaspline", "mdi-signal", "mdi-signal-variant",
-            "mdi-antenna", "mdi-satellite-variant", "mdi-earth", "mdi-globe-model", "mdi-map-marker-radius",
-            "mdi-crosshairs-gps", "mdi-compass-outline", "mdi-ruler", "mdi-pencil-ruler", "mdi-brush",
-            "mdi-format-paint", "mdi-format-color-fill", "mdi-opacity", "mdi-eyedropper",
-            "mdi-vector-point", "mdi-vector-line", "mdi-vector-circle", "mdi-vector-square",
-            "mdi-layers", "mdi-layers-outline", "mdi-layers-plus", "mdi-layers-minus",
-            "mdi-cube", "mdi-cube-outline", "mdi-box", "mdi-package-variant",
-            "mdi-package-variant-closed", "mdi-truck-delivery", "mdi-forklift", "mdi-excavator", "mdi-truck-cargo-container", "mdi-robot",
-            "mdi-robot-mower", "mdi-robot-vacuum", "mdi-robot-industrial", "mdi-home-automation",
-            "mdi-thermometer", "mdi-water-percent", "mdi-gauge", "mdi-speedometer",
-            "mdi-printer-3d", "mdi-printer-search", "mdi-printer-settings", "mdi-router-wireless", "mdi-router-network",
-            "mdi-lan", "mdi-lan-connect", "mdi-lan-disconnect", "mdi-lan-pending", "mdi-lan-check",
-            "mdi-wifi", "mdi-wifi-strength-4", "mdi-wifi-strength-3", "mdi-wifi-strength-2", "mdi-wifi-strength-1",
-            "mdi-bluetooth", "mdi-bluetooth-connect", "mdi-bluetooth-settings", "mdi-nfc", "mdi-nfc-tap",
-            "mdi-identifier", "mdi-camera-control", "mdi-cctv", "mdi-video-input-hdmi",
-            "mdi-video-input-component", "mdi-video-input-svideo", "mdi-remote", "mdi-remote-tv",
-            "mdi-cog-sync", "mdi-sync-alert", "mdi-wrench-check",
-            "mdi-shield-check", "mdi-shield-alert-outline", "mdi-alarm-panel", "mdi-alarm-panel-outline",
-            "mdi-access-point-check", "mdi-server-security", "mdi-server-off", "mdi-database-alert",
-            "mdi-database-check", "mdi-factory", "mdi-warehouse", "mdi-oil", "mdi-fuel-cell",
-            "mdi-molecule-co", "mdi-molecule-co2", "mdi-gas-burner", "mdi-induction",
-            "mdi-microwave-off", "mdi-fridge-alert", "mdi-fridge-industrial", "mdi-fridge-industrial-outline",
-            "mdi-washing-machine-alert", "mdi-washing-machine-off", "mdi-tumble-dryer-alert",
-            "mdi-tumble-dryer-off", "mdi-dishwasher-alert", "mdi-dishwasher-off", "mdi-coffee-maker-check",
-            "mdi-kettle-alert", "mdi-kettle-off", "mdi-toaster-off",
-            "mdi-fan-chevron-up", "mdi-fan-chevron-down", "mdi-fan-minus", "mdi-fan-plus",
-            "mdi-air-purifier-off"
-        ];
-
-        // === SMART ICON LOGIC ===
-        const SMART_ICONS_MAP = {
-            'light': 'mdi-lightbulb', 'lampa': 'mdi-lightbulb', 'kinkiet': 'mdi-wall-sconce',
-            'switch': 'mdi-power', 'włącznik': 'mdi-power', 'przełącznik': 'mdi-power',
-            'fan': 'mdi-fan', 'wiatrak': 'mdi-fan', 'wentylator': 'mdi-fan',
-            'lock': 'mdi-lock', 'zamek': 'mdi-lock',
-            'door': 'mdi-door', 'drzwi': 'mdi-door',
-            'window': 'mdi-window-closed', 'okno': 'mdi-window-closed',
-            'garage': 'mdi-garage', 'garaż': 'mdi-garage',
-            'gate': 'mdi-gate', 'brama': 'mdi-gate',
-            'temp': 'mdi-thermometer', 'heat': 'mdi-radiator', 'grzejnik': 'mdi-radiator',
-            'salon': 'mdi-sofa', 'living': 'mdi-sofa',
-            'kuchnia': 'mdi-silverware-fork-knife', 'kitchen': 'mdi-silverware-fork-knife',
-            'łazienka': 'mdi-shower', 'bathroom': 'mdi-shower', 'bath': 'mdi-bathtub',
-            "mdi-thermometer", "mdi-thermometer-lines", "mdi-thermometer-high", "mdi-thermometer-low", "mdi-thermometer-alert",
-            "mdi-temperature-celsius", "mdi-temperature-fahrenheit", "mdi-temperature-kelvin",
-            "mdi-thermostat", "mdi-thermostat-box", "mdi-home-thermometer", "mdi-home-thermometer-outline",
-            "mdi-air-conditioner", "mdi-air-filter", "mdi-air-purifier", "mdi-air-humidifier", "mdi-air-humidifier-off",
-            "mdi-fan", "mdi-fan-off", "mdi-fan-speed-1", "mdi-fan-speed-2", "mdi-fan-speed-3",
-            "mdi-hvac", "mdi-hvac-off", "mdi-heat-wave", "mdi-coolant-temperature",
-            "mdi-radiator", "mdi-radiator-off", "mdi-radiator-disabled", "mdi-heating-coil",
-            "mdi-fire", "mdi-fireplace", "mdi-fireplace-off", "mdi-campfire",
-            "mdi-snowflake", "mdi-snowflake-variant", "mdi-snowflake-off", "mdi-snowflake-alert", "mdi-snowflake-thermometer",
-            "mdi-water-percent", "mdi-water-thermometer", "mdi-water-thermometer-outline",
-            "mdi-sun-thermometer", "mdi-sun-thermometer-outline",
-
-            // === POGODA ===
-            "mdi-weather-sunny", "mdi-weather-night", "mdi-weather-partly-cloudy", "mdi-weather-cloudy",
-            "mdi-weather-rainy", "mdi-weather-pouring", "mdi-weather-lightning", "mdi-weather-lightning-rainy",
-            "mdi-weather-snowy", "mdi-weather-snowy-heavy", "mdi-weather-snowy-rainy",
-            "mdi-weather-fog", "mdi-weather-hazy", "mdi-weather-windy", "mdi-weather-windy-variant",
-            "mdi-weather-hurricane", "mdi-weather-tornado",
-            "mdi-cloud", "mdi-cloud-outline", "mdi-clouds",
-            "mdi-sun-wireless", "mdi-sun-wireless-outline", "mdi-moon-waning-crescent", "mdi-moon-full",
-            "mdi-umbrella", "mdi-umbrella-outline", "mdi-umbrella-closed", "mdi-umbrella-closed-outline",
-
-            // === WODA / PODLEWANIE ===
-            "mdi-water", "mdi-water-outline", "mdi-water-off", "mdi-water-off-outline",
-            "mdi-water-pump", "mdi-water-pump-off", "mdi-water-well", "mdi-water-well-outline",
-            "mdi-watering-can", "mdi-watering-can-outline", "mdi-sprinkler", "mdi-sprinkler-variant", "mdi-sprinkler-fire",
-            "mdi-fountain", "mdi-pool", "mdi-hot-tub", "mdi-waves",
-            "mdi-pipe", "mdi-pipe-leak", "mdi-pipe-disconnected", "mdi-pipe-valve",
-            "mdi-valve", "mdi-valve-open", "mdi-valve-closed",
-            "mdi-faucet", "mdi-faucet-variant", "mdi-water-boiler", "mdi-water-boiler-alert",
-
-            // === MULTIMEDIA / RTV ===
-            "mdi-television", "mdi-television-off", "mdi-television-classic", "mdi-television-classic-off",
-            "mdi-monitor", "mdi-monitor-speaker", "mdi-monitor-speaker-off", "mdi-projector", "mdi-projector-screen",
-            "mdi-speaker", "mdi-speaker-off", "mdi-speaker-wireless", "mdi-speaker-multiple",
-            "mdi-volume-high", "mdi-volume-medium", "mdi-volume-low", "mdi-volume-off", "mdi-volume-mute",
-            "mdi-play", "mdi-pause", "mdi-stop", "mdi-skip-next", "mdi-skip-previous", "mdi-fast-forward", "mdi-rewind",
-            "mdi-play-pause", "mdi-play-circle", "mdi-pause-circle", "mdi-stop-circle",
-            "mdi-music", "mdi-music-note", "mdi-music-off", "mdi-playlist-music", "mdi-playlist-play",
-            "mdi-radio", "mdi-radio-tower", "mdi-microphone", "mdi-microphone-off",
-            "mdi-headphones", "mdi-headphones-off", "mdi-headphones-bluetooth", "mdi-earbuds", "mdi-earbuds-outline",
-            "mdi-cast", "mdi-cast-connected", "mdi-cast-off",
-            "mdi-gamepad", "mdi-gamepad-variant", "mdi-controller-classic",
-
-            // === OSOBY / OBECNOŚĆ ===
-            "mdi-account", "mdi-account-outline", "mdi-account-circle", "mdi-account-circle-outline",
-            "mdi-account-multiple", "mdi-account-multiple-outline", "mdi-account-group", "mdi-account-group-outline",
-            "mdi-account-check", "mdi-account-check-outline",
-
-            // === NEW ICONS (USER REQUEST) ===
-            // === HARDWARE / IT ===
-            "mdi-server", "mdi-server-network", "mdi-nas", "mdi-router-wireless", "mdi-router-network", "mdi-access-point",
-            "mdi-laptop", "mdi-laptop-off", "mdi-tablet",
-            "mdi-cellphone", "mdi-cellphone-charging", "mdi-deskphone",
-            "mdi-printer", "mdi-printer-3d", "mdi-scanner",
-            "mdi-usb", "mdi-usb-flash-drive", "mdi-harddisk", "mdi-cpu-64-bit", "mdi-memory",
-            "mdi-network", "mdi-ethernet-cable", "mdi-lan",
-
-            // === TRANSPORT / AUTO ===
-            "mdi-car", "mdi-car-side", "mdi-car-electric", "mdi-car-battery", "mdi-car-connected",
-            "mdi-bus", "mdi-truck", "mdi-train", "mdi-bike", "mdi-motorbike", "mdi-moped",
-            "mdi-scooter", "mdi-scooter-electric", "mdi-airplane",
-            "mdi-gas-station", "mdi-ev-station", "mdi-parking",
-
-            // === OFFICE / WORK ===
-            "mdi-briefcase", "mdi-briefcase-outline", "mdi-briefcase-check",
-            "mdi-clipboard", "mdi-clipboard-check", "mdi-clipboard-text",
-            "mdi-file", "mdi-file-document", "mdi-file-excel", "mdi-file-pdf-box",
-            "mdi-calendar", "mdi-calendar-check", "mdi-calendar-clock", "mdi-calendar-blank",
-            "mdi-email", "mdi-email-open", "mdi-email-outline", "mdi-send",
-
-            // === GARDEN / NATURE ===
-            "mdi-flower", "mdi-flower-tulip", "mdi-flower-outline", "mdi-tree", "mdi-tree-outline",
-            "mdi-leaf", "mdi-grass", "mdi-sprout", "mdi-pine-tree",
-            "mdi-shovel", "mdi-rake", "mdi-axe", "mdi-hammer", "mdi-wrench", "mdi-screwdriver",
-            "mdi-grill", "mdi-grill-outline", "mdi-patio-heater",
-            "mdi-fence", "mdi-fence-electric", "mdi-greenhouse",
-            "mdi-mailbox", "mdi-mailbox-open", "mdi-mailbox-outline", "mdi-mailbox-open-outline",
-            "mdi-trash-can", "mdi-trash-can-outline", "mdi-recycle", "mdi-recycle-variant",
-
-            // === CZAS / ZEGAR ===
-            "mdi-clock", "mdi-clock-outline", "mdi-clock-digital", "mdi-clock-alert", "mdi-clock-alert-outline",
-            "mdi-timer", "mdi-timer-outline", "mdi-timer-sand", "mdi-timer-sand-empty",
-            "mdi-alarm", "mdi-alarm-check", "mdi-alarm-off", "mdi-alarm-plus",
-            "mdi-calendar", "mdi-calendar-today", "mdi-calendar-clock", "mdi-calendar-check", "mdi-calendar-alert",
-            "mdi-calendar-month", "mdi-calendar-week", "mdi-calendar-blank",
-            "mdi-update", "mdi-sync", "mdi-refresh", "mdi-reload", "mdi-autorenew",
-
-            // === NAWIGACJA / STRZAŁKI ===
-            "mdi-arrow-up", "mdi-arrow-down", "mdi-arrow-left", "mdi-arrow-right",
-            "mdi-arrow-up-bold", "mdi-arrow-down-bold", "mdi-arrow-left-bold", "mdi-arrow-right-bold",
-            "mdi-arrow-up-circle", "mdi-arrow-down-circle", "mdi-arrow-left-circle", "mdi-arrow-right-circle",
-            "mdi-arrow-expand", "mdi-arrow-collapse", "mdi-arrow-expand-all", "mdi-arrow-collapse-all",
-            "mdi-chevron-up", "mdi-chevron-down", "mdi-chevron-left", "mdi-chevron-right",
-            "mdi-chevron-double-up", "mdi-chevron-double-down", "mdi-chevron-double-left", "mdi-chevron-double-right",
-            "mdi-menu", "mdi-menu-open", "mdi-menu-up", "mdi-menu-down", "mdi-menu-left", "mdi-menu-right",
-            "mdi-dots-horizontal", "mdi-dots-vertical", "mdi-plus", "mdi-minus", "mdi-close",
-            "mdi-check", "mdi-check-circle", "mdi-check-circle-outline", "mdi-checkbox-marked", "mdi-checkbox-blank-outline",
-
-            // === INFORMACJE / STATUSY ===
-            "mdi-information", "mdi-information-outline", "mdi-help", "mdi-help-circle", "mdi-help-circle-outline",
-            "mdi-alert", "mdi-alert-outline", "mdi-alert-circle", "mdi-alert-circle-outline",
-            "mdi-alert-octagon", "mdi-alert-octagram", "mdi-alert-decagram",
-            "mdi-exclamation", "mdi-exclamation-thick",
-            "mdi-thumb-up", "mdi-thumb-down", "mdi-thumb-up-outline", "mdi-thumb-down-outline",
-            "mdi-star", "mdi-star-outline", "mdi-star-half", "mdi-star-off",
-            "mdi-heart", "mdi-heart-outline", "mdi-heart-off", "mdi-heart-pulse",
-            "mdi-emoticon-happy", "mdi-emoticon-sad", "mdi-emoticon-neutral", "mdi-emoticon-cool",
-
-            // === KSZTAŁTY / SYMBOLE ===
-            "mdi-circle", "mdi-circle-outline", "mdi-circle-double", "mdi-circle-half-full",
-            "mdi-square", "mdi-square-outline", "mdi-square-rounded", "mdi-square-rounded-outline",
-            "mdi-triangle", "mdi-triangle-outline", "mdi-hexagon", "mdi-hexagon-outline",
-            "mdi-rhombus", "mdi-rhombus-outline", "mdi-octagon", "mdi-octagon-outline",
-            "mdi-shape", "mdi-shape-outline", "mdi-shape-plus",
-            "mdi-ray-vertex", "mdi-ray-start", "mdi-ray-end",
-            "mdi-vector-point", "mdi-vector-line", "mdi-vector-circle",
-            "mdi-palette", "mdi-palette-swatch", "mdi-movie", "mdi-movie-open",
-
-            // === MEDICAL / HEALTH (NEW) ===
-            "mdi-medical-bag", "mdi-doctor", "mdi-ambulance", "mdi-hospital", "mdi-hospital-box",
-            "mdi-pill", "mdi-pill-off", "mdi-needle", "mdi-bandage", "mdi-stethoscope",
-            "mdi-heart-pulse", "mdi-heart-broken", "mdi-blood-bag", "mdi-virus", "mdi-bacteria",
-            "mdi-tooth", "mdi-tooth-outline", "mdi-glasses", "mdi-sunglasses",
-            "mdi-wheelchair", "mdi-human-cane",
-
-            // === SOCIAL / BRANDS (NEW) ===
-            "mdi-facebook", "mdi-facebook-messenger", "mdi-twitter", "mdi-instagram", "mdi-snapchat",
-            "mdi-whatsapp", "mdi-youtube", "mdi-twitch", "mdi-slack",
-            "mdi-google", "mdi-google-chrome", "mdi-apple", "mdi-microsoft", "mdi-microsoft-windows", "mdi-android",
-            "mdi-github", "mdi-gitlab", "mdi-bitbucket", "mdi-reddit", "mdi-linkedin",
-            "mdi-spotify", "mdi-netflix", "mdi-hulu", "mdi-kodi", "mdi-plex",
-            "mdi-steam", "mdi-nintendo-switch",
-
-            // === WEATHER EXTENDED (NEW) ===
-            "mdi-weather-hail", "mdi-weather-cloudy-alert", "mdi-weather-cloudy-arrow-right",
-            "mdi-weather-fog", "mdi-weather-partly-cloudy", "mdi-weather-night-partly-cloudy",
-            "mdi-windsock", "mdi-weather-sunset", "mdi-weather-sunset-up", "mdi-weather-sunset-down",
-
-            // === FOOD / DRINK EXTENDED (NEW) ===
-            "mdi-food-apple", "mdi-food-croissant", "mdi-food-drumstick", "mdi-food-fork-drink",
-            "mdi-food-steak", "mdi-food-turkey", "mdi-food-variant", "mdi-fruit-cherries",
-            "mdi-fruit-citrus", "mdi-fruit-grapes", "mdi-fruit-pineapple", "mdi-fruit-watermelon",
-            "mdi-cupcake", "mdi-ice-cream", "mdi-muffin", "mdi-pizza",
-            "mdi-glass-cocktail", "mdi-glass-flute", "mdi-glass-mug", "mdi-glass-stange", "mdi-glass-tulip",
-            "mdi-glass-wine", "mdi-bottle-wine", "mdi-beer", "mdi-coffee-to-go",
-
-            // === FINANCE / SHOPPING (NEW) ===
-            "mdi-cash", "mdi-cash-multiple", "mdi-cash-100", "mdi-credit-card", "mdi-credit-card-outline",
-            "mdi-bank", "mdi-finance", "mdi-wallet", "mdi-wallet-outline", "mdi-wallet-travel",
-            "mdi-basket", "mdi-basket-outline", "mdi-cart", "mdi-cart-outline", "mdi-cart-off",
-            "mdi-store", "mdi-store-24-hour", "mdi-shopping", "mdi-tag", "mdi-tag-outline",
-            "mdi-sale", "mdi-barcode", "mdi-barcode-scan", "mdi-qrcode", "mdi-qrcode-scan",
-
-            // === MEDIA CONTROL (NEW) ===
-            "mdi-play-pause", "mdi-play-circle-outline", "mdi-pause-circle-outline", "mdi-stop-circle-outline",
-            "mdi-skip-next-circle-outline", "mdi-skip-previous-circle-outline", "mdi-fast-forward-5", "mdi-rewind-5",
-            "mdi-repeat", "mdi-repeat-once", "mdi-shuffle", "mdi-shuffle-variant",
-            "mdi-volume-high", "mdi-volume-medium", "mdi-volume-low", "mdi-volume-mute", "mdi-volume-off",
-            "mdi-volume-plus", "mdi-volume-minus", "mdi-volume-equal", "mdi-speaker", "mdi-speaker-bluetooth",
-            "mdi-speaker-wireless", "mdi-speaker-multiple", "mdi-cast", "mdi-cast-connected", "mdi-television",
-            "mdi-television-classic", "mdi-television-play", "mdi-video-input-hdmi", "mdi-video-input-antenna",
-            "mdi-remote", "mdi-remote-tv", "mdi-kodi", "mdi-plex", "mdi-netflix", "mdi-youtube", "mdi-spotify",
-
-            // === NAVIGATION / GUI (NEW) ===
-            "mdi-chevron-left", "mdi-chevron-right", "mdi-chevron-up", "mdi-chevron-down",
-            "mdi-chevron-double-left", "mdi-chevron-double-right", "mdi-chevron-double-up", "mdi-chevron-double-down",
-            "mdi-arrow-left-bold-outline", "mdi-arrow-right-bold-outline", "mdi-arrow-up-bold-outline", "mdi-arrow-down-bold-outline",
-            "mdi-arrow-left-circle-outline", "mdi-arrow-right-circle-outline", "mdi-arrow-up-circle-outline", "mdi-arrow-down-circle-outline",
-            "mdi-arrow-expand-all", "mdi-arrow-collapse-all", "mdi-dots-horizontal", "mdi-dots-vertical",
-            "mdi-menu", "mdi-apps", "mdi-view-grid-outline", "mdi-view-list-outline", "mdi-home-outline",
-            "mdi-backburger", "mdi-forwardburger", "mdi-history", "mdi-cached", "mdi-sync", "mdi-refresh", "mdi-reload",
-
-            // === AUTOMATION & SMART HOME (NEW) ===
-            "mdi-robot", "mdi-robot-outline", "mdi-robot-vacuum", "mdi-robot-vacuum-variant", "mdi-robot-mower",
-            "mdi-auto-fix", "mdi-auto-upload", "mdi-creation", "mdi-lightning-bolt-circle", "mdi-flash-auto",
-            "mdi-connection", "mdi-transit-connection", "mdi-transit-connection-variant", "mdi-api", "mdi-web",
-            "mdi-lan", "mdi-lan-connect", "mdi-lan-disconnect", "mdi-router-wireless", "mdi-access-point",
-            "mdi-access-point-network", "mdi-server", "mdi-server-network", "mdi-database",
-            "mdi-cloud-outline", "mdi-cloud-sync-outline", "mdi-cloud-check-outline", "mdi-cloud-alert-outline",
-            "mdi-wifi-strength-4", "mdi-wifi-strength-3", "mdi-wifi-strength-2", "mdi-wifi-strength-1", "mdi-wifi-strength-outline",
-            "mdi-bluetooth", "mdi-bluetooth-connect", "mdi-bluetooth-off", "mdi-zigbee", "mdi-z-wave",
-            "mdi-home-assistant", "mdi-nfc", "mdi-nfc-variant",
-
-            // === SYSTEM & SETTINGS (NEW) ===
-            "mdi-cog-outline", "mdi-cogs", "mdi-tools", "mdi-wrench", "mdi-hammer",
-            "mdi-screwdriver", "mdi-pickaxe", "mdi-tune", "mdi-tune-vertical", "mdi-filter-variant",
-            "mdi-sort-variant", "mdi-eye", "mdi-eye-off", "mdi-eye-outline", "mdi-eye-off-outline",
-            "mdi-pencil", "mdi-pencil-outline", "mdi-delete", "mdi-delete-outline",
-            "mdi-content-save", "mdi-content-save-outline", "mdi-content-copy", "mdi-content-paste",
-            "mdi-download", "mdi-upload", "mdi-export", "mdi-import", "mdi-share-variant",
-            "mdi-link-variant", "mdi-magnify", "mdi-magnify-plus", "mdi-magnify-minus",
-
-            // === NUMBERS & SYMBOLS (NEW) ===
-            "mdi-numeric-0", "mdi-numeric-1", "mdi-numeric-2", "mdi-numeric-3", "mdi-numeric-4",
-            "mdi-numeric-5", "mdi-numeric-6", "mdi-numeric-7", "mdi-numeric-8", "mdi-numeric-9",
-            "mdi-numeric-10", "mdi-alpha-a", "mdi-alpha-b", "mdi-alpha-c",
-            "mdi-plus-thick", "mdi-minus-thick", "mdi-equal", "mdi-equal-box", "mdi-not-equal-variant",
-            "mdi-infinity", "mdi-percent",
-
-            // === OTHER USEFUL (NEW) ===
-            "mdi-curtains", "mdi-curtains-closed", "mdi-door-open", "mdi-door-closed",
-            "mdi-garage", "mdi-garage-open", "mdi-garage-variant", "mdi-gate", "mdi-gate-open",
-            "mdi-shield-home", "mdi-shield-check", "mdi-shield-alert", "mdi-bell", "mdi-bell-outline",
-            "mdi-bell-ring", "mdi-bell-off", "mdi-video", "mdi-video-outline", "mdi-video-off",
-            "mdi-webcam", "mdi-cctv", "mdi-smoke-detector", "mdi-water-boiler", "mdi-radiator",
-            "mdi-air-conditioner", "mdi-air-filter", "mdi-air-purifier", "mdi-fan", "mdi-fan-off",
-
-            // === SPORTS & FITNESS (NEW) ===
-            "mdi-soccer", "mdi-basketball", "mdi-football", "mdi-tennis", "mdi-baseball", "mdi-volleyball",
-            "mdi-cricket", "mdi-hockey-sticks", "mdi-golf", "mdi-bowling", "mdi-billiards",
-            "mdi-table-tennis", "mdi-badminton", "mdi-karate", "mdi-fencing",
-            "mdi-dumbbell", "mdi-weight-lifter", "mdi-kettlebell", "mdi-yoga", "mdi-run", "mdi-walk",
-            "mdi-bike", "mdi-bicycle", "mdi-swim", "mdi-skate", "mdi-roller-skate",
-            "mdi-snowboard", "mdi-sledding", "mdi-hiking", "mdi-pool",
-
-            // === TRAVEL & OUTDOORS (NEW) ===
-            "mdi-airplane-takeoff", "mdi-airplane-landing", "mdi-airport", "mdi-train-variant",
-            "mdi-bus-stop", "mdi-ferry", "mdi-car-hatchback", "mdi-car-estate", "mdi-car-convertible",
-            "mdi-car-pickup", "mdi-truck-cargo-container", "mdi-caravan", "mdi-tent", "mdi-campfire",
-            "mdi-image-filter-hdr", "mdi-beach", "mdi-island",
-            "mdi-palm-tree", "mdi-map-clock", "mdi-map-search", "mdi-compass", "mdi-compass-outline",
-            "mdi-passport", "mdi-bed-outline",
-
-            // === HOBBIES & CREATIVITY (NEW) ===
-            "mdi-camera", "mdi-camera-outline", "mdi-camera-iris", "mdi-image-multiple", "mdi-palette",
-            "mdi-brush", "mdi-brush-variant", "mdi-format-paint", "mdi-pen", "mdi-draw",
-            "mdi-guitar-acoustic", "mdi-guitar-electric", "mdi-piano", "mdi-violin",
-            "mdi-saxophone", "mdi-trumpet", "mdi-music-clef-treble", "mdi-metronome",
-            "mdi-microphone-variant", "mdi-controller-classic",
-            "mdi-chess-knight", "mdi-dice-5", "mdi-cards-outline", "mdi-poker-chip",
-
-            // === SCIENCE & EDUCATION (NEW) ===
-            "mdi-school", "mdi-school-outline", "mdi-book-open-variant",
-            "mdi-library", "mdi-notebook-edit", "mdi-pencil-ruler", "mdi-microscope", "mdi-telescope",
-            "mdi-flask", "mdi-flask-outline", "mdi-test-tube", "mdi-dna", "mdi-atom", "mdi-molecule",
-            "mdi-rocket", "mdi-rocket-launch", "mdi-satellite-variant", "mdi-earth", "mdi-globe-model",
-            "mdi-brain", "mdi-head-lightbulb-outline", "mdi-abacus", "mdi-calculator",
-
-            // === FAMILY & LIFE EVENTS (NEW) ===
-            "mdi-human-male-female", "mdi-human-female-boy", "mdi-human-male-boy", "mdi-baby-carriage",
-            "mdi-cradle", "mdi-toy-brick-outline", "mdi-teddy-bear", "mdi-ring",
-            "mdi-cards-heart", "mdi-cake-variant", "mdi-candle", "mdi-party-popper", "mdi-balloon",
-            "mdi-gift", "mdi-home-heart", "mdi-hand-heart", "mdi-account-heart", "mdi-account-star",
-            "mdi-emoticon-happy-outline", "mdi-emoticon-cool-outline", "mdi-face-man", "mdi-face-woman",
-
-            // === PHOTOGRAPHY & NEWS (NEW) ===
-            "mdi-camera-enhance", "mdi-camera-flip", "mdi-camera-gopro", "mdi-camera-metering-center",
-            "mdi-camera-metering-matrix", "mdi-camera-metering-partial", "mdi-camera-metering-spot",
-            "mdi-camera-off", "mdi-camera-party-mode", "mdi-camera-plus", "mdi-camera-plus-outline",
-            "mdi-camera-front", "mdi-camera-front-variant", "mdi-camera-rear", "mdi-camera-rear-variant",
-            "mdi-camera-retake", "mdi-camera-switch", "mdi-camera-switch-outline", "mdi-camera-timer",
-            "mdi-camera-wireless", "mdi-camera-wireless-outline", "mdi-video-plus", "mdi-video-minus",
-            "mdi-video-check", "mdi-video-stabilization", "mdi-image-filter-black-white",
-            "mdi-image-filter-center-focus", "mdi-image-filter-frames", "mdi-image-edit",
-            "mdi-rss", "mdi-rss-box", "mdi-rss-off", "mdi-newspaper-variant-outline", "mdi-post-outline",
-
-            // === ADVANCED HARDWARE & AUTOMATION (NEW) ===
-            "mdi-home-automation", "mdi-chip", "mdi-cpu-32-bit", "mdi-cpu-64-bit",
-            "mdi-memory", "mdi-expansion-card",
-            "mdi-raspberry-pi", "mdi-developer-board", "mdi-usb", "mdi-usb-port",
-            "mdi-ip-network", "mdi-ip-network-outline", "mdi-ethernet-cable", "mdi-ethernet-cable-off",
-            "mdi-wifi-alert", "mdi-wifi-lock", "mdi-bluetooth-audio", "mdi-bluetooth-transfer",
-
-            // === SPECIFIC SENSORS & ALARMS (NEW) ===
-            "mdi-leak", "mdi-gas-cylinder", "mdi-smoke-detector-variant",
-            "mdi-fire-alert", "mdi-water-alert", "mdi-wind-power-outline", "mdi-home-thermometer",
-            "mdi-thermometer-lines", "mdi-thermometer-low", "mdi-thermometer-high", "mdi-thermometer-alert",
-            "mdi-hydro-power", "mdi-wind-power", "mdi-solar-power-variant", "mdi-lightning-bolt-outline",
-
-            // === UTILITIES & VALVES (NEW) ===
-            "mdi-pool-thermometer", "mdi-sprinkler", "mdi-sprinkler-variant", "mdi-valve", "mdi-valve-closed",
-            "mdi-power-plug-outline", "mdi-power-socket-uk", "mdi-power-socket-us", "mdi-power-socket-au",
-            "mdi-hammer-wrench", "mdi-hammer-screwdriver", "mdi-toolbox", "mdi-toolbox-outline",
-
-            // === MISC SMARTHOME (NEW) ===
-            "mdi-key-variant", "mdi-key-wireless", "mdi-key-alert", "mdi-home-lock", "mdi-home-lock-open",
-            "mdi-mower", "mdi-mower-bag", "mdi-leaf", "mdi-tree", "mdi-flower", "mdi-flower-outline",
-            "mdi-weather-pouring", "mdi-weather-snowy-heavy", "mdi-weather-tornado", "mdi-weather-hurricane",
-            "mdi-shield-bug", "mdi-bug-outline", "mdi-spider", "mdi-skull-outline",
-
-            // === MORE LIFESTYLE / UI SYMBOLS (NEW) ===
-            "mdi-account-group", "mdi-account-multiple-plus", "mdi-account-voice", "mdi-account-question",
-            "mdi-star-face", "mdi-medal", "mdi-trophy", "mdi-handshake", "mdi-handshake-outline",
-            "mdi-heart-multiple", "mdi-heart-settings", "mdi-chat-question", "mdi-comment-alert",
-            "mdi-alert-octagon", "mdi-alert-decagram", "mdi-check-decagram", "mdi-check-bold",
-
-            // === TECHNICAL / HARDWARE / AUTOMATION (NEW +250) ===
-            "mdi-cpu-32-bit", "mdi-cpu-64-bit", "mdi-memory", "mdi-harddisk", "mdi-expansion-card",
-            "mdi-ethernet", "mdi-usb", "mdi-usb-port", "mdi-serial-port", "mdi-hdmi-port",
-            "mdi-resistor", "mdi-electronic-components",
-            "mdi-screwdriver", "mdi-wrench", "mdi-hammer", "mdi-pliers", "mdi-tape-measure", "mdi-spirit-level",
-            "mdi-compass", "mdi-ruler", "mdi-ladder",
-            "mdi-crane", "mdi-forklift", "mdi-excavator", "mdi-truck-cargo-container", "mdi-robot",
-            "mdi-robot-mower", "mdi-robot-vacuum", "mdi-robot-industrial", "mdi-home-automation",
-            "mdi-thermometer", "mdi-water-percent", "mdi-gauge", "mdi-speedometer",
-            "mdi-printer-3d", "mdi-printer-search", "mdi-printer-settings", "mdi-router-wireless", "mdi-router-network",
-            "mdi-lan", "mdi-lan-connect", "mdi-lan-disconnect", "mdi-lan-pending", "mdi-lan-check",
-            "mdi-wifi", "mdi-wifi-strength-4", "mdi-wifi-strength-3", "mdi-wifi-strength-2", "mdi-wifi-strength-1",
-            "mdi-bluetooth", "mdi-bluetooth-connect", "mdi-bluetooth-settings", "mdi-nfc", "mdi-nfc-tap",
-            "mdi-identifier", "mdi-camera-control", "mdi-cctv", "mdi-video-input-hdmi",
-            "mdi-video-input-component", "mdi-video-input-svideo", "mdi-remote", "mdi-remote-tv",
-            "mdi-cog-sync", "mdi-sync-alert", "mdi-wrench-check",
-            "mdi-shield-check", "mdi-shield-alert-outline", "mdi-alarm-panel", "mdi-alarm-panel-outline",
-            "mdi-access-point-check", "mdi-server-security", "mdi-server-off", "mdi-database-alert",
-            "mdi-database-check", "mdi-factory", "mdi-warehouse", "mdi-oil", "mdi-fuel-cell",
-            "mdi-molecule-co", "mdi-molecule-co2", "mdi-gas-burner", "mdi-induction",
-            "mdi-microwave-off", "mdi-fridge-alert", "mdi-fridge-industrial", "mdi-fridge-industrial-outline",
-            "mdi-washing-machine-alert", "mdi-washing-machine-off", "mdi-tumble-dryer-alert",
-            "mdi-tumble-dryer-off", "mdi-dishwasher-alert", "mdi-dishwasher-off", "mdi-coffee-maker-check",
-            "mdi-kettle-alert", "mdi-kettle-off", "mdi-toaster-off",
-            "mdi-fan-chevron-up", "mdi-fan-chevron-down", "mdi-fan-minus", "mdi-fan-plus",
-            "mdi-air-purifier-off",
-            "mdi-fire-circle", "mdi-fire-hydrant", "mdi-fire-off", "mdi-water-boiler-off",
-            "mdi-water-check", "mdi-water-sync", "mdi-water-minus", "mdi-water-plus",
-            "mdi-water-percent-alert", "mdi-smoke-detector-off", "mdi-motion-sensor-off",
-            "mdi-light-switch-off", "mdi-lightbulb-alert", "mdi-lightbulb-multiple",
-            "mdi-lightbulb-variant", "mdi-lightbulb-variant-outline", "mdi-spotlight-beam",
-            "mdi-led-on", "mdi-led-off", "mdi-led-variant-on", "mdi-led-variant-off",
-            "mdi-battery-check-outline", "mdi-battery-sync", "mdi-battery-sync-outline",
-            "mdi-battery-lock", "mdi-battery-minus", "mdi-battery-plus", "mdi-battery-remove",
-            "mdi-solar-power-variant-outline", "mdi-solar-panel-large",
-            "mdi-wind-turbine-check", "mdi-hydro-power", "mdi-transmission-tower-export",
-            "mdi-transmission-tower-import", "mdi-transmission-tower-off", "mdi-gate-open",
-            "mdi-window-open",
-            "mdi-window-shutter-alert", "mdi-window-shutter-open", "mdi-lock-open-alert",
-            "mdi-lock-check-outline", "mdi-shield-key", "mdi-shield-key-outline",
-            "mdi-shield-moon", "mdi-shield-moon-outline", "mdi-shield-sun", "mdi-shield-sun-outline",
-            "mdi-cctv-off", "mdi-doorbell-video", "mdi-ip-network-outline", "mdi-router-network",
-            "mdi-router-wireless-settings", "mdi-wifi-strength-4-alert", "mdi-wifi-sync",
-            "mdi-nfc-search-variant",
-            "mdi-zigbee", "mdi-z-wave", "mdi-home-assistant", "mdi-home-automation",
-            "mdi-lightbulb-on", "mdi-lightbulb-outline", "mdi-lightbulb-group", "mdi-lamp", "mdi-led-on",
-            "mdi-power", "mdi-power-plug", "mdi-power-socket-eu", "mdi-battery-charging", "mdi-battery-check",
-            "mdi-solar-panel", "mdi-solar-panel-large", "mdi-solar-power", "mdi-wind-turbine",
-            "mdi-water-boiler", "mdi-radiator", "mdi-air-conditioner", "mdi-air-filter", "mdi-fan",
-            "mdi-valve", "mdi-valve-closed", "mdi-sprinkler", "mdi-pump", "mdi-water-pump",
-            "mdi-leak", "mdi-pipe", "mdi-pipe-leak", "mdi-faucet", "mdi-faucet-variant",
-            "mdi-thermometer-chevron-up", "mdi-thermometer-chevron-down", "mdi-thermometer-alert",
-            "mdi-speedometer-slow", "mdi-speedometer-medium", "mdi-speedometer", "mdi-timer",
-            "mdi-counter", "mdi-numeric", "mdi-percent", "mdi-pulse", "mdi-sine-wave",
-            "mdi-chart-line", "mdi-chart-bar", "mdi-chart-areaspline", "mdi-signal", "mdi-signal-variant",
-            "mdi-antenna", "mdi-satellite-variant", "mdi-earth", "mdi-globe-model", "mdi-map-marker-radius",
-            "mdi-crosshairs-gps", "mdi-compass-outline", "mdi-ruler", "mdi-pencil-ruler", "mdi-brush",
-            "mdi-format-paint", "mdi-format-color-fill", "mdi-opacity", "mdi-eyedropper",
-            "mdi-vector-point", "mdi-vector-line", "mdi-vector-circle", "mdi-vector-square",
-            "mdi-layers", "mdi-layers-outline", "mdi-layers-plus", "mdi-layers-minus",
-            "mdi-cube", "mdi-cube-outline", "mdi-box", "mdi-package-variant",
-            "mdi-package-variant-closed", "mdi-truck-delivery", "mdi-forklift", "mdi-excavator", "mdi-truck-cargo-container", "mdi-robot",
-            "mdi-robot-mower", "mdi-robot-vacuum", "mdi-robot-industrial", "mdi-home-automation",
-            "mdi-thermometer", "mdi-water-percent", "mdi-gauge", "mdi-speedometer",
-            "mdi-printer-3d", "mdi-printer-search", "mdi-printer-settings", "mdi-router-wireless", "mdi-router-network",
-            "mdi-lan", "mdi-lan-connect", "mdi-lan-disconnect", "mdi-lan-pending", "mdi-lan-check",
-            "mdi-wifi", "mdi-wifi-strength-4", "mdi-wifi-strength-3", "mdi-wifi-strength-2", "mdi-wifi-strength-1",
-            "mdi-bluetooth", "mdi-bluetooth-connect", "mdi-bluetooth-settings", "mdi-nfc", "mdi-nfc-tap",
-            "mdi-identifier", "mdi-camera-control", "mdi-cctv", "mdi-video-input-hdmi",
-            "mdi-video-input-component", "mdi-video-input-svideo", "mdi-remote", "mdi-remote-tv",
-            "mdi-cog-sync", "mdi-sync-alert", "mdi-wrench-check",
-            "mdi-shield-check", "mdi-shield-alert-outline", "mdi-alarm-panel", "mdi-alarm-panel-outline",
-            "mdi-access-point-check", "mdi-server-security", "mdi-server-off", "mdi-database-alert",
-            "mdi-database-check", "mdi-factory", "mdi-warehouse", "mdi-oil", "mdi-fuel-cell",
-            "mdi-molecule-co", "mdi-molecule-co2", "mdi-gas-burner", "mdi-induction",
-            "mdi-microwave-off", "mdi-fridge-alert", "mdi-fridge-industrial", "mdi-fridge-industrial-outline",
-            "mdi-washing-machine-alert", "mdi-washing-machine-off", "mdi-tumble-dryer-alert",
-            "mdi-tumble-dryer-off", "mdi-dishwasher-alert", "mdi-dishwasher-off", "mdi-coffee-maker-check",
-            "mdi-kettle-alert", "mdi-kettle-off", "mdi-toaster-off",
-            "mdi-fan-chevron-up", "mdi-fan-chevron-down", "mdi-fan-minus", "mdi-fan-plus",
-            "mdi-air-purifier-off"
-        };
-
-        // === SMART ICON LOGIC ===
-        const SMART_ICONS_MAP = {
-            'light': 'mdi-lightbulb', 'lampa': 'mdi-lightbulb', 'kinkiet': 'mdi-wall-sconce',
-            'switch': 'mdi-power', 'włącznik': 'mdi-power', 'przełącznik': 'mdi-power',
-            'fan': 'mdi-fan', 'wiatrak': 'mdi-fan', 'wentylator': 'mdi-fan',
-            'lock': 'mdi-lock', 'zamek': 'mdi-lock',
-            'door': 'mdi-door', 'drzwi': 'mdi-door',
-            'window': 'mdi-window-closed', 'okno': 'mdi-window-closed',
-            'garage': 'mdi-garage', 'garaż': 'mdi-garage',
-            'gate': 'mdi-gate', 'brama': 'mdi-gate',
-            'temp': 'mdi-thermometer', 'heat': 'mdi-radiator', 'grzejnik': 'mdi-radiator',
-            'salon': 'mdi-sofa', 'living': 'mdi-sofa',
-            'kuchnia': 'mdi-silverware-fork-knife', 'kitchen': 'mdi-silverware-fork-knife',
-            'łazienka': 'mdi-shower', 'bathroom': 'mdi-shower', 'bath': 'mdi-bathtub',
-            'sypialnia': 'mdi-bed', 'bedroom': 'mdi-bed',
-            'biuro': 'mdi-desk', 'office': 'mdi-desk',
-            'hol': 'mdi-walk', 'hall': 'mdi-walk', 'korytarz': 'mdi-walk',
-            'głośnik': 'mdi-speaker', 'speaker': 'mdi-speaker',
-            'tv': 'mdi-television', 'telewizor': 'mdi-television',
-            'nocna': 'mdi-lamp', 'night': 'mdi-lamp',
-            'plug': 'mdi-power-plug', 'gniazdko': 'mdi-power-socket-eu', 'socket': 'mdi-power-socket-eu',
-            'drukarka': 'mdi-printer', 'printer': 'mdi-printer',
-            'router': 'mdi-router-wireless',
-            'server': 'mdi-server', 'serwer': 'mdi-server',
-            'camera': 'mdi-camera', 'kamera': 'mdi-camera', 'cctv': 'mdi-cctv',
-            'rss': 'mdi-rss', 'news': 'mdi-newspaper-variant-outline',
-            'motion': 'mdi-motion-sensor', 'ruch': 'mdi-motion-sensor',
-            'humidity': 'mdi-water-percent', 'wilgotność': 'mdi-water-percent',
-            'battery': 'mdi-battery', 'bateria': 'mdi-battery',
-            'power': 'mdi-lightning-bolt', 'moc': 'mdi-lightning-bolt', 'energia': 'mdi-lightning-bolt',
-            'solar': 'mdi-solar-power', 'fotowoltaika': 'mdi-solar-power',
-            'weather': 'mdi-weather-partly-cloudy', 'pogoda': 'mdi-weather-partly-cloudy',
-            'sun': 'mdi-weather-sunny', 'słońce': 'mdi-weather-sunny',
-            'moon': 'mdi-moon-waning-crescent', 'księżyc': 'mdi-moon-waning-crescent',
-            'rain': 'mdi-weather-rainy', 'deszcz': 'mdi-weather-rainy',
-            'cover': 'mdi-window-shutter', 'roleta': 'mdi-window-shutter',
-            'cpu': 'mdi-cpu-64-bit', 'procesor': 'mdi-cpu-64-bit', 'memory': 'mdi-memory', 'ram': 'mdi-memory',
-            'disk': 'mdi-harddisk', 'dysk': 'mdi-harddisk', 'lan': 'mdi-lan', 'eth': 'mdi-ethernet',
-            'wifi': 'mdi-wifi', 'signal': 'mdi-signal', 'sygnał': 'mdi-signal',
-            'settings': 'mdi-cog', 'ustawienia': 'mdi-cog', 'cog': 'mdi-cog',
-            'tools': 'mdi-tools', 'narzedzia': 'mdi-tools', 'wrench': 'mdi-wrench', 'klucz': 'mdi-wrench',
-            'hammer': 'mdi-hammer', 'mlotek': 'mdi-hammer', 'robot': 'mdi-robot',
-            'vacuum': 'mdi-robot-vacuum', 'odkurzacz': 'mdi-robot-vacuum',
-            'mower': 'mdi-robot-mower', 'kosiarka': 'mdi-robot-mower',
-            'car': 'mdi-car', 'samochód': 'mdi-car', 'auto': 'mdi-car',
-            'co2': 'mdi-molecule-co2', 'smoke': 'mdi-smoke-detector', 'dym': 'mdi-smoke-detector',
-            'leak': 'mdi-pipe-leak', 'wyciek': 'mdi-pipe-leak', 'sprinkler': 'mdi-sprinkler', 'zraszacz': 'mdi-sprinkler',
-            'valve': 'mdi-valve', 'zawór': 'mdi-valve', 'pump': 'mdi-pump', 'pompa': 'mdi-pump',
-            'medical': 'mdi-medical-bag', 'health': 'mdi-heart-pulse', 'zdrowie': 'mdi-heart-pulse'
-        };
-
-        // Cache to avoid repeated API calls for the same entity
-        const batteryAnalysisCache = {};
-
-        // Analyze entity battery consumption using backend API
-        async function analyzeBatteryConsumption(entityId) {
-            // Skip for spacer and navigate widgets (they don't have entities)
-            if (!entityId || entityId === 'spacer' || entityId.startsWith('navigate.')) {
-                return { level: 'ok', changes_per_hour: 0 };
-            }
-
-            // Remove _copyX suffix to get base entity
-            const baseEntity = entityId.replace(/_copy\d+$/, '');
-
-            // Check cache first
-            if (batteryAnalysisCache[baseEntity]) {
-                return batteryAnalysisCache[baseEntity];
-            }
-
-            try {
-                // Use relative path for Ingress compatibility
-                const response = await fetch(`api/entity_frequency/${encodeURIComponent(baseEntity)}`);
-                const data = await response.json();
-
-                // Store in cache
-                batteryAnalysisCache[baseEntity] = data;
-                return data;
-            } catch (error) {
-                console.error('Battery analysis error for', baseEntity, ':', error);
-                return { level: 'unknown', changes_per_hour: 0, error: error.toString() };
-            }
-        }
-
-        // Get battery indicator icon based on level
-        function getBatteryIndicatorIcon(level) {
-            const indicators = {
-                'ok': '✅',
-                'warning': '⚠️',
-                'danger': '🔴',
-                'unknown': '❓'
-            };
-            return indicators[level] || indicators['unknown'];
-        }
-
-        // Get battery message for tooltip
-        function getBatteryMessage(level, changesPerHour, errorMsg) {
-            const lang = currentLang || 'pl';
-            const t = TRANSLATIONS[lang] || TRANSLATIONS['pl'];
-            const rate = (changesPerHour || 0).toFixed(2);
-
-            if (level === 'danger') {
-                // Remove HTML link from tooltip (just show message)
-                return t.freq_danger.replace('{0}', rate).replace(/<a[^>]*>(.*?)<\/a>/g, '$1');
-            } else if (level === 'warning') {
-                return t.freq_warning.replace('{0}', rate).replace(/<a[^>]*>(.*?)<\/a>/g, '$1');
-            } else if (level === 'ok') {
-                return t.freq_ok.replace('{0}', rate);
-            } else if (level === 'unknown' && errorMsg) {
-                return (lang === 'pl' ? "Błąd analizy: " : "Analysis Error: ") + errorMsg;
-            }
-            return t.freq_analyzing;
-        }
-
-        // Open battery help modal
-        function openBatteryHelp() {
-            const lang = currentLang || 'pl';
-            const t = TRANSLATIONS[lang] || TRANSLATIONS['pl'];
-
-            // Get or create modal
-            let modal = document.getElementById('battery-help-modal');
-            if (!modal) {
-                // Create modal if it doesn't exist
-                modal = document.createElement('div');
-                modal.id = 'battery-help-modal';
-                modal.className = 'modal';
-                modal.innerHTML = `
-                    <div class="modal-content" style="max-width: 700px;">
-                        <div class="modal-header">
-                            <h2 id="battery-modal-title"></h2>
-                            <span class="close" onclick="closeBatteryHelp()">&times;</span>
-                        </div>
-                        <div id="battery-help-body"></div>
-                        <button class="btn btn-cancel" onclick="closeBatteryHelp()" style="margin-top: 15px;">
-                            <span id="battery-modal-btn"></span>
-                        </button>
-                    </div>
-                `;
-                document.body.appendChild(modal);
-
-                // Close on background click
-                modal.addEventListener('click', function (e) {
-                    if (e.target === modal) {
-                        closeBatteryHelp();
-                    }
-                });
-            }
-
-            document.getElementById('battery-modal-title').innerHTML = t.modal_battery_title;
-            document.getElementById('battery-help-body').innerHTML = t.modal_battery_body;
-            document.getElementById('battery-modal-btn').textContent = t.modal_battery_understand;
-            modal.style.display = 'block';
-
-            return false; // Prevent default link behavior
-        }
-
-        // Close battery help modal
-        function closeBatteryHelp() {
-            const modal = document.getElementById('battery-help-modal');
-            if (modal) {
-                modal.style.display = 'none';
-            }
-        }
-
-        // Clear battery analysis cache (call when refreshing entities)
-        function clearBatteryCache() {
-            Object.keys(batteryAnalysisCache).forEach(key => delete batteryAnalysisCache[key]);
-        }
-
-        // =========================================================================
 
         // Ulepszona normalizacja (usuwa polskie znaki, małe litery, usuwa zbędne spacje)
         function normalizeString(str, preserveAccents = false) {
@@ -3012,6 +2168,8 @@
         function searchEntities(val, forceSmartTitle = false) {
             const dl = document.getElementById('entity-list');
             if (!dl) return;
+
+            dl.innerHTML = '';
 
             if (!val && !forceSmartTitle) return;
 
@@ -4900,9 +4058,6 @@
 
     </script>
     <div id="toast-container"></div>
-</body>
-
-</html>
 
 <!-- MODAL INSTRUKCJI BATERII -->
 <div id="battery-help-modal" class="icon-picker-modal">
@@ -5478,8 +4633,6 @@ class DashSaver(hass.Hass):
         setLang(currentLang);
     }
 </script>
-</body>
-
 <!-- INFO MODAL -->
 <div id="info-modal" class="modal" style="z-index: 100000;">
     <div class="modal-content" style="max-width: 500px;">
@@ -5521,17 +4674,14 @@ class DashSaver(hass.Hass):
                 <div id="info-path" data-template="\\[HA_IP]\addon_configs\{{ connection_info.appdaemon_slug }}\"
                     style="font-family: monospace; background: #f5f5f5; padding: 5px; border-radius: 4px; margin-top: 5px; word-break: break-all; color: #333;">
                     ...
-                        style="font-family: monospace; background: #f5f5f5; padding: 5px; border-radius: 4px; margin-top: 5px; word-break: break-all; color: #333;">
-                        ...
-                    </div>
                 </div>
+            </div>
 
-                <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #ddd;">
-                    <div><strong data-i18n="list_dashboards_title">Lista Dashboardów:</strong></div>
-                    <div id="info-dash-list"
-                        style="margin-top: 5px; max-height: 150px; overflow-y: auto; font-size: 0.9em; color: #555;">
-                        ...
-                    </div>
+            <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #ddd;">
+                <div><strong data-i18n="list_dashboards_title">Lista Dashboardów:</strong></div>
+                <div id="info-dash-list"
+                    style="margin-top: 5px; max-height: 150px; overflow-y: auto; font-size: 0.9em; color: #555;">
+                    ...
                 </div>
             </div>
         </div>
@@ -5593,4 +4743,5 @@ class DashSaver(hass.Hass):
     </div>
 </div>
 
+</body>
 </html>
