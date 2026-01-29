@@ -14,9 +14,6 @@ RUN apk add --no-cache \
 WORKDIR /app
 COPY . .
 
-# Instalacja dodatkowych pakietów Python z requirements.txt
-RUN pip3 install --no-cache-dir -r requirements.txt --break-system-packages
-
 # Naprawa formatowania
 RUN dos2unix /app/run.sh /app/run.py && chmod a+x /app/run.sh
 
