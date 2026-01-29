@@ -59,10 +59,15 @@ if not TOKEN:
 def get_ha_areas():
     """Fetch all areas from Home Assistant."""
     if not TOKEN:
+        print("⚠️ No TOKEN - skipping area fetch")
         return []
     headers = {"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json"}
     try:
-        response = requests.get(f"{API_URL}/config/area_registry", headers=headers, timeout=10)
+        url = f"{API_URL}/config/area_registry"
+        print(f"🔍 Fetching areas from: {url}")
+        response = requests.get(url, headers=headers, timeout=10)
+        print(f"📡 Area registry response status: {response.status_code}")
+        
         if response.status_code == 200:
             data = response.json()
             areas = []
@@ -74,6 +79,9 @@ def get_ha_areas():
             areas.sort(key=lambda x: x['name'])
             print(f"✅ Fetched {len(areas)} areas from Home Assistant")
             return areas
+        else:
+            print(f"❌ Area registry returned {response.status_code}: {response.text[:200]}")
+            return []
     except Exception as e:
         print(f"❌ Exception while fetching areas: {e}")
     return []
