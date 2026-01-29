@@ -126,23 +126,46 @@ def get_ha_areas():
         return []
 
 def get_entity_area_mapping():
-    """Create mapping of entity_id -> area_id."""
+    """Create mapping of entity_id -> area_id using WebSocket API."""
     if not TOKEN:
         return {}
-    headers = {"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json"}
     
     try:
-        # Get entity registry
-        entity_reg_response = requests.get(f"{API_URL}/config/entity_registry", headers=headers, timeout=10)
-        # Get device registry
-        device_reg_response = requests.get(f"{API_URL}/config/device_registry", headers=headers, timeout=10)
+        import websocket
+        import json
         
-        if entity_reg_response.status_code != 200 or device_reg_response.status_code != 200:
-            print(f"⚠️ Could not fetch entity/device registry (Status: {entity_reg_response.status_code}/{device_reg_response.status_code})")
+        # WebSocket URL for Home Assistant
+        ws_url = API_URL.replace('/api', '/api/websocket').replace('http://', 'ws://')
+        ws = websocket.create_connection(ws_url, timeout=10)
+        
+        # Auth handshake
+        auth_msg = json.loads(ws.recv())
+        if auth_msg.get('type') != 'auth_required':
+            ws.close()
             return {}
         
-        entity_registry = entity_reg_response.json()
-        device_registry = device_reg_response.json()
+        ws.send(json.dumps({'type': 'auth', 'access_token': TOKEN}))
+        auth_result = json.loads(ws.recv())
+        if auth_result.get('type') != 'auth_ok':
+            ws.close()
+            return {}
+        
+        # Fetch entity registry
+        ws.send(json.dumps({'id': 1, 'type': 'config/entity_registry/list'}))
+        entity_response = json.loads(ws.recv())
+        
+        # Fetch device registry
+        ws.send(json.dumps({'id': 2, 'type': 'config/device_registry/list'}))
+        device_response = json.loads(ws.recv())
+        
+        ws.close()
+        
+        if not entity_response.get('success') or not device_response.get('success'):
+            print(f"⚠️ Could not fetch entity/device registry via WebSocket")
+            return {}
+        
+        entity_registry = entity_response.get('result', [])
+        device_registry = device_response.get('result', [])
         
         # Create device_id -> area_id mapping
         device_to_area = {}
@@ -167,10 +190,14 @@ def get_entity_area_mapping():
             if entity_id and area_id:
                 entity_to_area[entity_id] = area_id
         
-        print(f"✅ Created area mapping for {len(entity_to_area)} entities")
+        print(f"✅ Created area mapping for {len(entity_to_area)} entities via WebSocket")
         return entity_to_area
+        
+    except ImportError:
+        print("⚠️ websocket-client not installed, area mapping unavailable")
+        return {}
     except Exception as e:
-        print(f"❌ Exception while creating area mapping: {e}")
+        print(f"❌ Exception while creating area mapping via WebSocket: {e}")
         return {}
 
 def get_ha_entities():
