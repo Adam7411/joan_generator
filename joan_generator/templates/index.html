@@ -1462,18 +1462,25 @@
                     <span data-i18n="sec_area_filter">Filtr obszarów</span>
                 </div>
                 <div class="add-widget-box">
-                    <div class="flex-row">
-                        <div class="flex-col" style="flex: 100%;">
+                    <div class="flex-row" style="gap: 15px;">
+                        <div class="flex-col" style="flex: 1;">
                             <label data-i18n="lbl_select_area">Wybierz obszar:</label>
-                            <select id="area-select" onchange="filterEntitiesByArea()"
+                            <select id="area-select" onchange="filterEntities()"
                                 style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid var(--border); background: var(--bg-input); color: var(--text-main); font-size: 14px;">
                                 <option value="" data-i18n="opt_all_areas">Wszystkie obszary</option>
                             </select>
-                            <div class="input-hint" style="margin-top: 8px;">
-                                <span data-i18n="hint_area_filter">🏠 Wybierz pomieszczenie aby zobaczyć w polu "Encja"
-                                    poniżej tylko encje z tego obszaru.</span>
-                            </div>
                         </div>
+                        <div class="flex-col" style="flex: 1;">
+                            <label data-i18n="lbl_select_domain">Wybierz typ:</label>
+                            <select id="domain-select" onchange="filterEntities()"
+                                style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid var(--border); background: var(--bg-input); color: var(--text-main); font-size: 14px;">
+                                <option value="" data-i18n="opt_all_types">Wszystkie typy</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="input-hint" style="margin-top: 8px;">
+                        <span data-i18n="hint_area_filter">🏠 Filtruj encje według obszaru i/lub typu urządzenia w polu
+                            "Encja".</span>
                     </div>
                 </div>
             </div>
@@ -2558,9 +2565,22 @@
                 info_area_filter_desc: "Włącz aby filtrować encje według pomieszczeń (kuchnia, salon, łazienka...)",
                 sec_area_filter: "Filtr obszarów",
                 lbl_select_area: "Wybierz obszar:",
+                lbl_select_domain: "Wybierz typ:",
                 opt_all_areas: "Wszystkie obszary",
-                hint_area_filter: "🏠 Wybierz pomieszczenie aby zobaczyć tylko encje z tego obszaru w polu wyszukiwania encji (Wyszukaj po nazwie lub ID)",
-                lbl_current_area: "aktualny obszar: {0}",
+                opt_all_types: "Wszystkie typy",
+                hint_area_filter: "🏠 Wybierz obszar i/lub typ, aby filtrować listę encji poniżej.",
+                lbl_current_area: "obszar: {0}, typ: {1}",
+                dom_light: "Oświetlenie",
+                dom_switch: "Przełączniki",
+                dom_sensor: "Sensory",
+                dom_binary_sensor: "Sensory binarne",
+                dom_media_player: "Odtwarzacze",
+                dom_cover: "Rolety / Bramy",
+                dom_climate: "Klimatyzacja / Termostaty",
+                dom_fan: "Wentylatory",
+                dom_lock: "Zamki",
+                dom_script: "Skrypty / Sceny",
+                dom_button: "Przyciski",
                 info_bridge_yes: "TAK (Aktywny)",
                 info_bridge_no: "NIE / BRAK",
                 btn_refresh_entities_title: "Odśwież listę encji",
@@ -2743,9 +2763,22 @@
                 info_area_filter_desc: "Enable to filter entities by rooms (kitchen, living room, bathroom...)",
                 sec_area_filter: "Area Filter",
                 lbl_select_area: "Select area:",
+                lbl_select_domain: "Select type:",
                 opt_all_areas: "All areas",
-                hint_area_filter: "🏠 Select a room to see only entities from that area in the entity search field (Search by name/ID)",
-                lbl_current_area: "current area: {0}",
+                opt_all_types: "All types",
+                hint_area_filter: "🏠 Select area and/or type to filter the entity list below.",
+                lbl_current_area: "area: {0}, type: {1}",
+                dom_light: "Lights",
+                dom_switch: "Switches",
+                dom_sensor: "Sensors",
+                dom_binary_sensor: "Binary Sensors",
+                dom_media_player: "Media Players",
+                dom_cover: "Covers / Garage",
+                dom_climate: "Climate / HVAC",
+                dom_fan: "Fans",
+                dom_lock: "Locks",
+                dom_script: "Scripts / Scenes",
+                dom_button: "Buttons",
                 info_bridge_yes: "YES (Active)",
                 info_bridge_no: "NO / MISSING",
                 btn_refresh_entities_title: "Refresh entity list",
@@ -2963,14 +2996,34 @@
             if (!dl) return;
             dl.innerHTML = ''; // Czyścimy listę
 
-            // Determine source data based on area filter
+            // Determine source data based on filters
             let sourceData = entitiesData;
             let isFiltered = false;
-            // Check if filter variables exist (they are defined later in the file)
-            if (typeof areaFilterEnabled !== 'undefined' && typeof selectedAreaId !== 'undefined') {
-                if (areaFilterEnabled && selectedAreaId) {
-                    sourceData = entitiesData.filter(e => e.area_id === selectedAreaId);
-                    isFiltered = true;
+
+            // Get current filter states
+            const domainSelect = document.getElementById('domain-select');
+            const selectedDomain = domainSelect ? domainSelect.value : '';
+
+            // Check if filter variables exist
+            if (typeof areaFilterEnabled !== 'undefined') {
+                if (areaFilterEnabled) {
+                    // Filter by Area if chosen
+                    if (typeof selectedAreaId !== 'undefined' && selectedAreaId) {
+                        sourceData = sourceData.filter(e => e.area_id === selectedAreaId);
+                        isFiltered = true;
+                    }
+
+                    // Filter by Domain if chosen
+                    if (selectedDomain) {
+                        sourceData = sourceData.filter(e => {
+                            let matches = e.id.startsWith(selectedDomain + '.');
+                            if (selectedDomain === 'script') {
+                                matches = e.id.startsWith('script.') || e.id.startsWith('scene.');
+                            }
+                            return matches;
+                        });
+                        isFiltered = true;
+                    }
                 }
             }
 
@@ -5409,11 +5462,12 @@ class DashSaver(hass.Hass):
         if (areaFilterEnabled) {
             section.style.display = 'block';
             populateAreaSelect();
-            filterEntitiesByArea();
+            populateDomainSelect();
+            filterEntities();
         } else {
             section.style.display = 'none';
             selectedAreaId = '';
-            localStorage.removeItem('joan_selected_area');
+            // localStorage.removeItem('joan_selected_area'); // Persistence removed
 
             // Reset label title
             const lbl = document.getElementById('lbl-entity-title');
@@ -5438,79 +5492,118 @@ class DashSaver(hass.Hass):
 
     function populateAreaSelect() {
         const select = document.getElementById('area-select');
-        console.log('🔍 populateAreaSelect called');
-        console.log('📦 areasData:', areasData);
-        console.log('🎯 select element:', select);
+        if (!select) return;
 
-        if (!select) {
-            console.error('❌ Select element not found!');
-            return;
-        }
-
-        // Clear existing options except "All areas"
+        // Clear existing options
         select.innerHTML = '';
 
         // Add "All areas" option
         const allOption = document.createElement('option');
         allOption.value = '';
-        allOption.setAttribute('data-i18n', 'opt_all_areas');
         allOption.textContent = TRANSLATIONS[currentLang].opt_all_areas || 'Wszystkie obszary';
         select.appendChild(allOption);
-        console.log('✅ Added "All areas" option');
 
-        // Add area options
+        // Add area options assuming areasData is available
         if (areasData && areasData.length > 0) {
-            console.log(`📍 Adding ${areasData.length} areas to dropdown`);
             areasData.forEach(area => {
                 const option = document.createElement('option');
                 option.value = area.id;
                 option.textContent = area.name;
                 select.appendChild(option);
-                console.log(`  ➕ Added area: ${area.name} (${area.id})`);
             });
-        } else {
-            console.warn('⚠️ No areas data available! areasData is empty or undefined');
         }
 
-        // Restore selected area
-        if (selectedAreaId) {
-            select.value = selectedAreaId;
-        }
+        // No persistence restoration here as requested
     }
 
-    function filterEntitiesByArea() {
-        const select = document.getElementById('area-select');
+    function populateDomainSelect() {
+        const select = document.getElementById('domain-select');
+        if (!select) return;
+
+        select.innerHTML = '';
+
+        // All Types
+        const allOption = document.createElement('option');
+        allOption.value = '';
+        allOption.textContent = TRANSLATIONS[currentLang].opt_all_types || 'Wszystkie typy';
+        select.appendChild(allOption);
+
+        // Define domains to list
+        const domains = [
+            'light', 'switch', 'sensor', 'binary_sensor', 'media_player',
+            'cover', 'climate', 'fan', 'lock', 'script', 'button', 'input_button'
+        ];
+
+        domains.forEach(dom => {
+            const option = document.createElement('option');
+            option.value = dom;
+            // Map 'input_button' to 'button' translation key if specialized key missing, or use logic
+            const transKey = 'dom_' + (dom === 'input_button' ? 'button' : dom);
+            option.textContent = TRANSLATIONS[currentLang][transKey] || dom;
+            select.appendChild(option);
+        });
+    }
+
+    function filterEntities() {
+        const areaSelect = document.getElementById('area-select');
+        const domainSelect = document.getElementById('domain-select');
         const datalist = document.getElementById('entity-list');
         const lbl = document.getElementById('lbl-entity-title');
 
-        if (!select || !datalist || !entitiesData) return;
+        if (!areaSelect || !domainSelect || !datalist || !entitiesData) return;
 
-        selectedAreaId = select.value;
-        localStorage.setItem('joan_selected_area', selectedAreaId);
+        selectedAreaId = areaSelect.value;
+        const selectedDomain = domainSelect.value;
 
-        // Update Label with current filter info
+        // Update Label
         if (lbl) {
             const baseText = TRANSLATIONS[currentLang].lbl_entity || 'Encja (Wyszukaj po nazwie lub ID)';
-            // Only show extended label if filter is ENABLED and area is selected
-            if (areaFilterEnabled && selectedAreaId) {
-                const areaName = select.options[select.selectedIndex]?.text || selectedAreaId;
-                const activeAreaText = (TRANSLATIONS[currentLang].lbl_current_area || "aktualny obszar: {0}").replace('{0}', areaName);
-                lbl.innerHTML = `${baseText} <span style="color: #9c27b0;">(${activeAreaText})</span>`;
+
+            if (areaFilterEnabled && (selectedAreaId || selectedDomain)) {
+                let infoParts = [];
+
+                // Area Text
+                const areaName = selectedAreaId ? (areaSelect.options[areaSelect.selectedIndex]?.text || selectedAreaId) : (TRANSLATIONS[currentLang].opt_all_areas);
+
+                // Domain Text
+                const domainName = selectedDomain ? (domainSelect.options[domainSelect.selectedIndex]?.text || selectedDomain) : (TRANSLATIONS[currentLang].opt_all_types);
+
+                // Construct label: "area: Kitchen, type: Light"
+                const labelTemplate = TRANSLATIONS[currentLang].lbl_current_area || "obszar: {0}, typ: {1}";
+                const labelText = labelTemplate.replace('{0}', areaName).replace('{1}', domainName);
+
+                // Updated color to #ea80fc as requested
+                lbl.innerHTML = `${baseText} <span style="color: #ea80fc;">(${labelText})</span>`;
             } else {
                 lbl.innerHTML = baseText;
             }
         }
 
-        // Clear existing datalist
+        // Clear datalist
         datalist.innerHTML = '';
 
-        // Filter entities based on selected area
-        let filteredEntities = entitiesData;
-        if (selectedAreaId) {
-            filteredEntities = entitiesData.filter(e => e.area_id === selectedAreaId);
-        }
+        // Filter Logic
+        let filteredEntities = entitiesData.filter(e => {
+            let matchesArea = true;
+            let matchesDomain = true;
 
-        // Populate datalist with filtered entities
+            if (selectedAreaId) {
+                matchesArea = (e.area_id === selectedAreaId);
+            }
+
+            if (selectedDomain) {
+                // Check if entity_id starts with "domain."
+                matchesDomain = e.id.startsWith(selectedDomain + '.');
+                // Special handling for scripts/scenes if grouped?
+                if (selectedDomain === 'script') {
+                    matchesDomain = e.id.startsWith('script.') || e.id.startsWith('scene.');
+                }
+            }
+
+            return matchesArea && matchesDomain;
+        });
+
+        // Populate datalist
         filteredEntities.forEach(obj => {
             const opt = document.createElement('option');
             opt.value = obj.id;
