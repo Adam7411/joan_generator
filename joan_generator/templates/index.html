@@ -2981,7 +2981,16 @@
 
             let matches = [];
 
-            for (const obj of entitiesData) {
+            // Determine source data based on area filter
+            let sourceData = entitiesData;
+            // Check if filter variables exist (they are defined later in the file)
+            if (typeof areaFilterEnabled !== 'undefined' && typeof selectedAreaId !== 'undefined') {
+                if (areaFilterEnabled && selectedAreaId) {
+                    sourceData = entitiesData.filter(e => e.area_id === selectedAreaId);
+                }
+            }
+
+            for (const obj of sourceData) {
                 const id = (obj.id || "").toLowerCase();
                 const friendlyName = (obj.attributes && obj.attributes.friendly_name ? obj.attributes.friendly_name : "").toLowerCase();
 
@@ -5457,11 +5466,6 @@ class DashSaver(hass.Hass):
         selectedAreaId = select.value;
         localStorage.setItem('joan_selected_area', selectedAreaId);
 
-        console.log(`🔍 Filtering entities by area: "${selectedAreaId}"`);
-        if (entitiesData.length > 0) {
-            console.log('  Sample entity:', entitiesData[0]);
-        }
-
         // Clear existing datalist
         datalist.innerHTML = '';
 
@@ -5469,9 +5473,6 @@ class DashSaver(hass.Hass):
         let filteredEntities = entitiesData;
         if (selectedAreaId) {
             filteredEntities = entitiesData.filter(e => e.area_id === selectedAreaId);
-            console.log(`  Found ${filteredEntities.length} entities for area "${selectedAreaId}"`);
-        } else {
-            console.log('  Showing all entities (no area selected)');
         }
 
         // Populate datalist with filtered entities
