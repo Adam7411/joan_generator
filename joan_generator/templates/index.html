@@ -2485,6 +2485,21 @@
                 btn_save_ad: "🚀 ZAPISZ BEZPOŚREDNIO W APPDAEMON",
                 status_details: "Token: {token_source} • API: {api_url} • Encje: {entity_count} • AppDaemon: {appdaemon_slug}",
                 status_details_missing: "Brak danych połączenia.",
+
+                // --- INFO MODAL PL ---
+                info_lbl_entities: "Liczba Encji:",
+                info_lbl_slug: "AppDaemon Slug:",
+                info_lbl_source: "Źródło API:",
+                info_lbl_bridge: "Plik dash_saver.py:",
+                info_lbl_dash_count: "Liczba Dashboardów:",
+                info_lbl_path: "Ścieżka Config AppDaemon:",
+                info_lbl_area_filter: "Filtr obszarów:",
+                info_area_filter_enable: "Włącz",
+                info_area_filter_title: "Filtrowanie encji według obszarów",
+                info_area_filter_desc: "Włącz aby filtrować encje według pomieszczeń (kuchnia, salon, łazienka...)",
+                info_bridge_yes: "TAK (Aktywny)",
+                info_bridge_no: "NIE / BRAK",
+
                 battery_warning: "⚠️ <b>Uwaga Bateria:</b> Unikaj encji zmieniających się bardzo często (np. napięcie w czasie rzeczywistym). Częste odświeżanie ekranu szybko zużywa baterię!",
                 import_success: "Pomyślnie zaimportowano układ.",
                 import_error_layout: "Błąd: Nie znaleziono layoutu.",
@@ -2793,7 +2808,11 @@
                 link_addon: "Visionect Joan for Home Assistant add-on",
                 link_generator: "This Generator (Documentation & Code)",
                 list_dashboards_title: "Dashboard List:",
-                dash_list_empty: "(none)"
+                info_lbl_area_filter: "Area Filter:",
+                info_area_filter_enable: "Enable",
+                info_area_filter_title: "Filter Entities by Areas",
+                info_area_filter_desc: "Enable to filter entities by rooms (kitchen, living room, bathroom...)",
+                info_lbl_path: "AppDaemon Config Path:"
             },
             pl_extra: {
                 info_size_px: "Rozmiar PX",
@@ -3041,7 +3060,14 @@
             // Jeśli pole puste, ale mamy filtr obszaru - pokaż wszystkie encje z obszaru
             if ((!val || val.length < 1) && !forceSmartTitle) {
                 if (isFiltered) {
-                    sourceData.forEach(obj => {
+                    // Limit results for performance
+                    const matches = sourceData.filter(e => {
+                        if (!val) return true;
+                        const search = val.toLowerCase();
+                        return e.id.toLowerCase().includes(search) || (e.attributes && e.attributes.friendly_name && e.attributes.friendly_name.toLowerCase().includes(search));
+                    }).slice(0, 100);
+
+                    matches.forEach(obj => {
                         const opt = document.createElement('option');
                         opt.value = obj.id;
                         const friendly = obj.attributes && obj.attributes.friendly_name ? obj.attributes.friendly_name : "";
@@ -4677,7 +4703,8 @@
                 return matchesArea && matchesDomain;
             });
 
-            filteredEntities.forEach(obj => {
+            // Populate datalist (limited to 100 for performance)
+            filteredEntities.slice(0, 100).forEach(obj => {
                 const opt = document.createElement('option');
                 opt.value = obj.id;
                 const friendly = obj.attributes && obj.attributes.friendly_name ? obj.attributes.friendly_name : '';
@@ -4976,14 +5003,32 @@
         document.addEventListener('DOMContentLoaded', () => {
             const checkbox = document.getElementById('toggle-area-filter');
             const section = document.getElementById('area-filter-section');
-            if (checkbox && areaFilterEnabled) {
+
+            // Sync with localStorage
+            if (areaFilterEnabled && checkbox) {
                 checkbox.checked = true;
-                if (section) {
-                    section.style.display = 'block';
-                    populateAreaSelect();
-                    populateDomainSelect();
-                }
+                if (section) section.style.display = 'block';
+                populateAreaSelect();
+                populateDomainSelect();
             }
+
+            // Sync other modals
+            window.addEventListener('click', function (event) {
+                const helpModal = document.getElementById('battery-help-modal');
+                const visionectModal = document.getElementById('visionect-help-modal');
+                const configModal = document.getElementById('ad-config-modal');
+                const infoModal = document.getElementById('info-modal');
+                const importModal = document.getElementById('import-modal');
+                const linksModal = document.getElementById('links-modal');
+
+                if (event.target == helpModal) closeBatteryHelp();
+                if (event.target == visionectModal) closeVisionectHelp();
+                if (event.target == configModal) closeAdConfig();
+                if (event.target == infoModal) closeInfoModal();
+                if (event.target == importModal) closeImportModal();
+                if (event.target == linksModal) closeLinksModal();
+            });
+
             updateResultPathsToHost();
         });
 
@@ -5406,15 +5451,54 @@ class DashSaver(hass.Hass):
         document.body.removeChild(textArea);
     }
 
-    // Opcjonalnie: Zamknij okno po kliknięciu poza nim
-    window.addEventListener('click', function (event) {
-        const helpModal = document.getElementById('battery-help-modal');
-        const visionectModal = document.getElementById('visionect-help-modal');
-        const configModal = document.getElementById('ad-config-modal');
-        if (event.target == helpModal) closeBatteryHelp();
-        if (event.target == visionectModal) closeVisionectHelp();
-        if (event.target == configModal) closeAdConfig();
-    });
+    // Info Modal Logic
+    function showInfoModal() {
+        const m = document.getElementById('info-modal');
+        if (!m) return;
+
+        // Populate fields
+        document.getElementById('info-entities').innerText = typeof connectionInfo !== 'undefined' ? connectionInfo.entity_count : '-';
+        document.getElementById('info-ad-slug').innerText = typeof connectionInfo !== 'undefined' ? connectionInfo.appdaemon_slug : '-';
+        document.getElementById('info-api-source').innerText = typeof connectionInfo !== 'undefined' ? connectionInfo.token_source : '-';
+
+        const bridgeActive = typeof connectionInfo !== 'undefined' && connectionInfo.bridge_active;
+        const brText = bridgeActive ? TRANSLATIONS[currentLang].info_bridge_yes : TRANSLATIONS[currentLang].info_bridge_no;
+        document.getElementById('info-bridge').innerText = brText;
+        document.getElementById('info-bridge').style.color = bridgeActive ? 'green' : 'red';
+
+        const dashCount = typeof dashboardsList !== 'undefined' ? dashboardsList.length : 0;
+        document.getElementById('info-dash-count').innerText = dashCount;
+
+        // Update dynamic path
+        const pathEl = document.getElementById('info-path');
+        if (pathEl) {
+            const host = window.location.hostname || '[HA_IP]';
+            pathEl.textContent = pathEl.getAttribute('data-template').replace(/\[HA_IP\]/g, host);
+        }
+
+        // Populate Dashboard List
+        const listDiv = document.getElementById('info-dash-list');
+        if (listDiv) {
+            listDiv.innerHTML = '';
+            const dashes = typeof dashboardsList !== 'undefined' ? dashboardsList : [];
+            if (dashes.length > 0) {
+                dashes.forEach(d => {
+                    const div = document.createElement('div');
+                    div.style.padding = '4px 0';
+                    div.style.borderBottom = '1px solid #eee';
+                    // Fix [object Object]: d might be object {name: "foo.dash"} or string
+                    const name = typeof d === 'object' ? (d.name || d.filename || JSON.stringify(d)) : d;
+                    div.innerText = '📄 ' + name;
+                    listDiv.appendChild(div);
+                });
+            } else {
+                listDiv.innerText = TRANSLATIONS[currentLang].dash_list_empty || '(none)';
+            }
+        }
+
+        m.style.display = 'block';
+    }
+    function closeInfoModal() { document.getElementById('info-modal').style.display = 'none'; }
 </script>
 
 <!-- Import Modal -->
@@ -5489,9 +5573,6 @@ class DashSaver(hass.Hass):
 
     function loadDashboard(filename) {
         const t = TRANSLATIONS[currentLang];
-        // Confirm first? Maybe not needed for just viewing code, but good practice if checking overwrite
-        // User asked to just "load here", so we will fetch and put into textarea.
-
         fetch('api/read_dashboard/' + encodeURIComponent(filename))
             .then(r => r.json())
             .then(data => {
@@ -5499,7 +5580,6 @@ class DashSaver(hass.Hass):
                     const importArea = document.getElementById('import-code');
                     if (importArea) {
                         importArea.value = data.content;
-                        // Scroll to the import section
                         document.getElementById('import-section').scrollIntoView({ behavior: 'smooth' });
                         closeImportModal();
                         showToast("✅ " + filename + " wczytany do edytora!", 'success');
@@ -5513,75 +5593,24 @@ class DashSaver(hass.Hass):
             });
     }
 
-    // Close modal when clicking outside (extended)
     const existingWindowOnClick = window.onclick;
     window.onclick = function (event) {
         if (existingWindowOnClick) existingWindowOnClick(event);
 
         const modal = document.getElementById('import-modal');
         const linksModal = document.getElementById('links-modal');
-        if (event.target == modal) {
-            closeImportModal();
-        }
-        if (event.target == linksModal) {
-            closeLinksModal();
-        }
+        const infoModal = document.getElementById('info-modal');
+        const batteryModal = document.getElementById('battery-help-modal');
+        const visionectModal = document.getElementById('visionect-help-modal');
+        const adConfigModal = document.getElementById('ad-config-modal');
+
+        if (event.target == modal) closeImportModal();
+        if (event.target == linksModal) closeLinksModal();
+        if (event.target == infoModal) closeInfoModal();
+        if (event.target == batteryModal) closeBatteryHelp();
+        if (event.target == visionectModal) closeVisionectHelp();
+        if (event.target == adConfigModal) closeAdConfig();
     }
-
-    // Auto-run IP replacement on load
-    document.addEventListener('DOMContentLoaded', () => {
-        if (typeof updateResultPathsToHost === 'function') {
-            updateResultPathsToHost();
-        }
-    });
-    // Info Modal Logic
-    function showInfoModal() {
-        const m = document.getElementById('info-modal');
-        if (!m) return;
-
-        // Populate fields
-        document.getElementById('info-entities').innerText = typeof connectionInfo !== 'undefined' ? connectionInfo.entity_count : '-';
-        document.getElementById('info-ad-slug').innerText = typeof connectionInfo !== 'undefined' ? connectionInfo.appdaemon_slug : '-';
-        document.getElementById('info-api-source').innerText = typeof connectionInfo !== 'undefined' ? connectionInfo.token_source : '-';
-
-        const bridgeActive = typeof connectionInfo !== 'undefined' && connectionInfo.bridge_active;
-        const brText = bridgeActive ? TRANSLATIONS[currentLang].info_bridge_yes : TRANSLATIONS[currentLang].info_bridge_no;
-        document.getElementById('info-bridge').innerText = brText;
-        document.getElementById('info-bridge').style.color = bridgeActive ? 'green' : 'red';
-
-        const dashCount = typeof dashboardsList !== 'undefined' ? dashboardsList.length : 0;
-        document.getElementById('info-dash-count').innerText = dashCount;
-
-        // Update dynamic path
-        const pathEl = document.getElementById('info-path');
-        if (pathEl) {
-            const host = window.location.hostname || '[HA_IP]';
-            pathEl.textContent = pathEl.getAttribute('data-template').replace(/\[HA_IP\]/g, host);
-        }
-
-        // Populate Dashboard List
-        const listDiv = document.getElementById('info-dash-list');
-        if (listDiv) {
-            listDiv.innerHTML = '';
-            const dashes = typeof dashboardsList !== 'undefined' ? dashboardsList : [];
-            if (dashes.length > 0) {
-                dashes.forEach(d => {
-                    const div = document.createElement('div');
-                    div.style.padding = '4px 0';
-                    div.style.borderBottom = '1px solid #eee';
-                    // Fix [object Object]: d might be object {name: "foo.dash"} or string
-                    const name = typeof d === 'object' ? (d.name || d.filename || JSON.stringify(d)) : d;
-                    div.innerText = '📄 ' + name;
-                    listDiv.appendChild(div);
-                });
-            } else {
-                listDiv.innerText = TRANSLATIONS[currentLang].dash_list_empty || '(none)';
-            }
-        }
-
-        m.style.display = 'block';
-    }
-    function closeInfoModal() { document.getElementById('info-modal').style.display = 'none'; }
 </script>
 
 <!-- INFO MODAL -->
@@ -5632,14 +5661,10 @@ class DashSaver(hass.Hass):
                 <div id="info-dash-count">...</div>
             </div>
             <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #ddd;">
-                <div><strong>Ścieżka Config AppDaemon:</strong></div>
+                <div><strong data-i18n="info_lbl_path">Ścieżka Config AppDaemon:</strong></div>
                 <div id="info-path" data-template="\\[HA_IP]\addon_configs\{{ connection_info.appdaemon_slug }}"
                     style="font-family: monospace; background: #f5f5f5; padding: 5px; border-radius: 4px; margin-top: 5px; word-break: break-all; color: #333;">
                     ...
-                    <div id="info-path" data-template="\\[HA_IP]\addon_configs\{{ connection_info.appdaemon_slug }}"
-                        style="font-family: monospace; background: #f5f5f5; padding: 5px; border-radius: 4px; margin-top: 5px; word-break: break-all; color: #333;">
-                        ...
-                    </div>
                 </div>
 
                 <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #ddd;">
@@ -5654,61 +5679,61 @@ class DashSaver(hass.Hass):
     </div>
 </div>
 
-<!--USEFUL LINKS MODAL-- >
-        <div id="links-modal" class="modal" style="z-index: 100001;">
-            <div class="modal-content" style="max-width: 600px;">
-                <div class="modal-header">
-                    <h2 data-i18n="modal_links_title">Przydatne Linki</h2>
-                    <span class="close" onclick="closeLinksModal()">&times;</span>
-                </div>
-                <div class="modal-body" style="font-size: 0.95em; line-height: 1.6;">
-                    <ul style="list-style: none; padding: 0;">
-                        <li
-                            style="margin-bottom: 15px; padding: 12px; background: #f9f9f9; border-left: 4px solid #4caf50; border-radius: 4px;">
-                            <a href="https://github.com/Adam7411/visionect-v3-allinone" target="_blank"
-                                style="text-decoration: none; color: #1565c0; font-weight: bold;" data-i18n="link_v3_aio">
-                                Visionect Software Suite Server v3 (All‑in‑One) installation in Home Assistant
-                            </a>
-                        </li>
-                        <li
-                            style="margin-bottom: 15px; padding: 12px; background: #f9f9f9; border-left: 4px solid #4caf50; border-radius: 4px;">
-                            <a href="https://github.com/Adam7411/Joan-6-Visionect_Home-Assistant_EN" target="_blank"
-                                style="text-decoration: none; color: #1565c0; font-weight: bold;" data-i18n="link_v3_proxmox">
-                                Visionect Software Suite - Installation in Proxmox
-                            </a>
-                        </li>
-                        <li
-                            style="margin-bottom: 15px; padding: 12px; background: #f9f9f9; border-left: 4px solid #4caf50; border-radius: 4px;">
-                            <a href="https://github.com/Adam7411/visionect_joan" target="_blank"
-                                style="text-decoration: none; color: #1565c0; font-weight: bold;" data-i18n="link_addon">
-                                Visionect Joan for Home Assistant add-on
-                            </a>
-                        </li>
-                        <li
-                            style="margin-bottom: 15px; padding: 12px; background: #f9f9f9; border-left: 4px solid #4caf50; border-radius: 4px;">
-                            <a href="https://github.com/Adam7411/joan_generator" target="_blank"
-                                style="text-decoration: none; color: #1565c0; font-weight: bold;" data-i18n="link_generator">
-                                Joan 6: AppDaemon Dashboard Generator add-on
-                            </a>
-                        </li>
-                        <li
-                            style="margin-bottom: 15px; padding: 12px; background: #f9f9f9; border-left: 4px solid #ff9800; border-radius: 4px; border-top: 1px solid #ddd; padding-top: 20px; margin-top: 20px;">
-                            <a href="https://appdaemon.readthedocs.io/en/latest/DASHBOARD_CREATION.html#widget-reference"
-                                target="_blank" style="text-decoration: none; color: #e65100; font-weight: bold;"
-                                data-i18n="link_appdaemon_docs">
-                                AppDaemon Widget Creation Documentation
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-                <div class="modal-footer"
-                    style="padding-top: 10px; border-top: 1px solid #ddd; display: flex; justify-content: flex-end;">
-                    <button type="button" class="btn" style="background: #607d8b; color: white;" onclick="closeLinksModal()"
-                        data-i18n="btn_cancel">Zamknij</button>
-                </div>
-            </div>
+<!-- USEFUL LINKS MODAL -->
+<div id="links-modal" class="modal" style="z-index: 100001;">
+    <div class="modal-content" style="max-width: 600px;">
+        <div class="modal-header">
+            <h2 data-i18n="modal_links_title">Przydatne Linki</h2>
+            <span class="close" onclick="closeLinksModal()">&times;</span>
         </div>
+        <div class="modal-body" style="font-size: 0.95em; line-height: 1.6;">
+            <ul style="list-style: none; padding: 0;">
+                <li
+                    style="margin-bottom: 15px; padding: 12px; background: #f9f9f9; border-left: 4px solid #4caf50; border-radius: 4px;">
+                    <a href="https://github.com/Adam7411/visionect-v3-allinone" target="_blank"
+                        style="text-decoration: none; color: #1565c0; font-weight: bold;" data-i18n="link_v3_aio">
+                        Visionect Software Suite Server v3 (All‑in‑One) installation in Home Assistant
+                    </a>
+                </li>
+                <li
+                    style="margin-bottom: 15px; padding: 12px; background: #f9f9f9; border-left: 4px solid #4caf50; border-radius: 4px;">
+                    <a href="https://github.com/Adam7411/Joan-6-Visionect_Home-Assistant_EN" target="_blank"
+                        style="text-decoration: none; color: #1565c0; font-weight: bold;" data-i18n="link_v3_proxmox">
+                        Visionect Software Suite - Installation in Proxmox
+                    </a>
+                </li>
+                <li
+                    style="margin-bottom: 15px; padding: 12px; background: #f9f9f9; border-left: 4px solid #4caf50; border-radius: 4px;">
+                    <a href="https://github.com/Adam7411/visionect_joan" target="_blank"
+                        style="text-decoration: none; color: #1565c0; font-weight: bold;" data-i18n="link_addon">
+                        Visionect Joan for Home Assistant add-on
+                    </a>
+                </li>
+                <li
+                    style="margin-bottom: 15px; padding: 12px; background: #f9f9f9; border-left: 4px solid #4caf50; border-radius: 4px;">
+                    <a href="https://github.com/Adam7411/joan_generator" target="_blank"
+                        style="text-decoration: none; color: #1565c0; font-weight: bold;" data-i18n="link_generator">
+                        Joan 6: AppDaemon Dashboard Generator add-on
+                    </a>
+                </li>
+                <li
+                    style="margin-bottom: 15px; padding: 12px; background: #f9f9f9; border-left: 4px solid #ff9800; border-radius: 4px; border-top: 1px solid #ddd; padding-top: 20px; margin-top: 20px;">
+                    <a href="https://appdaemon.readthedocs.io/en/latest/DASHBOARD_CREATION.html#widget-reference"
+                        target="_blank" style="text-decoration: none; color: #e65100; font-weight: bold;"
+                        data-i18n="link_appdaemon_docs">
+                        AppDaemon Widget Creation Documentation
+                    </a>
+                </li>
+            </ul>
+        </div>
+        <div class="modal-footer"
+            style="padding-top: 10px; border-top: 1px solid #ddd; display: flex; justify-content: flex-end;">
+            <button type="button" class="btn" style="background: #607d8b; color: white;" onclick="closeLinksModal()"
+                data-i18n="btn_cancel">Zamknij</button>
+        </div>
+    </div>
+</div>
 
-</body >
+</body>
 
-</html >
+</html>
