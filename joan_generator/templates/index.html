@@ -1454,6 +1454,30 @@
             <input type="hidden" name="grid_rows" id="form-rows" value="8">
             <input type="hidden" name="default_widget_size" id="input-def-size" value="2, 1">
 
+
+            <!-- Area Filter Section (Hidden by default) -->
+            <div id="area-filter-section" class="section" style="display: none; margin-bottom: 20px;">
+                <div class="section-title">
+                    <i class="mdi mdi-home-floor-1"></i>
+                    <span data-i18n="sec_area_filter">Filtr obszarów</span>
+                </div>
+                <div class="add-widget-box">
+                    <div class="flex-row">
+                        <div class="flex-col" style="flex: 100%;">
+                            <label data-i18n="lbl_select_area">Wybierz obszar:</label>
+                            <select id="area-select" onchange="filterEntitiesByArea()"
+                                style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid var(--border); background: var(--bg-input); color: var(--text-main); font-size: 14px;">
+                                <option value="" data-i18n="opt_all_areas">Wszystkie obszary</option>
+                            </select>
+                            <div class="input-hint" style="margin-top: 8px;">
+                                <span data-i18n="hint_area_filter">🏠 Wybierz pomieszczenie aby zobaczyć tylko encje z
+                                    tego obszaru</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="add-widget-box" id="editor-box">
                 <div class="section-title">
                     <span id="lbl-add-widget" data-i18n="sec_add">2. Dodaj Widget</span>
@@ -2527,6 +2551,12 @@
                 info_lbl_source: "Źródło API:",
                 info_lbl_bridge: "Plik dash_saver.py:",
                 info_lbl_dash_count: "Liczba Dashboardów:",
+                info_lbl_area_filter: "Filtr obszarów:",
+                info_area_filter_enable: "Włącz",
+                sec_area_filter: "Filtr obszarów",
+                lbl_select_area: "Wybierz obszar:",
+                opt_all_areas: "Wszystkie obszary",
+                hint_area_filter: "🏠 Wybierz pomieszczenie aby zobaczyć tylko encje z tego obszaru",
                 info_bridge_yes: "TAK (Aktywny)",
                 info_bridge_no: "NIE / BRAK",
                 btn_refresh_entities_title: "Odśwież listę encji",
@@ -2703,6 +2733,12 @@
                 info_lbl_source: "API Source:",
                 info_lbl_bridge: "dash_saver.py file:",
                 info_lbl_dash_count: "Dashboard Count:",
+                info_lbl_area_filter: "Area Filter:",
+                info_area_filter_enable: "Enable",
+                sec_area_filter: "Area Filter",
+                lbl_select_area: "Select area:",
+                opt_all_areas: "All areas",
+                hint_area_filter: "🏠 Select a room to see only entities from that area",
                 info_bridge_yes: "YES (Active)",
                 info_bridge_no: "NO / MISSING",
                 btn_refresh_entities_title: "Refresh entity list",
@@ -5322,6 +5358,123 @@ class DashSaver(hass.Hass):
     }
     function closeInfoModal() { document.getElementById('info-modal').style.display = 'none'; }
 
+
+    // =========================================================================
+    // AREA FILTERING FUNCTIONALITY
+    // =========================================================================
+
+    // Area data from backend
+    const areasData = {{ areas | safe}} || [];
+
+    // Load area filter settings from localStorage
+    let areaFilterEnabled = localStorage.getItem('joan_area_filter_enabled') === 'true';
+    let selectedAreaId = localStorage.getItem('joan_selected_area') || '';
+
+    function toggleAreaFilter() {
+        const checkbox = document.getElementById('toggle-area-filter');
+        const section = document.getElementById('area-filter-section');
+
+        if (!checkbox || !section) return;
+
+        areaFilterEnabled = checkbox.checked;
+        localStorage.setItem('joan_area_filter_enabled', areaFilterEnabled);
+
+        if (areaFilterEnabled) {
+            section.style.display = 'block';
+            populateAreaSelect();
+            filterEntitiesByArea();
+        } else {
+            section.style.display = 'none';
+            selectedAreaId = '';
+            localStorage.removeItem('joan_selected_area');
+            // Reset entity search to show all entities
+            const datalist = document.getElementById('entity-list');
+            if (datalist && entitiesData) {
+                datalist.innerHTML = '';
+                entitiesData.forEach(obj => {
+                    const opt = document.createElement('option');
+                    opt.value = obj.id;
+                    const friendly = obj.attributes && obj.attributes.friendly_name ? obj.attributes.friendly_name : '';
+                    opt.label = friendly ? `${friendly} (${obj.id})` : obj.id;
+                    datalist.appendChild(opt);
+                });
+            }
+        }
+    }
+
+    function populateAreaSelect() {
+        const select = document.getElementById('area-select');
+        if (!select) return;
+
+        // Clear existing options except "All areas"
+        select.innerHTML = '';
+
+        // Add "All areas" option
+        const allOption = document.createElement('option');
+        allOption.value = '';
+        allOption.setAttribute('data-i18n', 'opt_all_areas');
+        allOption.textContent = TRANSLATIONS[currentLang].opt_all_areas || 'Wszystkie obszary';
+        select.appendChild(allOption);
+
+        // Add area options
+        if (areasData && areasData.length > 0) {
+            areasData.forEach(area => {
+                const option = document.createElement('option');
+                option.value = area.id;
+                option.textContent = area.name;
+                select.appendChild(option);
+            });
+        }
+
+        // Restore selected area
+        if (selectedAreaId) {
+            select.value = selectedAreaId;
+        }
+    }
+
+    function filterEntitiesByArea() {
+        const select = document.getElementById('area-select');
+        const datalist = document.getElementById('entity-list');
+
+        if (!select || !datalist || !entitiesData) return;
+
+        selectedAreaId = select.value;
+        localStorage.setItem('joan_selected_area', selectedAreaId);
+
+        // Clear existing datalist
+        datalist.innerHTML = '';
+
+        // Filter entities based on selected area
+        let filteredEntities = entitiesData;
+        if (selectedAreaId) {
+            filteredEntities = entitiesData.filter(e => e.area_id === selectedAreaId);
+        }
+
+        // Populate datalist with filtered entities
+        filteredEntities.forEach(obj => {
+            const opt = document.createElement('option');
+            opt.value = obj.id;
+            const friendly = obj.attributes && obj.attributes.friendly_name ? obj.attributes.friendly_name : '';
+            opt.label = friendly ? `${friendly} (${obj.id})` : obj.id;
+            datalist.appendChild(opt);
+        });
+    }
+
+    // Initialize area filter on page load
+    document.addEventListener('DOMContentLoaded', () => {
+        const checkbox = document.getElementById('toggle-area-filter');
+        const section = document.getElementById('area-filter-section');
+
+        if (checkbox && areaFilterEnabled) {
+            checkbox.checked = true;
+            if (section) {
+                section.style.display = 'block';
+                populateAreaSelect();
+                // Don't filter immediately on load, let user trigger it
+            }
+        }
+    });
+
     // Init language from storage
     if (typeof setLang === 'function' && typeof currentLang !== 'undefined') {
         setLang(currentLang);
@@ -5352,6 +5505,15 @@ class DashSaver(hass.Hass):
 
                 <div><strong data-i18n="info_lbl_dash_count">Liczba Dashboardów:</strong></div>
                 <div id="info-dash-count">...</div>
+
+                <div><strong data-i18n="info_lbl_area_filter">Filtr obszarów:</strong></div>
+                <div>
+                    <label style="cursor: pointer;">
+                        <input type="checkbox" id="toggle-area-filter" onchange="toggleAreaFilter()"
+                            style="cursor: pointer;">
+                        <span data-i18n="info_area_filter_enable">Włącz</span>
+                    </label>
+                </div>
             </div>
             <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #ddd;">
                 <div><strong>Ścieżka Config AppDaemon:</strong></div>
