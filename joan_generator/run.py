@@ -56,9 +56,83 @@ if not TOKEN:
 # -------------------------------------------------------------------------
 # FETCHING DATA FROM HOME ASSISTANT
 # -------------------------------------------------------------------------
+def get_ha_areas():
+    """Fetch all areas from Home Assistant."""
+    if not TOKEN:
+        return []
+    headers = {"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json"}
+    try:
+        response = requests.get(f"{API_URL}/config/area_registry", headers=headers, timeout=10)
+        if response.status_code == 200:
+            data = response.json()
+            areas = []
+            for area in data:
+                areas.append({
+                    'id': area.get('area_id'),
+                    'name': area.get('name', area.get('area_id'))
+                })
+            areas.sort(key=lambda x: x['name'])
+            print(f"✅ Fetched {len(areas)} areas from Home Assistant")
+            return areas
+    except Exception as e:
+        print(f"❌ Exception while fetching areas: {e}")
+    return []
+
+def get_entity_area_mapping():
+    """Create mapping of entity_id -> area_id."""
+    if not TOKEN:
+        return {}
+    headers = {"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json"}
+    
+    try:
+        # Get entity registry
+        entity_reg_response = requests.get(f"{API_URL}/config/entity_registry", headers=headers, timeout=10)
+        # Get device registry
+        device_reg_response = requests.get(f"{API_URL}/config/device_registry", headers=headers, timeout=10)
+        
+        if entity_reg_response.status_code != 200 or device_reg_response.status_code != 200:
+            print(f"⚠️ Could not fetch entity/device registry (Status: {entity_reg_response.status_code}/{device_reg_response.status_code})")
+            return {}
+        
+        entity_registry = entity_reg_response.json()
+        device_registry = device_reg_response.json()
+        
+        # Create device_id -> area_id mapping
+        device_to_area = {}
+        for device in device_registry:
+            device_id = device.get('id')
+            area_id = device.get('area_id')
+            if device_id and area_id:
+                device_to_area[device_id] = area_id
+        
+        # Create entity_id -> area_id mapping
+        entity_to_area = {}
+        for entity in entity_registry:
+            entity_id = entity.get('entity_id')
+            # Direct area assignment takes precedence
+            area_id = entity.get('area_id')
+            if not area_id:
+                # Fall back to device area
+                device_id = entity.get('device_id')
+                if device_id:
+                    area_id = device_to_area.get(device_id)
+            
+            if entity_id and area_id:
+                entity_to_area[entity_id] = area_id
+        
+        print(f"✅ Created area mapping for {len(entity_to_area)} entities")
+        return entity_to_area
+    except Exception as e:
+        print(f"❌ Exception while creating area mapping: {e}")
+        return {}
+
 def get_ha_entities():
     if not TOKEN:
         return []
+    
+    # Get area mapping first
+    entity_area_map = get_entity_area_mapping()
+    
     headers = {"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json"}
     try:
         response = requests.get(f"{API_URL}/states", headers=headers, timeout=10)
@@ -68,15 +142,18 @@ def get_ha_entities():
             for state in data:
                 attributes = state.get('attributes', {})
                 unit = attributes.get('unit_of_measurement', '')
+                entity_id = state['entity_id']
+                
                 entity_obj = {
-                    'id': state['entity_id'],
+                    'id': entity_id,
                     'state': state['state'],
                     'attributes': {
-                        'friendly_name': attributes.get('friendly_name', state['entity_id']),
+                        'friendly_name': attributes.get('friendly_name', entity_id),
                         'device_class': attributes.get('device_class', ''),
                         'unit_of_measurement': unit
                     },
-                    'unit': unit
+                    'unit': unit,
+                    'area_id': entity_area_map.get(entity_id, None)
                 }
                 entities.append(entity_obj)
             entities.sort(key=lambda x: x['id'])
@@ -1062,6 +1139,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
 def index():
     generated_yaml = ""
     ha_entities = get_ha_entities()
+    ha_areas = get_ha_areas()  # Fetch areas
     entities_map = {e['id']: e for e in ha_entities}
     dashboard_filename = "joandashboard.dash"
     dashboard_slug = "joandashboard"
@@ -1169,6 +1247,7 @@ def index():
         'index.html',
         generated_yaml=generated_yaml,
         entities=ha_entities,
+        areas=ha_areas,
         filename=dashboard_filename,
         dash_name=dashboard_slug,
         has_token=has_token,
