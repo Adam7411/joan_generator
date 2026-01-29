@@ -2553,6 +2553,8 @@
                 info_lbl_dash_count: "Liczba Dashboardów:",
                 info_lbl_area_filter: "Filtr obszarów:",
                 info_area_filter_enable: "Włącz",
+                info_area_filter_title: "Filtrowanie encji według obszarów",
+                info_area_filter_desc: "Włącz aby filtrować encje według pomieszczeń (kuchnia, salon, łazienka...)",
                 sec_area_filter: "Filtr obszarów",
                 lbl_select_area: "Wybierz obszar:",
                 opt_all_areas: "Wszystkie obszary",
@@ -2735,6 +2737,8 @@
                 info_lbl_dash_count: "Dashboard Count:",
                 info_lbl_area_filter: "Area Filter:",
                 info_area_filter_enable: "Enable",
+                info_area_filter_title: "Filter Entities by Areas",
+                info_area_filter_desc: "Enable to filter entities by rooms (kitchen, living room, bathroom...)",
                 sec_area_filter: "Area Filter",
                 lbl_select_area: "Select area:",
                 opt_all_areas: "All areas",
@@ -5364,7 +5368,7 @@ class DashSaver(hass.Hass):
     // =========================================================================
 
     // Area data from backend
-    const areasData = {{ areas | safe}} || [];
+    const areasData = {{ areas | safe }} || [];
 
     // Load area filter settings from localStorage
     let areaFilterEnabled = localStorage.getItem('joan_area_filter_enabled') === 'true';
@@ -5490,6 +5494,29 @@ class DashSaver(hass.Hass):
             <span class="close" onclick="closeInfoModal()">&times;</span>
         </div>
         <div class="modal-body" style="font-size: 0.95em; line-height: 1.6;">
+            <!-- Area Filter Toggle - At the top -->
+            <div
+                style="margin-bottom: 20px; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; color: white;">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <div style="flex: 1;">
+                        <div style="font-weight: bold; font-size: 1.1em; margin-bottom: 5px;">
+                            <i class="mdi mdi-home-floor-1" style="margin-right: 8px;"></i>
+                            <span data-i18n="info_area_filter_title">Filtrowanie encji według obszarów</span>
+                        </div>
+                        <div style="font-size: 0.85em; opacity: 0.95;" data-i18n="info_area_filter_desc">
+                            Włącz aby filtrować encje według pomieszczeń (kuchnia, salon, łazienka...)
+                        </div>
+                    </div>
+                    <div>
+                        <label style="cursor: pointer; display: flex; align-items: center; margin-left: 15px;">
+                            <input type="checkbox" id="toggle-area-filter" onchange="toggleAreaFilter()"
+                                style="cursor: pointer; width: 24px; height: 24px; margin: 0;">
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Information -->
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                 <div><strong data-i18n="info_lbl_entities">Liczba Encji:</strong></div>
                 <div id="info-entities">...</div>
@@ -5505,22 +5532,13 @@ class DashSaver(hass.Hass):
 
                 <div><strong data-i18n="info_lbl_dash_count">Liczba Dashboardów:</strong></div>
                 <div id="info-dash-count">...</div>
-
-                <div><strong data-i18n="info_lbl_area_filter">Filtr obszarów:</strong></div>
-                <div>
-                    <label style="cursor: pointer;">
-                        <input type="checkbox" id="toggle-area-filter" onchange="toggleAreaFilter()"
-                            style="cursor: pointer;">
-                        <span data-i18n="info_area_filter_enable">Włącz</span>
-                    </label>
-                </div>
             </div>
             <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #ddd;">
                 <div><strong>Ścieżka Config AppDaemon:</strong></div>
-                <div id="info-path" data-template="\\[HA_IP]\addon_configs\{{ connection_info.appdaemon_slug }}\"
+                <div id="info-path" data-template="\\[HA_IP]\addon_configs\{{ connection_info.appdaemon_slug }}"
                     style="font-family: monospace; background: #f5f5f5; padding: 5px; border-radius: 4px; margin-top: 5px; word-break: break-all; color: #333;">
                     ...
-                    <div id="info-path" data-template="\\[HA_IP]\addon_configs\{{ connection_info.appdaemon_slug }}\"
+                    <div id="info-path" data-template="\\[HA_IP]\addon_configs\{{ connection_info.appdaemon_slug }}"
                         style="font-family: monospace; background: #f5f5f5; padding: 5px; border-radius: 4px; margin-top: 5px; word-break: break-all; color: #333;">
                         ...
                     </div>
