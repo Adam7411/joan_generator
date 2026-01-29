@@ -5696,11 +5696,12 @@ class DashSaver(hass.Hass):
         const list = document.getElementById('dashboard-list');
         list.innerHTML = `<p>${t.modal_import_loading || "Loading..."}</p>`;
 
-        fetch('api/list_dashboards')
+        fetch('/api/list_dashboards')
             .then(r => r.text())
             .then(text => {
                 try {
                     return JSON.parse(text);
+
                 } catch (e) {
                     console.error("JSON Parse Error. Raw response:", text);
                     throw new Error("Invalid JSON: " + text.substring(0, 50) + "... (" + e.message + ")");
@@ -5739,7 +5740,7 @@ class DashSaver(hass.Hass):
 
     function loadDashboard(filename) {
         const t = TRANSLATIONS[currentLang];
-        fetch('api/read_dashboard/' + encodeURIComponent(filename))
+        fetch('/api/read_dashboard/' + encodeURIComponent(filename))
             .then(r => r.json())
             .then(data => {
                 if (data.status === 'success') {
