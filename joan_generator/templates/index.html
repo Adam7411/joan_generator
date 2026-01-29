@@ -625,13 +625,6 @@
             -webkit-line-clamp: 3;
             -webkit-box-orient: vertical;
             flex-grow: 0;
-            /* Zapobieganie nakładaniu się */
-            position: relative;
-            z-index: 1;
-            word-wrap: break-word;
-            overflow-wrap: break-word;
-            hyphens: auto;
-            padding: 2px 4px;
         }
 
         .ew-icon {
@@ -640,9 +633,6 @@
             margin: 2px 0;
             pointer-events: none;
             flex-grow: 0;
-            /* Zapewnienie właściwej warstwy */
-            position: relative;
-            z-index: 2;
         }
 
         .ew-value {
@@ -656,9 +646,6 @@
             padding-top: 2px;
             margin-top: auto;
             pointer-events: none;
-            /* Zapewnienie właściwej warstwy */
-            position: relative;
-            z-index: 2;
         }
 
         .ew-del {
@@ -1426,7 +1413,7 @@
                 <summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;" data-i18n="sec_import">📂 Import
                     / Eksport Kodu .DASH</summary>
                 <div style="margin-top: 15px;">
-                    <textarea id="import-code" style="height: 150px;" data-i18n-placeholder="placeholder_dash_content"
+                    <textarea id="import-code" style="height: 150px;"
                         placeholder="Wklej tutaj zawartość pliku .dash..."></textarea>
                     <button type="button" class="btn btn-import" onclick="importYaml()" data-i18n="btn_import">Wczytaj
                         Kod</button>
@@ -1436,16 +1423,12 @@
                         onclick="openImportModal()">
                         <span data-i18n="btn_import_dash">📥 IMPORTUJ DASHBOARD</span>
                     </button>
-                    {% else %}
+                    {% elif not connection_info.bridge_active %}
                     <button type="button" class="btn btn-import" style="background-color: #607d8b; margin-left: 10px;"
                         onclick="openAdConfig()">
                         <span data-i18n="btn_config_autosave">⚙️ KONFIGURUJ ZAPIS/ODCZYT</span>
                     </button>
                     {% endif %}
-
-                    <!-- Container restored and placed correctly outside if/else -->
-                    <div id="saved-dash-list" style="margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px;">
-                    </div>
                 </div>
             </details>
         </div>
@@ -1458,37 +1441,6 @@
             <input type="hidden" name="grid_rows" id="form-rows" value="8">
             <input type="hidden" name="default_widget_size" id="input-def-size" value="2, 1">
 
-
-            <!-- Area Filter Section (Hidden by default) -->
-            <div id="area-filter-section" class="section" style="display: none; margin-bottom: 20px;">
-                <div class="section-title">
-                    <i class="mdi mdi-home-floor-1"></i>
-                    <span data-i18n="sec_area_filter">Filtr obszarów</span>
-                </div>
-                <div class="add-widget-box">
-                    <div class="flex-row" style="gap: 15px;">
-                        <div class="flex-col" style="flex: 1;">
-                            <label data-i18n="lbl_select_area">Wybierz obszar:</label>
-                            <select id="area-select" onchange="filterEntities()"
-                                style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid var(--border); background: var(--bg-input); color: var(--text-main); font-size: 14px;">
-                                <option value="" data-i18n="opt_all_areas">Wszystkie obszary</option>
-                            </select>
-                        </div>
-                        <div class="flex-col" style="flex: 1;">
-                            <label data-i18n="lbl_select_domain">Wybierz typ:</label>
-                            <select id="domain-select" onchange="filterEntities()"
-                                style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid var(--border); background: var(--bg-input); color: var(--text-main); font-size: 14px;">
-                                <option value="" data-i18n="opt_all_types">Wszystkie typy</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="input-hint" style="margin-top: 8px;">
-                        <span data-i18n="hint_area_filter">🏠 Filtruj encje według obszaru i/lub typu urządzenia w polu
-                            "Encja".</span>
-                    </div>
-                </div>
-            </div>
-
             <div class="add-widget-box" id="editor-box">
                 <div class="section-title">
                     <span id="lbl-add-widget" data-i18n="sec_add">2. Dodaj Widget</span>
@@ -1498,8 +1450,7 @@
                 <div class="flex-row" style="margin-bottom: 20px;">
                     <div class="flex-col" id="grp-entity" style="flex: 100%;">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <label id="lbl-entity-title" data-i18n="lbl_entity">Encja (Wyszukaj po nazwie lub
-                                ID)</label>
+                            <label data-i18n="lbl_entity">Encja (Wyszukaj po nazwie lub ID)</label>
                             <button type="button" onclick="refreshEntities()" id="btn-refresh-ent"
                                 style="background: none; border: none; cursor: pointer; padding: 0 5px; opacity: 0.7; transition: opacity 0.3s;"
                                 onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.7"
@@ -1507,8 +1458,7 @@
                                 <i class="mdi mdi-refresh" style="font-size: 1.1em;"></i>
                             </button>
                         </div>
-                        <input list="entity-list" id="w-id" data-i18n-placeholder="placeholder_search"
-                            placeholder="np. switch.salon"
+                        <input list="entity-list" id="w-id" placeholder="np. switch.salon"
                             oninput="searchEntities(this.value); validateEntityInput(this.value); checkEntityFrequency(this.value)"
                             autocomplete="off">
                         <datalist id="entity-list"></datalist>
@@ -1526,8 +1476,8 @@
                     </div>
                     <div class="flex-col hidden" id="grp-nav" style="flex: 100%;">
                         <label data-i18n="lbl_dash_name">Nazwa Dashboardu (target)</label>
-                        <input type="text" id="w-dash" data-i18n-placeholder="lbl_dash_name" placeholder="np. main"
-                            list="nav-dash-suggestions" oninput="autoNameNav()">
+                        <input type="text" id="w-dash" placeholder="np. main" list="nav-dash-suggestions"
+                            oninput="autoNameNav()">
                         <datalist id="nav-dash-suggestions"></datalist>
                         <small id="nav-hint" class="input-hint"></small>
                     </div>
@@ -1536,7 +1486,7 @@
                 <div class="flex-row">
                     <div class="flex-col" style="flex: 2;">
                         <label data-i18n="lbl_name">Tytuł na ekranie</label>
-                        <input type="text" id="w-name" data-i18n-placeholder="limit_20" placeholder="np. Salon"
+                        <input type="text" id="w-name" placeholder="np. Salon"
                             oninput="checkTitleLimit(); renderPreview(); searchEntities(this.value, true)">
                         <div id="char-count" class="char-counter">0/20</div>
                     </div>
@@ -1625,11 +1575,10 @@
                     </div>
                     <div id="grp-icons" style="display:contents;">
                         <div id="div-icon-std" class="flex-col">
-                            <label data-i18n="lbl_icon_std">Ikona</label>
+                            <label data-i18n="lbl_icon">Ikona (Standard)</label>
                             <div class="input-group">
                                 <input type="text" id="w-icon" list="icon-list"
-                                    oninput="manualIconOverride = true; updateIconPreview()"
-                                    data-i18n-placeholder="lbl_icon" placeholder="mdi-home">
+                                    oninput="manualIconOverride = true; updateIconPreview()" placeholder="mdi-home">
                                 <div class="picker-btn" onclick="openIconPicker('w-icon')">🔍</div>
                             </div>
                         </div>
@@ -1640,7 +1589,7 @@
                                     style="font-size: 24px; margin-right: 5px; color: #444;"></i>
                                 <input type="text" id="w-icon-on" list="icon-list"
                                     oninput="manualIconOverride = true; updateIconPreview()"
-                                    data-i18n-placeholder="lbl_icon_on" placeholder="mdi-lightbulb-on">
+                                    placeholder="mdi-lightbulb-on">
                                 <div class="picker-btn" onclick="openIconPicker('w-icon-on')">🔍</div>
                             </div>
                         </div>
@@ -1651,7 +1600,7 @@
                                     style="font-size: 24px; margin-right: 5px; color: #444;"></i>
                                 <input type="text" id="w-icon-off" list="icon-list"
                                     oninput="manualIconOverride = true; updateIconPreview()"
-                                    data-i18n-placeholder="lbl_icon_off" placeholder="mdi-lightbulb-outline">
+                                    placeholder="mdi-lightbulb-outline">
                                 <div class="picker-btn" onclick="openIconPicker('w-icon-off')">🔍</div>
                             </div>
                         </div>
@@ -1691,7 +1640,7 @@
                 {% if not connection_info.bridge_active %}
                 <button type="button" class="btn btn-gen" style="flex:1; background-color: #607d8b;"
                     onclick="openAdConfig()">
-                    <span data-i18n="btn_config_autosave">⚙️ KONFIGURUJ ZAPIS/ODCZYT</span>
+                    <span data-i18n="btn_config_autosave">⚙️ KONFIGURACJA</span>
                 </button>
                 {% endif %}
 
@@ -2455,23 +2404,7 @@
                 alert_rows_limit: "Osiągnięto maksymalną ilość wierszy w wybranym układzie! Zmień układ siatki na większy.",
                 confirm_grid_shrink: "Nowy układ ma mniej wierszy niż obecnie posiadasz ({0} vs {1}). Czy usunąć nadmiarowe wiersze z dołu?",
 
-                hint_nav: `
-                    <div style="margin-top:10px; padding:12px; background:var(--highlight); border-left:4px solid var(--accent); border-radius:4px; font-size:0.9em; line-height:1.5; color:var(--text-main);">
-                        <strong style="color:var(--accent); display:block; margin-bottom:5px;">Widget Navigate (Nawigacja):</strong>
-                        Służy do przechodzenia do innego dashboardu lub zewnętrznego adresu URL.<br><br>
-                        <b>Argumenty obowiązkowe:</b><br>
-                        Należy podać albo <code>url</code> albo <code>dashboard</code>.<br><br>
-                        <b>Argumenty opcjonalne:</b><br>
-                        • <code>url</code> - Pełny adres (np. http://google.com)<br>
-                        • <code>dashboard</code> - Nazwa pliku .dash (np. MainPanel)<br>
-                        • <code>args</code> - Lista argumentów dla AppDaemon:<br>
-                        &nbsp;&nbsp;- <code>timeout</code>: Czas (s) pobytu na nowym dashboardzie.<br>
-                        &nbsp;&nbsp;- <code>return</code>: Dashboard do powrotu po timeout.<br>
-                        &nbsp;&nbsp;- <code>sticky</code>: Czy po kliknięciu wyłączyć powrót? (0/1).<br><br>
-                        <b>Przykład:</b><br>
-                        <code>args: { timeout: 10, return: "Main" }</code>
-                    </div>
-                `,
+                hint_nav: "<b>Wskazówka:</b> Wpisz nazwę pliku <code>.dash</code> (bez rozszerzenia), który znajduje się w folderze <code>\\\\[HA_HOST]\\addon_configs\\appdaemon\\dashboards\\</code>.<br>Służy do przechodzenia między ekranami.",
 
                 lbl_current_small: "(AKTUALNIE PRACUJESZ NA DASHBOARDZIE: {0})",
                 sec_manager: "Multi-Dashboard Manager (Browser)",
@@ -2503,102 +2436,97 @@
                 btn_save_ad: "🚀 ZAPISZ BEZPOŚREDNIO W APPDAEMON",
                 status_details: "Token: {token_source} • API: {api_url} • Encje: {entity_count} • AppDaemon: {appdaemon_slug}",
                 status_details_missing: "Brak danych połączenia.",
-
-                // --- INFO MODAL PL ---
+                battery_warning: "⚠️ <b>Uwaga Bateria:</b> Unikaj encji zmieniających się bardzo często (np. napięcie w czasie rzeczywistym). Częste odświeżanie ekranu szybko zużywa baterię!",
+                import_success: "Pomyślnie zaimportowano układ.",
+                import_error_layout: "Błąd: Nie znaleziono layoutu.",
+                confirm_load_dash: "Wczytać dashboard? Niezapisane zmiany przepadną.",
+                alert_name_required: "Wpisz nazwę!",
+                json_load_success: "Pomyślnie wczytano projekt z pliku JSON!",
+                json_load_error: "Błąd pliku JSON: ",
+                confirm_restart: "Czy na pewno zrestartować AppDaemon?",
+                btn_ad_config: "⚙️ KONFIGURACJA ZAPISU",
+                modal_ad_config_title: "Konfiguracja bezpośredniego zapisu",
+                ad_config_step1: "1. Wejdź w katalog <code>/addon_configs/a0d7b954_appdaemon/apps/</code> (np. przez File Editor).",
+                ad_config_step2: "2. Stwórz plik <code>dash_saver.py</code> i wklej poniższą zawartość:",
+                ad_config_step3: "3. W pliku <code>apps.yaml</code> w tym samym folderze dopisz:",
+                ad_config_step4: "4. Zrestartuj AppDaemon i odśwież tą stronę.",
+                btn_copy_code: "Kopiuj kod",
+                copy_success: "✅ SKOPIOWANO!",
+                copy_error: "❌ Błąd kopiowania: ",
+                btn_clear: "🧹 WYCZYŚĆ WSZYSTKO",
+                confirm_clear: "Czy na pewno chcesz WYCZYŚĆ WSZYSTKO? Skasuje to obecny układ i zrestartuje generator (nie dotyczy plików na dysku/serwerze).",
+                btn_gen_again: "GENERUJ PONOWNIE (ODŚWIEŻ)",
+                freq_ok: "✅ Bateria OK (rzadkie zmiany: {0}/h). Bezpieczne dla e-ink.",
+                freq_danger: "🦖 POŻERACZ BATERII! ({0}/h). Ta encja zmienia się zbyt często. <a href='#' onclick='openBatteryHelp()' style='color:inherit; font-weight:bold; text-decoration:underline;'>Niezbędna naprawa KLIKNIJ?</a>",
+                freq_warning: "⚠️ Średnie zużycie ({0}/h). Może wpływać na baterię. <a href='#' onclick='openBatteryHelp()' style='color:inherit; text-decoration:underline;'>Opcjonalna naprawa KLIKNIJ</a>",
+                freq_analyzing: "⏳ Analiza historii zmian encji (ostatnie 24h)...",
+                modal_battery_title: "Jak oszczędzać baterię Joan 6?",
+                modal_battery_understand: "ROZUMIEM",
+                confirm_duplicate: "Ta encja (ID) już istnieje na dashboardzie.\n\nCzy chcesz dodać jej KOPIĘ (z końcówką _copy)?\nKliknij OK, aby dodać kopię.\nKliknij Anuluj, aby przerwać.",
+                modal_battery_body: `
+                    <p>Twoja encja zmienia się bardzo często, co wymusza na ekranie E-Ink ciągłe odświeżanie. Aby Joan 6 działał dłużej na baterii, stwórz <b>Sensor Statystyk</b>:</p>
+                    <ol>
+                        <li>W Home Assistant przejdź do: <b>Ustawienia</b> → <b>Urządzenia oraz usługi</b> → <b>Pomocnicy</b> → <b>Utwórz pomocnika</b>.</li>
+                        <li>Wyszukaj <b>Statystyki</b> (Statistics).</li>
+                        <li>Wypełnij formularz:
+                            <ul>
+                                <li><b>Nazwa:</b> Wpisz nazwę pomocnika.</li>
+                                <li><b>Encja wejściowa:</b> Twoja szybka encja (pożeracz).</li>
+                                <li><b>Charakterystyka:</b> Średnia (Mean).</li>
+                                <li><b>Wielkość próby:</b> 100.</li>
+                                <li><b>Maksymalny wiek:</b> 00:15:00 (15 minut).</li>
+                                <li><b>Precyzja:</b> 1 (Kluczowe! Zaokrągla do 0.1).</li>
+                            </ul>
+                        </li>
+                        <li>Kliknij <b>Zatwierdź</b>.</li>
+                        <li>Zapisz i użyj nowej encji (np. <i>sensor.mean_...</i>) w tym generatorze.</li>
+                    </ol>
+                    <p>Oficjalna dokumentacja: <a href="https://www.home-assistant.io/integrations/statistics/" target="_blank">Home Assistant Statistics</a></p>
+                `,
+                modal_visionect_title: "Usługi dodatku Visionect Joan",
+                visionect_body: `
+                    <p>Najlepiej i najszybciej uruchamiać usługi dodatku Visionect Joan przez widget <b>Skrypty</b>. Skrypt tworzymy w Home Assistant.</p>
+                    <p><b>Krok po kroku:</b></p>
+                    <ol style="margin-left: 20px;">
+                        <li>Ustawienia</li>
+                        <li>Automatyzacje oraz sceny</li>
+                        <li>Skrypty</li>
+                        <li><b>Utwórz skrypt</b>
+                            <ul style="margin-top:5px; margin-bottom:10px;">
+                                <li>a. Utwórz nowy skrypt</li>
+                                <li>b. Sekwencja + Dodaj akcję</li>
+                                <li>c. Wpisz <code>visionect</code> - pokażą się wszystkie usługi dodatku Visionect Joan</li>
+                                <li>d. Wybierz daną usługę visionect i skonfiguruj ją (np. clear_screen, show_image itp.)</li>
+                                <li>e. Kliknij <b>Zapisz</b> i nadaj nazwę skryptu.</li>
+                            </ul>
+                        </li>
+                    </ol>
+                    <p class="tip-box">
+                        <b>Wskazówka:</b> Po stworzeniu skryptu, wróć tutaj (Joan 6 Generator), dodaj widget typu <b>Script</b> i wybierz encję swojego nowego skryptu. Możesz też dodać przycisk do dashboardu, który go wywoła.<br><br>
+                        Oficjalne repozytorium: <a href="https://github.com/Adam7411/visionect_joan" target="_blank">Visionect Joan Add-on</a>
+                    </p>
+                `,
+                modal_battery_understand: "ROZUMIEM",
+                btn_understand: "ROZUMIEM",
+                modal_info_title: "Szczegóły Systemu",
                 info_lbl_entities: "Liczba Encji:",
                 info_lbl_slug: "AppDaemon Slug:",
                 info_lbl_source: "Źródło API:",
                 info_lbl_bridge: "Plik dash_saver.py:",
                 info_lbl_dash_count: "Liczba Dashboardów:",
-                info_lbl_path: "Ścieżka Config AppDaemon:",
-                info_lbl_area_filter: "Filtr obszarów:",
-                info_area_filter_enable: "Włącz",
-                info_area_filter_title: "Filtrowanie encji według obszarów",
-                info_area_filter_desc: "Włącz aby filtrować encje według pomieszczeń (kuchnia, salon, łazienka...)",
                 info_bridge_yes: "TAK (Aktywny)",
                 info_bridge_no: "NIE / BRAK",
-                msg_loaded_success: "✅ {0} wczytany do edytora!",
-                msg_saved_browser: "Zapisano w przeglądarce: {0}",
-                msg_copy_to_clipboard: "Kopiuj do schowka",
-                confirm_delete: "Czy na pewno chcesz usunąć?",
-                confirm_load_dash: "Czy na pewno chcesz wczytać ten dashboard? Obecny wynik zostanie nadpisany.",
-                confirm_grid_shrink: "Nowy układ ({0} wierszy) jest mniejszy niż obecny ({1} wierszy). Czy usunąć nadmiarowe widżety?",
-                alert_name_required: "Podaj nazwę dla zapisu!",
-                alert_no_yaml: "Brak kodu do pobrania. Najpierw wygeneruj kod.",
-                placeholder_search: "Wyszukaj encję...",
-                placeholder_dash_name: "Nazwa dla zapisu...",
-                placeholder_dash_content: "Wklej tutaj zawartość pliku .dash...",
-                lbl_icon_std: "Ikona",
-                lbl_icon_on: "Ikona WŁ",
-                lbl_icon_off: "Ikona WYŁ",
-                lbl_entity_search: "Wyszukaj encję...",
-                json_load_success: "✅ Plik JSON został wczytany!",
-                json_load_error: "Błąd wczytywania JSON: ",
-                copy_success: "Skopiowano!",
-                copy_error: "Błąd kopiowania: ",
-                btn_copy: "📋 KOPIUJ KOD DO SCHOWKA",
+                btn_refresh_entities_title: "Odśwież listę encji",
+                msg_refreshing: "Odświeżanie listy encji...",
+                msg_refreshed: "✅ Lista encji odświeżona!",
                 btn_links: "🔗 PRZYDATNE LINKI",
                 modal_links_title: "Przydatne Linki i Dokumentacja",
-                battery_warning: "⚠️ <b>Uwaga Bateria:</b> Unikaj encji zmieniających się bardzo często. Częste odświeżanie zużywa baterię!",
-                confirm_restart: "Czy na pewno zrestartować AppDaemon?",
-                btn_ad_config: "⚙️ KONFIGURACJA ZAPISU",
-                modal_ad_config_title: "Konfiguracja bezpośredniego zapisu",
-                ad_config_step1: "1. Wejdź w katalog <code>/addon_configs/a0d7b954_appdaemon/apps/</code>.",
-                ad_config_step2: "2. Stwórz plik <code>dash_saver.py</code>.",
-                ad_config_step3: "3. W pliku <code>apps.yaml</code> dopisz:",
-                ad_config_step4: "4. Zrestartuj AppDaemon i odśwież stronę.",
-                btn_copy_code: "Kopiuj kod",
-                copy_success: "✅ SKOPIOWANO!",
-                copy_error: "❌ Błąd kopiowania: ",
-                btn_clear: "🧹 WYCZYŚĆ WSZYSTKO",
-                confirm_clear: "Czy na pewno chcesz WYCZYŚĆ WSZYSTKO?",
-                btn_gen_again: "GENERUJ PONOWNIE (ODŚWIEŻ)",
-                freq_ok: "✅ Bateria OK (rzadkie zmiany: {0}/h).",
-                freq_danger: "🦖 POŻERACZ BATERII! ({0}/h). <a href='#' onclick='openBatteryHelp()'>Kliknij po pomoc</a>",
-                freq_warning: "⚠️ Średnie zużycie ({0}/h). <a href='#' onclick='openBatteryHelp()'>Opcjonalna pomoc</a>",
-                freq_analyzing: "⏳ Analiza historii...",
-                modal_battery_title: "Jak oszczędzać baterię Joan 6?",
-                modal_battery_understand: "ROZUMIEM",
-                confirm_duplicate: "Ta encja (ID) już istnieje.\n\nCzy dodać KOPIĘ?",
-                modal_battery_body: `<p>Unikaj częstych zmian stanu...</p>`,
-                modal_visionect_title: "Usługi dodatku Visionect Joan",
-                visionect_body: `<p>Uruchamiaj usługi przez widget Skrypty...</p>`,
-                btn_understand: "ROZUMIEM",
-                modal_info_title: "Szczegóły Systemu",
-                sec_area_filter: "Filtr obszarów",
-                lbl_select_area: "Wybierz obszar:",
-                lbl_select_domain: "Wybierz typ:",
-                opt_all_areas: "Wszystkie obszary",
-                opt_all_types: "Wszystkie typy",
-                hint_area_filter: "🏠 Wybierz filtr.",
-                lbl_current_area: "obszar: {0}, typ: {1}",
-                dom_light: "Oświetlenie",
-                dom_switch: "Przełączniki",
-                dom_sensor: "Sensory",
-                dom_binary_sensor: "Sensory binarne",
-                dom_media_player: "Odtwarzacze",
-                dom_cover: "Rolety",
-                dom_climate: "Termostaty",
-                dom_fan: "Wentylatory",
-                dom_lock: "Zamki",
-                dom_script: "Skrypty",
-                dom_button: "Przyciski",
-                btn_refresh_entities_title: "Odśwież listę encji",
-                msg_refreshing: "Odświeżanie...",
-                msg_refreshed: "✅ Odświeżono!",
-                link_v3_aio: "Visionect v3 AIO",
-                link_v3_proxmox: "Visionect Proxmox",
-                link_addon: "Dodatek Visionect Joan",
-                link_generator: "Ten generator",
+                link_v3_aio: "Instalacja serwera Visionect v3 (All-in-One) w Home Assistant",
+                link_v3_proxmox: "Instalacja serwera Visionect w Proxmox",
+                link_addon: "Dodatek Visionect Joan dla Home Assistant",
+                link_generator: "Ten generator (Dokumentacja i kod)",
                 list_dashboards_title: "Lista Dashboardów:",
-                dash_list_empty: "(brak)",
-                info_size_px: "Rozmiar PX",
-                info_font_value: "Czcionka wartości",
-                info_font_title: "Czcionka tytułu",
-                info_type: "Typ",
-                info_id: "ID widżetu",
-                info_icons: "Ikony",
-                link_appdaemon_docs: "Dokumentacja AppDaemon"
+                dash_list_empty: "(brak)"
             },
             en: {
                 btn_import_dash: "📥 IMPORT DASHBOARD",
@@ -2652,23 +2580,7 @@
                 alert_rows_limit: "Maximum row limit reached for this layout! Switch to a larger grid layout.",
                 confirm_grid_shrink: "New layout has fewer rows than currently used ({0} vs {1}). Delete excess rows from bottom?",
 
-                hint_nav: `
-                    <div style="margin-top:10px; padding:12px; background:var(--highlight); border-left:4px solid var(--accent); border-radius:4px; font-size:0.9em; line-height:1.5; color:var(--text-main);">
-                        <strong style="color:var(--accent); display:block; margin-bottom:5px;">Navigate Widget:</strong>
-                        Used to navigate to another dashboard or an external URL.<br><br>
-                        <b>Mandatory arguments:</b><br>
-                        Either <code>url</code> or <code>dashboard</code> must be specified.<br><br>
-                        <b>Optional Arguments:</b><br>
-                        • <code>url</code> - Full URL (e.g., http://google.com)<br>
-                        • <code>dashboard</code> - Dashboard name (e.g., MainPanel)<br>
-                        • <code>args</code> - List of AppDaemon arguments:<br>
-                        &nbsp;&nbsp;- <code>timeout</code>: Seconds to stay on the new dashboard.<br>
-                        &nbsp;&nbsp;- <code>return</code>: Dashboard to return to after timeout.<br>
-                        &nbsp;&nbsp;- <code>sticky</code>: Stick to the new dashboard on click? (0/1).<br><br>
-                        <b>Example:</b><br>
-                        <code>args: { timeout: 10, return: "Main" }</code>
-                    </div>
-                `,
+                hint_nav: "<b>Hint:</b> Enter the <code>.dash</code> filename (without extension) located in <code>\\\\[HA_HOST]\\addon_configs\\appdaemon\\dashboards\\</code>.<br>Used for dashboard navigation.",
 
                 lbl_current_small: "(CURRENTLY WORKING ON DASHBOARD: {0})",
                 sec_manager: "Multi-Dashboard Manager (Browser)",
@@ -2778,41 +2690,28 @@
                 info_lbl_source: "API Source:",
                 info_lbl_bridge: "dash_saver.py file:",
                 info_lbl_dash_count: "Dashboard Count:",
-                info_lbl_area_filter: "Area Filter:",
-                info_area_filter_enable: "Enable",
-                info_area_filter_title: "Filter Entities by Areas",
-                info_area_filter_desc: "Enable to filter entities by rooms (kitchen, living room, bathroom...)",
-                sec_area_filter: "Area Filter",
-                lbl_select_area: "Select area:",
-                lbl_select_domain: "Select type:",
-                opt_all_areas: "All areas",
-                opt_all_types: "All types",
-                hint_area_filter: "🏠 Select area and/or type to filter the entity list below.",
-                lbl_current_area: "area: {0}, type: {1}",
-                dom_light: "Lights",
-                dom_switch: "Switches",
-                dom_sensor: "Sensors",
-                dom_binary_sensor: "Binary Sensors",
-                dom_media_player: "Media Players",
-                dom_cover: "Covers / Garage",
-                dom_climate: "Climate / Hvac",
-                dom_fan: "Fans",
-                dom_lock: "Locks",
-                dom_script: "Scripts / Scenes",
-                dom_button: "Buttons",
                 info_bridge_yes: "YES (Active)",
                 info_bridge_no: "NO / MISSING",
                 btn_refresh_entities_title: "Refresh entity list",
                 msg_refreshing: "Refreshing entity list...",
                 msg_refreshed: "✅ Entity list refreshed!",
-                btn_links: "🔗 USEFUL LINKS",
-                modal_links_title: "Useful Links & Documentation",
-                link_v3_aio: "Visionect v3 AIO Installation",
-                link_v3_proxmox: "Visionect Proxmox Installation",
-                link_addon: "Visionect Joan Add-on",
-                link_generator: "This Generator",
+                link_v3_aio: "Visionect Software Suite Server v3 (All-in-One) installation in Home Assistant",
+                link_v3_proxmox: "Visionect Software Suite - Installation in Proxmox",
+                link_addon: "Visionect Joan for Home Assistant add-on",
+                link_generator: "This Generator (Documentation & Code)",
                 list_dashboards_title: "Dashboard List:",
-                dash_list_empty: "(none)",
+                dash_list_empty: "(none)"
+            },
+            pl_extra: {
+                info_size_px: "Rozmiar PX",
+                info_font_value: "Czcionka wartości",
+                info_font_title: "Czcionka tytułu",
+                info_type: "Typ",
+                info_id: "ID widżetu",
+                info_icons: "Ikony",
+                link_appdaemon_docs: "Dokumentacja tworzenia widżetów AppDaemon"
+            },
+            en_extra: {
                 info_size_px: "Size PX",
                 info_font_value: "Value font",
                 info_font_title: "Title font",
@@ -3008,64 +2907,7 @@
             if (!dl) return;
             dl.innerHTML = ''; // Czyścimy listę
 
-            // Determine source data based on filters
-            let sourceData = entitiesData;
-
-            // EXCLUSION LOGICA: Wykluczamy encje już dodane do dashboardu
-            if (typeof getAllWidgetIds === 'function') {
-                const addedIds = getAllWidgetIds();
-                sourceData = sourceData.filter(e => !addedIds.has(e.id));
-            }
-
-            let isFiltered = false;
-
-            // Get current filter states
-            const domainSelect = document.getElementById('domain-select');
-            const selectedDomain = domainSelect ? domainSelect.value : '';
-
-            // Check if filter variables exist
-            if (typeof areaFilterEnabled !== 'undefined') {
-                if (areaFilterEnabled) {
-                    // Filter by Area if chosen
-                    if (typeof selectedAreaId !== 'undefined' && selectedAreaId) {
-                        sourceData = sourceData.filter(e => e.area_id === selectedAreaId);
-                        isFiltered = true;
-                    }
-
-                    // Filter by Domain if chosen
-                    if (selectedDomain) {
-                        sourceData = sourceData.filter(e => {
-                            let matches = e.id.startsWith(selectedDomain + '.');
-                            if (selectedDomain === 'script') {
-                                matches = e.id.startsWith('script.') || e.id.startsWith('scene.');
-                            }
-                            return matches;
-                        });
-                        isFiltered = true;
-                    }
-                }
-            }
-
-            // Jeśli pole puste, ale mamy filtr obszaru - pokaż wszystkie encje z obszaru
-            if ((!val || val.length < 1) && !forceSmartTitle) {
-                if (isFiltered) {
-                    // Limit results for performance
-                    const matches = sourceData.filter(e => {
-                        if (!val) return true;
-                        const search = val.toLowerCase();
-                        return e.id.toLowerCase().includes(search) || (e.attributes && e.attributes.friendly_name && e.attributes.friendly_name.toLowerCase().includes(search));
-                    }).slice(0, 100);
-
-                    matches.forEach(obj => {
-                        const opt = document.createElement('option');
-                        opt.value = obj.id;
-                        const friendly = obj.attributes && obj.attributes.friendly_name ? obj.attributes.friendly_name : "";
-                        opt.label = friendly ? `${friendly} (${obj.id})` : obj.id;
-                        dl.appendChild(opt);
-                    });
-                }
-                return;
-            }
+            if (!val && !forceSmartTitle) return;
 
             // Wywołaj logikę smart (try/catch, bo runSmartLogic może teraz bezpiecznie działać)
             try {
@@ -3078,12 +2920,15 @@
                 console.error("Błąd w runSmartLogic:", e);
             }
 
+            // Wyszukiwanie zaczynamy już od 1 znaku dla lepszej responsywności
+            if (!val || val.length < 1) return;
+
             const inputNormalized = normalizeString(val);
             const searchTerms = inputNormalized.split(/\s+/).filter(t => t.length > 0);
 
             let matches = [];
 
-            for (const obj of sourceData) {
+            for (const obj of entitiesData) {
                 const id = (obj.id || "").toLowerCase();
                 const friendlyName = (obj.attributes && obj.attributes.friendly_name ? obj.attributes.friendly_name : "").toLowerCase();
 
@@ -3530,14 +3375,6 @@
             document.getElementById('grp-nav').style.display = isNav ? 'block' : 'none';
             document.getElementById('grp-nav').classList.toggle('hidden', !isNav);
 
-            // Poprawka dla Navigate: upewnij się, że hint jest zawsze poprawny i widoczny
-            if (isNav) {
-                const hintEl = document.getElementById('nav-hint');
-                if (hintEl && TRANSLATIONS[currentLang]) {
-                    hintEl.innerHTML = TRANSLATIONS[currentLang].hint_nav;
-                }
-            }
-
             const isGauge = type === 'gauge';
             const grpGauge = document.getElementById('grp-gauge');
             if (grpGauge) grpGauge.style.display = isGauge ? 'block' : 'none';
@@ -3551,7 +3388,7 @@
 
             if (type === 'navigate') {
                 document.getElementById('div-icon-std').style.display = 'block';
-                document.querySelector('#div-icon-std label').innerText = TRANSLATIONS[currentLang].lbl_icon_std || 'Icon';
+                document.querySelector('#div-icon-std label').innerText = currentLang === 'pl' ? 'Ikona' : 'Icon';
 
                 document.getElementById('div-icon-on').style.display = 'none';
                 document.getElementById('div-icon-off').style.display = 'none';
@@ -3617,7 +3454,7 @@
             const counter = document.getElementById('char-count');
             let max = 20;
             if (size === '(1x1)' || size === '(1x2)') max = 15;
-            // Usunięto: input.maxLength = max; - użytkownik sam decyduje o długości
+            input.maxLength = max;
             const txt = max === 15 ? TRANSLATIONS[currentLang].limit_15 : TRANSLATIONS[currentLang].limit_20;
             counter.innerText = `${input.value.length}/${max} (${txt})`;
             if (input.value.length >= max) counter.classList.add('limit'); else counter.classList.remove('limit');
@@ -3691,7 +3528,6 @@
             if (typeof freqDebounceTimer !== 'undefined') clearTimeout(freqDebounceTimer);
 
             toggleInputs();
-            searchEntities(''); // Odśwież listę podpowiedzi (uwzględniając wykluczenia)
         }
 
         function deleteWidget(r, w, e) { e.stopPropagation(); rows[r].splice(w, 1); if (editIdx && editIdx.r === r && editIdx.w === w) cancelEdit(); renderPreview(); }
@@ -4459,14 +4295,11 @@
             all[name] = saveData;
             localStorage.setItem('joan_dashboards', JSON.stringify(all));
             loadSavedList();
-            const msg = (TRANSLATIONS[currentLang].msg_saved_browser || "Saved in browser: {0}").replace("{0}", name);
-            alert(msg);
+            alert((currentLang === 'pl' ? "Zapisano w przeglądarce: " : "Saved in browser: ") + name);
         }
 
         function loadSavedList() {
-            const listDiv = document.getElementById('saved-dash-list');
-            if (!listDiv) return; // Safety check
-            listDiv.innerHTML = '';
+            const listDiv = document.getElementById('saved-dash-list'); listDiv.innerHTML = '';
             const all = JSON.parse(localStorage.getItem('joan_dashboards') || '{}');
 
             for (const key in all) {
@@ -4513,7 +4346,7 @@
         }
 
         function deleteFromBrowser(key) {
-            if (!confirm(TRANSLATIONS[currentLang].confirm_delete || "Delete?")) return;
+            if (!confirm(currentLang === 'pl' ? "Usunąć?" : "Delete?")) return;
             const all = JSON.parse(localStorage.getItem('joan_dashboards') || '{}');
             delete all[key];
             localStorage.setItem('joan_dashboards', JSON.stringify(all));
@@ -4541,154 +4374,58 @@
             const langInput = document.getElementById('input-lang');
             if (langInput) langInput.value = l;
 
-            const t = TRANSLATIONS[l];
-
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const k = el.getAttribute('data-i18n');
-                if (t[k]) {
-                    if (el.tagName === 'INPUT' && (el.type === 'button' || el.type === 'submit')) {
-                        el.value = t[k];
-                    } else if (el.tagName === 'OPTION') {
-                        el.innerText = t[k];
+                if (TRANSLATIONS[l][k]) {
+                    if (el.tagName === 'OPTION') {
+                        el.innerText = TRANSLATIONS[l][k];
+                    } else if (el.tagName === 'INPUT' && (el.type === 'button' || el.type === 'submit')) {
+                        el.value = TRANSLATIONS[l][k];
+                    } else if (el.tagName === 'BUTTON') {
+                        el.innerText = TRANSLATIONS[l][k];
                     } else {
-                        el.innerHTML = t[k];
+                        el.innerHTML = TRANSLATIONS[l][k];
                     }
                 }
             });
 
-            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
-                const k = el.getAttribute('data-i18n-placeholder');
-                if (t[k]) {
-                    el.placeholder = t[k];
+            // Handle title tooltips
+            document.querySelectorAll('[data-i18n-title]').forEach(el => {
+                const k = el.getAttribute('data-i18n-title');
+                if (TRANSLATIONS[l][k]) {
+                    el.title = TRANSLATIONS[l][k];
                 }
             });
 
-            const hintEl = document.getElementById('nav-hint');
-            if (hintEl && t.hint_nav) {
-                hintEl.innerHTML = t.hint_nav;
-            }
+            // Re-render dynamic list with new language strings
+            rebuildGridOptions(document.getElementById('screen-orientation').value);
 
             document.getElementById('btn-pl').classList.toggle('active', l === 'pl');
             document.getElementById('btn-en').classList.toggle('active', l === 'en');
 
-            populateAreaSelect();
-            populateDomainSelect();
+            if (l === 'pl') {
+                document.getElementById('w-id').placeholder = "np. głośnik kuchnia...";
+                document.getElementById('w-name').placeholder = "np. Salon";
+                document.getElementById('w-dash').placeholder = "np. main";
+                document.getElementById('save-dash-name').placeholder = "np. Salon";
+                const iconSearch = document.getElementById('icon-search');
+                if (iconSearch) iconSearch.placeholder = "Szukaj ikony...";
+            } else {
+                document.getElementById('w-id').placeholder = "e.g. kitchen speaker...";
+                document.getElementById('w-name').placeholder = "e.g. Living Room";
+                document.getElementById('w-dash').placeholder = "e.g. main";
+                document.getElementById('save-dash-name').placeholder = "e.g. Living Room";
+                const iconSearch = document.getElementById('icon-search');
+                if (iconSearch) iconSearch.placeholder = "Search icon...";
+            }
+            const hintEl = document.getElementById('nav-hint');
+            if (hintEl) hintEl.innerHTML = TRANSLATIONS[l].hint_nav;
+
+            toggleInputs();
+            renderPreview();
+            loadSavedList();
             updateStatusDetails();
             updateCopyButtonText();
-            renderPreview();
-        }
-
-        // =========================================================================
-        // AREA FILTERING FUNCTIONALITY (MOVED UP FOR BETTER SCOPING)
-        // =========================================================================
-        const areasData = {{ areas | safe }} || [];
-        let areaFilterEnabled = localStorage.getItem('joan_area_filter_enabled') === 'true';
-        let selectedAreaId = localStorage.getItem('joan_selected_area') || '';
-
-        function toggleAreaFilter() {
-            const checkbox = document.getElementById('toggle-area-filter');
-            const section = document.getElementById('area-filter-section');
-            if (!checkbox || !section) return;
-
-            areaFilterEnabled = checkbox.checked;
-            localStorage.setItem('joan_area_filter_enabled', areaFilterEnabled);
-
-            if (areaFilterEnabled) {
-                section.style.display = 'block';
-                populateAreaSelect();
-                populateDomainSelect();
-                filterEntities();
-            } else {
-                section.style.display = 'none';
-                selectedAreaId = '';
-                const lbl = document.getElementById('lbl-entity-title');
-                if (lbl) lbl.innerHTML = TRANSLATIONS[currentLang].lbl_entity || 'Entity (Search by name or ID)';
-                searchEntities('');
-            }
-        }
-
-        function populateAreaSelect() {
-            const select = document.getElementById('area-select');
-            if (!select) return;
-            select.innerHTML = '';
-            const allOption = document.createElement('option');
-            allOption.value = '';
-            allOption.textContent = TRANSLATIONS[currentLang].opt_all_areas || 'Wszystkie obszary';
-            select.appendChild(allOption);
-
-            if (areasData && areasData.length > 0) {
-                areasData.forEach(area => {
-                    const option = document.createElement('option');
-                    option.value = area.id;
-                    option.textContent = area.name;
-                    select.appendChild(option);
-                });
-            }
-        }
-
-        function populateDomainSelect() {
-            const select = document.getElementById('domain-select');
-            if (!select) return;
-            select.innerHTML = '';
-            const allOption = document.createElement('option');
-            allOption.value = '';
-            allOption.textContent = TRANSLATIONS[currentLang].opt_all_types || 'Wszystkie typy';
-            select.appendChild(allOption);
-
-            const domains = ['light', 'switch', 'sensor', 'binary_sensor', 'media_player', 'cover', 'climate', 'fan', 'lock', 'script', 'button', 'input_button'];
-            domains.forEach(dom => {
-                const option = document.createElement('option');
-                option.value = dom;
-                const transKey = 'dom_' + (dom === 'input_button' ? 'button' : dom);
-                option.textContent = TRANSLATIONS[currentLang][transKey] || dom;
-                select.appendChild(option);
-            });
-        }
-
-        function filterEntities() {
-            const areaSelect = document.getElementById('area-select');
-            const domainSelect = document.getElementById('domain-select');
-            const datalist = document.getElementById('entity-list');
-            const lbl = document.getElementById('lbl-entity-title');
-            if (!areaSelect || !domainSelect || !datalist || !entitiesData) return;
-
-            selectedAreaId = areaSelect.value;
-            const selectedDomain = domainSelect.value;
-
-            if (lbl) {
-                const baseText = TRANSLATIONS[currentLang].lbl_entity || 'Encja (Wyszukaj po nazwie lub ID)';
-                if (areaFilterEnabled && (selectedAreaId || selectedDomain)) {
-                    const areaName = selectedAreaId ? (areaSelect.options[areaSelect.selectedIndex]?.text || selectedAreaId) : (TRANSLATIONS[currentLang].opt_all_areas);
-                    const domainName = selectedDomain ? (domainSelect.options[domainSelect.selectedIndex]?.text || selectedDomain) : (TRANSLATIONS[currentLang].opt_all_types);
-                    const labelTemplate = TRANSLATIONS[currentLang].lbl_current_area || "obszar: {0}, typ: {1}";
-                    const labelText = labelTemplate.replace('{0}', areaName).replace('{1}', domainName);
-                    lbl.innerHTML = `${baseText} <span style="color: #ea80fc;">(${labelText})</span>`;
-                } else {
-                    lbl.innerHTML = baseText;
-                }
-            }
-
-            datalist.innerHTML = '';
-            let filteredEntities = entitiesData.filter(e => {
-                let matchesArea = !selectedAreaId || e.area_id === selectedAreaId;
-                let matchesDomain = true;
-                if (selectedDomain) {
-                    matchesDomain = e.id.startsWith(selectedDomain + '.');
-                    if (selectedDomain === 'script') matchesDomain = e.id.startsWith('script.') || e.id.startsWith('scene.');
-                }
-                const addedIds = getAllWidgetIds();
-                if (addedIds.has(e.id)) return false;
-                return matchesArea && matchesDomain;
-            });
-
-            // Populate datalist (limited to 100 for performance)
-            filteredEntities.slice(0, 100).forEach(obj => {
-                const opt = document.createElement('option');
-                opt.value = obj.id;
-                const friendly = obj.attributes && obj.attributes.friendly_name ? obj.attributes.friendly_name : '';
-                opt.label = friendly ? `${friendly} (${obj.id})` : obj.id;
-                datalist.appendChild(opt);
-            });
         }
 
         function updateResultPathsToHost() {
@@ -4829,13 +4566,13 @@
 
         function downloadDashFile() {
             const yamlTextarea = document.getElementById("output-yaml");
-            const pathCode = document.getElementById("path-code");
-            const filename = pathCode ? pathCode.textContent.split('\\').pop() : "joandashboard.dash";
-
             if (!yamlTextarea || !yamlTextarea.value) {
-                alert(TRANSLATIONS[currentLang].alert_no_yaml);
+                alert(currentLang === 'pl' ? "Brak kodu do pobrania. Najpierw wygeneruj kod." : "No code to download. Generate code first.");
                 return;
             }
+
+            const pathCode = document.getElementById("path-code");
+            const filename = pathCode ? pathCode.textContent.split('\\').pop() : "joandashboard.dash";
 
             const form = document.createElement('form');
             form.method = 'POST';
@@ -4974,46 +4711,8 @@
         }
 
         // Ustawiamy język na podstawie wartości z backendu (jeśli dostępna)
-        // Initial language from storage
-        setLang(currentLang);
-        renderPreview();
-
-        // Ensure Navigate hint is shown if needed
-        setTimeout(toggleInputs, 100);
-
-        // Initial area filter setup
-        document.addEventListener('DOMContentLoaded', () => {
-            const checkbox = document.getElementById('toggle-area-filter');
-            const section = document.getElementById('area-filter-section');
-
-            // Sync with localStorage
-            if (areaFilterEnabled && checkbox) {
-                checkbox.checked = true;
-                if (section) section.style.display = 'block';
-                populateAreaSelect();
-                populateDomainSelect();
-            }
-
-            // Sync other modals
-            window.addEventListener('click', function (event) {
-                const helpModal = document.getElementById('battery-help-modal');
-                const visionectModal = document.getElementById('visionect-help-modal');
-                const configModal = document.getElementById('ad-config-modal');
-                const infoModal = document.getElementById('info-modal');
-                const importModal = document.getElementById('import-modal');
-                const linksModal = document.getElementById('links-modal');
-
-                if (event.target == helpModal) closeBatteryHelp();
-                if (event.target == visionectModal) closeVisionectHelp();
-                if (event.target == configModal) closeAdConfig();
-                if (event.target == infoModal) closeInfoModal();
-                if (event.target == importModal) closeImportModal();
-                if (event.target == linksModal) closeLinksModal();
-            });
-
-            updateResultPathsToHost();
-        });
-
+        const backendLang = '{{ current_lang|default("pl") }}';
+        setLang(backendLang === 'en' ? 'en' : 'pl');
         const iconDl = document.getElementById('icon-list');
         POPULAR_ICONS.forEach(i => { const op = document.createElement('option'); op.value = i; iconDl.appendChild(op); });
         const dashDl = document.getElementById('nav-dash-suggestions');
@@ -5433,54 +5132,15 @@ class DashSaver(hass.Hass):
         document.body.removeChild(textArea);
     }
 
-    // Info Modal Logic
-    function showInfoModal() {
-        const m = document.getElementById('info-modal');
-        if (!m) return;
-
-        // Populate fields
-        document.getElementById('info-entities').innerText = typeof connectionInfo !== 'undefined' ? connectionInfo.entity_count : '-';
-        document.getElementById('info-ad-slug').innerText = typeof connectionInfo !== 'undefined' ? connectionInfo.appdaemon_slug : '-';
-        document.getElementById('info-api-source').innerText = typeof connectionInfo !== 'undefined' ? connectionInfo.token_source : '-';
-
-        const bridgeActive = typeof connectionInfo !== 'undefined' && connectionInfo.bridge_active;
-        const brText = bridgeActive ? TRANSLATIONS[currentLang].info_bridge_yes : TRANSLATIONS[currentLang].info_bridge_no;
-        document.getElementById('info-bridge').innerText = brText;
-        document.getElementById('info-bridge').style.color = bridgeActive ? 'green' : 'red';
-
-        const dashCount = typeof dashboardsList !== 'undefined' ? dashboardsList.length : 0;
-        document.getElementById('info-dash-count').innerText = dashCount;
-
-        // Update dynamic path
-        const pathEl = document.getElementById('info-path');
-        if (pathEl) {
-            const host = window.location.hostname || '[HA_IP]';
-            pathEl.textContent = pathEl.getAttribute('data-template').replace(/\[HA_IP\]/g, host);
-        }
-
-        // Populate Dashboard List
-        const listDiv = document.getElementById('info-dash-list');
-        if (listDiv) {
-            listDiv.innerHTML = '';
-            const dashes = typeof dashboardsList !== 'undefined' ? dashboardsList : [];
-            if (dashes.length > 0) {
-                dashes.forEach(d => {
-                    const div = document.createElement('div');
-                    div.style.padding = '4px 0';
-                    div.style.borderBottom = '1px solid #eee';
-                    // Fix [object Object]: d might be object {name: "foo.dash"} or string
-                    const name = typeof d === 'object' ? (d.name || d.filename || JSON.stringify(d)) : d;
-                    div.innerText = '📄 ' + name;
-                    listDiv.appendChild(div);
-                });
-            } else {
-                listDiv.innerText = TRANSLATIONS[currentLang].dash_list_empty || '(none)';
-            }
-        }
-
-        m.style.display = 'block';
-    }
-    function closeInfoModal() { document.getElementById('info-modal').style.display = 'none'; }
+    // Opcjonalnie: Zamknij okno po kliknięciu poza nim
+    window.addEventListener('click', function (event) {
+        const helpModal = document.getElementById('battery-help-modal');
+        const visionectModal = document.getElementById('visionect-help-modal');
+        const configModal = document.getElementById('ad-config-modal');
+        if (event.target == helpModal) closeBatteryHelp();
+        if (event.target == visionectModal) closeVisionectHelp();
+        if (event.target == configModal) closeAdConfig();
+    });
 </script>
 
 <!-- Import Modal -->
@@ -5555,6 +5215,9 @@ class DashSaver(hass.Hass):
 
     function loadDashboard(filename) {
         const t = TRANSLATIONS[currentLang];
+        // Confirm first? Maybe not needed for just viewing code, but good practice if checking overwrite
+        // User asked to just "load here", so we will fetch and put into textarea.
+
         fetch('api/read_dashboard/' + encodeURIComponent(filename))
             .then(r => r.json())
             .then(data => {
@@ -5562,10 +5225,10 @@ class DashSaver(hass.Hass):
                     const importArea = document.getElementById('import-code');
                     if (importArea) {
                         importArea.value = data.content;
+                        // Scroll to the import section
                         document.getElementById('import-section').scrollIntoView({ behavior: 'smooth' });
                         closeImportModal();
-                        const msg = (TRANSLATIONS[currentLang].msg_loaded_success || "✅ {0} loaded!").replace("{0}", filename);
-                        showToast(msg, 'success');
+                        showToast("✅ " + filename + " wczytany do edytora!", 'success');
                     }
                 } else {
                     alert("Error: " + data.message);
@@ -5576,25 +5239,82 @@ class DashSaver(hass.Hass):
             });
     }
 
+    // Close modal when clicking outside (extended)
     const existingWindowOnClick = window.onclick;
     window.onclick = function (event) {
         if (existingWindowOnClick) existingWindowOnClick(event);
 
         const modal = document.getElementById('import-modal');
         const linksModal = document.getElementById('links-modal');
-        const infoModal = document.getElementById('info-modal');
-        const batteryModal = document.getElementById('battery-help-modal');
-        const visionectModal = document.getElementById('visionect-help-modal');
-        const adConfigModal = document.getElementById('ad-config-modal');
+        if (event.target == modal) {
+            closeImportModal();
+        }
+        if (event.target == linksModal) {
+            closeLinksModal();
+        }
+    }
 
-        if (event.target == modal) closeImportModal();
-        if (event.target == linksModal) closeLinksModal();
-        if (event.target == infoModal) closeInfoModal();
-        if (event.target == batteryModal) closeBatteryHelp();
-        if (event.target == visionectModal) closeVisionectHelp();
-        if (event.target == adConfigModal) closeAdConfig();
+    // Auto-run IP replacement on load
+    document.addEventListener('DOMContentLoaded', () => {
+        if (typeof updateResultPathsToHost === 'function') {
+            updateResultPathsToHost();
+        }
+    });
+    // Info Modal Logic
+    function showInfoModal() {
+        const m = document.getElementById('info-modal');
+        if (!m) return;
+
+        // Populate fields
+        document.getElementById('info-entities').innerText = typeof connectionInfo !== 'undefined' ? connectionInfo.entity_count : '-';
+        document.getElementById('info-ad-slug').innerText = typeof connectionInfo !== 'undefined' ? connectionInfo.appdaemon_slug : '-';
+        document.getElementById('info-api-source').innerText = typeof connectionInfo !== 'undefined' ? connectionInfo.token_source : '-';
+
+        const bridgeActive = typeof connectionInfo !== 'undefined' && connectionInfo.bridge_active;
+        const brText = bridgeActive ? TRANSLATIONS[currentLang].info_bridge_yes : TRANSLATIONS[currentLang].info_bridge_no;
+        document.getElementById('info-bridge').innerText = brText;
+        document.getElementById('info-bridge').style.color = bridgeActive ? 'green' : 'red';
+
+        const dashCount = typeof dashboardsList !== 'undefined' ? dashboardsList.length : 0;
+        document.getElementById('info-dash-count').innerText = dashCount;
+
+        // Update dynamic path
+        const pathEl = document.getElementById('info-path');
+        if (pathEl) {
+            const host = window.location.hostname || '[HA_IP]';
+            pathEl.textContent = pathEl.getAttribute('data-template').replace(/\[HA_IP\]/g, host);
+        }
+
+        // Populate Dashboard List
+        const listDiv = document.getElementById('info-dash-list');
+        if (listDiv) {
+            listDiv.innerHTML = '';
+            const dashes = typeof dashboardsList !== 'undefined' ? dashboardsList : [];
+            if (dashes.length > 0) {
+                dashes.forEach(d => {
+                    const div = document.createElement('div');
+                    div.style.padding = '4px 0';
+                    div.style.borderBottom = '1px solid #eee';
+                    // Fix [object Object]: d might be object {name: "foo.dash"} or string
+                    const name = typeof d === 'object' ? (d.name || d.filename || JSON.stringify(d)) : d;
+                    div.innerText = '📄 ' + name;
+                    listDiv.appendChild(div);
+                });
+            } else {
+                listDiv.innerText = TRANSLATIONS[currentLang].dash_list_empty || '(none)';
+            }
+        }
+
+        m.style.display = 'block';
+    }
+    function closeInfoModal() { document.getElementById('info-modal').style.display = 'none'; }
+
+    // Init language from storage
+    if (typeof setLang === 'function' && typeof currentLang !== 'undefined') {
+        setLang(currentLang);
     }
 </script>
+</body>
 
 <!-- INFO MODAL -->
 <div id="info-modal" class="modal" style="z-index: 100000;">
@@ -5604,29 +5324,6 @@ class DashSaver(hass.Hass):
             <span class="close" onclick="closeInfoModal()">&times;</span>
         </div>
         <div class="modal-body" style="font-size: 0.95em; line-height: 1.6;">
-            <!-- Area Filter Toggle - At the top -->
-            <div
-                style="margin-bottom: 20px; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; color: white;">
-                <div style="display: flex; align-items: center; justify-content: space-between;">
-                    <div style="flex: 1;">
-                        <div style="font-weight: bold; font-size: 1.1em; margin-bottom: 5px;">
-                            <i class="mdi mdi-home-floor-1" style="margin-right: 8px;"></i>
-                            <span data-i18n="info_area_filter_title">Filtrowanie encji według obszarów</span>
-                        </div>
-                        <div style="font-size: 0.85em; opacity: 0.95;" data-i18n="info_area_filter_desc">
-                            Włącz aby filtrować encje według pomieszczeń (kuchnia, salon, łazienka...)
-                        </div>
-                    </div>
-                    <div>
-                        <label style="cursor: pointer; display: flex; align-items: center; margin-left: 15px;">
-                            <input type="checkbox" id="toggle-area-filter" onchange="toggleAreaFilter()"
-                                style="cursor: pointer; width: 24px; height: 24px; margin: 0;">
-                        </label>
-                    </div>
-                </div>
-            </div>
-
-            <!-- System Information -->
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                 <div><strong data-i18n="info_lbl_entities">Liczba Encji:</strong></div>
                 <div id="info-entities">...</div>
@@ -5644,10 +5341,14 @@ class DashSaver(hass.Hass):
                 <div id="info-dash-count">...</div>
             </div>
             <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #ddd;">
-                <div><strong data-i18n="info_lbl_path">Ścieżka Config AppDaemon:</strong></div>
-                <div id="info-path" data-template="\\[HA_IP]\addon_configs\{{ connection_info.appdaemon_slug }}"
+                <div><strong>Ścieżka Config AppDaemon:</strong></div>
+                <div id="info-path" data-template="\\[HA_IP]\addon_configs\{{ connection_info.appdaemon_slug }}\"
                     style="font-family: monospace; background: #f5f5f5; padding: 5px; border-radius: 4px; margin-top: 5px; word-break: break-all; color: #333;">
                     ...
+                    <div id="info-path" data-template="\\[HA_IP]\addon_configs\{{ connection_info.appdaemon_slug }}\"
+                        style="font-family: monospace; background: #f5f5f5; padding: 5px; border-radius: 4px; margin-top: 5px; word-break: break-all; color: #333;">
+                        ...
+                    </div>
                 </div>
 
                 <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #ddd;">
@@ -5716,7 +5417,5 @@ class DashSaver(hass.Hass):
         </div>
     </div>
 </div>
-
-</body>
 
 </html>
