@@ -2453,7 +2453,23 @@
                 alert_rows_limit: "Osiągnięto maksymalną ilość wierszy w wybranym układzie! Zmień układ siatki na większy.",
                 confirm_grid_shrink: "Nowy układ ma mniej wierszy niż obecnie posiadasz ({0} vs {1}). Czy usunąć nadmiarowe wiersze z dołu?",
 
-                hint_nav: "<b>Wskazówka:</b> Wpisz nazwę pliku <code>.dash</code> (bez rozszerzenia), który znajduje się w folderze <code>\\\\[HA_HOST]\\addon_configs\\appdaemon\\dashboards\\</code>.<br>Służy do przechodzenia między ekranami.",
+                hint_nav: `
+                    <div style="margin-top:10px; padding:12px; background:var(--highlight); border-left:4px solid var(--accent); border-radius:4px; font-size:0.9em; line-height:1.5; color:var(--text-main);">
+                        <strong style="color:var(--accent); display:block; margin-bottom:5px;">Widget Navigate (Nawigacja):</strong>
+                        Służy do przechodzenia do innego dashboardu lub zewnętrznego adresu URL.<br><br>
+                        <b>Argumenty obowiązkowe:</b><br>
+                        Należy podać albo <code>url</code> albo <code>dashboard</code>.<br><br>
+                        <b>Argumenty opcjonalne:</b><br>
+                        • <code>url</code> - Pełny adres (np. http://google.com)<br>
+                        • <code>dashboard</code> - Nazwa pliku .dash (np. MainPanel)<br>
+                        • <code>args</code> - Lista argumentów dla AppDaemon:<br>
+                        &nbsp;&nbsp;- <code>timeout</code>: Czas (s) pobytu na nowym dashboardzie.<br>
+                        &nbsp;&nbsp;- <code>return</code>: Dashboard do powrotu po timeout.<br>
+                        &nbsp;&nbsp;- <code>sticky</code>: Czy po kliknięciu wyłączyć powrót? (0/1).<br><br>
+                        <b>Przykład:</b><br>
+                        <code>args: { timeout: 10, return: "Main" }</code>
+                    </div>
+                `,
 
                 lbl_current_small: "(AKTUALNIE PRACUJESZ NA DASHBOARDZIE: {0})",
                 sec_manager: "Multi-Dashboard Manager (Browser)",
@@ -2666,7 +2682,23 @@
                 alert_rows_limit: "Maximum row limit reached for this layout! Switch to a larger grid layout.",
                 confirm_grid_shrink: "New layout has fewer rows than currently used ({0} vs {1}). Delete excess rows from bottom?",
 
-                hint_nav: "<b>Hint:</b> Enter the <code>.dash</code> filename (without extension) located in <code>\\\\[HA_HOST]\\addon_configs\\appdaemon\\dashboards\\</code>.<br>Used for dashboard navigation.",
+                hint_nav: `
+                    <div style="margin-top:10px; padding:12px; background:var(--highlight); border-left:4px solid var(--accent); border-radius:4px; font-size:0.9em; line-height:1.5; color:var(--text-main);">
+                        <strong style="color:var(--accent); display:block; margin-bottom:5px;">Navigate Widget:</strong>
+                        Used to navigate to another dashboard or an external URL.<br><br>
+                        <b>Mandatory arguments:</b><br>
+                        Either <code>url</code> or <code>dashboard</code> must be specified.<br><br>
+                        <b>Optional Arguments:</b><br>
+                        • <code>url</code> - Full URL (e.g., http://google.com)<br>
+                        • <code>dashboard</code> - Dashboard name (e.g., MainPanel)<br>
+                        • <code>args</code> - List of AppDaemon arguments:<br>
+                        &nbsp;&nbsp;- <code>timeout</code>: Seconds to stay on the new dashboard.<br>
+                        &nbsp;&nbsp;- <code>return</code>: Dashboard to return to after timeout.<br>
+                        &nbsp;&nbsp;- <code>sticky</code>: Stick to the new dashboard on click? (0/1).<br><br>
+                        <b>Example:</b><br>
+                        <code>args: { timeout: 10, return: "Main" }</code>
+                    </div>
+                `,
 
                 lbl_current_small: "(CURRENTLY WORKING ON DASHBOARD: {0})",
                 sec_manager: "Multi-Dashboard Manager (Browser)",
