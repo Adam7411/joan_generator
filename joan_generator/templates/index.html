@@ -5408,7 +5408,14 @@ class DashSaver(hass.Hass):
 
     function populateAreaSelect() {
         const select = document.getElementById('area-select');
-        if (!select) return;
+        console.log('🔍 populateAreaSelect called');
+        console.log('📦 areasData:', areasData);
+        console.log('🎯 select element:', select);
+
+        if (!select) {
+            console.error('❌ Select element not found!');
+            return;
+        }
 
         // Clear existing options except "All areas"
         select.innerHTML = '';
@@ -5419,15 +5426,20 @@ class DashSaver(hass.Hass):
         allOption.setAttribute('data-i18n', 'opt_all_areas');
         allOption.textContent = TRANSLATIONS[currentLang].opt_all_areas || 'Wszystkie obszary';
         select.appendChild(allOption);
+        console.log('✅ Added "All areas" option');
 
         // Add area options
         if (areasData && areasData.length > 0) {
+            console.log(`📍 Adding ${areasData.length} areas to dropdown`);
             areasData.forEach(area => {
                 const option = document.createElement('option');
                 option.value = area.id;
                 option.textContent = area.name;
                 select.appendChild(option);
+                console.log(`  ➕ Added area: ${area.name} (${area.id})`);
             });
+        } else {
+            console.warn('⚠️ No areas data available! areasData is empty or undefined');
         }
 
         // Restore selected area
