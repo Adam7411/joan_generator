@@ -4574,6 +4574,118 @@
             updateCopyButtonText();
         }
 
+        // =========================================================================
+        // AREA FILTERING FUNCTIONALITY (MOVED UP FOR BETTER SCOPING)
+        // =========================================================================
+        const areasData = {{ areas | safe }} || [];
+        let areaFilterEnabled = localStorage.getItem('joan_area_filter_enabled') === 'true';
+        let selectedAreaId = localStorage.getItem('joan_selected_area') || '';
+
+        function toggleAreaFilter() {
+            const checkbox = document.getElementById('toggle-area-filter');
+            const section = document.getElementById('area-filter-section');
+            if (!checkbox || !section) return;
+
+            areaFilterEnabled = checkbox.checked;
+            localStorage.setItem('joan_area_filter_enabled', areaFilterEnabled);
+
+            if (areaFilterEnabled) {
+                section.style.display = 'block';
+                populateAreaSelect();
+                populateDomainSelect();
+                filterEntities();
+            } else {
+                section.style.display = 'none';
+                selectedAreaId = '';
+                const lbl = document.getElementById('lbl-entity-title');
+                if (lbl) lbl.innerHTML = TRANSLATIONS[currentLang].lbl_entity || 'Encja (Wyszukaj po nazwie lub ID)';
+                searchEntities('');
+            }
+        }
+
+        function populateAreaSelect() {
+            const select = document.getElementById('area-select');
+            if (!select) return;
+            select.innerHTML = '';
+            const allOption = document.createElement('option');
+            allOption.value = '';
+            allOption.textContent = TRANSLATIONS[currentLang].opt_all_areas || 'Wszystkie obszary';
+            select.appendChild(allOption);
+
+            if (areasData && areasData.length > 0) {
+                areasData.forEach(area => {
+                    const option = document.createElement('option');
+                    option.value = area.id;
+                    option.textContent = area.name;
+                    select.appendChild(option);
+                });
+            }
+        }
+
+        function populateDomainSelect() {
+            const select = document.getElementById('domain-select');
+            if (!select) return;
+            select.innerHTML = '';
+            const allOption = document.createElement('option');
+            allOption.value = '';
+            allOption.textContent = TRANSLATIONS[currentLang].opt_all_types || 'Wszystkie typy';
+            select.appendChild(allOption);
+
+            const domains = ['light', 'switch', 'sensor', 'binary_sensor', 'media_player', 'cover', 'climate', 'fan', 'lock', 'script', 'button', 'input_button'];
+            domains.forEach(dom => {
+                const option = document.createElement('option');
+                option.value = dom;
+                const transKey = 'dom_' + (dom === 'input_button' ? 'button' : dom);
+                option.textContent = TRANSLATIONS[currentLang][transKey] || dom;
+                select.appendChild(option);
+            });
+        }
+
+        function filterEntities() {
+            const areaSelect = document.getElementById('area-select');
+            const domainSelect = document.getElementById('domain-select');
+            const datalist = document.getElementById('entity-list');
+            const lbl = document.getElementById('lbl-entity-title');
+            if (!areaSelect || !domainSelect || !datalist || !entitiesData) return;
+
+            selectedAreaId = areaSelect.value;
+            const selectedDomain = domainSelect.value;
+
+            if (lbl) {
+                const baseText = TRANSLATIONS[currentLang].lbl_entity || 'Encja (Wyszukaj po nazwie lub ID)';
+                if (areaFilterEnabled && (selectedAreaId || selectedDomain)) {
+                    const areaName = selectedAreaId ? (areaSelect.options[areaSelect.selectedIndex]?.text || selectedAreaId) : (TRANSLATIONS[currentLang].opt_all_areas);
+                    const domainName = selectedDomain ? (domainSelect.options[domainSelect.selectedIndex]?.text || selectedDomain) : (TRANSLATIONS[currentLang].opt_all_types);
+                    const labelTemplate = TRANSLATIONS[currentLang].lbl_current_area || "obszar: {0}, typ: {1}";
+                    const labelText = labelTemplate.replace('{0}', areaName).replace('{1}', domainName);
+                    lbl.innerHTML = `${baseText} <span style="color: #ea80fc;">(${labelText})</span>`;
+                } else {
+                    lbl.innerHTML = baseText;
+                }
+            }
+
+            datalist.innerHTML = '';
+            let filteredEntities = entitiesData.filter(e => {
+                let matchesArea = !selectedAreaId || e.area_id === selectedAreaId;
+                let matchesDomain = true;
+                if (selectedDomain) {
+                    matchesDomain = e.id.startsWith(selectedDomain + '.');
+                    if (selectedDomain === 'script') matchesDomain = e.id.startsWith('script.') || e.id.startsWith('scene.');
+                }
+                const addedIds = getAllWidgetIds();
+                if (addedIds.has(e.id)) return false;
+                return matchesArea && matchesDomain;
+            });
+
+            filteredEntities.forEach(obj => {
+                const opt = document.createElement('option');
+                opt.value = obj.id;
+                const friendly = obj.attributes && obj.attributes.friendly_name ? obj.attributes.friendly_name : '';
+                opt.label = friendly ? `${friendly} (${obj.id})` : obj.id;
+                datalist.appendChild(opt);
+            });
+        }
+
         function updateResultPathsToHost() {
             // Pobiera IP/Hosta z paska adresu przeglądarki
             const host = window.location.hostname || '[HA_IP]';
@@ -4857,8 +4969,24 @@
         }
 
         // Ustawiamy język na podstawie wartości z backendu (jeśli dostępna)
-        const backendLang = '{{ current_lang|default("pl") }}';
-        setLang(backendLang === 'en' ? 'en' : 'pl');
+        // Initial language from storage
+        setLang(currentLang);
+
+        // Initial area filter setup
+        document.addEventListener('DOMContentLoaded', () => {
+            const checkbox = document.getElementById('toggle-area-filter');
+            const section = document.getElementById('area-filter-section');
+            if (checkbox && areaFilterEnabled) {
+                checkbox.checked = true;
+                if (section) {
+                    section.style.display = 'block';
+                    populateAreaSelect();
+                    populateDomainSelect();
+                }
+            }
+            updateResultPathsToHost();
+        });
+
         const iconDl = document.getElementById('icon-list');
         POPULAR_ICONS.forEach(i => { const op = document.createElement('option'); op.value = i; iconDl.appendChild(op); });
         const dashDl = document.getElementById('nav-dash-suggestions');
@@ -5454,209 +5582,7 @@ class DashSaver(hass.Hass):
         m.style.display = 'block';
     }
     function closeInfoModal() { document.getElementById('info-modal').style.display = 'none'; }
-
-
-    // =========================================================================
-    // AREA FILTERING FUNCTIONALITY
-    // =========================================================================
-
-    // Area data from backend
-    const areasData = {{ areas | safe }} || [];
-
-    // Load area filter settings from localStorage
-    let areaFilterEnabled = localStorage.getItem('joan_area_filter_enabled') === 'true';
-    let selectedAreaId = localStorage.getItem('joan_selected_area') || '';
-
-    function toggleAreaFilter() {
-        const checkbox = document.getElementById('toggle-area-filter');
-        const section = document.getElementById('area-filter-section');
-
-        if (!checkbox || !section) return;
-
-        areaFilterEnabled = checkbox.checked;
-        localStorage.setItem('joan_area_filter_enabled', areaFilterEnabled);
-
-        if (areaFilterEnabled) {
-            section.style.display = 'block';
-            populateAreaSelect();
-            populateDomainSelect();
-            filterEntities();
-        } else {
-            section.style.display = 'none';
-            selectedAreaId = '';
-            // localStorage.removeItem('joan_selected_area'); // Persistence removed
-
-            // Reset label title
-            const lbl = document.getElementById('lbl-entity-title');
-            if (lbl) {
-                lbl.innerHTML = TRANSLATIONS[currentLang].lbl_entity || 'Encja (Wyszukaj po nazwie lub ID)';
-            }
-
-            // Reset entity search to show all entities
-            const datalist = document.getElementById('entity-list');
-            if (datalist && entitiesData) {
-                datalist.innerHTML = '';
-                entitiesData.forEach(obj => {
-                    const opt = document.createElement('option');
-                    opt.value = obj.id;
-                    const friendly = obj.attributes && obj.attributes.friendly_name ? obj.attributes.friendly_name : '';
-                    opt.label = friendly ? `${friendly} (${obj.id})` : obj.id;
-                    datalist.appendChild(opt);
-                });
-            }
-        }
-    }
-
-    function populateAreaSelect() {
-        const select = document.getElementById('area-select');
-        if (!select) return;
-
-        // Clear existing options
-        select.innerHTML = '';
-
-        // Add "All areas" option
-        const allOption = document.createElement('option');
-        allOption.value = '';
-        allOption.textContent = TRANSLATIONS[currentLang].opt_all_areas || 'Wszystkie obszary';
-        select.appendChild(allOption);
-
-        // Add area options assuming areasData is available
-        if (areasData && areasData.length > 0) {
-            areasData.forEach(area => {
-                const option = document.createElement('option');
-                option.value = area.id;
-                option.textContent = area.name;
-                select.appendChild(option);
-            });
-        }
-
-        // No persistence restoration here as requested
-    }
-
-    function populateDomainSelect() {
-        const select = document.getElementById('domain-select');
-        if (!select) return;
-
-        select.innerHTML = '';
-
-        // All Types
-        const allOption = document.createElement('option');
-        allOption.value = '';
-        allOption.textContent = TRANSLATIONS[currentLang].opt_all_types || 'Wszystkie typy';
-        select.appendChild(allOption);
-
-        // Define domains to list
-        const domains = [
-            'light', 'switch', 'sensor', 'binary_sensor', 'media_player',
-            'cover', 'climate', 'fan', 'lock', 'script', 'button', 'input_button'
-        ];
-
-        domains.forEach(dom => {
-            const option = document.createElement('option');
-            option.value = dom;
-            // Map 'input_button' to 'button' translation key if specialized key missing, or use logic
-            const transKey = 'dom_' + (dom === 'input_button' ? 'button' : dom);
-            option.textContent = TRANSLATIONS[currentLang][transKey] || dom;
-            select.appendChild(option);
-        });
-    }
-
-    function filterEntities() {
-        const areaSelect = document.getElementById('area-select');
-        const domainSelect = document.getElementById('domain-select');
-        const datalist = document.getElementById('entity-list');
-        const lbl = document.getElementById('lbl-entity-title');
-
-        if (!areaSelect || !domainSelect || !datalist || !entitiesData) return;
-
-        selectedAreaId = areaSelect.value;
-        const selectedDomain = domainSelect.value;
-
-        // Update Label
-        if (lbl) {
-            const baseText = TRANSLATIONS[currentLang].lbl_entity || 'Encja (Wyszukaj po nazwie lub ID)';
-
-            if (areaFilterEnabled && (selectedAreaId || selectedDomain)) {
-                let infoParts = [];
-
-                // Area Text
-                const areaName = selectedAreaId ? (areaSelect.options[areaSelect.selectedIndex]?.text || selectedAreaId) : (TRANSLATIONS[currentLang].opt_all_areas);
-
-                // Domain Text
-                const domainName = selectedDomain ? (domainSelect.options[domainSelect.selectedIndex]?.text || selectedDomain) : (TRANSLATIONS[currentLang].opt_all_types);
-
-                // Construct label: "area: Kitchen, type: Light"
-                const labelTemplate = TRANSLATIONS[currentLang].lbl_current_area || "obszar: {0}, typ: {1}";
-                const labelText = labelTemplate.replace('{0}', areaName).replace('{1}', domainName);
-
-                // Updated color to #ea80fc as requested
-                lbl.innerHTML = `${baseText} <span style="color: #ea80fc;">(${labelText})</span>`;
-            } else {
-                lbl.innerHTML = baseText;
-            }
-        }
-
-        // Clear datalist
-        datalist.innerHTML = '';
-
-        // Filter Logic
-        let filteredEntities = entitiesData.filter(e => {
-            let matchesArea = true;
-            let matchesDomain = true;
-
-            // EXCLUSION LOGICA: Wykluczamy encje już dodane
-            if (typeof getAllWidgetIds === 'function') {
-                if (getAllWidgetIds().has(e.id)) return false;
-            }
-
-            if (selectedAreaId) {
-                matchesArea = (e.area_id === selectedAreaId);
-            }
-
-            if (selectedDomain) {
-                // Check if entity_id starts with "domain."
-                matchesDomain = e.id.startsWith(selectedDomain + '.');
-                // Special handling for scripts/scenes if grouped?
-                if (selectedDomain === 'script') {
-                    matchesDomain = e.id.startsWith('script.') || e.id.startsWith('scene.');
-                }
-            }
-
-            return matchesArea && matchesDomain;
-        });
-
-        // Populate datalist
-        filteredEntities.forEach(obj => {
-            const opt = document.createElement('option');
-            opt.value = obj.id;
-            const friendly = obj.attributes && obj.attributes.friendly_name ? obj.attributes.friendly_name : '';
-            opt.label = friendly ? `${friendly} (${obj.id})` : obj.id;
-            datalist.appendChild(opt);
-        });
-    }
-
-    // Initialize area filter on page load
-    document.addEventListener('DOMContentLoaded', () => {
-        const checkbox = document.getElementById('toggle-area-filter');
-        const section = document.getElementById('area-filter-section');
-
-        if (checkbox && areaFilterEnabled) {
-            checkbox.checked = true;
-            if (section) {
-                section.style.display = 'block';
-                populateAreaSelect();
-                populateDomainSelect(); // Fix: Ensure domains are populated on load
-                // Don't filter immediately on load, let user trigger it
-            }
-        }
-    });
-
-    // Init language from storage
-    if (typeof setLang === 'function' && typeof currentLang !== 'undefined') {
-        setLang(currentLang);
-    }
 </script>
-</body>
 
 <!-- INFO MODAL -->
 <div id="info-modal" class="modal" style="z-index: 100000;">
@@ -5728,59 +5654,61 @@ class DashSaver(hass.Hass):
     </div>
 </div>
 
-<!-- USEFUL LINKS MODAL -->
-<div id="links-modal" class="modal" style="z-index: 100001;">
-    <div class="modal-content" style="max-width: 600px;">
-        <div class="modal-header">
-            <h2 data-i18n="modal_links_title">Przydatne Linki</h2>
-            <span class="close" onclick="closeLinksModal()">&times;</span>
+<!--USEFUL LINKS MODAL-- >
+        <div id="links-modal" class="modal" style="z-index: 100001;">
+            <div class="modal-content" style="max-width: 600px;">
+                <div class="modal-header">
+                    <h2 data-i18n="modal_links_title">Przydatne Linki</h2>
+                    <span class="close" onclick="closeLinksModal()">&times;</span>
+                </div>
+                <div class="modal-body" style="font-size: 0.95em; line-height: 1.6;">
+                    <ul style="list-style: none; padding: 0;">
+                        <li
+                            style="margin-bottom: 15px; padding: 12px; background: #f9f9f9; border-left: 4px solid #4caf50; border-radius: 4px;">
+                            <a href="https://github.com/Adam7411/visionect-v3-allinone" target="_blank"
+                                style="text-decoration: none; color: #1565c0; font-weight: bold;" data-i18n="link_v3_aio">
+                                Visionect Software Suite Server v3 (All‑in‑One) installation in Home Assistant
+                            </a>
+                        </li>
+                        <li
+                            style="margin-bottom: 15px; padding: 12px; background: #f9f9f9; border-left: 4px solid #4caf50; border-radius: 4px;">
+                            <a href="https://github.com/Adam7411/Joan-6-Visionect_Home-Assistant_EN" target="_blank"
+                                style="text-decoration: none; color: #1565c0; font-weight: bold;" data-i18n="link_v3_proxmox">
+                                Visionect Software Suite - Installation in Proxmox
+                            </a>
+                        </li>
+                        <li
+                            style="margin-bottom: 15px; padding: 12px; background: #f9f9f9; border-left: 4px solid #4caf50; border-radius: 4px;">
+                            <a href="https://github.com/Adam7411/visionect_joan" target="_blank"
+                                style="text-decoration: none; color: #1565c0; font-weight: bold;" data-i18n="link_addon">
+                                Visionect Joan for Home Assistant add-on
+                            </a>
+                        </li>
+                        <li
+                            style="margin-bottom: 15px; padding: 12px; background: #f9f9f9; border-left: 4px solid #4caf50; border-radius: 4px;">
+                            <a href="https://github.com/Adam7411/joan_generator" target="_blank"
+                                style="text-decoration: none; color: #1565c0; font-weight: bold;" data-i18n="link_generator">
+                                Joan 6: AppDaemon Dashboard Generator add-on
+                            </a>
+                        </li>
+                        <li
+                            style="margin-bottom: 15px; padding: 12px; background: #f9f9f9; border-left: 4px solid #ff9800; border-radius: 4px; border-top: 1px solid #ddd; padding-top: 20px; margin-top: 20px;">
+                            <a href="https://appdaemon.readthedocs.io/en/latest/DASHBOARD_CREATION.html#widget-reference"
+                                target="_blank" style="text-decoration: none; color: #e65100; font-weight: bold;"
+                                data-i18n="link_appdaemon_docs">
+                                AppDaemon Widget Creation Documentation
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="modal-footer"
+                    style="padding-top: 10px; border-top: 1px solid #ddd; display: flex; justify-content: flex-end;">
+                    <button type="button" class="btn" style="background: #607d8b; color: white;" onclick="closeLinksModal()"
+                        data-i18n="btn_cancel">Zamknij</button>
+                </div>
+            </div>
         </div>
-        <div class="modal-body" style="font-size: 0.95em; line-height: 1.6;">
-            <ul style="list-style: none; padding: 0;">
-                <li
-                    style="margin-bottom: 15px; padding: 12px; background: #f9f9f9; border-left: 4px solid #4caf50; border-radius: 4px;">
-                    <a href="https://github.com/Adam7411/visionect-v3-allinone" target="_blank"
-                        style="text-decoration: none; color: #1565c0; font-weight: bold;" data-i18n="link_v3_aio">
-                        Visionect Software Suite Server v3 (All‑in‑One) installation in Home Assistant
-                    </a>
-                </li>
-                <li
-                    style="margin-bottom: 15px; padding: 12px; background: #f9f9f9; border-left: 4px solid #4caf50; border-radius: 4px;">
-                    <a href="https://github.com/Adam7411/Joan-6-Visionect_Home-Assistant_EN" target="_blank"
-                        style="text-decoration: none; color: #1565c0; font-weight: bold;" data-i18n="link_v3_proxmox">
-                        Visionect Software Suite - Installation in Proxmox
-                    </a>
-                </li>
-                <li
-                    style="margin-bottom: 15px; padding: 12px; background: #f9f9f9; border-left: 4px solid #4caf50; border-radius: 4px;">
-                    <a href="https://github.com/Adam7411/visionect_joan" target="_blank"
-                        style="text-decoration: none; color: #1565c0; font-weight: bold;" data-i18n="link_addon">
-                        Visionect Joan for Home Assistant add-on
-                    </a>
-                </li>
-                <li
-                    style="margin-bottom: 15px; padding: 12px; background: #f9f9f9; border-left: 4px solid #4caf50; border-radius: 4px;">
-                    <a href="https://github.com/Adam7411/joan_generator" target="_blank"
-                        style="text-decoration: none; color: #1565c0; font-weight: bold;" data-i18n="link_generator">
-                        Joan 6: AppDaemon Dashboard Generator add-on
-                    </a>
-                </li>
-                <li
-                    style="margin-bottom: 15px; padding: 12px; background: #f9f9f9; border-left: 4px solid #ff9800; border-radius: 4px; border-top: 1px solid #ddd; padding-top: 20px; margin-top: 20px;">
-                    <a href="https://appdaemon.readthedocs.io/en/latest/DASHBOARD_CREATION.html#widget-reference"
-                        target="_blank" style="text-decoration: none; color: #e65100; font-weight: bold;"
-                        data-i18n="link_appdaemon_docs">
-                        AppDaemon Widget Creation Documentation
-                    </a>
-                </li>
-            </ul>
-        </div>
-        <div class="modal-footer"
-            style="padding-top: 10px; border-top: 1px solid #ddd; display: flex; justify-content: flex-end;">
-            <button type="button" class="btn" style="background: #607d8b; color: white;" onclick="closeLinksModal()"
-                data-i18n="btn_cancel">Zamknij</button>
-        </div>
-    </div>
-</div>
 
-</html>
+</body >
+
+</html >
