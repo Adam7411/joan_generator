@@ -3002,6 +3002,13 @@
 
             // Determine source data based on filters
             let sourceData = entitiesData;
+
+            // EXCLUSION LOGICA: Wykluczamy encje już dodane do dashboardu
+            if (typeof getAllWidgetIds === 'function') {
+                const addedIds = getAllWidgetIds();
+                sourceData = sourceData.filter(e => !addedIds.has(e.id));
+            }
+
             let isFiltered = false;
 
             // Get current filter states
@@ -3661,6 +3668,7 @@
             if (typeof freqDebounceTimer !== 'undefined') clearTimeout(freqDebounceTimer);
 
             toggleInputs();
+            searchEntities(''); // Odśwież listę podpowiedzi (uwzględniając wykluczenia)
         }
 
         function deleteWidget(r, w, e) { e.stopPropagation(); rows[r].splice(w, 1); if (editIdx && editIdx.r === r && editIdx.w === w) cancelEdit(); renderPreview(); }
@@ -5592,6 +5600,11 @@ class DashSaver(hass.Hass):
         let filteredEntities = entitiesData.filter(e => {
             let matchesArea = true;
             let matchesDomain = true;
+
+            // EXCLUSION LOGICA: Wykluczamy encje już dodane
+            if (typeof getAllWidgetIds === 'function') {
+                if (getAllWidgetIds().has(e.id)) return false;
+            }
 
             if (selectedAreaId) {
                 matchesArea = (e.area_id === selectedAreaId);
