@@ -5201,11 +5201,20 @@ class DashSaver(hass.Hass):
 </div>
 
 <script>
+    function apiUrl(path) {
+        const cleanPath = String(path || '').replace(/^\//, '');
+        let base = String(window.location.href || '');
+        base = base.split('#')[0].split('?')[0];
+        if (!base.endsWith('/')) base += '/';
+        return new URL(cleanPath, base);
+    }
+
     function openImportModal() {
         document.getElementById('import-modal').style.display = 'block';
 
         // Refresh translations for modal
         const t = TRANSLATIONS[currentLang];
+
         const titleEl = document.getElementById('import-title');
         if (titleEl && t.modal_import_title) titleEl.innerText = t.modal_import_title;
 
@@ -5227,20 +5236,25 @@ class DashSaver(hass.Hass):
                 list.innerHTML = '';
                 if (data.status === 'success' && data.files.length > 0) {
                     data.files.forEach(f => {
+                        const fileName = (typeof f === 'object' && f !== null)
+                            ? (f.name || f.filename || f.path || JSON.stringify(f))
+                            : String(f);
+
                         const div = document.createElement('div');
                         div.style.padding = '8px';
                         div.style.cursor = 'pointer';
                         div.style.borderBottom = '1px solid #eee';
                         div.style.color = '#333'; // Force dark text
                         div.style.backgroundColor = '#fff'; // Force white background
-                        div.innerText = f.name; // Display name
+                        div.innerText = fileName; // Display name
 
-                        div.onclick = () => loadDashboard(f.name);
+                        div.onclick = () => loadDashboard(fileName);
                         div.onmouseover = () => div.style.backgroundColor = '#e3f2fd';
                         div.onmouseout = () => div.style.backgroundColor = '#fff';
 
                         list.appendChild(div);
                     });
+
                 } else {
                     list.innerText = t.modal_import_empty || "No files found.";
                 }
