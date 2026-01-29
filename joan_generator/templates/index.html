@@ -625,6 +625,13 @@
             -webkit-line-clamp: 3;
             -webkit-box-orient: vertical;
             flex-grow: 0;
+            /* Zapobieganie nakładaniu się */
+            position: relative;
+            z-index: 1;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            hyphens: auto;
+            padding: 2px 4px;
         }
 
         .ew-icon {
@@ -633,6 +640,9 @@
             margin: 2px 0;
             pointer-events: none;
             flex-grow: 0;
+            /* Zapewnienie właściwej warstwy */
+            position: relative;
+            z-index: 2;
         }
 
         .ew-value {
@@ -646,6 +656,9 @@
             padding-top: 2px;
             margin-top: auto;
             pointer-events: none;
+            /* Zapewnienie właściwej warstwy */
+            position: relative;
+            z-index: 2;
         }
 
         .ew-del {
@@ -3454,7 +3467,7 @@
             const counter = document.getElementById('char-count');
             let max = 20;
             if (size === '(1x1)' || size === '(1x2)') max = 15;
-            input.maxLength = max;
+            // Usunięto: input.maxLength = max; - użytkownik sam decyduje o długości
             const txt = max === 15 ? TRANSLATIONS[currentLang].limit_15 : TRANSLATIONS[currentLang].limit_20;
             counter.innerText = `${input.value.length}/${max} (${txt})`;
             if (input.value.length >= max) counter.classList.add('limit'); else counter.classList.remove('limit');
