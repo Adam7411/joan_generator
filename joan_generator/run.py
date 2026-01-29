@@ -57,34 +57,73 @@ if not TOKEN:
 # FETCHING DATA FROM HOME ASSISTANT
 # -------------------------------------------------------------------------
 def get_ha_areas():
-    """Fetch all areas from Home Assistant."""
+    """Fetch all areas from Home Assistant using WebSocket API."""
     if not TOKEN:
         print("⚠️ No TOKEN - skipping area fetch")
         return []
-    headers = {"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json"}
+    
     try:
-        url = f"{API_URL}/config/area_registry"
-        print(f"🔍 Fetching areas from: {url}")
-        response = requests.get(url, headers=headers, timeout=10)
-        print(f"📡 Area registry response status: {response.status_code}")
+        import websocket
+        import json
         
-        if response.status_code == 200:
-            data = response.json()
+        # WebSocket URL for Home Assistant
+        ws_url = API_URL.replace('/api', '/api/websocket').replace('http://', 'ws://')
+        print(f"🔌 Connecting to WebSocket: {ws_url}")
+        
+        ws = websocket.create_connection(ws_url, timeout=10)
+        
+        # Receive auth_required message
+        auth_msg = json.loads(ws.recv())
+        if auth_msg.get('type') != 'auth_required':
+            print(f"❌ Unexpected message: {auth_msg}")
+            ws.close()
+            return []
+        
+        # Send auth token
+        ws.send(json.dumps({
+            'type': 'auth',
+            'access_token': TOKEN
+        }))
+        
+        # Receive auth result
+        auth_result = json.loads(ws.recv())
+        if auth_result.get('type') != 'auth_ok':
+            print(f"❌ Auth failed: {auth_result}")
+            ws.close()
+            return []
+        
+        # Request area registry list
+        ws.send(json.dumps({
+            'id': 1,
+            'type': 'config/area_registry/list'
+        }))
+        
+        # Receive response
+        response = json.loads(ws.recv())
+        ws.close()
+        
+        if response.get('success'):
+            areas_data = response.get('result', [])
             areas = []
-            for area in data:
+            for area in areas_data:
                 areas.append({
                     'id': area.get('area_id'),
                     'name': area.get('name', area.get('area_id'))
                 })
             areas.sort(key=lambda x: x['name'])
-            print(f"✅ Fetched {len(areas)} areas from Home Assistant")
+            print(f"✅ Fetched {len(areas)} areas via WebSocket")
             return areas
         else:
-            print(f"❌ Area registry returned {response.status_code}: {response.text[:200]}")
+            print(f"❌ WebSocket request failed: {response}")
             return []
+            
+    except ImportError:
+        print("⚠️ websocket-client not installed, area filtering unavailable")
+        print("💡 Install with: pip install websocket-client")
+        return []
     except Exception as e:
-        print(f"❌ Exception while fetching areas: {e}")
-    return []
+        print(f"❌ Exception while fetching areas via WebSocket: {e}")
+        return []
 
 def get_entity_area_mapping():
     """Create mapping of entity_id -> area_id."""
