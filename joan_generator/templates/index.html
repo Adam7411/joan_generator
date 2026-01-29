@@ -2960,7 +2960,30 @@
             if (!dl) return;
             dl.innerHTML = ''; // Czyścimy listę
 
-            if (!val && !forceSmartTitle) return;
+            // Determine source data based on area filter
+            let sourceData = entitiesData;
+            let isFiltered = false;
+            // Check if filter variables exist (they are defined later in the file)
+            if (typeof areaFilterEnabled !== 'undefined' && typeof selectedAreaId !== 'undefined') {
+                if (areaFilterEnabled && selectedAreaId) {
+                    sourceData = entitiesData.filter(e => e.area_id === selectedAreaId);
+                    isFiltered = true;
+                }
+            }
+
+            // Jeśli pole puste, ale mamy filtr obszaru - pokaż wszystkie encje z obszaru
+            if ((!val || val.length < 1) && !forceSmartTitle) {
+                if (isFiltered) {
+                    sourceData.forEach(obj => {
+                        const opt = document.createElement('option');
+                        opt.value = obj.id;
+                        const friendly = obj.attributes && obj.attributes.friendly_name ? obj.attributes.friendly_name : "";
+                        opt.label = friendly ? `${friendly} (${obj.id})` : obj.id;
+                        dl.appendChild(opt);
+                    });
+                }
+                return;
+            }
 
             // Wywołaj logikę smart (try/catch, bo runSmartLogic może teraz bezpiecznie działać)
             try {
@@ -2973,22 +2996,10 @@
                 console.error("Błąd w runSmartLogic:", e);
             }
 
-            // Wyszukiwanie zaczynamy już od 1 znaku dla lepszej responsywności
-            if (!val || val.length < 1) return;
-
             const inputNormalized = normalizeString(val);
             const searchTerms = inputNormalized.split(/\s+/).filter(t => t.length > 0);
 
             let matches = [];
-
-            // Determine source data based on area filter
-            let sourceData = entitiesData;
-            // Check if filter variables exist (they are defined later in the file)
-            if (typeof areaFilterEnabled !== 'undefined' && typeof selectedAreaId !== 'undefined') {
-                if (areaFilterEnabled && selectedAreaId) {
-                    sourceData = entitiesData.filter(e => e.area_id === selectedAreaId);
-                }
-            }
 
             for (const obj of sourceData) {
                 const id = (obj.id || "").toLowerCase();
