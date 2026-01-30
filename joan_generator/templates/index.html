@@ -4597,6 +4597,10 @@
             }
         }
 
+        if (currentLang) {
+            setLang(currentLang);
+        }
+
         function updateResultPathsToHost() {
             // Pobiera IP/Hosta z paska adresu przeglądarki
             const host = window.location.hostname || '[HA_IP]';
