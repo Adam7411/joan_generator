@@ -1460,6 +1460,7 @@
                             <option value="" data-i18n="opt_domain_all">Wszystkie</option>
                             <option value="light">light</option>
                             <option value="switch">switch</option>
+                            <option value="script">script</option>
                             <option value="sensor">sensor</option>
                             <option value="binary_sensor">binary_sensor</option>
                             <option value="lock">lock</option>
@@ -3553,6 +3554,16 @@
 
         function toggleInputs() {
             const type = document.getElementById('w-type').value;
+
+            const filtersDiv = document.getElementById('entity-filters');
+            if (filtersDiv) {
+                const typesWithoutFilters = ['navigate', 'reload', 'spacer', 'label', 'clock'];
+                if (typesWithoutFilters.includes(type)) {
+                    filtersDiv.style.display = 'none';
+                } else {
+                    filtersDiv.style.display = 'flex';
+                }
+            }
             const isNav = type === 'navigate';
             const hideEntity = ['clock', 'label', 'spacer', 'reload'].includes(type);
 
