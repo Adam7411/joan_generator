@@ -56,10 +56,67 @@ if not TOKEN:
 # -------------------------------------------------------------------------
 # FETCHING DATA FROM HOME ASSISTANT
 # -------------------------------------------------------------------------
+def get_ha_areas_and_map():
+    """
+    Fetches Area Registry and Entity Registry data using HA Template API.
+    Returns:
+        areas (list): List of area objects {id, name}
+        entity_map (dict): Mapping of entity_id -> area_id
+    """
+    if not TOKEN:
+        return [], {}
+        
+    headers = {"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json"}
+    
+    # Template to fetch areas and entity mapping in one go
+    template_str = """
+    {
+        "areas": [
+            {%- for area_id in areas() %}
+            {
+                "id": "{{ area_id }}",
+                "name": "{{ area_name(area_id) }}"
+            },
+            {%- endfor %}
+            null
+        ],
+        "entity_map": {
+            {%- for state in states %}
+            "{{ state.entity_id }}": "{{ area_id(state.entity_id) or '' }}",
+            {%- endfor %}
+            "_end": null
+        }
+    }
+    """
+    
+    try:
+        response = requests.post(
+            f"{API_URL}/template", 
+            headers=headers, 
+            json={"template": template_str}, 
+            timeout=10
+        )
+        if response.status_code == 200:
+            result = response.json()
+            if result:
+                 # Remove null terminators used for valid JSON trailing comma handling
+                areas = [a for a in result.get('areas', []) if a]
+                entity_map = {k: v for k, v in result.get('entity_map', {}).items() if k != "_end"}
+                return areas, entity_map
+    except Exception as e:
+        print(f"❌ Exception while fetching areas: {e}")
+        
+    return [], {}
+
 def get_ha_entities():
     if not TOKEN:
-        return []
+        return {'entities': [], 'areas': []} # Changed return structure to include areas
+        
     headers = {"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json"}
+    
+    # Fetch Areas and Map first
+    areas, entity_area_map = get_ha_areas_and_map()
+    
     try:
         response = requests.get(f"{API_URL}/states", headers=headers, timeout=10)
         if response.status_code == 200:
@@ -68,11 +125,17 @@ def get_ha_entities():
             for state in data:
                 attributes = state.get('attributes', {})
                 unit = attributes.get('unit_of_measurement', '')
+                e_id = state['entity_id']
+                
+                # Get Area ID from map
+                area_id = entity_area_map.get(e_id)
+                
                 entity_obj = {
-                    'id': state['entity_id'],
+                    'id': e_id,
+                    'area_id': area_id, # Added area_id
                     'state': state['state'],
                     'attributes': {
-                        'friendly_name': attributes.get('friendly_name', state['entity_id']),
+                        'friendly_name': attributes.get('friendly_name', e_id),
                         'device_class': attributes.get('device_class', ''),
                         'unit_of_measurement': unit
                     },
@@ -80,10 +143,13 @@ def get_ha_entities():
                 }
                 entities.append(entity_obj)
             entities.sort(key=lambda x: x['id'])
-            return entities
+            
+            # Return both entities and areas
+            return {'entities': entities, 'areas': areas}
     except Exception as e:
         print(f"❌ Exception while fetching entities: {e}")
-    return []
+        
+    return {'entities': [], 'areas': []}
 
 # -------------------------------------------------------------------------
 # .DASH FILE SAVE FUNCTION
@@ -1061,7 +1127,9 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
 @app.route('/', methods=['GET', 'POST'])
 def index():
     generated_yaml = ""
-    ha_entities = get_ha_entities()
+    ha_data = get_ha_entities()
+    ha_entities = ha_data.get('entities', [])
+    ha_areas = ha_data.get('areas', [])
     entities_map = {e['id']: e for e in ha_entities}
     dashboard_filename = "joandashboard.dash"
     dashboard_slug = "joandashboard"
@@ -1169,6 +1237,7 @@ def index():
         'index.html',
         generated_yaml=generated_yaml,
         entities=ha_entities,
+        areas=ha_areas,
         filename=dashboard_filename,
         dash_name=dashboard_slug,
         has_token=has_token,
