@@ -1447,6 +1447,30 @@
                     <span id="status-sec-2" class="small-status"></span>
                 </div>
 
+                <div id="entity-filters" style="display:flex; gap:10px; flex-wrap:wrap; margin: 10px 0;">
+                    <div style="flex:1; min-width: 180px;">
+                        <label>Obszar</label>
+                        <select id="area-select" onchange="filterEntities()" disabled>
+                            <option value="">(brak danych)</option>
+                        </select>
+                    </div>
+                    <div style="flex:1; min-width: 180px;">
+                        <label>Typ</label>
+                        <select id="domain-select" onchange="filterEntities()">
+                            <option value="">Wszystkie</option>
+                            <option value="light">light</option>
+                            <option value="switch">switch</option>
+                            <option value="sensor">sensor</option>
+                            <option value="binary_sensor">binary_sensor</option>
+                            <option value="lock">lock</option>
+                            <option value="cover">cover</option>
+                            <option value="climate">climate</option>
+                            <option value="fan">fan</option>
+                            <option value="media_player">media_player</option>
+                        </select>
+                    </div>
+                </div>
+
                 <div class="flex-row" style="margin-bottom: 20px;">
                     <div class="flex-col" id="grp-entity" style="flex: 100%;">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -1733,6 +1757,8 @@
 
     <script>
         let entitiesData = {{ entities | tojson | safe }};
+        let areasData = {{ areas | tojson | safe }};
+        let enableAreaFilter = false;
         let validEntityIds = new Set(entitiesData.map(e => e.id));
         const connectionInfo = {{ connection_info | tojson | safe }};
         const dashboardsList = {{ dashboards_list | tojson | safe }};
@@ -2885,6 +2911,70 @@
             return normalized;
         }
 
+        function getSelectedAreaId() {
+            const el = document.getElementById('area-select');
+            return el ? el.value : '';
+        }
+
+        function getSelectedDomain() {
+            const el = document.getElementById('domain-select');
+            return el ? el.value : '';
+        }
+
+        function setAreaFilterEnabled(enabled) {
+            enableAreaFilter = enabled;
+            const el = document.getElementById('area-select');
+            if (el) el.disabled = !enabled;
+        }
+
+        function populateAreaSelect() {
+            const sel = document.getElementById('area-select');
+            if (!sel) return;
+
+            // Zachowaj obecną selekcję jeśli to możliwe
+            const currentVal = sel.value;
+
+            // Clear existing
+            sel.innerHTML = '';
+
+            // Default "All" option
+            const allOpt = document.createElement('option');
+            allOpt.value = "";
+            const t = TRANSLATIONS[currentLang] || {};
+            allOpt.textContent = t ? (currentLang === 'pl' ? "(wszystkie)" : "(all)") : "(all)";
+            sel.appendChild(allOpt);
+
+            if (areasData && Array.isArray(areasData) && areasData.length > 0) {
+                // Sort by name
+                areasData.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+
+                areasData.forEach(area => {
+                    const opt = document.createElement('option');
+                    opt.value = area.id;
+                    opt.textContent = area.name || area.id;
+                    sel.appendChild(opt);
+                });
+                // Auto-enable if areas are present
+                setAreaFilterEnabled(true);
+                
+                // Przywróć selekcję
+                if (currentVal && Array.from(sel.options).some(o => o.value == currentVal)) {
+                    sel.value = currentVal;
+                }
+            } else {
+                const opt = document.createElement('option');
+                opt.value = "";
+                opt.textContent = "(brak danych)";
+                sel.disabled = true;
+                setAreaFilterEnabled(false);
+            }
+        }
+
+        function filterEntities() {
+            const input = document.getElementById('w-id');
+            if (input) searchEntities(input.value);
+        }
+
         function rebuildGridOptions(orientation) {
             const select = document.getElementById('grid-preset');
             const current = select.value;
@@ -2927,8 +3017,21 @@
             const searchTerms = inputNormalized.split(/\s+/).filter(t => t.length > 0);
 
             let matches = [];
+            const selectedDomain = getSelectedDomain();
+            const selectedAreaId = enableAreaFilter ? getSelectedAreaId() : '';
 
             for (const obj of entitiesData) {
+                // Filter by Domain
+                if (selectedDomain) {
+                    const idRaw = String(obj.id || '');
+                    if (!idRaw.startsWith(selectedDomain + '.')) continue;
+                }
+                // Filter by Area
+                if (selectedAreaId) {
+                    // entitiesData must have area_id now
+                    if (String(obj.area_id || '') !== selectedAreaId) continue;
+                }
+
                 const id = (obj.id || "").toLowerCase();
                 const friendlyName = (obj.attributes && obj.attributes.friendly_name ? obj.attributes.friendly_name : "").toLowerCase();
 
@@ -5025,54 +5128,49 @@ class DashSaver(hass.Hass):
             .then(response => response.text())
             .then(html => {
                 // Regex to extract the entitiesData JSON array
-                // Matches: let/const/var entitiesData = [...];
-                // We changed it to 'let' in the template, so we must match 'let'.
-                // Also capture everything until the semicolon to handle nested structures correctly.
-                const match = html.match(/(?:let|const|var)\s+entitiesData\s*=\s*(\[[\s\S]*?\]);/);
+                const matchEntities = html.match(/(?:let|const|var)\s+entitiesData\s*=\s*(\[[\s\S]*?\]);/);
+                const matchAreas = html.match(/(?:let|const|var)\s+areasData\s*=\s*(\[[\s\S]*?\]);/);
 
-                if (match && match[1]) {
+                let entitiesUpdated = false;
+
+                if (matchEntities && matchEntities[1]) {
                     try {
-                        const newEntities = JSON.parse(match[1]);
+                        const newEntities = JSON.parse(matchEntities[1]);
                         if (Array.isArray(newEntities)) {
                             // Update global variables
-                            entitiesData = newEntities; // Modify global let/const (if let) - entitiesData was const? check below.
-                            // If entitiesData is const, we can't reassign line 1517.
-                            // However, in standard JS 'const' prevents reassignment. 
-                            // Refactoring line 1517 to 'let' is required or we operate on object content.
-                            // But usually template renders 'const'.
-                            // Let's assume we can't reassign const. We will check line 1517 next.
-                            // For now, let's assume validEntityIds is what matters for validation
-                            // and searchEntities uses entitiesData.
-
-                            // Hack: we cannot reassign const. We must change line 1517 to let/var first.
-                            // Or we use a mutable global object property? 
-                            // Wait, I can verify if it is const.
-                            // It is 'const entitiesData = ...' in line 1517.
-                            // I MUST change line 1517 to 'let' in a separate chunk or same tool call.
-
-                            window.entitiesData = newEntities; // This won't override const in same scope but might work if global scope is window.
-                            // Better to change 'const' to 'var' or 'let'.
-
+                            entitiesData = newEntities; 
+                            window.entitiesData = newEntities; 
                             validEntityIds = new Set(newEntities.map(e => e.id));
-
-                            // Re-run search/validation for current input
-                            const input = document.getElementById('w-id');
-                            if (input && input.value) {
-                                searchEntities(input.value);
-                                validateEntityInput(input.value);
-                            }
-
-                            showToast(t.msg_refreshed, 'success');
-                        } else {
-                            throw new Error("Parsed entities is not an array");
+                            entitiesUpdated = true;
                         }
                     } catch (e) {
-                        console.error("JSON Parse Error", e);
-                        showToast("Error parsing new entities data.", 'error');
+                        console.error("JSON Parse Error (Entities)", e);
                     }
+                }
+
+                if (matchAreas && matchAreas[1]) {
+                    try {
+                        const newAreas = JSON.parse(matchAreas[1]);
+                        if (Array.isArray(newAreas)) {
+                            areasData = newAreas;
+                            window.areasData = newAreas;
+                            populateAreaSelect();
+                        }
+                    } catch (e) {
+                         console.error("JSON Parse Error (Areas)", e);
+                    }
+                }
+
+                if (entitiesUpdated) {
+                     // Re-run search/validation for current input
+                    const input = document.getElementById('w-id');
+                    if (input && input.value) {
+                        searchEntities(input.value);
+                        validateEntityInput(input.value);
+                    }
+                    showToast(t.msg_refreshed, 'success');
                 } else {
-                    console.error("Regex match failed for entitiesData");
-                    showToast("Could not find entity data in response.", 'error');
+                    showToast("Could not verify entity data.", 'warning');
                 }
             })
             .catch(err => {
@@ -5312,6 +5410,8 @@ class DashSaver(hass.Hass):
     // Init language from storage
     if (typeof setLang === 'function' && typeof currentLang !== 'undefined') {
         setLang(currentLang);
+        // Initialize Areas
+        populateAreaSelect();
     }
 </script>
 </body>
