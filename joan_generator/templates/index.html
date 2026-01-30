@@ -1771,6 +1771,10 @@
         let manualIconOverride = false;
         // Try to load language from storage, default to 'pl'
         let currentLang = localStorage.getItem('joan_lang') || 'pl';
+        // Natychmiast ustaw wartość pola input-lang, żeby było zgodne z localStorage
+        if (document.getElementById('input-lang')) {
+            document.getElementById('input-lang').value = currentLang;
+        }
         let rawImportedDefs = {{ custom_defs | tojson | safe }} || {};
         let dragSrc = null;
         let globalDefaultSize = { w: 2, h: 1 };
@@ -4542,10 +4546,22 @@
             }
 
             const btnPl = document.getElementById('btn-pl');
-            if (btnPl) btnPl.classList.toggle('active', l === 'pl');
+            if (btnPl) {
+                if (l === 'pl') {
+                    btnPl.classList.add('active');
+                } else {
+                    btnPl.classList.remove('active');
+                }
+            }
 
             const btnEn = document.getElementById('btn-en');
-            if (btnEn) btnEn.classList.toggle('active', l === 'en');
+            if (btnEn) {
+                if (l === 'en') {
+                    btnEn.classList.add('active');
+                } else {
+                    btnEn.classList.remove('active');
+                }
+            }
 
             const eWid = document.getElementById('w-id');
             const eName = document.getElementById('w-name');
@@ -5457,11 +5473,28 @@ class DashSaver(hass.Hass):
     }
     function closeInfoModal() { document.getElementById('info-modal').style.display = 'none'; }
 
-    // Init language from storage
-    if (typeof setLang === 'function' && typeof currentLang !== 'undefined') {
-        setLang(currentLang);
-        // Initialize Areas
-        populateAreaSelect();
+    // Init language from storage - wywołaj natychmiast po załadowaniu DOM
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof setLang === 'function' && typeof currentLang !== 'undefined') {
+            setLang(currentLang);
+            // Initialize Areas
+            if (typeof populateAreaSelect === 'function') {
+                populateAreaSelect();
+            }
+        }
+    });
+    
+    // Również wywołaj natychmiast jeśli DOM już załadowany
+    if (document.readyState === 'loading') {
+        // DOM jeszcze się ładuje, czekamy na DOMContentLoaded (wyżej)
+    } else {
+        // DOM już załadowany, wywołaj natychmiast
+        if (typeof setLang === 'function' && typeof currentLang !== 'undefined') {
+            setLang(currentLang);
+            if (typeof populateAreaSelect === 'function') {
+                populateAreaSelect();
+            }
+        }
     }
 </script>
 </body>
