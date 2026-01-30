@@ -1433,6 +1433,25 @@
             </details>
         </div>
 
+        <div class="section">
+            <details>
+                <summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;" data-i18n="sec_browser_save">💾
+                    Zapisz / Wczytaj w przeglądarce (Local Storage)</summary>
+                <div style="margin-top: 15px;">
+                    <p style="font-size: 0.9em; color: #666; margin-bottom: 10px;" data-i18n="hint_browser_save">
+                        Zapisuje projekt tylko w pamięci tej przeglądarki.</p>
+                    <div style="display:flex; gap:10px; margin-bottom:10px;">
+                        <input type="text" id="save-dash-name" placeholder="np. Salon" style="flex:1;">
+                        <button type="button" class="btn btn-save" onclick="saveToBrowser()"
+                            data-i18n="btn_browser_save" style="background-color: #4caf50;">ZAPISZ TU</button>
+                    </div>
+                    <div id="saved-dash-list" class="dash-list"
+                        style="max-height: 150px; overflow-y: auto; border: 1px solid #ddd; padding: 5px; border-radius: 4px;">
+                    </div>
+                </div>
+            </details>
+        </div>
+
         <form method="POST" id="main-form">
             <input type="hidden" name="action" id="form-action" value="generate">
             <input type="hidden" name="title" id="form-title" value="JoanDashboard">
@@ -2956,7 +2975,7 @@
                 });
                 // Auto-enable if areas are present
                 setAreaFilterEnabled(true);
-                
+
                 // Przywróć selekcję
                 if (currentVal && Array.from(sel.options).some(o => o.value == currentVal)) {
                     sel.value = currentVal;
@@ -4402,7 +4421,10 @@
         }
 
         function loadSavedList() {
-            const listDiv = document.getElementById('saved-dash-list'); listDiv.innerHTML = '';
+            const listDiv = document.getElementById('saved-dash-list');
+            if (!listDiv) return;
+
+            listDiv.innerHTML = '';
             const all = JSON.parse(localStorage.getItem('joan_dashboards') || '{}');
 
             for (const key in all) {
@@ -4501,24 +4523,33 @@
             });
 
             // Re-render dynamic list with new language strings
-            rebuildGridOptions(document.getElementById('screen-orientation').value);
+            if (document.getElementById('screen-orientation')) {
+                rebuildGridOptions(document.getElementById('screen-orientation').value);
+            }
 
-            document.getElementById('btn-pl').classList.toggle('active', l === 'pl');
-            document.getElementById('btn-en').classList.toggle('active', l === 'en');
+            const btnPl = document.getElementById('btn-pl');
+            if (btnPl) btnPl.classList.toggle('active', l === 'pl');
+
+            const btnEn = document.getElementById('btn-en');
+            if (btnEn) btnEn.classList.toggle('active', l === 'en');
+
+            const eWid = document.getElementById('w-id');
+            const eName = document.getElementById('w-name');
+            const eDash = document.getElementById('w-dash');
+            const eSave = document.getElementById('save-dash-name');
+            const iconSearch = document.getElementById('icon-search');
 
             if (l === 'pl') {
-                document.getElementById('w-id').placeholder = "np. głośnik kuchnia...";
-                document.getElementById('w-name').placeholder = "np. Salon";
-                document.getElementById('w-dash').placeholder = "np. main";
-                document.getElementById('save-dash-name').placeholder = "np. Salon";
-                const iconSearch = document.getElementById('icon-search');
+                if (eWid) eWid.placeholder = "np. głośnik kuchnia...";
+                if (eName) eName.placeholder = "np. Salon";
+                if (eDash) eDash.placeholder = "np. main";
+                if (eSave) eSave.placeholder = "np. Salon";
                 if (iconSearch) iconSearch.placeholder = "Szukaj ikony...";
             } else {
-                document.getElementById('w-id').placeholder = "e.g. kitchen speaker...";
-                document.getElementById('w-name').placeholder = "e.g. Living Room";
-                document.getElementById('w-dash').placeholder = "e.g. main";
-                document.getElementById('save-dash-name').placeholder = "e.g. Living Room";
-                const iconSearch = document.getElementById('icon-search');
+                if (eWid) eWid.placeholder = "e.g. kitchen speaker...";
+                if (eName) eName.placeholder = "e.g. Living Room";
+                if (eDash) eDash.placeholder = "e.g. main";
+                if (eSave) eSave.placeholder = "e.g. Living Room";
                 if (iconSearch) iconSearch.placeholder = "Search icon...";
             }
             const hintEl = document.getElementById('nav-hint');
@@ -4529,6 +4560,11 @@
             loadSavedList();
             updateStatusDetails();
             updateCopyButtonText();
+
+            // Initialize Areas (added in previous step, safe to call here)
+            if (typeof populateAreaSelect === 'function') {
+                populateAreaSelect();
+            }
         }
 
         function updateResultPathsToHost() {
@@ -5138,8 +5174,8 @@ class DashSaver(hass.Hass):
                         const newEntities = JSON.parse(matchEntities[1]);
                         if (Array.isArray(newEntities)) {
                             // Update global variables
-                            entitiesData = newEntities; 
-                            window.entitiesData = newEntities; 
+                            entitiesData = newEntities;
+                            window.entitiesData = newEntities;
                             validEntityIds = new Set(newEntities.map(e => e.id));
                             entitiesUpdated = true;
                         }
@@ -5157,12 +5193,12 @@ class DashSaver(hass.Hass):
                             populateAreaSelect();
                         }
                     } catch (e) {
-                         console.error("JSON Parse Error (Areas)", e);
+                        console.error("JSON Parse Error (Areas)", e);
                     }
                 }
 
                 if (entitiesUpdated) {
-                     // Re-run search/validation for current input
+                    // Re-run search/validation for current input
                     const input = document.getElementById('w-id');
                     if (input && input.value) {
                         searchEntities(input.value);
