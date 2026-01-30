@@ -1769,9 +1769,56 @@
         let selectedRowIdx = null;
         let blockSmart = false;
         let manualIconOverride = false;
-        // Try to load language from storage, default to 'pl'
-        let currentLang = localStorage.getItem('joan_lang') || 'pl';
-        // Natychmiast ustaw wartość pola input-lang, żeby było zgodne z localStorage
+
+        function isValidLang(l) {
+            return l === 'pl' || l === 'en';
+        }
+
+        function normalizeLang(l) {
+            return isValidLang(l) ? l : 'pl';
+        }
+
+        function getCookie(name) {
+            const m = document.cookie.match(new RegExp('(?:^|; )' + name.replace(/([.$?*|{}()\[\]\\\/\+^])/g, '\\$1') + '=([^;]*)'));
+            return m ? decodeURIComponent(m[1]) : null;
+        }
+
+        function setCookie(name, value) {
+            document.cookie = `${name}=${encodeURIComponent(value)}; path=/; max-age=31536000; samesite=lax`;
+        }
+
+        function getLangFromUrl() {
+            try {
+                const p = new URLSearchParams(window.location.search || '');
+                const v = p.get('lang');
+                return isValidLang(v) ? v : null;
+            } catch (e) {
+                return null;
+            }
+        }
+
+        // Determine initial language: URL (?lang=) > cookie > localStorage > default
+        let currentLang = 'pl';
+        const urlLang = getLangFromUrl();
+        if (urlLang) {
+            currentLang = urlLang;
+        } else {
+            const cookieRaw = getCookie('joan_lang');
+            const cookieLang = isValidLang(cookieRaw) ? cookieRaw : null;
+            if (cookieLang) {
+                currentLang = cookieLang;
+            } else {
+                try {
+                    const lsRaw = localStorage.getItem('joan_lang');
+                    const lsLang = isValidLang(lsRaw) ? lsRaw : null;
+                    if (lsLang) currentLang = lsLang;
+                } catch (e) {
+                    currentLang = 'pl';
+                }
+            }
+        }
+
+        // Natychmiast ustaw wartość pola input-lang, żeby było zgodne z wybraną wartością
         if (document.getElementById('input-lang')) {
             document.getElementById('input-lang').value = currentLang;
         }
@@ -4509,25 +4556,39 @@
         }
 
         function setLang(l) {
-            currentLang = l;
-            localStorage.setItem('joan_lang', l);
+            currentLang = normalizeLang(l);
+            try {
+                localStorage.setItem('joan_lang', currentLang);
+            } catch (e) {
+                // ignore storage errors (e.g., blocked/partitioned storage)
+            }
+            setCookie('joan_lang', currentLang);
+
+            try {
+                const url = new URL(window.location.href);
+                url.searchParams.set('lang', currentLang);
+                window.history.replaceState({}, '', url.toString());
+            } catch (e) {
+                // ignore URL/history errors
+            }
+
             const langInput = document.getElementById('input-lang');
-            if (langInput) langInput.value = l;
+            if (langInput) langInput.value = currentLang;
             if (document.documentElement) {
-                document.documentElement.lang = l;
+                document.documentElement.lang = currentLang;
             }
 
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const k = el.getAttribute('data-i18n');
-                if (TRANSLATIONS[l][k]) {
+                if (TRANSLATIONS[currentLang] && TRANSLATIONS[currentLang][k]) {
                     if (el.tagName === 'OPTION') {
-                        el.innerText = TRANSLATIONS[l][k];
+                        el.innerText = TRANSLATIONS[currentLang][k];
                     } else if (el.tagName === 'INPUT' && (el.type === 'button' || el.type === 'submit')) {
-                        el.value = TRANSLATIONS[l][k];
+                        el.value = TRANSLATIONS[currentLang][k];
                     } else if (el.tagName === 'BUTTON') {
-                        el.innerText = TRANSLATIONS[l][k];
+                        el.innerText = TRANSLATIONS[currentLang][k];
                     } else {
-                        el.innerHTML = TRANSLATIONS[l][k];
+                        el.innerHTML = TRANSLATIONS[currentLang][k];
                     }
                 }
             });
@@ -4535,8 +4596,8 @@
             // Handle title tooltips
             document.querySelectorAll('[data-i18n-title]').forEach(el => {
                 const k = el.getAttribute('data-i18n-title');
-                if (TRANSLATIONS[l][k]) {
-                    el.title = TRANSLATIONS[l][k];
+                if (TRANSLATIONS[currentLang] && TRANSLATIONS[currentLang][k]) {
+                    el.title = TRANSLATIONS[currentLang][k];
                 }
             });
 
@@ -4547,7 +4608,7 @@
 
             const btnPl = document.getElementById('btn-pl');
             if (btnPl) {
-                if (l === 'pl') {
+                if (currentLang === 'pl') {
                     btnPl.classList.add('active');
                 } else {
                     btnPl.classList.remove('active');
@@ -4556,7 +4617,7 @@
 
             const btnEn = document.getElementById('btn-en');
             if (btnEn) {
-                if (l === 'en') {
+                if (currentLang === 'en') {
                     btnEn.classList.add('active');
                 } else {
                     btnEn.classList.remove('active');
@@ -4569,7 +4630,7 @@
             const eSave = document.getElementById('save-dash-name');
             const iconSearch = document.getElementById('icon-search');
 
-            if (l === 'pl') {
+            if (currentLang === 'pl') {
                 if (eWid) eWid.placeholder = "np. głośnik kuchnia...";
                 if (eName) eName.placeholder = "np. Salon";
                 if (eDash) eDash.placeholder = "np. main";
@@ -4583,7 +4644,7 @@
                 if (iconSearch) iconSearch.placeholder = "Search icon...";
             }
             const hintEl = document.getElementById('nav-hint');
-            if (hintEl) hintEl.innerHTML = TRANSLATIONS[l].hint_nav;
+            if (hintEl && TRANSLATIONS[currentLang]) hintEl.innerHTML = TRANSLATIONS[currentLang].hint_nav;
 
             toggleInputs();
             renderPreview();
@@ -4597,9 +4658,7 @@
             }
         }
 
-        if (currentLang) {
-            setLang(currentLang);
-        }
+        setLang(currentLang);
 
         function updateResultPathsToHost() {
             // Pobiera IP/Hosta z paska adresu przeglądarki
