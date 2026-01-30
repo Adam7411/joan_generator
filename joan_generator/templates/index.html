@@ -4942,13 +4942,16 @@
             globalDefaultSize.h = parseInt(parts[1].strip ? parts[1].strip() : parts[1]) || 1;
         }
 
-        // Ustawiamy język na podstawie wartości z backendu (jeśli dostępna)
+        // Ustawiamy język na podstawie wartości z backendu tylko wtedy, gdy backend go faktycznie wymusza.
+        // (backend domyślnie zwraca 'pl', co nie może nadpisywać wyboru z URL/localStorage/cookie)
         const backendLang = '{{ current_lang|default("pl") }}';
-        setLang(backendLang === 'en' ? 'en' : 'pl');
+        if (backendLang === 'en') {
+            setLang('en');
+        }
         const iconDl = document.getElementById('icon-list');
         POPULAR_ICONS.forEach(i => { const op = document.createElement('option'); op.value = i; iconDl.appendChild(op); });
         const dashDl = document.getElementById('nav-dash-suggestions');
-        const saved = JSON.parse(localStorage.getItem('joan_dashboards') || '{}');
+        DASH_NAMES.forEach(n => { const op = document.createElement('option'); op.value = n; dashDl.appendChild(op); });
         for (const k in saved) { const op = document.createElement('option'); op.value = k; dashDl.appendChild(op); }
 
         updateResultPathsToHost();
