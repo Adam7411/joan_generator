@@ -1433,25 +1433,6 @@
             </details>
         </div>
 
-        <div class="section">
-            <details>
-                <summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;" data-i18n="sec_browser_save">💾
-                    Zapisz / Wczytaj w przeglądarce (Local Storage)</summary>
-                <div style="margin-top: 15px;">
-                    <p style="font-size: 0.9em; color: #666; margin-bottom: 10px;" data-i18n="hint_browser_save">
-                        Zapisuje projekt tylko w pamięci tej przeglądarki.</p>
-                    <div style="display:flex; gap:10px; margin-bottom:10px;">
-                        <input type="text" id="save-dash-name" placeholder="np. Salon" style="flex:1;">
-                        <button type="button" class="btn btn-save" onclick="saveToBrowser()"
-                            data-i18n="btn_browser_save" style="background-color: #4caf50;">ZAPISZ TU</button>
-                    </div>
-                    <div id="saved-dash-list" class="dash-list"
-                        style="max-height: 150px; overflow-y: auto; border: 1px solid #ddd; padding: 5px; border-radius: 4px;">
-                    </div>
-                </div>
-            </details>
-        </div>
-
         <form method="POST" id="main-form">
             <input type="hidden" name="action" id="form-action" value="generate">
             <input type="hidden" name="title" id="form-title" value="JoanDashboard">
@@ -1468,15 +1449,15 @@
 
                 <div id="entity-filters" style="display:flex; gap:10px; flex-wrap:wrap; margin: 10px 0;">
                     <div style="flex:1; min-width: 180px;">
-                        <label>Obszar</label>
+                        <label data-i18n="lbl_area">Obszar</label>
                         <select id="area-select" onchange="filterEntities()" disabled>
                             <option value="">(brak danych)</option>
                         </select>
                     </div>
                     <div style="flex:1; min-width: 180px;">
-                        <label>Typ</label>
+                        <label data-i18n="lbl_domain">Typ</label>
                         <select id="domain-select" onchange="filterEntities()">
-                            <option value="">Wszystkie</option>
+                            <option value="" data-i18n="opt_domain_all">Wszystkie</option>
                             <option value="light">light</option>
                             <option value="switch">switch</option>
                             <option value="sensor">sensor</option>
@@ -1502,6 +1483,7 @@
                             </button>
                         </div>
                         <input list="entity-list" id="w-id" placeholder="np. switch.salon"
+                            onfocus="filterEntities()"
                             oninput="searchEntities(this.value); validateEntityInput(this.value); checkEntityFrequency(this.value)"
                             autocomplete="off">
                         <datalist id="entity-list"></datalist>
@@ -2418,6 +2400,7 @@
                 sec_import: "📂 Import / Eksport Kodu .DASH", btn_import: "Wczytaj Kod",
                 sec_add: "2. Dodaj Widget", sec_edit: "2. Edytuj Widget",
                 lbl_type: "Typ Widgetu", lbl_entity: "Encja (Wyszukaj po nazwie lub ID)", lbl_dash_name: "Nazwa Dashboardu (target)",
+                lbl_area: "Obszar", lbl_domain: "Typ",
                 lbl_name: "Tytuł na ekranie", lbl_size: "Rozmiar", lbl_preview: "Podgląd",
                 lbl_icon: "Ikona (Standard)", lbl_icon_on: "Ikona ON", lbl_icon_off: "Ikona OFF",
                 lbl_value_size: "Rozmiar czcionki wartości",
@@ -2431,6 +2414,7 @@
                 opt_binary_sensor: "Sensor Binarny (On/Off)", opt_lock: "Lock / Zamek", opt_person: "Osoba / Tracker",
                 opt_media_player: "Media Player", opt_climate: "Climate / Klimatyzacja", opt_input_select: "Lista Wyboru",
                 opt_input_number: "Suwak", opt_script: "Skrypt", opt_navigate: "Przycisk Nawigacji",
+                opt_domain_all: "Wszystkie",
                 opt_fan: "Wentylator", opt_scene: "Scena", opt_input_button: "Input Button / Przycisk",
                 opt_light: "Światło (Ściemniane)", opt_group: "Grupa (Świateł)", opt_input_boolean: "Przełącznik Boolean", opt_reload: "Odśwież Dashboard",
                 opt_gauge: "Wskaźnik (Gauge)",
@@ -2559,6 +2543,7 @@
                 info_lbl_source: "Źródło API:",
                 info_lbl_bridge: "Plik dash_saver.py:",
                 info_lbl_dash_count: "Liczba Dashboardów:",
+                info_lbl_path: "Ścieżka Config AppDaemon:",
                 info_bridge_yes: "TAK (Aktywny)",
                 info_bridge_no: "NIE / BRAK",
                 btn_refresh_entities_title: "Odśwież listę encji",
@@ -2607,6 +2592,7 @@
                 opt_binary_sensor: "Binary Sensor (On/Off)", opt_lock: "Lock", opt_person: "Person / Tracker",
                 opt_media_player: "Media Player", opt_climate: "Climate / Thermostat", opt_input_select: "Input Select",
                 opt_input_number: "Input Number", opt_script: "Script", opt_navigate: "Navigation Button",
+                opt_domain_all: "All",
                 opt_fan: "Fan", opt_scene: "Scene", opt_input_button: "Input Button",
                 opt_light: "Light (Dimmable)", opt_group: "Group (Lights)", opt_input_boolean: "Input Boolean", opt_reload: "Reload Dashboard",
                 opt_gauge: "Gauge",
@@ -2618,6 +2604,7 @@
                 lbl_min: "Min", lbl_max: "Max",
                 size_2x1: "2x1 (Wide Button)", size_1x1: "1x1 (Small)", size_2x2: "2x2 (Large)",
                 size_3x1: "3x1 (Extra Wide)", size_1x2: "1x2 (Tall)", size_3x2: "3x2 (Huge)",
+                lbl_area: "Area", lbl_domain: "Type",
                 btn_add: "+ ADD WIDGET", btn_update: "SAVE CHANGES", btn_cancel: "CANCEL",
                 sec_preview: "3. Dashboard Preview", btn_row: "+ Add Row", btn_gen: "GENERATE .DASH CODE",
                 sec_result: "Generated YAML Code", lbl_save_path: "1. Save code to file:", lbl_open_link: "2. Restart AppDaemon and check:",
@@ -2735,6 +2722,7 @@
                 info_lbl_source: "API Source:",
                 info_lbl_bridge: "dash_saver.py file:",
                 info_lbl_dash_count: "Dashboard Count:",
+                info_lbl_path: "AppDaemon Config Path:",
                 info_bridge_yes: "YES (Active)",
                 info_bridge_no: "NO / MISSING",
                 btn_refresh_entities_title: "Refresh entity list",
@@ -3016,34 +3004,58 @@
             if (!dl) return;
             dl.innerHTML = ''; // Czyścimy listę
 
-            if (!val && !forceSmartTitle) return;
-
             // Wywołaj logikę smart (try/catch, bo runSmartLogic może teraz bezpiecznie działać)
             try {
                 if (forceSmartTitle) {
                     runSmartLogic(val, true);
                     return;
                 }
-                runSmartLogic(val, false);
+                if (val && val.length > 0) {
+                    runSmartLogic(val, false);
+                }
             } catch (e) {
                 console.error("Błąd w runSmartLogic:", e);
             }
 
-            // Wyszukiwanie zaczynamy już od 1 znaku dla lepszej responsywności
-            if (!val || val.length < 1) return;
-
-            const inputNormalized = normalizeString(val);
-            const searchTerms = inputNormalized.split(/\s+/).filter(t => t.length > 0);
-
-            let matches = [];
             const selectedDomain = getSelectedDomain();
             const selectedAreaId = enableAreaFilter ? getSelectedAreaId() : '';
+            const hasFilter = !!(selectedDomain || selectedAreaId);
+
+            // Bez tekstu i bez filtrów nie pokazujemy nic, żeby nie zasypać użytkownika wszystkimi encjami
+            let searchTerms = [];
+            if (val && val.length >= 1) {
+                const inputNormalized = normalizeString(val);
+                searchTerms = inputNormalized.split(/\s+/).filter(t => t.length > 0);
+            } else if (!hasFilter) {
+                return;
+            }
+
+            // Wylicz listę już użytych encji (po ID bazowym, bez suffixów _copy)
+            const usedBaseIds = new Set();
+            if (typeof getAllWidgetIds === 'function') {
+                const ids = getAllWidgetIds();
+                ids.forEach(id => {
+                    const base = String(id || '').replace(/_copy\d+$/, '');
+                    usedBaseIds.add(base);
+                });
+            }
+            // Jeżeli edytujemy istniejący widget - nie ukrywaj jego encji z listy
+            if (editIdx && rows[editIdx.r] && rows[editIdx.r][editIdx.w]) {
+                const editId = rows[editIdx.r][editIdx.w].id;
+                const editBase = String(editId || '').replace(/_copy\d+$/, '');
+                usedBaseIds.delete(editBase);
+            }
+
+            let matches = [];
 
             for (const obj of entitiesData) {
+                // Ukryj encje, które są już użyte na dashboardzie (po ID bazowym)
+                const entityIdRaw = String(obj.id || '');
+                if (usedBaseIds.has(entityIdRaw)) continue;
+
                 // Filter by Domain
                 if (selectedDomain) {
-                    const idRaw = String(obj.id || '');
-                    if (!idRaw.startsWith(selectedDomain + '.')) continue;
+                    if (!entityIdRaw.startsWith(selectedDomain + '.')) continue;
                 }
                 // Filter by Area
                 if (selectedAreaId) {
@@ -3051,14 +3063,14 @@
                     if (String(obj.area_id || '') !== selectedAreaId) continue;
                 }
 
-                const id = (obj.id || "").toLowerCase();
+                const id = entityIdRaw.toLowerCase();
                 const friendlyName = (obj.attributes && obj.attributes.friendly_name ? obj.attributes.friendly_name : "").toLowerCase();
 
                 // Klucz do sukcesu: szukamy w ID, w przyjaznej nazwie ORAZ w ID, gdzie '_' zamieniono na spacje
                 const searchableText = normalizeString(id + " " + friendlyName + " " + id.replace(/_/g, ' '));
 
                 // Sprawdzamy czy WSZYSTKIE wpisane słowa znajdują się w tekście encji
-                const allTermsMatch = searchTerms.every(term => searchableText.includes(term));
+                const allTermsMatch = searchTerms.length === 0 || searchTerms.every(term => searchableText.includes(term));
 
                 if (allTermsMatch) {
                     matches.push(obj);
@@ -3576,7 +3588,6 @@
             const counter = document.getElementById('char-count');
             let max = 20;
             if (size === '(1x1)' || size === '(1x2)') max = 15;
-            input.maxLength = max;
             const txt = max === 15 ? TRANSLATIONS[currentLang].limit_15 : TRANSLATIONS[currentLang].limit_20;
             counter.innerText = `${input.value.length}/${max} (${txt})`;
             if (input.value.length >= max) counter.classList.add('limit'); else counter.classList.remove('limit');
@@ -4498,6 +4509,9 @@
             localStorage.setItem('joan_lang', l);
             const langInput = document.getElementById('input-lang');
             if (langInput) langInput.value = l;
+            if (document.documentElement) {
+                document.documentElement.lang = l;
+            }
 
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const k = el.getAttribute('data-i18n');
@@ -5477,7 +5491,7 @@ class DashSaver(hass.Hass):
                 <div id="info-dash-count">...</div>
             </div>
             <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #ddd;">
-                <div><strong>Ścieżka Config AppDaemon:</strong></div>
+                <div><strong data-i18n="info_lbl_path">Ścieżka Config AppDaemon:</strong></div>
                 <div id="info-path" data-template="\\[HA_IP]\addon_configs\{{ connection_info.appdaemon_slug }}\"
                     style="font-family: monospace; background: #f5f5f5; padding: 5px; border-radius: 4px; margin-top: 5px; word-break: break-all; color: #333;">
                     ...
