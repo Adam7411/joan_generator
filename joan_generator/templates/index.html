@@ -1478,13 +1478,13 @@
                             <label data-i18n="lbl_entity">Encja (Wyszukaj po nazwie lub ID)</label>
                             <button type="button" onclick="refreshEntities()" id="btn-refresh-ent"
                                 style="background: none; border: none; cursor: pointer; padding: 0 5px; color: #2196f3; transition: transform 0.2s;"
-                                onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'"
-                                title="Odśwież listę encji" data-i18n-title="btn_refresh_entities_title">
+                                onmouseover="this.style.transform='scale(1.2)'"
+                                onmouseout="this.style.transform='scale(1)'" title="Odśwież listę encji"
+                                data-i18n-title="btn_refresh_entities_title">
                                 <i class="mdi mdi-refresh" style="font-size: 26px; font-weight: bold;"></i>
                             </button>
                         </div>
-                        <input list="entity-list" id="w-id" placeholder="np. switch.salon"
-                            onfocus="filterEntities()"
+                        <input list="entity-list" id="w-id" placeholder="np. switch.salon" onfocus="filterEntities()"
                             oninput="searchEntities(this.value); validateEntityInput(this.value); checkEntityFrequency(this.value)"
                             autocomplete="off">
                         <datalist id="entity-list"></datalist>
@@ -2562,7 +2562,7 @@
                         <li>Kliknij <b>Zatwierdź</b>.</li>
                         <li>Zapisz i użyj nowej encji (np. <i>sensor.mean_...</i>) w tym generatorze.</li>
                     </ol>
-                    <p>Oficjalna dokumentacja: <a href="https://www.home-assistant.io/integrations/statistics/" target="_blank">Home Assistant Statistics</a></p>
+                    <p>Oficjalna dokumentacja: <a href="https://www.home-assistant.io/integrations/statistics/" target="_blank" style="color: #d32f2f; font-weight: bold;">Home Assistant Statistics</a></p>
                 `,
                 modal_visionect_title: "Usługi dodatku Visionect Joan",
                 visionect_body: `
@@ -2584,7 +2584,7 @@
                     </ol>
                     <p class="tip-box">
                         <b>Wskazówka:</b> Po stworzeniu skryptu, wróć tutaj (Joan 6 Generator), dodaj widget typu <b>Script</b> i wybierz encję swojego nowego skryptu. Możesz też dodać przycisk do dashboardu, który go wywoła.<br><br>
-                        Oficjalne repozytorium: <a href="https://github.com/Adam7411/visionect_joan" target="_blank">Visionect Joan Add-on</a>
+                        Oficjalne repozytorium: <a href="https://github.com/Adam7411/visionect_joan" target="_blank" style="color: #d32f2f; font-weight: bold;">Visionect Joan Add-on</a>
                     </p>
                 `,
                 modal_battery_understand: "ROZUMIEM",
@@ -2607,6 +2607,7 @@
                 link_v3_proxmox: "Instalacja serwera Visionect w Proxmox",
                 link_addon: "Dodatek Visionect Joan dla Home Assistant",
                 link_generator: "Ten generator (Dokumentacja i kod)",
+                link_visionect: "Visionect (Producent Joan 6)",
                 list_dashboards_title: "Lista Dashboardów:",
                 dash_list_empty: "(brak)"
             },
@@ -2743,7 +2744,7 @@
                         <li>Click <b>Submit</b>.</li>
                         <li>Save and use the new entity (e.g., <i>sensor.mean_...</i>) in this generator.</li>
                     </ol>
-                    <p>Official documentation: <a href="https://www.home-assistant.io/integrations/statistics/" target="_blank">Home Assistant Statistics</a></p>
+                    <p>Official documentation: <a href="https://www.home-assistant.io/integrations/statistics/" target="_blank" style="color: #d32f2f; font-weight: bold;">Home Assistant Statistics</a></p>
                 `,
                 modal_visionect_title: "Visionect Joan Add-on Services",
                 visionect_body: `
@@ -2764,7 +2765,7 @@
                     </ol>
                     <p class="tip-box">
                         <b>Hint:</b> After creating the script, come back here (Joan 6 Generator), add a <b>Script</b> widget and select your new script entity. You can also add a button to the dashboard to trigger it.<br><br>
-                        Official repository: <a href="https://github.com/Adam7411/visionect_joan" target="_blank">Visionect Joan Add-on</a>
+                        Official repository: <a href="https://github.com/Adam7411/visionect_joan" target="_blank" style="color: #d32f2f; font-weight: bold;">Visionect Joan Add-on</a>
                     </p>
                 `,
                 btn_understand: "I UNDERSTAND",
@@ -2784,6 +2785,7 @@
                 link_v3_proxmox: "Visionect Software Suite - Installation in Proxmox",
                 link_addon: "Visionect Joan for Home Assistant add-on",
                 link_generator: "This Generator (Documentation & Code)",
+                link_visionect: "Visionect (Joan 6 Manufacturer)",
                 list_dashboards_title: "Dashboard List:",
                 dash_list_empty: "(none)"
             },
@@ -3689,6 +3691,9 @@
             updateIconPreview(); updateTitleLimit();
             // Call toggleInputs after setting checkbox state
             toggleInputs();
+            // Hide Area and Type filters when editing
+            const filtersDiv = document.getElementById('entity-filters');
+            if (filtersDiv) filtersDiv.style.display = 'none';
             setTimeout(() => {
                 blockSmart = false;
                 // Wywołaj analizę częstotliwości dla edytowanej encji
@@ -3704,7 +3709,10 @@
             document.getElementById('lbl-add-widget').innerText = TRANSLATIONS[currentLang].sec_add;
 
             document.getElementById('btn-submit').innerText = TRANSLATIONS[currentLang].btn_add;
-            clearForm(); renderPreview();
+            clearForm();
+            // Restore Area and Type filters visibility when canceling edit
+            toggleInputs();
+            renderPreview();
         }
 
         function clearForm() {
@@ -5551,7 +5559,7 @@ class DashSaver(hass.Hass):
     function closeInfoModal() { document.getElementById('info-modal').style.display = 'none'; }
 
     // Init language from storage - wywołaj natychmiast po załadowaniu DOM
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         if (typeof setLang === 'function' && typeof currentLang !== 'undefined') {
             setLang(currentLang);
             // Initialize Areas
@@ -5560,7 +5568,7 @@ class DashSaver(hass.Hass):
             }
         }
     });
-    
+
     // Również wywołaj natychmiast jeśli DOM już załadowany
     if (document.readyState === 'loading') {
         // DOM jeszcze się ładuje, czekamy na DOMContentLoaded (wyżej)
@@ -5663,9 +5671,16 @@ class DashSaver(hass.Hass):
                 <li
                     style="margin-bottom: 15px; padding: 12px; background: #f9f9f9; border-left: 4px solid #ff9800; border-radius: 4px; border-top: 1px solid #ddd; padding-top: 20px; margin-top: 20px;">
                     <a href="https://appdaemon.readthedocs.io/en/latest/DASHBOARD_CREATION.html#widget-reference"
-                        target="_blank" style="text-decoration: none; color: #e65100; font-weight: bold;"
+                        target="_blank" style="text-decoration: none; color: #d32f2f; font-weight: bold;"
                         data-i18n="link_appdaemon_docs">
                         AppDaemon Widget Creation Documentation
+                    </a>
+                </li>
+                <li
+                    style="margin-bottom: 15px; padding: 12px; background: #f9f9f9; border-left: 4px solid #d32f2f; border-radius: 4px;">
+                    <a href="https://www.visionect.com/" target="_blank"
+                        style="text-decoration: none; color: #d32f2f; font-weight: bold;" data-i18n="link_visionect">
+                        Visionect (Joan 6 Manufacturer)
                     </a>
                 </li>
             </ul>
