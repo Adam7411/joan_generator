@@ -83,7 +83,9 @@ Utwórz nowy plik z rozszerzeniem `.dash` w folderze konfiguracyjnym AppDaemon:
 
 
 ***
+<img width="1920" height="5811" alt="1" src="https://github.com/user-attachments/assets/93e78a3a-4388-464e-ac51-bf2c6b9bc2b3" />
 
+<img width="758" height="1024" alt="2" src="https://github.com/user-attachments/assets/7e4d6c5e-af62-4a16-a38d-869f930ea914" />
 
 
 ***
