@@ -1,3 +1,4 @@
+/* Standardized CSS for basemedia widget */
 .widget-basemedia- {
         {
         id
@@ -7,6 +8,7 @@
     {
     background-color: #FFFFFF !important;
     position: relative;
+    border-radius: 4px;
 }
 
 .widget-basemedia- {
@@ -21,6 +23,7 @@
     width: 100%;
     text-align: center;
     color: #000000 !important;
+    font-weight: bold;
 }
 
 .widget-basemedia- {
@@ -62,7 +65,8 @@
     top: 80px;
     width: 100%;
     text-align: center;
-    color: #000000 !important;
+    color: #333333 !important;
+    font-weight: bold;
 }
 
 .widget-basemedia- {
@@ -85,30 +89,14 @@
     }
 }
 
-.previous {
-    position: absolute;
-    top: 130px;
-    left: 25px;
-    z-index: 10;
-    cursor: pointer;
-    color: #000000 !important;
-}
-
+.previous,
 .widget-basemedia- {
         {
         id
     }
 }
 
-.play {
-    position: absolute;
-    top: 130px;
-    width: 100%;
-    text-align: center;
-    cursor: pointer;
-    color: #000000 !important;
-}
-
+.play,
 .widget-basemedia- {
         {
         id
@@ -118,10 +106,41 @@
 .next {
     position: absolute;
     top: 130px;
-    right: 25px;
     z-index: 10;
     cursor: pointer;
     color: #000000 !important;
+    font-size: 24px;
+}
+
+.widget-basemedia- {
+        {
+        id
+    }
+}
+
+.previous {
+    left: 25px;
+}
+
+.widget-basemedia- {
+        {
+        id
+    }
+}
+
+.play {
+    width: 100%;
+    text-align: center;
+}
+
+.widget-basemedia- {
+        {
+        id
+    }
+}
+
+.next {
+    right: 25px;
 }
 
 .widget-basemedia- {
@@ -153,6 +172,7 @@
 
 .unit {
     display: inline-block;
+    font-weight: bold;
 }
 
 .widget-basemedia- {
