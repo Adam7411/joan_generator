@@ -271,31 +271,7 @@ def save_dash_file_via_api(filename, content):
             last_error = str(e)
             print(f"❌ Connection error with path {path}: {e}")
 
-def save_custom_file_via_api(rel_path, content):
-    """Sends any file to AppDaemon using the new save_file endpoint."""
-    host = APPDAEMON_SLUG.replace('_', '-')
-    paths = ["/api/appdaemon/save_file", "/api/save_file"]
-    
-    last_error = "Nieznany błąd"
-    for path in paths:
-        url = f"http://{host}:5050{path}"
-        payload = {"path": rel_path, "content": content}
-        
-        try:
-            headers = {"Content-Type": "application/json"}
-            if TOKEN:
-                 headers["Authorization"] = f"Bearer {TOKEN}"
-
-            response = requests.post(url, json=payload, headers=headers, timeout=10)
-            
-            if response.status_code == 200:
-                return True, f"Success: File {rel_path} saved!"
-            
-            last_error = f"Status {response.status_code}: {response.text}"
-        except Exception as e:
-            last_error = str(e)
-
-    return False, last_error
+    return False, f"Save error (tried all paths). Last error: {last_error}"
 
 def list_dashboards_via_api():
     """Lists available dashboard files from AppDaemon via dash_saver bridge."""
@@ -355,61 +331,6 @@ def read_dashboard_via_api(filename):
             print(f"❌ Error reading dashboard from {path}: {e}")
     
     return False, ""
-
-# -------------------------------------------------------------------------
-# CUSTOM WIDGET DEPLOYMENT
-# -------------------------------------------------------------------------
-def deploy_custom_widgets():
-    """Reads fixed custom widget files from templates/custom_widgets and sends them to AppDaemon."""
-    base_path = Path(__file__).parent / "templates" / "custom_widgets"
-    if not base_path.exists():
-        print("⚠️ Custom widgets directory not found.")
-        return False
-
-    files_to_deploy = [
-        "baseclimate.js", "baseclimate.css", "baseclimate.html", "baseclimate.yaml",
-        "basemedia.js", "basemedia.css", "basemedia.html", "basemedia.yaml",
-        "baseswitch.js", "baseswitch.css", "baseswitch.html", "baseswitch.yaml",
-        "basefan.js", "basefan.css", "basefan.html", "basefan.yaml",
-        "basecover.js", "basecover.css", "basecover.html", "basecover.yaml",
-        "baselock.js", "baselock.css", "baselock.html", "baselock.yaml",
-        "baseinput_number.js", "baseinput_number.css", "baseinput_number.html", "baseinput_number.yaml",
-        "baseinput_select.js", "baseinput_select.css", "baseinput_select.html", "baseinput_select.yaml"
-    ]
-    
-    success_count = 0
-    for file_name in files_to_deploy:
-        file_path = base_path / file_name
-        if file_path.exists():
-            with open(file_path, "r", encoding="utf-8") as f:
-                content = f.read()
-            
-            # Determine correct subdirectory based on widget name
-            # Widgets are named baseclimate.*, basemedia.*, etc.
-            widget_folder = file_name.split('.')[0]
-            rel_deploy_path = f"custom_widgets/{widget_folder}/{file_name}"
-            
-            ok, msg = save_custom_file_via_api(rel_deploy_path, content)
-            if ok:
-                success_count += 1
-                print(f"✅ Deployed widget file to {rel_deploy_path}")
-            else:
-                # Fallback to old path if new endpoint not yet available on server
-                print(f"⚠️ Failed to deploy to {rel_deploy_path}, trying legacy path...")
-                ok2, msg2 = save_dash_file_via_api(file_name, content)
-                if ok2:
-                    success_count += 1
-                    print(f"✅ Deployed widget file to legacy path: {file_name}")
-                else:
-                    print(f"❌ Failed to deploy {file_name}: {msg2}")
-    
-    if success_count == len(files_to_deploy):
-        return True
-    return False
-
-# -------------------------------------------------------------------------
-# CUSTOM WIDGET DEPLOYMENT
-# -------------------------------------------------------------------------
 
 # -------------------------------------------------------------------------
 # ENTITY FREQUENCY ANALYZER
@@ -689,12 +610,8 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append("")
                     continue
 
-                w_type = w.get('type', '')
-                # Smart fallback: if type is missing, infer from entity domain
-                if not w_type and real_entity_id and '.' in str(real_entity_id):
-                    w_type = str(real_entity_id).split('.')[0]
-                
-                w_name = w.get('name', 'Widget')
+                w_type = w['type']
+                w_name = w['name']
 
                 # Common property extraction for all widgets
                 is_small = (w.get('size') == '(1x1)' or w.get('size') == '(1x2)')
@@ -724,7 +641,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append(f"  icon_inactive_style: \"{STYLE_ICON}\"")
 
                 elif w_type == 'switch':
-                    output.append(f"  widget_type: baseswitch")
+                    output.append(f"  widget_type: switch")
                     output.append(f"  entity: {real_entity_id}")
                     output.append(f"  title: \"{w_name}\"")
                     if i_on: output.append(f"  icon_on: {i_on}")
@@ -770,7 +687,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                         output.append("  precision: 1")
 
                 elif w_type == 'media_player':
-                    output.append(f"  widget_type: basemedia")
+                    output.append(f"  widget_type: media_player")
                     output.append(f"  entity: {real_entity_id}")
                     output.append(f"  title: \"{w_name}\"")
 
@@ -797,7 +714,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append("  step: 5")
 
                 elif w_type == 'climate':
-                    output.append(f"  widget_type: baseclimate")
+                    output.append(f"  widget_type: climate")
                     output.append(f"  entity: {real_entity_id}")
                     output.append(f"  title: \"{w_name}\"")
 
@@ -818,7 +735,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append(f"  level_down_style: \"{STYLE_ICON}\"")
 
                 elif w_type == 'fan':
-                    output.append(f"  widget_type: basefan")
+                    output.append(f"  widget_type: fan")
                     # Use percentage values for modern HA fan API
                     output.append("  low_speed: 33")
                     output.append("  medium_speed: 66")
@@ -914,7 +831,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append(f"  unit_style: \"{STYLE_UNIT}\"")
 
                 elif w_type == 'light':
-                    output.append(f"  widget_type: baseswitch")
+                    output.append(f"  widget_type: light")
                     output.append(f"  entity: {real_entity_id}")
                     output.append(f"  title: \"{w_name}\"")
 
@@ -941,7 +858,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append(f"    \"off\": \"{dic['off']}\"")
 
                 elif w_type == 'group':
-                    output.append(f"  widget_type: baseswitch")
+                    output.append(f"  widget_type: group")
                     output.append(f"  entity: {real_entity_id}")
                     output.append(f"  title: \"{w_name}\"")
 
@@ -970,7 +887,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append(f"    \"off\": \"{dic['off']}\"")
 
                 elif w_type == 'input_boolean':
-                    output.append(f"  widget_type: baseswitch")
+                    output.append(f"  widget_type: input_boolean")
                     output.append(f"  entity: {real_entity_id}")
                     output.append(f"  title: \"{w_name}\"")
 
@@ -1024,7 +941,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append(f"    \"not_home\": \"{dic['not_home']}\"")
 
                 elif w_type == 'lock':
-                    output.append(f"  widget_type: baselock")
+                    output.append(f"  widget_type: lock")
                     output.append(f"  entity: {real_entity_id}")
                     output.append(f"  title: \"{w_name}\"")
 
@@ -1053,7 +970,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append(f"    \"unlocked\": \"{dic['unlocked']}\"")
 
                 elif w_type == 'cover':
-                    output.append(f"  widget_type: basecover")
+                    output.append(f"  widget_type: cover")
                     output.append(f"  entity: {real_entity_id}")
                     output.append(f"  title: \"{w_name}\"")
                     if i_on: output.append(f"  icon_on: {i_on}")
@@ -1093,7 +1010,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append(f"  icon_inactive_style: \"{STYLE_ICON}; opacity: 0.5;\"")
 
                 elif w_type == 'input_number':
-                    output.append(f"  widget_type: baseinput_number")
+                    output.append(f"  widget_type: input_number")
                     output.append(f"  entity: {real_entity_id}")
                     output.append(f"  title: \"{w_name}\"")
 
@@ -1112,7 +1029,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append(f"  slidercontainer_style: \"background-color: #ffffff !important;\"")
 
                 elif w_type == 'input_select':
-                    output.append(f"  widget_type: baseinput_select")
+                    output.append(f"  widget_type: input_select")
                     output.append(f"  entity: {real_entity_id}")
                     output.append(f"  title: \"{w_name}\"")
 
@@ -1133,24 +1050,22 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     if w_type == 'binary_sensor':
                         ad_type = 'binary_sensor'
                     if w_type == 'input_boolean':
-                        ad_type = 'baseswitch'
+                        ad_type = 'switch'
                     if w_type == 'person':
                         ad_type = 'device_tracker'
                     if w_type == 'light':
-                        ad_type = 'baseswitch'
+                        ad_type = 'switch'
                     if w_type == 'lock':
-                        ad_type = 'baselock'
+                        ad_type = 'lock'
                     if w_type == 'input_select':
-                        ad_type = 'baseinput_select'
+                        ad_type = 'input_select'
                     if w_type == 'input_number':
-                        ad_type = 'baseinput_number'
+                        ad_type = 'input_number'
                     if w_type == 'script':
                         ad_type = 'script'
                     if w_type == 'alarm':
                         ad_type = 'alarm'
 
-                    if not ad_type:
-                        ad_type = 'sensor'
                     output.append(f"  widget_type: {ad_type}")
                     output.append(f"  entity: {real_entity_id}")
                     output.append(f"  title: \"{w_name}\"")
@@ -1239,11 +1154,6 @@ def index():
         "bridge_active": bridge_active,
         "has_dashboards": has_dashboards
     }
-    
-    
-    # Auto-deploy custom widgets on every page load or specific action? 
-    # Better on generate/save to ensure they are present.
-    widgets_deployed_msg = ""
 
     current_ui_lang = request.form.get('ui_language', 'pl') if request.method == 'POST' else request.args.get('lang', 'pl')
 
@@ -1304,10 +1214,6 @@ def index():
                     layout_data, title, grid_params, lang, custom_defs, entities_map
                 )
                 success, msg = save_dash_file_via_api(dashboard_filename, generated_yaml)
-                
-                # Deploy widgets on save
-                deploy_custom_widgets()
-                
                 save_message = f"{'✅' if success else '❌'} {msg}"
             except Exception as e:
                 save_message = f"❌ Save error: {e}"
