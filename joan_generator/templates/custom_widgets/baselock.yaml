@@ -1,0 +1,13 @@
+widget_type: base
+entity: {{entity}}
+fields:
+  title: ""
+  icon: ""
+  widget_style: ""
+icons: []
+static_icons: []
+css:
+  - baselock.css
+javascript:
+  - baselock.js
+html: baselock.html

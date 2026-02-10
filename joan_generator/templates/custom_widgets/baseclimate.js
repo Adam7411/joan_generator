@@ -1,0 +1,78 @@
+function baseclimate(widget_id, url, skin, parameters) {
+    var self = this;
+    self.widget_id = widget_id;
+    self.parameters = parameters;
+
+    self.OnRaiseLevelClick = OnRaiseLevelClick;
+    self.OnLowerLevelClick = OnLowerLevelClick;
+
+    var callbacks = [
+        { "selector": '#' + widget_id + ' #level-up', "action": "click", "callback": self.OnRaiseLevelClick },
+        { "selector": '#' + widget_id + ' #level-down', "action": "click", "callback": self.OnLowerLevelClick },
+    ];
+
+    self.OnStateAvailable = OnStateAvailable;
+    self.OnStateUpdate = OnStateUpdate;
+
+    if ("entity" in parameters) {
+        var monitored_entities = [
+            { "entity": parameters.entity, "initial": self.OnStateAvailable, "update": self.OnStateUpdate }
+        ];
+    } else {
+        var monitored_entities = [];
+    }
+
+    if ("step" in parameters && !isNaN(self.parameters.step)) {
+        self.step = parseFloat(parameters.step);
+    } else {
+        self.step = 1;
+    }
+
+    WidgetBase.call(self, widget_id, url, skin, parameters, monitored_entities, callbacks);
+
+    function OnStateAvailable(self, state) {
+        self.min = state.attributes.min_temp;
+        self.max = state.attributes.max_temp;
+        self.level = state.attributes.temperature;
+        if ("units" in self.parameters) {
+            self.set_field(self, "units", self.parameters.units);
+        } else {
+            self.set_field(self, "units", state.attributes["unit_of_measurement"]);
+        }
+        set_view(self, state);
+    }
+
+    function OnStateUpdate(self, state) {
+        self.level = state.attributes.temperature;
+        set_view(self, state);
+    }
+
+    function OnRaiseLevelClick(self) {
+        self.level = parseFloat(self.level) + self.step;
+        if (self.max !== undefined && self.level > self.max) {
+            self.level = self.max;
+        }
+        var args = JSON.parse(JSON.stringify(self.parameters.post_service));
+        args["temperature"] = self.level;
+        self.call_service(self, args);
+    }
+
+    function OnLowerLevelClick(self) {
+        self.level = parseFloat(self.level) - self.step;
+        if (self.min !== undefined && self.level < self.min) {
+            self.level = self.min;
+        }
+        var args = JSON.parse(JSON.stringify(self.parameters.post_service));
+        args["temperature"] = self.level;
+        self.call_service(self, args);
+    }
+
+    function set_view(self, state) {
+        self.set_field(self, "level", self.format_number(self, state.attributes.current_temperature));
+        if ("temperature" in state.attributes && state.attributes.temperature != null) {
+            self.set_field(self, "level2", self.format_number(self, state.attributes.temperature));
+        } else {
+            self.set_field(self, "level2", "auto");
+        }
+    }
+}

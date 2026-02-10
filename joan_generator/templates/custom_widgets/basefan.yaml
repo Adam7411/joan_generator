@@ -1,0 +1,15 @@
+widget_type: base
+entity: {{entity}}
+fields:
+  title: ""
+  speed1: ""
+  speed2: ""
+  speed3: ""
+  widget_style: ""
+icons: []
+static_icons: []
+css:
+  - basefan.css
+javascript:
+  - basefan.js
+html: basefan.html

@@ -1,0 +1,55 @@
+.widget-baseswitch- {
+        {
+        id
+    }
+}
+
+    {
+    background-color: #FFFFFF !important;
+    position: relative;
+}
+
+.widget-baseswitch- {
+        {
+        id
+    }
+}
+
+.title {
+    position: absolute;
+    top: 5px;
+    width: 100%;
+    text-align: center;
+    color: #000000 !important;
+}
+
+.widget-baseswitch- {
+        {
+        id
+    }
+}
+
+.icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 50px;
+    cursor: pointer;
+    color: #000000 !important;
+}
+
+.widget-baseswitch- {
+        {
+        id
+    }
+}
+
+.state_text {
+    position: absolute;
+    bottom: 5px;
+    width: 100%;
+    text-align: center;
+    font-weight: bold;
+    color: #000000 !important;
+}

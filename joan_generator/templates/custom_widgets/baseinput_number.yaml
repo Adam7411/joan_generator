@@ -1,0 +1,16 @@
+widget_type: base
+entity: {{entity}}
+fields:
+  title: ""
+  value: ""
+  units: ""
+  btn_minus: ""
+  btn_plus: ""
+  widget_style: ""
+icons: []
+static_icons: []
+css:
+  - baseinput_number.css
+javascript:
+  - baseinput_number.js
+html: baseinput_number.html
