@@ -1,0 +1,17 @@
+widget_type: baseswitch
+entity: {{entity}}
+fields:
+  title: ""
+  title_style: ""
+  icon_style: ""
+  state_text: ""
+  state_text_style: ""
+  icon: ""
+  namespace: default
+icons: []
+static_icons: []
+css:
+  - baseswitch.css
+javascript:
+  - baseswitch.js
+html: baseswitch.html
