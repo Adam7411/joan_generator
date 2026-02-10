@@ -271,7 +271,31 @@ def save_dash_file_via_api(filename, content):
             last_error = str(e)
             print(f"❌ Connection error with path {path}: {e}")
 
-    return False, f"Save error (tried all paths). Last error: {last_error}"
+def save_custom_file_via_api(rel_path, content):
+    """Sends any file to AppDaemon using the new save_file endpoint."""
+    host = APPDAEMON_SLUG.replace('_', '-')
+    paths = ["/api/appdaemon/save_file", "/api/save_file"]
+    
+    last_error = "Nieznany błąd"
+    for path in paths:
+        url = f"http://{host}:5050{path}"
+        payload = {"path": rel_path, "content": content}
+        
+        try:
+            headers = {"Content-Type": "application/json"}
+            if TOKEN:
+                 headers["Authorization"] = f"Bearer {TOKEN}"
+
+            response = requests.post(url, json=payload, headers=headers, timeout=10)
+            
+            if response.status_code == 200:
+                return True, f"Success: File {rel_path} saved!"
+            
+            last_error = f"Status {response.status_code}: {response.text}"
+        except Exception as e:
+            last_error = str(e)
+
+    return False, last_error
 
 def list_dashboards_via_api():
     """Lists available dashboard files from AppDaemon via dash_saver bridge."""
@@ -360,12 +384,24 @@ def deploy_custom_widgets():
             with open(file_path, "r", encoding="utf-8") as f:
                 content = f.read()
             
-            ok, msg = save_dash_file_via_api(file_name, content)
+            # Determine correct subdirectory based on widget name
+            # Widgets are named baseclimate.*, basemedia.*, etc.
+            widget_folder = file_name.split('.')[0]
+            rel_deploy_path = f"custom_widgets/{widget_folder}/{file_name}"
+            
+            ok, msg = save_custom_file_via_api(rel_deploy_path, content)
             if ok:
                 success_count += 1
-                print(f"✅ Deployed widget file: {file_name}")
+                print(f"✅ Deployed widget file to {rel_deploy_path}")
             else:
-                print(f"❌ Failed to deploy {file_name}: {msg}")
+                # Fallback to old path if new endpoint not yet available on server
+                print(f"⚠️ Failed to deploy to {rel_deploy_path}, trying legacy path...")
+                ok2, msg2 = save_dash_file_via_api(file_name, content)
+                if ok2:
+                    success_count += 1
+                    print(f"✅ Deployed widget file to legacy path: {file_name}")
+                else:
+                    print(f"❌ Failed to deploy {file_name}: {msg2}")
     
     if success_count == len(files_to_deploy):
         return True
