@@ -131,6 +131,12 @@ function basemedia(widget_id, url, skin, parameters) {
             self.set_icon(self, "play_icon", self.icons.play_icon);
         }
 
+        // Apply styles to other icons
+        self.set_field(self, "next_icon_style", get_style("icon_style_active") || get_style("icon_style"));
+        self.set_field(self, "previous_icon_style", get_style("icon_style_active") || get_style("icon_style"));
+        self.set_field(self, "level_up_style", get_style("level_up_style") || get_style("icon_style"));
+        self.set_field(self, "level_down_style", get_style("level_down_style") || get_style("icon_style"));
+
         // Icons for next/prev
         self.set_icon(self, "next_icon", self.icons.next_icon);
         self.set_icon(self, "previous_icon", self.icons.previous_icon);
