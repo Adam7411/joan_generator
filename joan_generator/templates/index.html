@@ -4317,7 +4317,16 @@
                                 const d = rawDefs[id];
 
                                 const tMatch = d.match(/widget_type:\s*(.*)/);
-                                if (tMatch) type = tMatch[1].trim();
+                                if (tMatch) {
+                                    type = tMatch[1].trim();
+                                }
+                                // If type is still empty or default switch, try to infer from ID
+                                if ((!type || type === 'switch') && id.includes('.')) {
+                                    const domain = id.split('.')[0];
+                                    if (['media_player', 'climate', 'fan', 'cover', 'lock', 'light', 'sensor', 'binary_sensor'].includes(domain)) {
+                                        type = domain;
+                                    }
+                                }
                                 const nMatch = d.match(/title:\s*(.*)/);
                                 if (nMatch) name = nMatch[1].trim().replace(/['"]/g, '');
 
