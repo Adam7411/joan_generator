@@ -410,47 +410,6 @@ def deploy_custom_widgets():
 # -------------------------------------------------------------------------
 # CUSTOM WIDGET DEPLOYMENT
 # -------------------------------------------------------------------------
-def deploy_custom_widgets():
-    """Reads fixed custom widget files from templates/custom_widgets and sends them to AppDaemon."""
-    base_path = Path(__file__).parent / "templates" / "custom_widgets"
-    if not base_path.exists():
-        print("⚠️ Custom widgets directory not found.")
-        return False
-
-    files_to_deploy = [
-        "fixed_climate.js", "fixed_climate.css", "fixed_climate.html", "fixed_climate.yaml",
-        "fixed_media.js", "fixed_media.css", "fixed_media.html", "fixed_media.yaml"
-    ]
-    
-    success_count = 0
-    for file_name in files_to_deploy:
-        file_path = base_path / file_name
-        if file_path.exists():
-            with open(file_path, "r", encoding="utf-8") as f:
-                content = f.read()
-            
-            # Send file via API Bridge (dash_saver saves to dashboard directory)
-            # This works because AD can load custom widget files from dashboard dir if referenced correctly
-            # or if dashboards dir is configured as widget dir.
-            # Assuming standard structure where custom_widgets can be in dashboard dir or parent.
-            # dash_saver usually writes to ./dashboards/filename
-            
-            # We try to write directly to filename. If dash_saver restricts to .dash, this might fail.
-            # However, typically simple savers just write what they get.
-            
-            # If dash_saver prepends "dashboards/", we are writing "dashboards/fixed_climate.js".
-            # This is acceptable if we reference them relatively or if AD scans recursively.
-            
-            ok, msg = save_dash_file_via_api(file_name, content)
-            if ok:
-                success_count += 1
-                print(f"✅ Deployed widget file: {file_name}")
-            else:
-                print(f"❌ Failed to deploy {file_name}: {msg}")
-    
-    if success_count == len(files_to_deploy):
-        return True
-    return False
 
 # -------------------------------------------------------------------------
 # ENTITY FREQUENCY ANALYZER
