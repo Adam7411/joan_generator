@@ -1,4 +1,4 @@
-widget_type: basemedia
+widget_type: base
 entity: {{entity}}
 fields:
   title: ""
