@@ -4317,16 +4317,7 @@
                                 const d = rawDefs[id];
 
                                 const tMatch = d.match(/widget_type:\s*(.*)/);
-                                if (tMatch) {
-                                    type = tMatch[1].trim();
-                                }
-                                // If type is still empty or default switch, try to infer from ID
-                                if ((!type || type === 'switch') && id.includes('.')) {
-                                    const domain = id.split('.')[0];
-                                    if (['media_player', 'climate', 'fan', 'cover', 'lock', 'light', 'sensor', 'binary_sensor'].includes(domain)) {
-                                        type = domain;
-                                    }
-                                }
+                                if (tMatch) type = tMatch[1].trim();
                                 const nMatch = d.match(/title:\s*(.*)/);
                                 if (nMatch) name = nMatch[1].trim().replace(/['"]/g, '');
 
@@ -5083,15 +5074,14 @@ class DashSaver(hass.Hass):
     def initialize(self):
         # Register API endpoints
         self.register_endpoint(self.save_dashboard_file, "save_dash")
-        self.register_endpoint(self.save_file, "save_file")
         self.register_endpoint(self.read_file, "read_file")
         self.register_endpoint(self.list_directory, "list_dir")
         self.log("DashSaver bridge initialized and ready.")
 
-    def _get_safe_path(self, path):
+    def _get_safe_path(self, path, base_dir="/config"):
         """
         Sanitize path to prevent directory traversal attacks.
-        Returns safe absolute path relative to self.config_dir.
+        Returns safe absolute path or None if invalid.
         """
         if not path:
             return None
@@ -5100,9 +5090,9 @@ class DashSaver(hass.Hass):
         # Prevent directory traversal
         if ".." in clean_path:
             return None
-        full_path = os.path.join(self.config_dir, clean_path)
-        # Ensure path is within self.config_dir
-        if not os.path.abspath(full_path).startswith(os.path.abspath(self.config_dir)):
+        full_path = os.path.join(base_dir, clean_path)
+        # Ensure path is within base_dir
+        if not os.path.abspath(full_path).startswith(os.path.abspath(base_dir)):
             return None
         return full_path
 
@@ -5174,36 +5164,6 @@ class DashSaver(hass.Hass):
             self.error(f"Error listing directory: {e}")
             return {"status": "error", "message": str(e)}, 500
 
-    def save_file(self, data, *args, **kwargs):
-        """
-        Save ANY file to AppDaemon config directory (e.g. custom_widgets).
-        POST /api/appdaemon/save_file
-        Body: {"path": "custom_widgets/basemedia/basemedia.js", "content": "..."}
-        """
-        if isinstance(data, dict) and data.get("method") == "GET" or not data:
-            return {"status": "success", "message": "save_file endpoint is active"}, 200
-
-        filepath_rel = data.get("path")
-        content = data.get("content")
-        
-        if not filepath_rel or content is None:
-            return {"status": "error", "message": "Missing 'path' or 'content'"}, 400
-
-        full_path = self._get_safe_path(filepath_rel)
-        if not full_path:
-            return {"status": "error", "message": "Invalid or unsafe path"}, 400
-
-        try:
-            # Create subdirectories if they don't exist
-            os.makedirs(os.path.dirname(full_path), exist_ok=True)
-            with open(full_path, "w", encoding="utf-8") as f:
-                f.write(content)
-            self.log(f"Saved file via API: {full_path}")
-            return {"status": "success", "message": f"Saved {filepath_rel}"}, 200
-        except Exception as e:
-            self.error(f"Error saving file: {e}")
-            return {"status": "error", "message": str(e)}, 500
-
     def save_dashboard_file(self, data, *args, **kwargs):
         """
         Save dashboard file to AppDaemon config directory.
@@ -5216,25 +5176,29 @@ class DashSaver(hass.Hass):
         filename = data.get("filename")
         content = data.get("content")
         
-        if not filename or content is None:
+        if not filename or not content:
             return {"status": "error", "message": "Missing filename or content"}, 400
 
-        # Save to dashboards/ folder inside config_dir
-        filepath_rel = os.path.join("dashboards", filename)
-        full_path = self._get_safe_path(filepath_rel)
-        if not full_path:
-            return {"status": "error", "message": "Invalid or unsafe path"}, 400
+        base_dir = "/config/dashboards"
+        if not os.path.exists(base_dir):
+            base_dir = os.path.join(self.config_dir, "dashboards")
+
+        if not os.path.exists(base_dir):
+            try:
+                os.makedirs(base_dir, exist_ok=True)
+            except Exception as e:
+                return {"status": "error", "message": f"Cannot create folder: {e}"}, 500
+
+        filepath = os.path.join(base_dir, filename)
 
         try:
-            os.makedirs(os.path.dirname(full_path), exist_ok=True)
-            with open(full_path, "w", encoding="utf-8") as f:
+            with open(filepath, "w", encoding="utf-8") as f:
                 f.write(content)
-            self.log(f"Saved dashboard via API: {full_path}")
+            self.log(f"Saved dashboard via API: {filepath}")
             return {"status": "success", "message": f"Saved {filename}"}, 200
         except Exception as e:
             self.error(f"Error saving dashboard: {e}")
-            return {"status": "error", "message": str(e)}, 500
-</pre>
+            return {"status": "error", "message": str(e)}, 500</pre>
                 <button type="button" class="btn"
                     style="position: absolute; top: 10px; right: 10px; font-size: 12px; background: #2196f3; color: white;"
                     onclick="copyToClipboardText('code-dash-saver')" data-i18n="btn_copy_code">Kopiuj kod</button>
