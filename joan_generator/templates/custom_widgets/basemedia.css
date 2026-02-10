@@ -1,0 +1,93 @@
+/* Clean CSS for basemedia widget */
+.title {
+    position: absolute;
+    top: 5px;
+    width: 100%;
+    text-align: center;
+}
+
+.artist {
+    position: absolute;
+    top: 30px;
+    width: 100%;
+    text-align: center;
+}
+
+.album {
+    position: absolute;
+    top: 55px;
+    width: 100%;
+    text-align: center;
+}
+
+.media_title {
+    position: absolute;
+    top: 80px;
+    width: 100%;
+    text-align: center;
+}
+
+.state_text {
+    position: absolute;
+    top: 38px;
+    width: 100%;
+    text-align: center;
+}
+
+.previous {
+    position: absolute;
+    top: 130px;
+    left: 25px;
+    z-index: 10;
+    cursor: pointer;
+}
+
+.play {
+    position: absolute;
+    top: 130px;
+    width: 100%;
+    text-align: center;
+    cursor: pointer;
+}
+
+.next {
+    position: absolute;
+    top: 130px;
+    right: 25px;
+    z-index: 10;
+    cursor: pointer;
+}
+
+.levelunit {
+    position: absolute;
+    bottom: 5px;
+    width: 100%;
+    text-align: center;
+}
+
+.level,
+.unit {
+    display: inline-block;
+}
+
+.secondary-icon {
+    position: absolute;
+    bottom: 15px;
+    /* Moved up slightly */
+    font-size: 24px;
+    width: 32px;
+    color: #000000 !important;
+    cursor: pointer;
+}
+
+.secondary-icon.plus {
+    right: 20px;
+}
+
+.secondary-icon.minus {
+    left: 20px;
+}
+
+.secondary-icon i {
+    padding: 10px;
+}

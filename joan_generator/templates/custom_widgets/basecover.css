@@ -1,0 +1,31 @@
+/* Clean CSS for basecover widget */
+.title {
+    position: absolute;
+    top: 5px;
+    width: 100%;
+    text-align: center;
+}
+
+.icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 40px;
+}
+
+.control-open {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    cursor: pointer;
+    font-size: 30px;
+}
+
+.control-close {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    cursor: pointer;
+    font-size: 30px;
+}

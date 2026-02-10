@@ -1,0 +1,68 @@
+/* Clean CSS for baseclimate widget */
+.title {
+    position: absolute;
+    top: 5px;
+    width: 100%;
+    text-align: center;
+}
+
+.title2 {
+    position: absolute;
+    top: 25px;
+    width: 100%;
+    text-align: center;
+}
+
+.levelunits {
+    position: absolute;
+    top: 45%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    text-align: center;
+}
+
+.level {
+    font-size: 320%;
+    font-weight: bold;
+    display: inline-block;
+}
+
+.units {
+    font-size: 100%;
+    display: inline-block;
+    vertical-align: top;
+    margin-left: 2px;
+    margin-top: 10px;
+}
+
+.levelunits2 {
+    position: absolute;
+    bottom: 35px;
+    width: 100%;
+    text-align: center;
+}
+
+.level2,
+.units2 {
+    display: inline-block;
+    font-size: 90%;
+}
+
+.secondary-icon {
+    position: absolute;
+    bottom: 10px;
+    font-size: 30px;
+    width: 50px;
+    color: #000000 !important;
+    cursor: pointer;
+    text-align: center;
+}
+
+.secondary-icon.plus {
+    right: 15px;
+}
+
+.secondary-icon.minus {
+    left: 15px;
+}
