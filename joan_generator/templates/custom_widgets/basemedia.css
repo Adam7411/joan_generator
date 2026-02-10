@@ -1,9 +1,32 @@
-/* Clean CSS for basemedia widget */
+.widget-basemedia- {
+        {
+        id
+    }
+}
+
+    {
+    background-color: #FFFFFF !important;
+    position: relative;
+}
+
+.widget-basemedia- {
+        {
+        id
+    }
+}
+
 .title {
     position: absolute;
     top: 5px;
     width: 100%;
     text-align: center;
+    color: #000000 !important;
+}
+
+.widget-basemedia- {
+        {
+        id
+    }
 }
 
 .artist {
@@ -11,6 +34,13 @@
     top: 30px;
     width: 100%;
     text-align: center;
+    color: #000000 !important;
+}
+
+.widget-basemedia- {
+        {
+        id
+    }
 }
 
 .album {
@@ -18,6 +48,13 @@
     top: 55px;
     width: 100%;
     text-align: center;
+    color: #000000 !important;
+}
+
+.widget-basemedia- {
+        {
+        id
+    }
 }
 
 .media_title {
@@ -25,6 +62,13 @@
     top: 80px;
     width: 100%;
     text-align: center;
+    color: #000000 !important;
+}
+
+.widget-basemedia- {
+        {
+        id
+    }
 }
 
 .state_text {
@@ -32,6 +76,13 @@
     top: 38px;
     width: 100%;
     text-align: center;
+    color: #000000 !important;
+}
+
+.widget-basemedia- {
+        {
+        id
+    }
 }
 
 .previous {
@@ -40,6 +91,13 @@
     left: 25px;
     z-index: 10;
     cursor: pointer;
+    color: #000000 !important;
+}
+
+.widget-basemedia- {
+        {
+        id
+    }
 }
 
 .play {
@@ -48,6 +106,13 @@
     width: 100%;
     text-align: center;
     cursor: pointer;
+    color: #000000 !important;
+}
+
+.widget-basemedia- {
+        {
+        id
+    }
 }
 
 .next {
@@ -56,6 +121,13 @@
     right: 25px;
     z-index: 10;
     cursor: pointer;
+    color: #000000 !important;
+}
+
+.widget-basemedia- {
+        {
+        id
+    }
 }
 
 .levelunit {
@@ -63,31 +135,57 @@
     bottom: 5px;
     width: 100%;
     text-align: center;
+    color: #000000 !important;
+}
+
+.widget-basemedia- {
+        {
+        id
+    }
 }
 
 .level,
+.widget-basemedia- {
+        {
+        id
+    }
+}
+
 .unit {
     display: inline-block;
+}
+
+.widget-basemedia- {
+        {
+        id
+    }
 }
 
 .secondary-icon {
     position: absolute;
     bottom: 15px;
-    /* Moved up slightly */
     font-size: 24px;
     width: 32px;
     color: #000000 !important;
     cursor: pointer;
 }
 
+.widget-basemedia- {
+        {
+        id
+    }
+}
+
 .secondary-icon.plus {
     right: 20px;
 }
 
-.secondary-icon.minus {
-    left: 20px;
+.widget-basemedia- {
+        {
+        id
+    }
 }
 
-.secondary-icon i {
-    padding: 10px;
+.secondary-icon.minus {
+    left: 20px;
 }
