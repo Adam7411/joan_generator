@@ -5083,6 +5083,7 @@ class DashSaver(hass.Hass):
     def initialize(self):
         # Register API endpoints
         self.register_endpoint(self.save_dashboard_file, "save_dash")
+        self.register_endpoint(self.save_file, "save_file")
         self.register_endpoint(self.read_file, "read_file")
         self.register_endpoint(self.list_directory, "list_dir")
         self.log("DashSaver bridge initialized and ready.")
@@ -5171,6 +5172,36 @@ class DashSaver(hass.Hass):
             return {"status": "success", "items": items, "path": dirpath}, 200
         except Exception as e:
             self.error(f"Error listing directory: {e}")
+            return {"status": "error", "message": str(e)}, 500
+
+    def save_file(self, data, *args, **kwargs):
+        """
+        Save ANY file to AppDaemon config directory (e.g. custom_widgets).
+        POST /api/appdaemon/save_file
+        Body: {"path": "custom_widgets/basemedia/basemedia.js", "content": "..."}
+        """
+        if isinstance(data, dict) and data.get("method") == "GET" or not data:
+            return {"status": "success", "message": "save_file endpoint is active"}, 200
+
+        filepath_rel = data.get("path")
+        content = data.get("content")
+        
+        if not filepath_rel or content is None:
+            return {"status": "error", "message": "Missing 'path' or 'content'"}, 400
+
+        full_path = self._get_safe_path(filepath_rel)
+        if not full_path:
+            return {"status": "error", "message": "Invalid or unsafe path"}, 400
+
+        try:
+            # Create subdirectories if they don't exist
+            os.makedirs(os.path.dirname(full_path), exist_ok=True)
+            with open(full_path, "w", encoding="utf-8") as f:
+                f.write(content)
+            self.log(f"Saved file via API: {full_path}")
+            return {"status": "success", "message": f"Saved {filepath_rel}"}, 200
+        except Exception as e:
+            self.error(f"Error saving file: {e}")
             return {"status": "error", "message": str(e)}, 500
 
     def save_dashboard_file(self, data, *args, **kwargs):
