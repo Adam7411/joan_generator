@@ -1,9 +1,35 @@
-/* Clean CSS for baseclimate widget */
+/* Standardized CSS for baseclimate widget */
+.widget-baseclimate- {
+        {
+        id
+    }
+}
+
+    {
+    background-color: #FFFFFF !important;
+    position: relative;
+    border-radius: 4px;
+}
+
+.widget-baseclimate- {
+        {
+        id
+    }
+}
+
 .title {
     position: absolute;
     top: 5px;
     width: 100%;
     text-align: center;
+    color: #000000 !important;
+    font-weight: bold;
+}
+
+.widget-baseclimate- {
+        {
+        id
+    }
 }
 
 .title2 {
@@ -11,6 +37,13 @@
     top: 25px;
     width: 100%;
     text-align: center;
+    color: #000000 !important;
+}
+
+.widget-baseclimate- {
+        {
+        id
+    }
 }
 
 .levelunits {
@@ -20,6 +53,13 @@
     transform: translate(-50%, -50%);
     width: 100%;
     text-align: center;
+    color: #000000 !important;
+}
+
+.widget-baseclimate- {
+        {
+        id
+    }
 }
 
 .level {
@@ -28,12 +68,24 @@
     display: inline-block;
 }
 
+.widget-baseclimate- {
+        {
+        id
+    }
+}
+
 .units {
-    font-size: 100%;
+    font-size: 140%;
     display: inline-block;
     vertical-align: top;
     margin-left: 2px;
     margin-top: 10px;
+}
+
+.widget-baseclimate- {
+        {
+        id
+    }
 }
 
 .levelunits2 {
@@ -41,12 +93,32 @@
     bottom: 35px;
     width: 100%;
     text-align: center;
+    color: #444444 !important;
+}
+
+.widget-baseclimate- {
+        {
+        id
+    }
 }
 
 .level2,
+.widget-baseclimate- {
+        {
+        id
+    }
+}
+
 .units2 {
     display: inline-block;
-    font-size: 90%;
+    font-size: 110%;
+    font-weight: bold;
+}
+
+.widget-baseclimate- {
+        {
+        id
+    }
 }
 
 .secondary-icon {
@@ -59,8 +131,20 @@
     text-align: center;
 }
 
+.widget-baseclimate- {
+        {
+        id
+    }
+}
+
 .secondary-icon.plus {
     right: 15px;
+}
+
+.widget-baseclimate- {
+        {
+        id
+    }
 }
 
 .secondary-icon.minus {
