@@ -694,8 +694,12 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append("")
                     continue
 
-                w_type = w['type']
-                w_name = w['name']
+                w_type = w.get('type', '')
+                # Smart fallback: if type is missing, infer from entity domain
+                if not w_type and real_entity_id and '.' in str(real_entity_id):
+                    w_type = str(real_entity_id).split('.')[0]
+                
+                w_name = w.get('name', 'Widget')
 
                 # Common property extraction for all widgets
                 is_small = (w.get('size') == '(1x1)' or w.get('size') == '(1x2)')
@@ -1150,6 +1154,8 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     if w_type == 'alarm':
                         ad_type = 'alarm'
 
+                    if not ad_type:
+                        ad_type = 'sensor'
                     output.append(f"  widget_type: {ad_type}")
                     output.append(f"  entity: {real_entity_id}")
                     output.append(f"  title: \"{w_name}\"")
