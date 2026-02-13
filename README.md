@@ -36,7 +36,7 @@ Ten dodatek to wizualny kreator (GUI), który pozwala "wyklikać" układ ekranu 
 ## 📥 Instalacja
 
 ### Krok 1: Dodanie repozytorium
-1. W Home Assistant przejdź do **Ustawienia** -> **Dodatki** -> **Sklep z dodatkami**.
+1. W Home Assistant przejdź do **Ustawienia** -> **Aplikacje** -> **Sklep z dodatkami**.
 2. Kliknij przycisk menu (trzy kropki) w prawym górnym rogu -> **Repozytoria**.
 3. Dodaj adres URL tego repozytorium.
 
