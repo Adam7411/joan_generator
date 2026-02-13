@@ -39,7 +39,7 @@ This add-on provides a graphical user interface (GUI) that allows you to easily 
 ## 📥 Installation
 
 ### Step 1: Add Repository
-1. In Home Assistant, go to **Settings** -> **Add-ons** -> **Add-on Store**.
+1. In Home Assistant, go to **Settings** -> **Applications** -> **Add-on Store**.
 2. Click the menu button (three dots) in the top right corner -> **Repositories**.
 3. Add the URL of this repository.
 
