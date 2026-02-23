@@ -407,14 +407,11 @@ def get_entity_frequency(entity_id, hours=24):
                 if total_changes < 0:
                     total_changes = 0
                 
-                print(f"📊 {entity_id} - History API returned {len(history)} states (changes: {total_changes})")
+                print(f"📊 {entity_id} - History API returned {len(history)} states (changes: {total_changes})", flush=True)
                 
                 changes_per_hour = total_changes / hours if hours > 0 else 0
                 
                 # Warning levels (relaxed thresholds)
-                # < 10/h = OK
-                # 10-60/h = Warning (every 1-6 min)
-                # > 60/h = Danger (more frequent than every minute)
                 if changes_per_hour > 60:
                     level = 'danger'
                 elif changes_per_hour > 10:
@@ -427,17 +424,19 @@ def get_entity_frequency(entity_id, hours=24):
                     'changes_per_hour': round(changes_per_hour, 2),
                     'total_changes': total_changes,
                     'hours_analyzed': hours,
-                    'level': level
+                    'level': level,
+                    'debug_data': f"states: {len(history)}"
                 }
             else:
                 # No history - new entity or no changes
-                print(f"📉 {entity_id} - API returned success, but data is empty or invalid: {data}")
+                print(f"📉 {entity_id} - API returned success, but data is empty or invalid: {data}", flush=True)
                 return {
                     'entity_id': entity_id,
                     'changes_per_hour': 0,
                     'total_changes': 0,
                     'hours_analyzed': hours,
-                    'level': 'ok'
+                    'level': 'ok',
+                    'debug_data': str(data)[:100]
                 }
         else:
             if last_status == 404:
