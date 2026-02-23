@@ -1807,6 +1807,9 @@
         let blockSmart = false;
         let manualIconOverride = false;
 
+        // Multi-Dashboard Manager Globals
+        let saved = JSON.parse(localStorage.getItem('joan_dashboards') || '{}');
+
         function isValidLang(l) {
             return l === 'pl' || l === 'en';
         }
@@ -4128,6 +4131,7 @@
                         // Analyze battery consumption asynchronously
                         // Analyze battery consumption asynchronously
                         analyzeBatteryConsumption(w.id).then(analysis => {
+                            if (!analysis) return;
                             const icon = getBatteryIndicatorIcon(analysis.level);
                             // Pass the whole analysis object to get error details
                             const message = getBatteryMessage(analysis.level, analysis.changes_per_hour, analysis.error);
@@ -4333,10 +4337,10 @@
 
             rebuildGridOptions(document.getElementById('screen-orientation').value);
 
-            const isProImport = yaml.includes('widget_dimensions: [188, 192]');
+            const isProImport = text.includes('widget_dimensions: [188, 192]');
             if (isProImport) {
                 document.getElementById('device-profile').value = 'joan_13_pro';
-            } else if (yaml.includes('widget_dimensions: [117, 123]')) {
+            } else if (text.includes('widget_dimensions: [117, 123]')) {
                 document.getElementById('device-profile').value = 'joan_6';
             }
 
@@ -4547,6 +4551,7 @@
                         return response.json();
                     })
                     .then(data => {
+                        if (!data) return;
                         if (data.error) {
                             if (data.debug_data && typeof data.debug_data === 'string' && data.debug_data.includes('404_NOT_FOUND')) {
                                 // Special case: History integration is missing in HA
@@ -4644,6 +4649,23 @@
 
             listDiv.innerHTML = '';
             const all = JSON.parse(localStorage.getItem('joan_dashboards') || '{}');
+            saved = all; // Update global variable
+
+            // Update datalist for Navigate widgets
+            const dashDl = document.getElementById('nav-dash-suggestions');
+            if (dashDl) {
+                // Keep original DASH_NAMES suggestions if they exist
+                dashDl.innerHTML = '';
+                if (typeof DASH_NAMES !== 'undefined') {
+                    DASH_NAMES.forEach(n => { const op = document.createElement('option'); op.value = n; dashDl.appendChild(op); });
+                }
+                // Add current browser saved dashboards
+                for (const key in all) {
+                    const op = document.createElement('option');
+                    op.value = key;
+                    dashDl.appendChild(op);
+                }
+            }
 
             for (const key in all) {
                 const item = document.createElement('div');
