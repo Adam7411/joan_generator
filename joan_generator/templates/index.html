@@ -624,6 +624,7 @@
             text-overflow: ellipsis;
             display: -webkit-box;
             -webkit-line-clamp: 3;
+            line-clamp: 3;
             -webkit-box-orient: vertical;
             flex-grow: 0;
         }
@@ -1617,7 +1618,7 @@
                     <div class="flex-col" style="flex: 0 0 60px;">
                         <label data-i18n="lbl_preview">Podgląd</label>
                         <div style="display:flex; justify-content:center;">
-                            <i id="preview-icon" class="mdi mdi-help-circle-outline icon-preview"></i>
+                            <i id="preview-icon" class="mdi mdi-help-circle-outline icon-preview notranslate"></i>
                         </div>
                     </div>
                     <div id="grp-gauge" class="flex-col" style="display:none; flex: 0 0 100px;">
@@ -1644,7 +1645,7 @@
                         <div id="div-icon-on" class="flex-col">
                             <label data-i18n="lbl_icon_on">Ikona ON</label>
                             <div class="input-group">
-                                <i id="preview-icon-on" class="mdi mdi-checkbox-blank-circle-outline"
+                                <i id="preview-icon-on" class="mdi mdi-checkbox-blank-circle-outline notranslate"
                                     style="font-size: 24px; margin-right: 5px; color: #444;"></i>
                                 <input type="text" id="w-icon-on" list="icon-list"
                                     oninput="manualIconOverride = true; updateIconPreview()"
@@ -1655,7 +1656,7 @@
                         <div id="div-icon-off" class="flex-col">
                             <label data-i18n="lbl_icon_off">Ikona OFF</label>
                             <div class="input-group">
-                                <i id="preview-icon-off" class="mdi mdi-checkbox-blank-circle-outline"
+                                <i id="preview-icon-off" class="mdi mdi-checkbox-blank-circle-outline notranslate"
                                     style="font-size: 24px; margin-right: 5px; color: #444;"></i>
                                 <input type="text" id="w-icon-off" list="icon-list"
                                     oninput="manualIconOverride = true; updateIconPreview()"
@@ -2830,7 +2831,8 @@
                 link_generator: "This Generator (Documentation & Code)",
                 link_visionect: "Visionect (Joan 6 Manufacturer)",
                 list_dashboards_title: "Dashboard List:",
-                dash_list_empty: "(none)"
+                dash_list_empty: "(none)",
+                freq_no_history: "Analysis impossible! No 'history:' entry in configuration.yaml. Add history: to enable battery analysis."
             },
             pl_extra: {
                 info_size_px: "Rozmiar PX",
@@ -2945,7 +2947,7 @@
                 return t.freq_ok.replace('{0}', rate);
             } else if (level === 'unknown') {
                 if (errorMsg) return (lang === 'pl' ? `Błąd: ${errorMsg}` : `Error: ${errorMsg}`);
-                return (lang === 'pl' ? "Brak danych historycznych (404/Brak Recorder)" : "No history data (404/No Recorder)");
+                return t.freq_no_history || (lang === 'pl' ? "Brak danych historycznych (404/Brak Recorder)" : "No history data (404/No Recorder)");
             }
             return t.freq_analyzing;
         }
@@ -3573,20 +3575,20 @@
 
             // Main preview (top right)
             const final = i1 || i2 || i3 || 'mdi-help-circle-outline';
-            document.getElementById('preview-icon').className = `mdi ${final} icon-preview`;
+            document.getElementById('preview-icon').className = `mdi ${final} icon-preview notranslate`;
 
             // Dual Previews (next to inputs)
             const pOn = document.getElementById('preview-icon-on');
             if (pOn) {
                 const iconOn = i2 || 'mdi-checkbox-blank-circle-outline';
-                pOn.className = `mdi ${iconOn}`;
+                pOn.className = `mdi ${iconOn} notranslate`;
                 pOn.style.color = i2 ? '#4caf50' : '#444'; // Green if set, dark if default
             }
 
             const pOff = document.getElementById('preview-icon-off');
             if (pOff) {
                 const iconOff = i3 || 'mdi-checkbox-blank-circle-outline';
-                pOff.className = `mdi ${iconOff}`;
+                pOff.className = `mdi ${iconOff} notranslate`;
                 pOff.style.color = i3 ? '#f44336' : '#444'; // Red if set, dark if default
             }
         }
@@ -4027,7 +4029,7 @@
                         const peek_w = { ...w, type: r_type, icon: r_icon, icon_on: r_icon_on, icon_off: r_icon_off };
                         const icon = getRealIcon(peek_w); const realState = getRealState(peek_w);
                         const showIcon = (r_type !== 'sensor') && icon;
-                        const iconHtml = showIcon ? `<i class="mdi ${icon} ew-icon"></i>` : `<div style="height:38px;"></div>`;
+                        const iconHtml = showIcon ? `<i class="mdi ${icon} ew-icon notranslate"></i>` : `<div style="height:38px;"></div>`;
 
                         // Check for copy suffix to show a subtle indicator
                         let copyTagHtml = "";
@@ -5163,56 +5165,55 @@
         */
 
     </script>
-    <div id="toast-container"></div>
-</body>
 
-</html>
 
-<!-- MODAL INSTRUKCJI BATERII -->
-<div id="battery-help-modal" class="icon-picker-modal">
-    <div class="icon-picker-content" style="max-width: 600px; height: auto; max-height: 85vh;">
-        <div class="ip-header">
-            <h2 id="help-title">Instrukcja</h2> <!-- Tekst zostanie zastąpiony przez JS -->
-            <span class="ip-close" onclick="closeBatteryHelp()">&times;</span>
+    <!-- MODAL INSTRUKCJI BATERII -->
+    <div id="battery-help-modal" class="icon-picker-modal">
+        <div class="icon-picker-content" style="max-width: 600px; height: auto; max-height: 85vh;">
+            <div class="ip-header">
+                <h2 id="help-title">Instrukcja</h2> <!-- Tekst zostanie zastąpiony przez JS -->
+                <span class="ip-close" onclick="closeBatteryHelp()">&times;</span>
+            </div>
+            <div id="battery-help-body"
+                style="overflow-y: auto; padding-right: 10px; font-size: 0.95em; line-height: 1.5;">
+                <!-- Treść instrukcji zostanie wstrzyknięta tutaj przez JS -->
+            </div>
+            <button type="button" id="btn-close-help" class="btn btn-gen" onclick="closeBatteryHelp()"
+                style="margin-top:20px;">OK</button>
         </div>
-        <div id="battery-help-body" style="overflow-y: auto; padding-right: 10px; font-size: 0.95em; line-height: 1.5;">
-            <!-- Treść instrukcji zostanie wstrzyknięta tutaj przez JS -->
-        </div>
-        <button type="button" id="btn-close-help" class="btn btn-gen" onclick="closeBatteryHelp()"
-            style="margin-top:20px;">OK</button>
     </div>
-</div>
 
-<!-- MODAL POMOCY VISIONECT JOAN -->
-<div id="visionect-help-modal" class="icon-picker-modal">
-    <div class="icon-picker-content" style="max-width: 600px; height: auto; max-height: 85vh;">
-        <div class="ip-header">
-            <h2 id="visionect-help-title">Usługi dodatku Visionect Joan</h2>
-            <span class="ip-close" onclick="closeVisionectHelp()">&times;</span>
+    <!-- MODAL POMOCY VISIONECT JOAN -->
+    <div id="visionect-help-modal" class="icon-picker-modal">
+        <div class="icon-picker-content" style="max-width: 600px; height: auto; max-height: 85vh;">
+            <div class="ip-header">
+                <h2 id="visionect-help-title">Usługi dodatku Visionect Joan</h2>
+                <span class="ip-close" onclick="closeVisionectHelp()">&times;</span>
+            </div>
+            <div id="visionect-help-body"
+                style="overflow-y: auto; padding-right: 10px; font-size: 0.95em; line-height: 1.5;">
+                <!-- Content injected by JS -->
+            </div>
+            <button type="button" class="btn btn-gen" onclick="closeVisionectHelp()" style="margin-top:20px;"
+                id="btn-visionect-ok">ROZUMIEM</button>
         </div>
-        <div id="visionect-help-body"
-            style="overflow-y: auto; padding-right: 10px; font-size: 0.95em; line-height: 1.5;">
-            <!-- Content injected by JS -->
-        </div>
-        <button type="button" class="btn btn-gen" onclick="closeVisionectHelp()" style="margin-top:20px;"
-            id="btn-visionect-ok">ROZUMIEM</button>
     </div>
-</div>
 
-<!-- MODAL KONFIGURACJI APPDAEMON (Bridge) -->
-<div id="ad-config-modal" class="icon-picker-modal">
-    <div class="icon-picker-content" style="max-width: 800px; height: auto; max-height: 90vh;">
-        <div class="ip-header">
-            <h2 id="ad-config-title" data-i18n="modal_ad_config_title">Konfiguracja bezpośredniego zapisu</h2>
-            <span class="ip-close" onclick="closeAdConfig()">&times;</span>
-        </div>
-        <div style="overflow-y: auto; padding: 20px; font-size: 0.95em; line-height: 1.6;">
-            <p data-i18n="ad_config_step1">1. Wejdź w katalog <code>/addon_configs/a0d7b954_appdaemon/apps/</code> (użyj
-                File Editor lub Samba).</p>
+    <!-- MODAL KONFIGURACJI APPDAEMON (Bridge) -->
+    <div id="ad-config-modal" class="icon-picker-modal">
+        <div class="icon-picker-content" style="max-width: 800px; height: auto; max-height: 90vh;">
+            <div class="ip-header">
+                <h2 id="ad-config-title" data-i18n="modal_ad_config_title">Konfiguracja bezpośredniego zapisu</h2>
+                <span class="ip-close" onclick="closeAdConfig()">&times;</span>
+            </div>
+            <div style="overflow-y: auto; padding: 20px; font-size: 0.95em; line-height: 1.6;">
+                <p data-i18n="ad_config_step1">1. Wejdź w katalog <code>/addon_configs/a0d7b954_appdaemon/apps/</code>
+                    (użyj
+                    File Editor lub Samba).</p>
 
-            <p data-i18n="ad_config_step2">2. Stwórz plik <code>dash_saver.py</code> i wklej poniższą zawartość:</p>
-            <div style="position: relative;">
-                <pre id="code-dash-saver">import hassapi as hass
+                <p data-i18n="ad_config_step2">2. Stwórz plik <code>dash_saver.py</code> i wklej poniższą zawartość:</p>
+                <div style="position: relative;">
+                    <pre id="code-dash-saver">import hassapi as hass
 import os
 
 class DashSaver(hass.Hass):
@@ -5344,396 +5345,396 @@ class DashSaver(hass.Hass):
         except Exception as e:
             self.error(f"Error saving dashboard: {e}")
             return {"status": "error", "message": str(e)}, 500</pre>
-                <button type="button" class="btn"
-                    style="position: absolute; top: 10px; right: 10px; font-size: 12px; background: #2196f3; color: white;"
-                    onclick="copyToClipboardText('code-dash-saver')" data-i18n="btn_copy_code">Kopiuj kod</button>
-            </div>
+                    <button type="button" class="btn"
+                        style="position: absolute; top: 10px; right: 10px; font-size: 12px; background: #2196f3; color: white;"
+                        onclick="copyToClipboardText('code-dash-saver')" data-i18n="btn_copy_code">Kopiuj kod</button>
+                </div>
 
-            <p data-i18n="ad_config_step3" style="margin-top:20px;">3. W pliku <code>apps.yaml</code> dopisz:</p>
-            <div style="position: relative;">
-                <pre id="code-apps-yaml">dash_saver_app:
+                <p data-i18n="ad_config_step3" style="margin-top:20px;">3. W pliku <code>apps.yaml</code> dopisz:</p>
+                <div style="position: relative;">
+                    <pre id="code-apps-yaml">dash_saver_app:
   module: dash_saver
   class: DashSaver</pre>
-                <button type="button" class="btn"
-                    style="position: absolute; top: 10px; right: 10px; font-size: 12px; background: #2196f3; color: white;"
-                    onclick="copyToClipboardText('code-apps-yaml')" data-i18n="btn_copy_code">Kopiuj kod</button>
+                    <button type="button" class="btn"
+                        style="position: absolute; top: 10px; right: 10px; font-size: 12px; background: #2196f3; color: white;"
+                        onclick="copyToClipboardText('code-apps-yaml')" data-i18n="btn_copy_code">Kopiuj kod</button>
+                </div>
+
+                <p data-i18n="ad_config_step4" style="margin-top:20px; font-weight: bold; color: #e91e63;">4. Zrestartuj
+                    AppDaemon i odśwież tę stronę.</p>
             </div>
-
-            <p data-i18n="ad_config_step4" style="margin-top:20px; font-weight: bold; color: #e91e63;">4. Zrestartuj
-                AppDaemon i odśwież tę stronę.</p>
-        </div>
-        <button type="button" class="btn btn-gen" onclick="closeAdConfig()" style="margin:20px;">OK</button>
-    </div>
-</div>
-
-<script>
-    function openBatteryHelp() {
-        const t = TRANSLATIONS[currentLang];
-
-        // Pobieramy elementy modala
-        const titleEl = document.getElementById('help-title');
-        const bodyEl = document.getElementById('battery-help-body');
-        const btnEl = document.getElementById('btn-close-help');
-
-        if (titleEl) titleEl.innerText = t.modal_battery_title;
-        if (bodyEl) bodyEl.innerHTML = t.modal_battery_body;
-        if (btnEl) btnEl.innerText = t.modal_battery_understand;
-
-        document.getElementById('battery-help-modal').style.display = 'block';
-    }
-
-    function closeBatteryHelp() {
-        document.getElementById('battery-help-modal').style.display = 'none';
-    }
-
-    function openVisionectHelp() {
-        const t = TRANSLATIONS[currentLang];
-        document.getElementById('visionect-help-title').innerText = t.modal_visionect_title;
-        document.getElementById('visionect-help-body').innerHTML = t.visionect_body;
-        document.getElementById('btn-visionect-ok').innerText = t.btn_understand;
-        document.getElementById('visionect-help-modal').style.display = 'block';
-    }
-
-    function closeVisionectHelp() {
-        document.getElementById('visionect-help-modal').style.display = 'none';
-    }
-
-    function openLinksModal() {
-        document.getElementById('links-modal').style.display = 'block';
-    }
-
-    function closeLinksModal() {
-        document.getElementById('links-modal').style.display = 'none';
-    }
-
-    function clearAll() {
-        if (confirm(TRANSLATIONS[currentLang].confirm_clear)) {
-            window.location.href = window.location.pathname;
-        }
-    }
-
-    function refreshEntities() {
-        const t = TRANSLATIONS[currentLang];
-        const btn = document.getElementById('btn-refresh-ent');
-        if (btn) btn.classList.add('rotating');
-
-        showToast(t.msg_refreshing, 'info');
-
-        // Add timestamp to prevent caching
-        fetch(window.location.href.split('?')[0] + '?t=' + new Date().getTime())
-            .then(response => response.text())
-            .then(html => {
-                // Regex to extract the entitiesData JSON array
-                const matchEntities = html.match(/(?:let|const|var)\s+entitiesData\s*=\s*(\[[\s\S]*?\]);/);
-                const matchAreas = html.match(/(?:let|const|var)\s+areasData\s*=\s*(\[[\s\S]*?\]);/);
-
-                let entitiesUpdated = false;
-
-                if (matchEntities && matchEntities[1]) {
-                    try {
-                        const newEntities = JSON.parse(matchEntities[1]);
-                        if (Array.isArray(newEntities)) {
-                            // Update global variables
-                            entitiesData = newEntities;
-                            window.entitiesData = newEntities;
-                            validEntityIds = new Set(newEntities.map(e => e.id));
-                            entitiesUpdated = true;
-                        }
-                    } catch (e) {
-                        console.error("JSON Parse Error (Entities)", e);
-                    }
-                }
-
-                if (matchAreas && matchAreas[1]) {
-                    try {
-                        const newAreas = JSON.parse(matchAreas[1]);
-                        if (Array.isArray(newAreas)) {
-                            areasData = newAreas;
-                            window.areasData = newAreas;
-                            populateAreaSelect();
-                        }
-                    } catch (e) {
-                        console.error("JSON Parse Error (Areas)", e);
-                    }
-                }
-
-                if (entitiesUpdated) {
-                    // Re-run search/validation for current input
-                    const input = document.getElementById('w-id');
-                    if (input && input.value) {
-                        searchEntities(input.value);
-                        validateEntityInput(input.value);
-                    }
-                    showToast(t.msg_refreshed, 'success');
-                } else {
-                    showToast("Could not verify entity data.", 'warning');
-                }
-            })
-            .catch(err => {
-                console.error(err);
-                showToast("Refresh error: " + err, 'error');
-            })
-            .finally(() => {
-                if (btn) btn.classList.remove('rotating');
-            });
-    }
-
-    function openAdConfig() {
-        document.getElementById('ad-config-modal').style.display = 'block';
-    }
-    function closeAdConfig() {
-        document.getElementById('ad-config-modal').style.display = 'none';
-    }
-    function copyToClipboardText(elementId) {
-        const textObj = document.getElementById(elementId);
-        if (!textObj) {
-            showToast("Error: Element not found " + elementId, 'error');
-            return;
-        }
-        const text = textObj.innerText;
-
-        if (navigator.clipboard && window.isSecureContext) {
-            navigator.clipboard.writeText(text).then(() => {
-                showToast(TRANSLATIONS[currentLang].copy_success, 'success');
-            }).catch(err => {
-                // Fallback
-                fallbackCopyTextToClipboard(text);
-            });
-        } else {
-            fallbackCopyTextToClipboard(text);
-        }
-    }
-
-    function fallbackCopyTextToClipboard(text) {
-        var textArea = document.createElement("textarea");
-        textArea.value = text;
-        textArea.style.position = "fixed";  // Avoid scrolling to bottom
-        textArea.style.left = "-9999px";
-        document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
-
-        try {
-            var successful = document.execCommand('copy');
-            if (successful) {
-                showToast(TRANSLATIONS[currentLang].copy_success, 'success');
-            } else {
-                showToast(TRANSLATIONS[currentLang].copy_error + " (fallback failed)", 'error');
-            }
-        } catch (err) {
-            showToast(TRANSLATIONS[currentLang].copy_error + err, 'error');
-        }
-        document.body.removeChild(textArea);
-    }
-
-    // Opcjonalnie: Zamknij okno po kliknięciu poza nim
-    window.addEventListener('click', function (event) {
-        const helpModal = document.getElementById('battery-help-modal');
-        const visionectModal = document.getElementById('visionect-help-modal');
-        const configModal = document.getElementById('ad-config-modal');
-        if (event.target == helpModal) closeBatteryHelp();
-        if (event.target == visionectModal) closeVisionectHelp();
-        if (event.target == configModal) closeAdConfig();
-    });
-</script>
-
-<!-- Import Modal -->
-<div id="import-modal" class="modal"
-    style="display:none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);">
-    <div class="modal-content"
-        style="background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 50%; max-width: 500px; border-radius: 8px;">
-        <h3 id="import-title" style="margin-top:0" data-i18n="modal_import_title">Wybierz Dashboard</h3>
-        <div id="dashboard-list"
-            style="max-height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; margin-bottom: 20px;">
-            <p data-i18n="modal_import_loading">Ładowanie listy...</p>
-        </div>
-        <div style="text-align: right;">
-            <button type="button" class="btn btn-gen" onclick="closeImportModal()" data-i18n="btn_cancel"
-                style="background-color: #757575;">Anuluj</button>
+            <button type="button" class="btn btn-gen" onclick="closeAdConfig()" style="margin:20px;">OK</button>
         </div>
     </div>
-</div>
 
-<script>
-    function openImportModal() {
-        document.getElementById('import-modal').style.display = 'block';
+    <script>
+        function openBatteryHelp() {
+            const t = TRANSLATIONS[currentLang];
 
-        // Refresh translations for modal
-        const t = TRANSLATIONS[currentLang];
-        const titleEl = document.getElementById('import-title');
-        if (titleEl && t.modal_import_title) titleEl.innerText = t.modal_import_title;
+            // Pobieramy elementy modala
+            const titleEl = document.getElementById('help-title');
+            const bodyEl = document.getElementById('battery-help-body');
+            const btnEl = document.getElementById('btn-close-help');
 
-        const list = document.getElementById('dashboard-list');
-        list.innerHTML = `<p>${t.modal_import_loading || "Loading..."}</p>`;
+            if (titleEl) titleEl.innerText = t.modal_battery_title;
+            if (bodyEl) bodyEl.innerHTML = t.modal_battery_body;
+            if (btnEl) btnEl.innerText = t.modal_battery_understand;
 
-        fetch('api/list_dashboards')
-            .then(r => r.text())
-            .then(text => {
-                try {
-                    return JSON.parse(text);
-                } catch (e) {
-                    console.error("JSON Parse Error. Raw response:", text);
-                    throw new Error("Invalid JSON: " + text.substring(0, 50) + "... (" + e.message + ")");
-                }
-            })
-            .then(data => {
-                list.innerHTML = '';
-                if (data.status === 'success' && data.files.length > 0) {
-                    data.files.forEach(f => {
-                        const div = document.createElement('div');
-                        div.style.padding = '8px';
-                        div.style.cursor = 'pointer';
-                        div.style.borderBottom = '1px solid #eee';
-                        div.style.color = '#333'; // Force dark text
-                        div.style.backgroundColor = '#fff'; // Force white background
-                        div.innerText = f.name; // Display name
+            document.getElementById('battery-help-modal').style.display = 'block';
+        }
 
-                        div.onclick = () => loadDashboard(f.name);
-                        div.onmouseover = () => div.style.backgroundColor = '#e3f2fd';
-                        div.onmouseout = () => div.style.backgroundColor = '#fff';
+        function closeBatteryHelp() {
+            document.getElementById('battery-help-modal').style.display = 'none';
+        }
 
-                        list.appendChild(div);
-                    });
-                } else {
-                    list.innerText = t.modal_import_empty || "No files found.";
-                }
-            })
-            .catch(err => {
-                list.innerText = "Error: " + err;
-            });
-    }
+        function openVisionectHelp() {
+            const t = TRANSLATIONS[currentLang];
+            document.getElementById('visionect-help-title').innerText = t.modal_visionect_title;
+            document.getElementById('visionect-help-body').innerHTML = t.visionect_body;
+            document.getElementById('btn-visionect-ok').innerText = t.btn_understand;
+            document.getElementById('visionect-help-modal').style.display = 'block';
+        }
 
-    function closeImportModal() {
-        document.getElementById('import-modal').style.display = 'none';
-    }
+        function closeVisionectHelp() {
+            document.getElementById('visionect-help-modal').style.display = 'none';
+        }
 
-    function loadDashboard(filename) {
-        const t = TRANSLATIONS[currentLang];
-        // Confirm first? Maybe not needed for just viewing code, but good practice if checking overwrite
-        // User asked to just "load here", so we will fetch and put into textarea.
+        function openLinksModal() {
+            document.getElementById('links-modal').style.display = 'block';
+        }
 
-        fetch('api/read_dashboard/' + encodeURIComponent(filename))
-            .then(r => r.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    const importArea = document.getElementById('import-code');
-                    if (importArea) {
-                        importArea.value = data.content;
-                        // Scroll to the import section
-                        document.getElementById('import-section').scrollIntoView({ behavior: 'smooth' });
-                        closeImportModal();
-                        showToast("✅ " + filename + " wczytany do edytora!", 'success');
+        function closeLinksModal() {
+            document.getElementById('links-modal').style.display = 'none';
+        }
+
+        function clearAll() {
+            if (confirm(TRANSLATIONS[currentLang].confirm_clear)) {
+                window.location.href = window.location.pathname;
+            }
+        }
+
+        function refreshEntities() {
+            const t = TRANSLATIONS[currentLang];
+            const btn = document.getElementById('btn-refresh-ent');
+            if (btn) btn.classList.add('rotating');
+
+            showToast(t.msg_refreshing, 'info');
+
+            // Add timestamp to prevent caching
+            fetch(window.location.href.split('?')[0] + '?t=' + new Date().getTime())
+                .then(response => response.text())
+                .then(html => {
+                    // Regex to extract the entitiesData JSON array
+                    const matchEntities = html.match(/(?:let|const|var)\s+entitiesData\s*=\s*(\[[\s\S]*?\]);/);
+                    const matchAreas = html.match(/(?:let|const|var)\s+areasData\s*=\s*(\[[\s\S]*?\]);/);
+
+                    let entitiesUpdated = false;
+
+                    if (matchEntities && matchEntities[1]) {
+                        try {
+                            const newEntities = JSON.parse(matchEntities[1]);
+                            if (Array.isArray(newEntities)) {
+                                // Update global variables
+                                entitiesData = newEntities;
+                                window.entitiesData = newEntities;
+                                validEntityIds = new Set(newEntities.map(e => e.id));
+                                entitiesUpdated = true;
+                            }
+                        } catch (e) {
+                            console.error("JSON Parse Error (Entities)", e);
+                        }
                     }
-                } else {
-                    alert("Error: " + data.message);
-                }
-            })
-            .catch(err => {
-                alert("Error loading file: " + err);
-            });
-    }
 
-    // Close modal when clicking outside (extended)
-    const existingWindowOnClick = window.onclick;
-    window.onclick = function (event) {
-        if (existingWindowOnClick) existingWindowOnClick(event);
+                    if (matchAreas && matchAreas[1]) {
+                        try {
+                            const newAreas = JSON.parse(matchAreas[1]);
+                            if (Array.isArray(newAreas)) {
+                                areasData = newAreas;
+                                window.areasData = newAreas;
+                                populateAreaSelect();
+                            }
+                        } catch (e) {
+                            console.error("JSON Parse Error (Areas)", e);
+                        }
+                    }
 
-        const modal = document.getElementById('import-modal');
-        const linksModal = document.getElementById('links-modal');
-        if (event.target == modal) {
-            closeImportModal();
+                    if (entitiesUpdated) {
+                        // Re-run search/validation for current input
+                        const input = document.getElementById('w-id');
+                        if (input && input.value) {
+                            searchEntities(input.value);
+                            validateEntityInput(input.value);
+                        }
+                        showToast(t.msg_refreshed, 'success');
+                    } else {
+                        showToast("Could not verify entity data.", 'warning');
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    showToast("Refresh error: " + err, 'error');
+                })
+                .finally(() => {
+                    if (btn) btn.classList.remove('rotating');
+                });
         }
-        if (event.target == linksModal) {
-            closeLinksModal();
+
+        function openAdConfig() {
+            document.getElementById('ad-config-modal').style.display = 'block';
         }
-    }
-
-    // Auto-run IP replacement on load
-    document.addEventListener('DOMContentLoaded', () => {
-        if (typeof updateResultPathsToHost === 'function') {
-            updateResultPathsToHost();
+        function closeAdConfig() {
+            document.getElementById('ad-config-modal').style.display = 'none';
         }
-    });
-    // Info Modal Logic
-    function showInfoModal() {
-        const m = document.getElementById('info-modal');
-        if (!m) return;
-
-        // Populate fields
-        document.getElementById('info-entities').innerText = typeof connectionInfo !== 'undefined' ? connectionInfo.entity_count : '-';
-        document.getElementById('info-ad-slug').innerText = typeof connectionInfo !== 'undefined' ? connectionInfo.appdaemon_slug : '-';
-        document.getElementById('info-api-source').innerText = typeof connectionInfo !== 'undefined' ? connectionInfo.token_source : '-';
-
-        const bridgeActive = typeof connectionInfo !== 'undefined' && connectionInfo.bridge_active;
-        const brText = bridgeActive ? TRANSLATIONS[currentLang].info_bridge_yes : TRANSLATIONS[currentLang].info_bridge_no;
-        document.getElementById('info-bridge').innerText = brText;
-        document.getElementById('info-bridge').style.color = bridgeActive ? 'green' : 'red';
-
-        const dashCount = typeof dashboardsList !== 'undefined' ? dashboardsList.length : 0;
-        document.getElementById('info-dash-count').innerText = dashCount;
-
-        // Update dynamic path
-        const pathEl = document.getElementById('info-path'); // This element is now just a container
-        if (pathEl) {
-            const host = window.location.hostname || '[HA_IP]';
-            const pc = document.getElementById('path-code');
-            if (pc && pc.dataset.pathTemplate) {
-                pc.innerText = pc.dataset.pathTemplate.replace(/\[HA_IP\]/g, host);
+        function copyToClipboardText(elementId) {
+            const textObj = document.getElementById(elementId);
+            if (!textObj) {
+                showToast("Error: Element not found " + elementId, 'error');
+                return;
             }
-            const pcb = document.getElementById('path-code-bridge');
-            if (pcb && pcb.dataset.pathTemplate) {
-                pcb.innerText = pcb.dataset.pathTemplate.replace(/\[HA_IP\]/g, host);
-            }
-        }
+            const text = textObj.innerText;
 
-        // Populate Dashboard List
-        const listDiv = document.getElementById('info-dash-list');
-        if (listDiv) {
-            listDiv.innerHTML = '';
-            const dashes = typeof dashboardsList !== 'undefined' ? dashboardsList : [];
-            if (dashes.length > 0) {
-                dashes.forEach(d => {
-                    const div = document.createElement('div');
-                    div.style.padding = '4px 0';
-                    div.style.borderBottom = '1px solid #eee';
-                    // Fix [object Object]: d might be object {name: "foo.dash"} or string
-                    const name = typeof d === 'object' ? (d.name || d.filename || JSON.stringify(d)) : d;
-                    div.innerText = '📄 ' + name;
-                    listDiv.appendChild(div);
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showToast(TRANSLATIONS[currentLang].copy_success, 'success');
+                }).catch(err => {
+                    // Fallback
+                    fallbackCopyTextToClipboard(text);
                 });
             } else {
-                listDiv.innerText = TRANSLATIONS[currentLang].dash_list_empty || '(none)';
+                fallbackCopyTextToClipboard(text);
             }
         }
 
-        m.style.display = 'block';
-    }
-    function closeInfoModal() { document.getElementById('info-modal').style.display = 'none'; }
+        function fallbackCopyTextToClipboard(text) {
+            var textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.position = "fixed";  // Avoid scrolling to bottom
+            textArea.style.left = "-9999px";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
 
-    // Init language from storage - wywołaj natychmiast po załadowaniu DOM
-    document.addEventListener('DOMContentLoaded', function () {
-        if (typeof setLang === 'function' && typeof currentLang !== 'undefined') {
-            setLang(currentLang);
-            // Initialize Areas
-            if (typeof populateAreaSelect === 'function') {
-                populateAreaSelect();
+            try {
+                var successful = document.execCommand('copy');
+                if (successful) {
+                    showToast(TRANSLATIONS[currentLang].copy_success, 'success');
+                } else {
+                    showToast(TRANSLATIONS[currentLang].copy_error + " (fallback failed)", 'error');
+                }
+            } catch (err) {
+                showToast(TRANSLATIONS[currentLang].copy_error + err, 'error');
+            }
+            document.body.removeChild(textArea);
+        }
+
+        // Opcjonalnie: Zamknij okno po kliknięciu poza nim
+        window.addEventListener('click', function (event) {
+            const helpModal = document.getElementById('battery-help-modal');
+            const visionectModal = document.getElementById('visionect-help-modal');
+            const configModal = document.getElementById('ad-config-modal');
+            if (event.target == helpModal) closeBatteryHelp();
+            if (event.target == visionectModal) closeVisionectHelp();
+            if (event.target == configModal) closeAdConfig();
+        });
+    </script>
+
+    <!-- Import Modal -->
+    <div id="import-modal" class="modal"
+        style="display:none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);">
+        <div class="modal-content"
+            style="background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 50%; max-width: 500px; border-radius: 8px;">
+            <h3 id="import-title" style="margin-top:0" data-i18n="modal_import_title">Wybierz Dashboard</h3>
+            <div id="dashboard-list"
+                style="max-height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; margin-bottom: 20px;">
+                <p data-i18n="modal_import_loading">Ładowanie listy...</p>
+            </div>
+            <div style="text-align: right;">
+                <button type="button" class="btn btn-gen" onclick="closeImportModal()" data-i18n="btn_cancel"
+                    style="background-color: #757575;">Anuluj</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openImportModal() {
+            document.getElementById('import-modal').style.display = 'block';
+
+            // Refresh translations for modal
+            const t = TRANSLATIONS[currentLang];
+            const titleEl = document.getElementById('import-title');
+            if (titleEl && t.modal_import_title) titleEl.innerText = t.modal_import_title;
+
+            const list = document.getElementById('dashboard-list');
+            list.innerHTML = `<p>${t.modal_import_loading || "Loading..."}</p>`;
+
+            fetch('api/list_dashboards')
+                .then(r => r.text())
+                .then(text => {
+                    try {
+                        return JSON.parse(text);
+                    } catch (e) {
+                        console.error("JSON Parse Error. Raw response:", text);
+                        throw new Error("Invalid JSON: " + text.substring(0, 50) + "... (" + e.message + ")");
+                    }
+                })
+                .then(data => {
+                    list.innerHTML = '';
+                    if (data.status === 'success' && data.files.length > 0) {
+                        data.files.forEach(f => {
+                            const div = document.createElement('div');
+                            div.style.padding = '8px';
+                            div.style.cursor = 'pointer';
+                            div.style.borderBottom = '1px solid #eee';
+                            div.style.color = '#333'; // Force dark text
+                            div.style.backgroundColor = '#fff'; // Force white background
+                            div.innerText = f.name; // Display name
+
+                            div.onclick = () => loadDashboard(f.name);
+                            div.onmouseover = () => div.style.backgroundColor = '#e3f2fd';
+                            div.onmouseout = () => div.style.backgroundColor = '#fff';
+
+                            list.appendChild(div);
+                        });
+                    } else {
+                        list.innerText = t.modal_import_empty || "No files found.";
+                    }
+                })
+                .catch(err => {
+                    list.innerText = "Error: " + err;
+                });
+        }
+
+        function closeImportModal() {
+            document.getElementById('import-modal').style.display = 'none';
+        }
+
+        function loadDashboard(filename) {
+            const t = TRANSLATIONS[currentLang];
+            // Confirm first? Maybe not needed for just viewing code, but good practice if checking overwrite
+            // User asked to just "load here", so we will fetch and put into textarea.
+
+            fetch('api/read_dashboard/' + encodeURIComponent(filename))
+                .then(r => r.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        const importArea = document.getElementById('import-code');
+                        if (importArea) {
+                            importArea.value = data.content;
+                            // Scroll to the import section
+                            document.getElementById('import-section').scrollIntoView({ behavior: 'smooth' });
+                            closeImportModal();
+                            showToast("✅ " + filename + " wczytany do edytora!", 'success');
+                        }
+                    } else {
+                        alert("Error: " + data.message);
+                    }
+                })
+                .catch(err => {
+                    alert("Error loading file: " + err);
+                });
+        }
+
+        // Close modal when clicking outside (extended)
+        const existingWindowOnClick = window.onclick;
+        window.onclick = function (event) {
+            if (existingWindowOnClick) existingWindowOnClick(event);
+
+            const modal = document.getElementById('import-modal');
+            const linksModal = document.getElementById('links-modal');
+            if (event.target == modal) {
+                closeImportModal();
+            }
+            if (event.target == linksModal) {
+                closeLinksModal();
             }
         }
-    });
 
-    // Również wywołaj natychmiast jeśli DOM już załadowany
-    if (document.readyState === 'loading') {
-        // DOM jeszcze się ładuje, czekamy na DOMContentLoaded (wyżej)
-    } else {
-        // DOM już załadowany, wywołaj natychmiast
-        if (typeof setLang === 'function' && typeof currentLang !== 'undefined') {
-            setLang(currentLang);
-            if (typeof populateAreaSelect === 'function') {
-                populateAreaSelect();
+        // Auto-run IP replacement on load
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof updateResultPathsToHost === 'function') {
+                updateResultPathsToHost();
+            }
+        });
+        // Info Modal Logic
+        function showInfoModal() {
+            const m = document.getElementById('info-modal');
+            if (!m) return;
+
+            // Populate fields
+            document.getElementById('info-entities').innerText = typeof connectionInfo !== 'undefined' ? connectionInfo.entity_count : '-';
+            document.getElementById('info-ad-slug').innerText = typeof connectionInfo !== 'undefined' ? connectionInfo.appdaemon_slug : '-';
+            document.getElementById('info-api-source').innerText = typeof connectionInfo !== 'undefined' ? connectionInfo.token_source : '-';
+
+            const bridgeActive = typeof connectionInfo !== 'undefined' && connectionInfo.bridge_active;
+            const brText = bridgeActive ? TRANSLATIONS[currentLang].info_bridge_yes : TRANSLATIONS[currentLang].info_bridge_no;
+            document.getElementById('info-bridge').innerText = brText;
+            document.getElementById('info-bridge').style.color = bridgeActive ? 'green' : 'red';
+
+            const dashCount = typeof dashboardsList !== 'undefined' ? dashboardsList.length : 0;
+            document.getElementById('info-dash-count').innerText = dashCount;
+
+            // Update dynamic path
+            const pathEl = document.getElementById('info-path'); // This element is now just a container
+            if (pathEl) {
+                const host = window.location.hostname || '[HA_IP]';
+                const pc = document.getElementById('path-code');
+                if (pc && pc.dataset.pathTemplate) {
+                    pc.innerText = pc.dataset.pathTemplate.replace(/\[HA_IP\]/g, host);
+                }
+                const pcb = document.getElementById('path-code-bridge');
+                if (pcb && pcb.dataset.pathTemplate) {
+                    pcb.innerText = pcb.dataset.pathTemplate.replace(/\[HA_IP\]/g, host);
+                }
+            }
+
+            // Populate Dashboard List
+            const listDiv = document.getElementById('info-dash-list');
+            if (listDiv) {
+                listDiv.innerHTML = '';
+                const dashes = typeof dashboardsList !== 'undefined' ? dashboardsList : [];
+                if (dashes.length > 0) {
+                    dashes.forEach(d => {
+                        const div = document.createElement('div');
+                        div.style.padding = '4px 0';
+                        div.style.borderBottom = '1px solid #eee';
+                        // Fix [object Object]: d might be object {name: "foo.dash"} or string
+                        const name = typeof d === 'object' ? (d.name || d.filename || JSON.stringify(d)) : d;
+                        div.innerText = '📄 ' + name;
+                        listDiv.appendChild(div);
+                    });
+                } else {
+                    listDiv.innerText = TRANSLATIONS[currentLang].dash_list_empty || '(none)';
+                }
+            }
+
+            m.style.display = 'block';
+        }
+        function closeInfoModal() { document.getElementById('info-modal').style.display = 'none'; }
+
+        // Init language from storage - wywołaj natychmiast po załadowaniu DOM
+        document.addEventListener('DOMContentLoaded', function () {
+            if (typeof setLang === 'function' && typeof currentLang !== 'undefined') {
+                setLang(currentLang);
+                // Initialize Areas
+                if (typeof populateAreaSelect === 'function') {
+                    populateAreaSelect();
+                }
+            }
+        });
+
+        // Również wywołaj natychmiast jeśli DOM już załadowany
+        if (document.readyState === 'loading') {
+            // DOM jeszcze się ładuje, czekamy na DOMContentLoaded (wyżej)
+        } else {
+            // DOM już załadowany, wywołaj natychmiast
+            if (typeof setLang === 'function' && typeof currentLang !== 'undefined') {
+                setLang(currentLang);
+                if (typeof populateAreaSelect === 'function') {
+                    populateAreaSelect();
+                }
             }
         }
-    }
-</script>
+    </script>
 </body>
 
 <!-- INFO MODAL -->
@@ -5844,5 +5845,7 @@ class DashSaver(hass.Hass):
         </div>
     </div>
 </div>
+<div id="toast-container"></div>
+</body>
 
 </html>
