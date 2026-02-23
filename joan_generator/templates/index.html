@@ -493,7 +493,7 @@
             align-items: flex-end;
             position: relative;
             background-image: linear-gradient(to right, var(--grid-line) 1px, transparent 1px), linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
-            background-size: 125px 125px;
+            background-size: var(--grid-cell-size, 125px) var(--grid-cell-size, 125px);
             background-origin: content-box;
             background-clip: content-box;
             transition: border-color 0.3s, box-shadow 0.3s, width 0.3s;
@@ -1381,7 +1381,7 @@
                 <div class="flex-col">
                     <label for="device-profile" style="font-weight: bold; margin-bottom: 5px; display: block;"
                         data-i18n="lbl_device_profile">Model urządzenia:</label>
-                    <select id="device-profile" class="form-control" onchange="window.updateGridConstraints()">
+                    <select id="device-profile" name="device_profile" onchange="applyGrid(); renderPreview()">
                         <option value="joan_6" {% if device_profile=='joan_6' %}selected{% endif %}>Joan 6 (6-inch)
                         </option>
                         <option value="joan_13_pro" {% if device_profile=='joan_13_pro' %}selected{% endif %}>Joan 13
@@ -1439,6 +1439,10 @@
                         placeholder="Wklej tutaj zawartość pliku .dash..."></textarea>
                     <button type="button" class="btn btn-import" onclick="importYaml()" data-i18n="btn_import">Wczytaj
                         Kod</button>
+                    <div style="font-size: 0.8em; margin-top: 10px; color: #666; font-style: italic;"
+                        data-i18n="import_history_warning">
+                        Wskazówka: Upewnij się, że masz aktywne 'history:' w HA dla analizy baterii.
+                    </div>
 
                     {% if connection_info.bridge_active %}
                     <button type="button" class="btn btn-import" style="background-color: #9c27b0; margin-left: 10px;"
@@ -2642,10 +2646,12 @@
                 link_visionect: "Visionect (Producent Joan 6)",
                 list_dashboards_title: "Lista Dashboardów:",
                 dash_list_empty: "(brak)",
-                freq_no_history: "Analiza niemożliwa! Brak aktywnego modułu 'history:' w configuration.yaml (lub encja wykluczona z recorder)."
+                freq_no_history: "Analiza niemożliwa! Brak wpisu 'history:' w pliku configuration.yaml. Dopisz history: aby aktywować.",
+                import_history_warning: "⚠️ Uwaga: Twój Home Assistant nie ma aktywnego modułu 'history:'. Importowane widżety nie będą pokazywać analizy baterii. Dopisz history: do configuration.yaml."
             },
             en: {
                 btn_import_dash: "📥 IMPORT DASHBOARD",
+                import_history_warning: "⚠️ Note: Your Home Assistant does not have the 'history:' module enabled. Imported widgets will not show battery analysis. Add history: to configuration.yaml.",
                 btn_config_autosave: "⚙️ CONFIGURE AUTO-SAVE/READ",
                 modal_import_title: "Select Dashboard to Edit",
                 modal_import_loading: "Loading list...",
@@ -3425,7 +3431,12 @@
             document.getElementById('form-rows').value = rws;
 
             let visualSlots = getLogicalCols();
-            const px = (visualSlots * 117) + ((visualSlots - 1) * 8) + 40;
+            const prof = document.getElementById('device-profile').value;
+            const isPro = (prof === 'joan_13_pro');
+            const baseCell = isPro ? 188 : 117;
+            const gap = 8;
+
+            const px = (visualSlots * baseCell) + ((visualSlots - 1) * gap) + 40;
             document.querySelectorAll('.eink-row').forEach(el => {
                 el.style.minWidth = px + 'px';
             });
@@ -3881,6 +3892,16 @@
 
         function renderPreview() {
             const container = document.getElementById('preview-container'); container.innerHTML = '';
+
+            // Profil urządzenia - pobieramy aktualny stan z selektora
+            const prof = document.getElementById('device-profile').value;
+            const isPro = (prof === 'joan_13_pro');
+            const baseCell = isPro ? 188 : 117;
+            const gap = 8;
+
+            // Dynamiczne ustawienie siatki w CSS (background-size w .eink-row)
+            document.documentElement.style.setProperty('--grid-cell-size', (baseCell + gap) + 'px');
+
             rows.forEach((row, rI) => {
                 const rowDiv = document.createElement('div');
                 rowDiv.className = 'eink-row';
@@ -3988,7 +4009,8 @@
                         rw = globalDefaultSize.h;
                     }
 
-                    const width = (cols * 117) + ((cols - 1) * 8); const height = (rw * 117) + ((rw - 1) * 8);
+                    const width = (cols * baseCell) + ((cols - 1) * gap);
+                    const height = (rw * baseCell) + ((rw - 1) * gap);
                     div.style.width = width + 'px'; div.style.height = height + 'px';
 
                     if (cols === 1 && rw === 1) div.classList.add('is-small');
@@ -4021,29 +4043,42 @@
                             titlePx = parseInt(r_title_size);
                         } else {
                             const isSmall = (cols === 1 && rw === 1) || (cols === 1 && rw === 2);
-                            titlePx = isSmall ? 16 : 20;
+                            if (isPro) {
+                                titlePx = isSmall ? 24 : 32;
+                            } else {
+                                titlePx = isSmall ? 16 : 20;
+                            }
                         }
 
                         // Apply Scale (Bigger scale for title for better readability in preview as requested)
-                        const TITLE_PREVIEW_SCALE = 0.8;
+                        // Pro model has more space, so we use slightly different scaling to keep it readable
+                        const TITLE_PREVIEW_SCALE = isPro ? 0.6 : 0.8;
                         titleStyle = `font-size: ${Math.round(titlePx * TITLE_PREVIEW_SCALE)}px;`;
 
                         let valueStyle = '';
-                        let valuePx = 54;
+                        let valuePx = isPro ? 90 : 54;
                         if (r_value_size_custom) valuePx = parseInt(r_value_size_custom);
                         else {
-                            if (r_value_size_hint === 'medium') valuePx = 40;
-                            else if (r_value_size_hint === 'small') valuePx = 32;
-                            else if (r_value_size_hint === 'normal') valuePx = 54;
-                            else if (r_value_size_hint === 'auto') valuePx = 54; // Default auto
+                            if (isPro) {
+                                if (r_value_size_hint === 'medium') valuePx = 65;
+                                else if (r_value_size_hint === 'small') valuePx = 50;
+                                else valuePx = 90;
+                            } else {
+                                if (r_value_size_hint === 'medium') valuePx = 40;
+                                else if (r_value_size_hint === 'small') valuePx = 32;
+                                else valuePx = 54;
+                            }
                         }
 
                         // Fallback for small widgets logic like in run.py
                         const isSmallVal = (cols === 1 && rw === 1) || (cols === 1 && rw === 2);
-                        if (isSmallVal && !r_value_size_custom && (!r_value_size_hint || r_value_size_hint === 'auto')) valuePx = 34;
+                        if (isSmallVal && !r_value_size_custom && (!r_value_size_hint || r_value_size_hint === 'auto')) {
+                            valuePx = isPro ? 60 : 34;
+                        }
 
                         // Apply Scale for Value
-                        valueStyle = `font-size: ${Math.round(valuePx * PREVIEW_SCALE)}px;`;
+                        const VAL_PREVIEW_SCALE = isPro ? 0.45 : 0.5;
+                        valueStyle = `font-size: ${Math.round(valuePx * VAL_PREVIEW_SCALE)}px;`;
 
                         const valDisplay = r_state_enabled ? realState : "";
                         const valStyleFinal = r_state_enabled ? valueStyle : "display:none;";
@@ -4127,15 +4162,21 @@
                         const t = TRANSLATIONS[lang === 'pl' ? 'pl_extra' : 'en_extra'];
 
                         // Font size calculation as in preview
-                        let vPx = 54;
+                        let vPx = isPro ? 90 : 54;
                         if (r_value_size_custom) vPx = parseInt(r_value_size_custom);
                         else {
-                            if (r_value_size_hint === 'medium') vPx = 40;
-                            else if (r_value_size_hint === 'small') vPx = 32;
-                            else if (r_value_size_hint === 'auto') vPx = ((cols === 1 && rw === 1) || (cols === 1 && rw === 2)) ? 34 : 54;
+                            if (isPro) {
+                                if (r_value_size_hint === 'medium') vPx = 65;
+                                else if (r_value_size_hint === 'small') vPx = 50;
+                                else vPx = ((cols === 1 && rw === 1) || (cols === 1 && rw === 2)) ? 60 : 90;
+                            } else {
+                                if (r_value_size_hint === 'medium') vPx = 40;
+                                else if (r_value_size_hint === 'small') vPx = 32;
+                                else vPx = ((cols === 1 && rw === 1) || (cols === 1 && rw === 2)) ? 34 : 54;
+                            }
                         }
 
-                        let tPx = r_title_size ? parseInt(r_title_size) : (((cols === 1 && rw === 1) || (cols === 1 && rw === 2)) ? 16 : 20);
+                        let tPx = r_title_size ? parseInt(r_title_size) : (((cols === 1 && rw === 1) || (cols === 1 && rw === 2)) ? (isPro ? 24 : 16) : (isPro ? 32 : 20));
 
                         let tooltipText = "";
                         tooltipText += `${t.info_size_px}: ${width}x${height} px (${cols}x${rw})\n`;
@@ -4292,6 +4333,13 @@
 
             rebuildGridOptions(document.getElementById('screen-orientation').value);
 
+            const isProImport = yaml.includes('widget_dimensions: [188, 192]');
+            if (isProImport) {
+                document.getElementById('device-profile').value = 'joan_13_pro';
+            } else if (yaml.includes('widget_dimensions: [117, 123]')) {
+                document.getElementById('device-profile').value = 'joan_6';
+            }
+
             const sel = document.getElementById('grid-preset');
             if (sel.querySelector(`option[value="${preset}"]`)) sel.value = preset;
             else sel.value = 'custom';
@@ -4385,12 +4433,24 @@
                                     const fsMatch = valueStyleMatch[1].match(/font-size:\s*(\d+)px/);
                                     if (fsMatch) {
                                         const px = parseInt(fsMatch[1]);
-                                        if (px === 54) value_size_hint = 'normal';
-                                        else if (px === 40) value_size_hint = 'medium';
-                                        else if (px === 32) value_size_hint = 'small';
-                                        else {
-                                            value_size_hint = 'auto';
-                                            value_size_custom = px;
+                                        const isProNow = document.getElementById('device-profile').value === 'joan_13_pro';
+
+                                        if (isProNow) {
+                                            if (px === 90) value_size_hint = 'normal';
+                                            else if (px === 65) value_size_hint = 'medium';
+                                            else if (px === 50) value_size_hint = 'small';
+                                            else {
+                                                value_size_hint = 'auto';
+                                                value_size_custom = px;
+                                            }
+                                        } else {
+                                            if (px === 54) value_size_hint = 'normal';
+                                            else if (px === 40) value_size_hint = 'medium';
+                                            else if (px === 32) value_size_hint = 'small';
+                                            else {
+                                                value_size_hint = 'auto';
+                                                value_size_custom = px;
+                                            }
                                         }
                                     }
                                 }
@@ -4432,7 +4492,16 @@
                 }
             });
 
-            if (newRows.length > 0) { rows = newRows; reflowAllWidgets(); renderPreview(); alert(TRANSLATIONS[currentLang].import_success); }
+            if (newRows.length > 0) {
+                rows = newRows;
+                reflowAllWidgets();
+                renderPreview();
+                let msg = TRANSLATIONS[currentLang].import_success;
+                if (connectionInfo && connectionInfo.history_active === false) {
+                    msg += "\n\n" + TRANSLATIONS[currentLang].import_history_warning;
+                }
+                alert(msg);
+            }
             else alert(TRANSLATIONS[currentLang].import_error_layout);
             setTimeout(() => blockSmart = false, 1000);
         }
