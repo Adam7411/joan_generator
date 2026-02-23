@@ -4500,551 +4500,607 @@
                         }
 
                         // Zaktualizuj interfejs
-                        badge.className = `freq-badge ${cssClass}`;
-                        icon.innerText = iconChar;
-                        text.innerHTML = TRANSLATIONS[currentLang][msgKey].replace('{0}', changes);
-                        badge.classList.remove('hidden');
-                    })
-                    .catch(err => {
-                        console.error("Frequency check error:", err);
-                        badge.classList.add('hidden');
-                    });
-            }, 500);
-        }
-
-        function saveToBrowser() {
-            const name = document.getElementById('save-dash-name').value;
-            if (!name) return alert(TRANSLATIONS[currentLang].alert_name_required);
-
-            const saveData = {
-                rows: rows,
-                defs: rawImportedDefs,
-                title: document.getElementById('dash-title').value,
-                grid: document.getElementById('grid-preset').value,
-                defSize: globalDefaultSize,
-                orientation: document.getElementById('screen-orientation').value
-            };
-
-            if (saveData.grid === 'custom') {
-                saveData.customCols = document.getElementById('custom-cols').value;
-                saveData.customRows = document.getElementById('custom-rows').value;
-            }
-
-            const all = JSON.parse(localStorage.getItem('joan_dashboards') || '{}');
-            all[name] = saveData;
-            localStorage.setItem('joan_dashboards', JSON.stringify(all));
-            loadSavedList();
-            alert((currentLang === 'pl' ? "Zapisano w przeglądarce: " : "Saved in browser: ") + name);
-        }
-
-        function loadSavedList() {
-            const listDiv = document.getElementById('saved-dash-list');
-            if (!listDiv) return;
-
-            listDiv.innerHTML = '';
-            const all = JSON.parse(localStorage.getItem('joan_dashboards') || '{}');
-
-            for (const key in all) {
-                const item = document.createElement('div');
-                item.className = 'dash-item';
-                if (currentLoadedDashName === key) item.classList.add('active');
-
-                const txt = document.createElement('span'); txt.innerText = key;
-                item.appendChild(txt);
-
-                item.onclick = () => loadFromBrowser(key);
-
-                const btnDel = document.createElement('button'); btnDel.innerText = 'X';
-                btnDel.onclick = (e) => { e.stopPropagation(); deleteFromBrowser(key); };
-                item.appendChild(btnDel);
-
-                listDiv.appendChild(item);
-            }
-        }
-
-        function loadFromBrowser(key) {
-            if (!confirm(TRANSLATIONS[currentLang].confirm_load_dash)) return;
-            const all = JSON.parse(localStorage.getItem('joan_dashboards') || '{}');
-            const data = all[key];
-            if (!data) return;
-
-            rows = data.rows;
-            rawImportedDefs = data.defs || {};
-            document.getElementById('dash-title').value = data.title || "JoanDashboard";
-            syncTitle();
-            document.getElementById('grid-preset').value = data.grid || '4x8';
-            globalDefaultSize = data.defSize || { w: 2, h: 1 };
-            document.getElementById('screen-orientation').value = data.orientation || 'landscape';
-
-            if (data.grid === 'custom') {
-                document.getElementById('custom-cols').value = data.customCols;
-                document.getElementById('custom-rows').value = data.customRows;
-            }
-
-            rebuildGridOptions(document.getElementById('screen-orientation').value);
-            reflowAllWidgets();
-            handleGridChange();
-            loadSavedList();
-        }
-
-        function deleteFromBrowser(key) {
-            if (!confirm(currentLang === 'pl' ? "Usunąć?" : "Delete?")) return;
-            const all = JSON.parse(localStorage.getItem('joan_dashboards') || '{}');
-            delete all[key];
-            localStorage.setItem('joan_dashboards', JSON.stringify(all));
-            if (currentLoadedDashName === key) {
-                currentLoadedDashName = null;
-                document.querySelectorAll('.small-status').forEach(e => e.innerText = "");
-            }
-            loadSavedList();
-        }
-
-        function updateThemeIcon() {
-            const isDark = document.documentElement.classList.contains('dark-mode');
-            document.getElementById('btn-theme').innerText = isDark ? '☀️' : '🌙';
-        }
-
-        function toggleTheme() {
-            document.documentElement.classList.toggle('dark-mode');
-            localStorage.setItem('joan_theme', document.documentElement.classList.contains('dark-mode') ? 'dark' : 'light');
-            updateThemeIcon();
-        }
-
-        function setLang(l) {
-            currentLang = normalizeLang(l);
-            try {
-                localStorage.setItem('joan_lang', currentLang);
-            } catch (e) {
-                // ignore storage errors (e.g., blocked/partitioned storage)
-            }
-            setCookie('joan_lang', currentLang);
-
-            try {
-                const url = new URL(window.location.href);
-                url.searchParams.set('lang', currentLang);
-                window.history.replaceState({}, '', url.toString());
-            } catch (e) {
-                // ignore URL/history errors
-            }
-
-            const langInput = document.getElementById('input-lang');
-            if (langInput) langInput.value = currentLang;
-            if (document.documentElement) {
-                document.documentElement.lang = currentLang;
-            }
-
-            document.querySelectorAll('[data-i18n]').forEach(el => {
-                const k = el.getAttribute('data-i18n');
-                if (TRANSLATIONS[currentLang] && TRANSLATIONS[currentLang][k]) {
-                    if (el.tagName === 'OPTION') {
-                        el.innerText = TRANSLATIONS[currentLang][k];
-                    } else if (el.tagName === 'INPUT' && (el.type === 'button' || el.type === 'submit')) {
-                        el.value = TRANSLATIONS[currentLang][k];
-                    } else if (el.tagName === 'BUTTON') {
-                        el.innerText = TRANSLATIONS[currentLang][k];
-                    } else {
-                        el.innerHTML = TRANSLATIONS[currentLang][k];
-                    }
-                }
-            });
-
-            // Handle title tooltips
-            document.querySelectorAll('[data-i18n-title]').forEach(el => {
-                const k = el.getAttribute('data-i18n-title');
-                if (TRANSLATIONS[currentLang] && TRANSLATIONS[currentLang][k]) {
-                    el.title = TRANSLATIONS[currentLang][k];
-                }
-            });
-
-            // Re-render dynamic list with new language strings
-            if (document.getElementById('screen-orientation')) {
-                rebuildGridOptions(document.getElementById('screen-orientation').value);
-            }
-
-            const btnPl = document.getElementById('btn-pl');
-            if (btnPl) {
-                if (currentLang === 'pl') {
-                    btnPl.classList.add('active');
-                } else {
-                    btnPl.classList.remove('active');
-                }
-            }
-
-            const btnEn = document.getElementById('btn-en');
-            if (btnEn) {
-                if (currentLang === 'en') {
-                    btnEn.classList.add('active');
-                } else {
-                    btnEn.classList.remove('active');
-                }
-            }
-
-            const eWid = document.getElementById('w-id');
-            const eName = document.getElementById('w-name');
-            const eDash = document.getElementById('w-dash');
-            const eSave = document.getElementById('save-dash-name');
-            const iconSearch = document.getElementById('icon-search');
-
-            if (currentLang === 'pl') {
-                if (eWid) eWid.placeholder = "np. głośnik kuchnia...";
-                if (eName) eName.placeholder = "np. Salon";
-                if (eDash) eDash.placeholder = "np. main";
-                if (eSave) eSave.placeholder = "np. Salon";
-                if (iconSearch) iconSearch.placeholder = "Szukaj ikony...";
-            } else {
-                if (eWid) eWid.placeholder = "e.g. kitchen speaker...";
-                if (eName) eName.placeholder = "e.g. Living Room";
-                if (eDash) eDash.placeholder = "e.g. main";
-                if (eSave) eSave.placeholder = "e.g. Living Room";
-                if (iconSearch) iconSearch.placeholder = "Search icon...";
-            }
-            const hintEl = document.getElementById('nav-hint');
-            if (hintEl && TRANSLATIONS[currentLang]) hintEl.innerHTML = TRANSLATIONS[currentLang].hint_nav;
-
-            toggleInputs();
-            renderPreview();
-            loadSavedList();
-            updateStatusDetails();
-            updateCopyButtonText();
-
-            // Initialize Areas (added in previous step, safe to call here)
-            if (typeof populateAreaSelect === 'function') {
-                populateAreaSelect();
-            }
-        }
-
-        setLang(currentLang);
-
-        function updateResultPathsToHost() {
-            // Pobiera IP/Hosta z paska adresu przeglądarki
-            const host = window.location.hostname || '[HA_IP]';
-
-            // Update generic path displays
-            document.querySelectorAll('.path-display').forEach(el => {
-                let tmpl = el.getAttribute('data-path-template') || el.textContent;
-                el.textContent = tmpl.replace(/\[HA_IP\]/g, host);
-            });
-
-            const pathEl = document.getElementById('path-code'); // Legacy ID support
-            const linkEl = document.getElementById('dashboard-link');
-
-            if (pathEl) {
-                let tmpl = pathEl.getAttribute('data-path-template') || pathEl.textContent;
-                pathEl.textContent = tmpl.replace(/\[HA_IP\]/g, host);
-            }
-
-            if (linkEl) {
-                const tmplHref = linkEl.getAttribute('data-link-template') || linkEl.getAttribute('href');
-                const newHref = (tmplHref || '').replace(/\[HA_IP\]/g, host);
-                linkEl.setAttribute('href', newHref);
-                linkEl.textContent = (linkEl.textContent || '').replace(/\[HA_IP\]/g, host);
-            }
-        }
-
-        function openIconPicker(inputId) {
-            currentIconInputId = inputId;
-            document.getElementById('icon-modal').style.display = 'block';
-            document.getElementById('icon-search').value = '';
-            document.getElementById('icon-search').focus();
-            renderIconGrid();
-        }
-
-        function closeIconPicker() {
-            document.getElementById('icon-modal').style.display = 'none';
-        }
-
-        function renderIconGrid(filter = "") {
-            const grid = document.getElementById('icon-grid');
-            grid.innerHTML = '';
-            const f = filter.toLowerCase();
-
-            let count = 0;
-            POPULAR_ICONS.forEach(icon => {
-                if (count > 2000 && filter === "") return;
-                if (icon.toLowerCase().includes(f)) {
-                    const div = document.createElement('div');
-                    div.className = 'grid-icon-item';
-                    div.onclick = () => selectIcon(icon);
-                    div.innerHTML = `<i class="mdi ${icon}"></i><span>${icon.replace('mdi-', '')}</span>`;
-                    grid.appendChild(div);
-                    count++;
-                }
-            });
-        }
-
-        function filterIcons() {
-            const val = document.getElementById('icon-search').value;
-            renderIconGrid(val);
-        }
-
-        function selectIcon(icon) {
-            if (currentIconInputId) {
-                document.getElementById(currentIconInputId).value = icon;
-                manualIconOverride = true;
-                updateIconPreview();
-            }
-            closeIconPicker();
-        }
-
-        // Poprawiona walidacja (żeby wklejanie działało)
-        function validateEntityInput(val) {
-            const el = document.getElementById('w-id');
-            if (!val) {
-                el.classList.remove('input-valid', 'input-invalid');
-                return;
-            }
-
-            // Try Auto-Detect Icon
-            tryAutoSelectIcon(val);
-
-            // Sprawdzamy bezpośrednio w zestawie ID lub czy to specjalny typ
-            const isValid = validEntityIds.has(val) || val.startsWith('navigate.') || val === 'spacer';
-
-            if (isValid) {
-                el.classList.add('input-valid');
-                el.classList.remove('input-invalid');
-            } else {
-                el.classList.add('input-invalid');
-                el.classList.remove('input-valid');
-            }
-        }
-
-        function copyToClipboard() {
-            const copyText = document.getElementById("output-yaml");
-            if (!copyText) return;
-
-            copyText.select();
-            copyText.setSelectionRange(0, 99999);
-
-            const btn = document.querySelector('.btn-copy');
-            const successText = TRANSLATIONS[currentLang].copy_success;
-            if (navigator.clipboard && window.isSecureContext) {
-                navigator.clipboard.writeText(copyText.value).then(() => {
-                    if (btn) {
-                        const originalText = btn.innerText;
-                        btn.innerText = successText;
-                        btn.style.backgroundColor = "#4caf50";
-                        showToast(successText, 'success'); // DODANO TOAST
-                        setTimeout(() => {
-                            btn.innerText = originalText;
-                            btn.style.backgroundColor = "";
-                        }, 2000);
-                    }
-                }).catch(err => {
-                    console.error("Clipboard API error, fallback...", err);
-                    useExecCommandFallback(copyText);
-                });
-            } else {
-                useExecCommandFallback(copyText);
-            }
-        }
-
-        function useExecCommandFallback(element) {
-            try {
-                element.select();
-                element.setSelectionRange(0, 99999);
-                const successful = document.execCommand('copy');
-                if (!successful) throw new Error("execCommand copy failed");
-            }
-            catch (err) {
-                showToast(TRANSLATIONS[currentLang].copy_error + err, 'error');
-            }
-        }
-
-        function downloadDashFile() {
-            const yamlTextarea = document.getElementById("output-yaml");
-            if (!yamlTextarea || !yamlTextarea.value) {
-                alert(currentLang === 'pl' ? "Brak kodu do pobrania. Najpierw wygeneruj kod." : "No code to download. Generate code first.");
-                return;
-            }
-
-            const pathCode = document.getElementById("path-code");
-            const filename = pathCode ? pathCode.textContent.split('\\').pop() : "joandashboard.dash";
-
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = '';
-
-            const actionInput = document.createElement('input');
-            actionInput.type = 'hidden';
-            actionInput.name = 'action';
-            actionInput.value = 'download_file';
-            form.appendChild(actionInput);
-
-            const yamlInput = document.createElement('input');
-            yamlInput.type = 'hidden';
-            yamlInput.name = 'yaml_content';
-            yamlInput.value = yamlTextarea.value;
-            form.appendChild(yamlInput);
-
-            const filenameInput = document.createElement('input');
-            filenameInput.type = 'hidden';
-            filenameInput.name = 'filename';
-            filenameInput.value = filename;
-            form.appendChild(filenameInput);
-
-            document.body.appendChild(form);
-            form.submit();
-        }
-
-
-        function downloadProject() {
-            const data = {
-                rows: rows,
-                defs: rawImportedDefs,
-                title: document.getElementById('dash-title').value,
-                grid: document.getElementById('grid-preset').value,
-                defSize: globalDefaultSize,
-                orientation: document.getElementById('screen-orientation').value,
-                customCols: document.getElementById('custom-cols').value,
-                customRows: document.getElementById('custom-rows').value
-            };
-            const json = JSON.stringify(data, null, 2);
-            const blob = new Blob([json], { type: "application/json" });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = data.title + "_backup.json";
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-        }
-
-
-        function loadProjectFile(input) {
-            const file = input.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                try {
-                    const data = JSON.parse(e.target.result);
-                    rows = data.rows || [[]];
-                    rawImportedDefs = data.defs || {};
-                    document.getElementById('dash-title').value = data.title || "JoanDashboard";
-                    syncTitle();
-                    document.getElementById('grid-preset').value = data.grid || '3x8';
-                    globalDefaultSize = data.defSize || { w: 2, h: 1 };
-                    document.getElementById('screen-orientation').value = data.orientation || 'landscape';
-
-                    if (data.grid === 'custom') {
-                        document.getElementById('custom-cols').value = data.customCols || 4;
-                        document.getElementById('custom-rows').value = data.customRows || 8;
-                    }
-
-                    rebuildGridOptions(document.getElementById('screen-orientation').value);
-                    reflowAllWidgets();
-                    handleGridChange();
-                    alert(TRANSLATIONS[currentLang].json_load_success);
-                } catch (err) {
-                    alert(TRANSLATIONS[currentLang].json_load_error + err);
-                }
-            };
-            reader.readAsText(file);
-        }
-
-        window.onclick = function (event) {
-            const modal = document.getElementById('icon-modal');
-            if (event.target == modal) {
-                closeIconPicker();
-            }
-        }
-
-        function initOrientationAndGrid() {
-            const sel = document.getElementById('grid-preset');
-            const initialGrid = '{{ cols }}x{{ rows_grid }}';
-            sel.value = initialGrid;
-            document.getElementById('screen-orientation').value = 'portrait';
-            rebuildGridOptions('portrait');
-            sel.value = initialGrid;
-            handleGridChange();
-        }
-
-        function updateStatusDetails() {
-            const el = document.getElementById('status-details');
-            if (!el) return;
-            const t = TRANSLATIONS[currentLang];
-            if (connectionInfo && Object.keys(connectionInfo).length) {
-                el.textContent = t.status_details
-                    .replace('{token_source}', connectionInfo.token_source || '-')
-                    .replace('{api_url}', connectionInfo.api_url || '-')
-                    .replace('{entity_count}', connectionInfo.entity_count ?? '-')
-                    .replace('{appdaemon_slug}', connectionInfo.appdaemon_slug || '-');
-            } else {
-                el.textContent = t.status_details_missing;
-            }
-        }
-
-        function updateCopyButtonText() {
-            const btn = document.querySelector('.btn-copy');
-            if (btn && TRANSLATIONS[currentLang].btn_copy) {
-                btn.innerText = TRANSLATIONS[currentLang].btn_copy;
-            }
-            const downloadBtn = document.querySelector('.btn-download-file');
-            if (downloadBtn && TRANSLATIONS[currentLang].btn_download_file) {
-                downloadBtn.innerText = TRANSLATIONS[currentLang].btn_download_file;
-            }
-        }
-
-        initOrientationAndGrid();
-        applyGrid();
-        loadSavedList();
-
-        // Inicjalizacja domyślnego rozmiaru z backendu
-        const defSizeStr = '{{ def_size|default("2, 1") }}';
-        const parts = defSizeStr.split(',');
-        if (parts.length === 2) {
-            globalDefaultSize.w = parseInt(parts[0].strip ? parts[0].strip() : parts[0]) || 2;
-            globalDefaultSize.h = parseInt(parts[1].strip ? parts[1].strip() : parts[1]) || 1;
-        }
-
-        // Ustawiamy język na podstawie wartości z backendu tylko wtedy, gdy backend go faktycznie wymusza.
-        // (backend domyślnie zwraca 'pl', co nie może nadpisywać wyboru z URL/localStorage/cookie)
-        const backendLang = '{{ current_lang|default("pl") }}';
-        if (backendLang === 'en') {
-            setLang('en');
-        }
-        const iconDl = document.getElementById('icon-list');
-        POPULAR_ICONS.forEach(i => { const op = document.createElement('option'); op.value = i; iconDl.appendChild(op); });
-        const dashDl = document.getElementById('nav-dash-suggestions');
-        DASH_NAMES.forEach(n => { const op = document.createElement('option'); op.value = n; dashDl.appendChild(op); });
-        for (const k in saved) { const op = document.createElement('option'); op.value = k; dashDl.appendChild(op); }
-
-        updateResultPathsToHost();
-        updateStatusDetails();
-
-        // --- TOAST NOTIFICATIONS LOGIC ---
-        function showToast(message, type = 'info') {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-
-            let iconStr = '';
-            if (type === 'success') iconStr = '✅';
-            else if (type === 'error') iconStr = '❌';
-            else if (type === 'warning') iconStr = '⚠️';
-            else iconStr = 'ℹ️';
-
-            toast.innerHTML = `<span style="font-size:18px;">${iconStr}</span><span>${message}</span>`;
-
-            container.appendChild(toast);
-
-            // Trigger reflow
-            void toast.offsetWidth;
-
-            toast.classList.add('show');
-
-            setTimeout(() => {
-                toast.classList.remove('show');
-                setTimeout(() => {
-                    toast.remove();
-                }, 300);
-            }, 3000);
-        }
-
-        // Nadpisanie systemowego alertu
-        window.alert = function (msg) {
-            showToast(msg, 'warning');
-        };
+                        function checkEntityFrequency() {
+                            const wId = document.getElementById('w-id');
+                            const badge = document.getElementById('freq-badge');
+                            const icon = document.getElementById('freq-icon');
+                            const text = document.getElementById('freq-text');
+
+                            if (!wId || !wId.value || !badge) return;
+                            const entityId = wId.value;
+
+                            // Tylko sprawdzaj częstotliwość dla wybranych typów sensorów
+                            if (!entityId.startsWith('sensor.') && !entityId.startsWith('binary_sensor.') && !entityId.startsWith('switch.') && !entityId.startsWith('light.')) {
+                                badge.classList.add('hidden');
+                                return;
+                            }
+
+                            clearTimeout(freqCheckTimeout);
+                            freqCheckTimeout = setTimeout(() => {
+                                fetch(`/api/entity_frequency/${entityId}`)
+                                    .then(res => res.json())
+                                    .then(data => {
+                                        if (data.error || !data.level) {
+                                            badge.classList.add('hidden');
+                                            return;
+                                        }
+
+                                        let cssClass = 'ok';
+                                        let iconChar = '✅';
+                                        let msgKey = 'freq_ok';
+                                        let changesText = data.changes_per_hour;
+
+                                        if (data.level === 'danger') {
+                                            cssClass = 'danger';
+                                            iconChar = '⚠️';
+                                            msgKey = 'freq_danger';
+                                        } else if (data.level === 'warning') {
+                                            cssClass = 'warning';
+                                            iconChar = '⚡';
+                                            msgKey = 'freq_warning';
+                                        }
+
+                                        // Dodaj tłumaczenia jeśli ich brakuje
+                                        if (!TRANSLATIONS[currentLang][msgKey]) {
+                                            TRANSLATIONS.pl.freq_ok = "Zoptymalizowano (ok. {0} zmian/h)";
+                                            TRANSLATIONS.pl.freq_warning = "Częste zmiany (ok. {0} zmian/h). Może obciążać baterię!";
+                                            TRANSLATIONS.pl.freq_danger = "Bardzo częste zmiany (ok. {0} zmian/h). OSTRZEŻENIE DLA BATERII!";
+                                            TRANSLATIONS.en.freq_ok = "Optimized (~{0} changes/h)";
+                                            TRANSLATIONS.en.freq_warning = "Frequent updates (~{0} changes/h). May drain battery!";
+                                            TRANSLATIONS.en.freq_danger = "Too frequent updates (~{0} changes/h). BATTERY WARNING!";
+                                        }
+
+                                        if (data.level === 'ok' && data.changes_per_hour === 0) {
+                                            // Hide badge if completely 0 changes to not clutter UI
+                                            badge.classList.add('hidden');
+                                            return;
+                                        }
+
+                                        badge.className = `freq-badge ${cssClass}`;
+                                        icon.innerText = iconChar;
+                                        text.innerHTML = TRANSLATIONS[currentLang][msgKey].replace('{0}', data.changes_per_hour);
+                                        badge.classList.remove('hidden');
+                                    })
+                                    .catch(err => {
+                                        console.error("Frequency check error:", err);
+                                        badge.classList.add('hidden');
+                                    });
+                            }, 500);
+                        }
+
+                        function saveToBrowser() {
+                            const name = document.getElementById('save-dash-name').value;
+                            if (!name) return alert(TRANSLATIONS[currentLang].alert_name_required);
+
+                            const saveData = {
+                                rows: rows,
+                                defs: rawImportedDefs,
+                                title: document.getElementById('dash-title').value,
+                                grid: document.getElementById('grid-preset').value,
+                                defSize: globalDefaultSize,
+                                orientation: document.getElementById('screen-orientation').value
+                            };
+
+                            if (saveData.grid === 'custom') {
+                                saveData.customCols = document.getElementById('custom-cols').value;
+                                saveData.customRows = document.getElementById('custom-rows').value;
+                            }
+
+                            const all = JSON.parse(localStorage.getItem('joan_dashboards') || '{}');
+                            all[name] = saveData;
+                            localStorage.setItem('joan_dashboards', JSON.stringify(all));
+                            loadSavedList();
+                            alert((currentLang === 'pl' ? "Zapisano w przeglądarce: " : "Saved in browser: ") + name);
+                        }
+
+                        function loadSavedList() {
+                            const listDiv = document.getElementById('saved-dash-list');
+                            if (!listDiv) return;
+
+                            listDiv.innerHTML = '';
+                            const all = JSON.parse(localStorage.getItem('joan_dashboards') || '{}');
+
+                            for (const key in all) {
+                                const item = document.createElement('div');
+                                item.className = 'dash-item';
+                                if (currentLoadedDashName === key) item.classList.add('active');
+
+                                const txt = document.createElement('span'); txt.innerText = key;
+                                item.appendChild(txt);
+
+                                item.onclick = () => loadFromBrowser(key);
+
+                                const btnDel = document.createElement('button'); btnDel.innerText = 'X';
+                                btnDel.onclick = (e) => { e.stopPropagation(); deleteFromBrowser(key); };
+                                item.appendChild(btnDel);
+
+                                listDiv.appendChild(item);
+                            }
+                        }
+
+                        function loadFromBrowser(key) {
+                            if (!confirm(TRANSLATIONS[currentLang].confirm_load_dash)) return;
+                            const all = JSON.parse(localStorage.getItem('joan_dashboards') || '{}');
+                            const data = all[key];
+                            if (!data) return;
+
+                            rows = data.rows;
+                            rawImportedDefs = data.defs || {};
+                            document.getElementById('dash-title').value = data.title || "JoanDashboard";
+                            syncTitle();
+                            document.getElementById('grid-preset').value = data.grid || '4x8';
+                            globalDefaultSize = data.defSize || { w: 2, h: 1 };
+                            document.getElementById('screen-orientation').value = data.orientation || 'landscape';
+
+                            if (data.grid === 'custom') {
+                                document.getElementById('custom-cols').value = data.customCols;
+                                document.getElementById('custom-rows').value = data.customRows;
+                            }
+
+                            rebuildGridOptions(document.getElementById('screen-orientation').value);
+                            reflowAllWidgets();
+                            handleGridChange();
+                            loadSavedList();
+                        }
+
+                        function deleteFromBrowser(key) {
+                            if (!confirm(currentLang === 'pl' ? "Usunąć?" : "Delete?")) return;
+                            const all = JSON.parse(localStorage.getItem('joan_dashboards') || '{}');
+                            delete all[key];
+                            localStorage.setItem('joan_dashboards', JSON.stringify(all));
+                            if (currentLoadedDashName === key) {
+                                currentLoadedDashName = null;
+                                document.querySelectorAll('.small-status').forEach(e => e.innerText = "");
+                            }
+                            loadSavedList();
+                        }
+
+                        function updateThemeIcon() {
+                            const isDark = document.documentElement.classList.contains('dark-mode');
+                            document.getElementById('btn-theme').innerText = isDark ? '☀️' : '🌙';
+                        }
+
+                        function toggleTheme() {
+                            document.documentElement.classList.toggle('dark-mode');
+                            localStorage.setItem('joan_theme', document.documentElement.classList.contains('dark-mode') ? 'dark' : 'light');
+                            updateThemeIcon();
+                        }
+
+                        function setLang(l) {
+                            currentLang = normalizeLang(l);
+                            try {
+                                localStorage.setItem('joan_lang', currentLang);
+                            } catch (e) {
+                                // ignore storage errors (e.g., blocked/partitioned storage)
+                            }
+                            setCookie('joan_lang', currentLang);
+
+                            try {
+                                const url = new URL(window.location.href);
+                                url.searchParams.set('lang', currentLang);
+                                window.history.replaceState({}, '', url.toString());
+                            } catch (e) {
+                                // ignore URL/history errors
+                            }
+
+                            const langInput = document.getElementById('input-lang');
+                            if (langInput) langInput.value = currentLang;
+                            if (document.documentElement) {
+                                document.documentElement.lang = currentLang;
+                            }
+
+                            document.querySelectorAll('[data-i18n]').forEach(el => {
+                                const k = el.getAttribute('data-i18n');
+                                if (TRANSLATIONS[currentLang] && TRANSLATIONS[currentLang][k]) {
+                                    if (el.tagName === 'OPTION') {
+                                        el.innerText = TRANSLATIONS[currentLang][k];
+                                    } else if (el.tagName === 'INPUT' && (el.type === 'button' || el.type === 'submit')) {
+                                        el.value = TRANSLATIONS[currentLang][k];
+                                    } else if (el.tagName === 'BUTTON') {
+                                        el.innerText = TRANSLATIONS[currentLang][k];
+                                    } else {
+                                        el.innerHTML = TRANSLATIONS[currentLang][k];
+                                    }
+                                }
+                            });
+
+                            // Handle title tooltips
+                            document.querySelectorAll('[data-i18n-title]').forEach(el => {
+                                const k = el.getAttribute('data-i18n-title');
+                                if (TRANSLATIONS[currentLang] && TRANSLATIONS[currentLang][k]) {
+                                    el.title = TRANSLATIONS[currentLang][k];
+                                }
+                            });
+
+                            // Re-render dynamic list with new language strings
+                            if (document.getElementById('screen-orientation')) {
+                                rebuildGridOptions(document.getElementById('screen-orientation').value);
+                            }
+
+                            const btnPl = document.getElementById('btn-pl');
+                            if (btnPl) {
+                                if (currentLang === 'pl') {
+                                    btnPl.classList.add('active');
+                                } else {
+                                    btnPl.classList.remove('active');
+                                }
+                            }
+
+                            const btnEn = document.getElementById('btn-en');
+                            if (btnEn) {
+                                if (currentLang === 'en') {
+                                    btnEn.classList.add('active');
+                                } else {
+                                    btnEn.classList.remove('active');
+                                }
+                            }
+
+                            const eWid = document.getElementById('w-id');
+                            const eName = document.getElementById('w-name');
+                            const eDash = document.getElementById('w-dash');
+                            const eSave = document.getElementById('save-dash-name');
+                            const iconSearch = document.getElementById('icon-search');
+
+                            if (currentLang === 'pl') {
+                                if (eWid) eWid.placeholder = "np. głośnik kuchnia...";
+                                if (eName) eName.placeholder = "np. Salon";
+                                if (eDash) eDash.placeholder = "np. main";
+                                if (eSave) eSave.placeholder = "np. Salon";
+                                if (iconSearch) iconSearch.placeholder = "Szukaj ikony...";
+                            } else {
+                                if (eWid) eWid.placeholder = "e.g. kitchen speaker...";
+                                if (eName) eName.placeholder = "e.g. Living Room";
+                                if (eDash) eDash.placeholder = "e.g. main";
+                                if (eSave) eSave.placeholder = "e.g. Living Room";
+                                if (iconSearch) iconSearch.placeholder = "Search icon...";
+                            }
+                            const hintEl = document.getElementById('nav-hint');
+                            if (hintEl && TRANSLATIONS[currentLang]) hintEl.innerHTML = TRANSLATIONS[currentLang].hint_nav;
+
+                            toggleInputs();
+                            renderPreview();
+                            loadSavedList();
+                            updateStatusDetails();
+                            updateCopyButtonText();
+
+                            // Initialize Areas (added in previous step, safe to call here)
+                            if (typeof populateAreaSelect === 'function') {
+                                populateAreaSelect();
+                            }
+                        }
+
+                        setLang(currentLang);
+
+                        function updateResultPathsToHost() {
+                            // Pobiera IP/Hosta z paska adresu przeglądarki
+                            const host = window.location.hostname || '[HA_IP]';
+
+                            // Update generic path displays
+                            document.querySelectorAll('.path-display').forEach(el => {
+                                let tmpl = el.getAttribute('data-path-template') || el.textContent;
+                                el.textContent = tmpl.replace(/\[HA_IP\]/g, host);
+                            });
+
+                            const pathEl = document.getElementById('path-code'); // Legacy ID support
+                            const linkEl = document.getElementById('dashboard-link');
+
+                            if (pathEl) {
+                                let tmpl = pathEl.getAttribute('data-path-template') || pathEl.textContent;
+                                pathEl.textContent = tmpl.replace(/\[HA_IP\]/g, host);
+                            }
+
+                            if (linkEl) {
+                                const tmplHref = linkEl.getAttribute('data-link-template') || linkEl.getAttribute('href');
+                                const newHref = (tmplHref || '').replace(/\[HA_IP\]/g, host);
+                                linkEl.setAttribute('href', newHref);
+                                linkEl.textContent = (linkEl.textContent || '').replace(/\[HA_IP\]/g, host);
+                            }
+                        }
+
+                        function openIconPicker(inputId) {
+                            currentIconInputId = inputId;
+                            document.getElementById('icon-modal').style.display = 'block';
+                            document.getElementById('icon-search').value = '';
+                            document.getElementById('icon-search').focus();
+                            renderIconGrid();
+                        }
+
+                        function closeIconPicker() {
+                            document.getElementById('icon-modal').style.display = 'none';
+                        }
+
+                        function renderIconGrid(filter = "") {
+                            const grid = document.getElementById('icon-grid');
+                            grid.innerHTML = '';
+                            const f = filter.toLowerCase();
+
+                            let count = 0;
+                            POPULAR_ICONS.forEach(icon => {
+                                if (count > 2000 && filter === "") return;
+                                if (icon.toLowerCase().includes(f)) {
+                                    const div = document.createElement('div');
+                                    div.className = 'grid-icon-item';
+                                    div.onclick = () => selectIcon(icon);
+                                    div.innerHTML = `<i class="mdi ${icon}"></i><span>${icon.replace('mdi-', '')}</span>`;
+                                    grid.appendChild(div);
+                                    count++;
+                                }
+                            });
+                        }
+
+                        function filterIcons() {
+                            const val = document.getElementById('icon-search').value;
+                            renderIconGrid(val);
+                        }
+
+                        function selectIcon(icon) {
+                            if (currentIconInputId) {
+                                document.getElementById(currentIconInputId).value = icon;
+                                manualIconOverride = true;
+                                updateIconPreview();
+                            }
+                            closeIconPicker();
+                        }
+
+                        // Poprawiona walidacja (żeby wklejanie działało)
+                        function validateEntityInput(val) {
+                            const el = document.getElementById('w-id');
+                            if (!val) {
+                                el.classList.remove('input-valid', 'input-invalid');
+                                return;
+                            }
+
+                            // Try Auto-Detect Icon
+                            tryAutoSelectIcon(val);
+
+                            // Sprawdzamy bezpośrednio w zestawie ID lub czy to specjalny typ
+                            const isValid = validEntityIds.has(val) || val.startsWith('navigate.') || val === 'spacer';
+
+                            if (isValid) {
+                                el.classList.add('input-valid');
+                                el.classList.remove('input-invalid');
+                            } else {
+                                el.classList.add('input-invalid');
+                                el.classList.remove('input-valid');
+                            }
+                        }
+
+                        function copyToClipboard() {
+                            const copyText = document.getElementById("output-yaml");
+                            if (!copyText) return;
+
+                            copyText.select();
+                            copyText.setSelectionRange(0, 99999);
+
+                            const btn = document.querySelector('.btn-copy');
+                            const successText = TRANSLATIONS[currentLang].copy_success;
+                            if (navigator.clipboard && window.isSecureContext) {
+                                navigator.clipboard.writeText(copyText.value).then(() => {
+                                    if (btn) {
+                                        const originalText = btn.innerText;
+                                        btn.innerText = successText;
+                                        btn.style.backgroundColor = "#4caf50";
+                                        showToast(successText, 'success'); // DODANO TOAST
+                                        setTimeout(() => {
+                                            btn.innerText = originalText;
+                                            btn.style.backgroundColor = "";
+                                        }, 2000);
+                                    }
+                                }).catch(err => {
+                                    console.error("Clipboard API error, fallback...", err);
+                                    useExecCommandFallback(copyText);
+                                });
+                            } else {
+                                useExecCommandFallback(copyText);
+                            }
+                        }
+
+                        function useExecCommandFallback(element) {
+                            try {
+                                element.select();
+                                element.setSelectionRange(0, 99999);
+                                const successful = document.execCommand('copy');
+                                if (!successful) throw new Error("execCommand copy failed");
+                            }
+                            catch (err) {
+                                showToast(TRANSLATIONS[currentLang].copy_error + err, 'error');
+                            }
+                        }
+
+                        function downloadDashFile() {
+                            const yamlTextarea = document.getElementById("output-yaml");
+                            if (!yamlTextarea || !yamlTextarea.value) {
+                                alert(currentLang === 'pl' ? "Brak kodu do pobrania. Najpierw wygeneruj kod." : "No code to download. Generate code first.");
+                                return;
+                            }
+
+                            const pathCode = document.getElementById("path-code");
+                            const filename = pathCode ? pathCode.textContent.split('\\').pop() : "joandashboard.dash";
+
+                            const form = document.createElement('form');
+                            form.method = 'POST';
+                            form.action = '';
+
+                            const actionInput = document.createElement('input');
+                            actionInput.type = 'hidden';
+                            actionInput.name = 'action';
+                            actionInput.value = 'download_file';
+                            form.appendChild(actionInput);
+
+                            const yamlInput = document.createElement('input');
+                            yamlInput.type = 'hidden';
+                            yamlInput.name = 'yaml_content';
+                            yamlInput.value = yamlTextarea.value;
+                            form.appendChild(yamlInput);
+
+                            const filenameInput = document.createElement('input');
+                            filenameInput.type = 'hidden';
+                            filenameInput.name = 'filename';
+                            filenameInput.value = filename;
+                            form.appendChild(filenameInput);
+
+                            document.body.appendChild(form);
+                            form.submit();
+                        }
+
+
+                        function downloadProject() {
+                            const data = {
+                                rows: rows,
+                                defs: rawImportedDefs,
+                                title: document.getElementById('dash-title').value,
+                                grid: document.getElementById('grid-preset').value,
+                                defSize: globalDefaultSize,
+                                orientation: document.getElementById('screen-orientation').value,
+                                customCols: document.getElementById('custom-cols').value,
+                                customRows: document.getElementById('custom-rows').value
+                            };
+                            const json = JSON.stringify(data, null, 2);
+                            const blob = new Blob([json], { type: "application/json" });
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = data.title + "_backup.json";
+                            document.body.appendChild(a);
+                            a.click();
+                            document.body.removeChild(a);
+                        }
+
+
+                        function loadProjectFile(input) {
+                            const file = input.files[0];
+                            if (!file) return;
+                            const reader = new FileReader();
+                            reader.onload = function (e) {
+                                try {
+                                    const data = JSON.parse(e.target.result);
+                                    rows = data.rows || [[]];
+                                    rawImportedDefs = data.defs || {};
+                                    document.getElementById('dash-title').value = data.title || "JoanDashboard";
+                                    syncTitle();
+                                    document.getElementById('grid-preset').value = data.grid || '3x8';
+                                    globalDefaultSize = data.defSize || { w: 2, h: 1 };
+                                    document.getElementById('screen-orientation').value = data.orientation || 'landscape';
+
+                                    if (data.grid === 'custom') {
+                                        document.getElementById('custom-cols').value = data.customCols || 4;
+                                        document.getElementById('custom-rows').value = data.customRows || 8;
+                                    }
+
+                                    rebuildGridOptions(document.getElementById('screen-orientation').value);
+                                    reflowAllWidgets();
+                                    handleGridChange();
+                                    alert(TRANSLATIONS[currentLang].json_load_success);
+                                } catch (err) {
+                                    alert(TRANSLATIONS[currentLang].json_load_error + err);
+                                }
+                            };
+                            reader.readAsText(file);
+                        }
+
+                        window.onclick = function (event) {
+                            const modal = document.getElementById('icon-modal');
+                            if (event.target == modal) {
+                                closeIconPicker();
+                            }
+                        }
+
+                        function initOrientationAndGrid() {
+                            const sel = document.getElementById('grid-preset');
+                            const initialGrid = '{{ cols }}x{{ rows_grid }}';
+                            sel.value = initialGrid;
+                            document.getElementById('screen-orientation').value = 'portrait';
+                            rebuildGridOptions('portrait');
+                            sel.value = initialGrid;
+                            handleGridChange();
+                        }
+
+                        function updateStatusDetails() {
+                            const el = document.getElementById('status-details');
+                            if (!el) return;
+                            const t = TRANSLATIONS[currentLang];
+                            if (connectionInfo && Object.keys(connectionInfo).length) {
+                                el.textContent = t.status_details
+                                    .replace('{token_source}', connectionInfo.token_source || '-')
+                                    .replace('{api_url}', connectionInfo.api_url || '-')
+                                    .replace('{entity_count}', connectionInfo.entity_count ?? '-')
+                                    .replace('{appdaemon_slug}', connectionInfo.appdaemon_slug || '-');
+                            } else {
+                                el.textContent = t.status_details_missing;
+                            }
+                        }
+
+                        function updateCopyButtonText() {
+                            const btn = document.querySelector('.btn-copy');
+                            if (btn && TRANSLATIONS[currentLang].btn_copy) {
+                                btn.innerText = TRANSLATIONS[currentLang].btn_copy;
+                            }
+                            const downloadBtn = document.querySelector('.btn-download-file');
+                            if (downloadBtn && TRANSLATIONS[currentLang].btn_download_file) {
+                                downloadBtn.innerText = TRANSLATIONS[currentLang].btn_download_file;
+                            }
+                        }
+
+                        initOrientationAndGrid();
+                        applyGrid();
+                        loadSavedList();
+
+                        // Inicjalizacja domyślnego rozmiaru z backendu
+                        const defSizeStr = '{{ def_size|default("2, 1") }}';
+                        const parts = defSizeStr.split(',');
+                        if (parts.length === 2) {
+                            globalDefaultSize.w = parseInt(parts[0].strip ? parts[0].strip() : parts[0]) || 2;
+                            globalDefaultSize.h = parseInt(parts[1].strip ? parts[1].strip() : parts[1]) || 1;
+                        }
+
+                        // Ustawiamy język na podstawie wartości z backendu tylko wtedy, gdy backend go faktycznie wymusza.
+                        // (backend domyślnie zwraca 'pl', co nie może nadpisywać wyboru z URL/localStorage/cookie)
+                        const backendLang = '{{ current_lang|default("pl") }}';
+                        if (backendLang === 'en') {
+                            setLang('en');
+                        }
+                        const iconDl = document.getElementById('icon-list');
+                        POPULAR_ICONS.forEach(i => { const op = document.createElement('option'); op.value = i; iconDl.appendChild(op); });
+                        const dashDl = document.getElementById('nav-dash-suggestions');
+                        DASH_NAMES.forEach(n => { const op = document.createElement('option'); op.value = n; dashDl.appendChild(op); });
+                        for (const k in saved) { const op = document.createElement('option'); op.value = k; dashDl.appendChild(op); }
+
+                        updateResultPathsToHost();
+                        updateStatusDetails();
+
+                        // --- TOAST NOTIFICATIONS LOGIC ---
+                        function showToast(message, type = 'info') {
+                            const container = document.getElementById('toast-container');
+                            const toast = document.createElement('div');
+                            toast.className = `toast ${type}`;
+
+                            let iconStr = '';
+                            if (type === 'success') iconStr = '✅';
+                            else if (type === 'error') iconStr = '❌';
+                            else if (type === 'warning') iconStr = '⚠️';
+                            else iconStr = 'ℹ️';
+
+                            toast.innerHTML = `<span style="font-size:18px;">${iconStr}</span><span>${message}</span>`;
+
+                            container.appendChild(toast);
+
+                            // Trigger reflow
+                            void toast.offsetWidth;
+
+                            toast.classList.add('show');
+
+                            setTimeout(() => {
+                                toast.classList.remove('show');
+                                setTimeout(() => {
+                                    toast.remove();
+                                }, 300);
+                            }, 3000);
+                        }
+
+                        // Nadpisanie systemowego alertu
+                        window.alert = function (msg) {
+                            showToast(msg, 'warning');
+                        };
 
         // Nadpisanie logiki kopiowania z użyciem toasta
         // Zmodyfikowana funkcja copyToClipboard, aby używała showToast zamiast manipulacji przyciskiem
@@ -5258,174 +5314,174 @@ class DashSaver(hass.Hass):
 </div>
 
 <script>
-    function openBatteryHelp() {
-        const t = TRANSLATIONS[currentLang];
+                        function openBatteryHelp() {
+                            const t = TRANSLATIONS[currentLang];
 
-        // Pobieramy elementy modala
-        const titleEl = document.getElementById('help-title');
-        const bodyEl = document.getElementById('battery-help-body');
-        const btnEl = document.getElementById('btn-close-help');
+                            // Pobieramy elementy modala
+                            const titleEl = document.getElementById('help-title');
+                            const bodyEl = document.getElementById('battery-help-body');
+                            const btnEl = document.getElementById('btn-close-help');
 
-        if (titleEl) titleEl.innerText = t.modal_battery_title;
-        if (bodyEl) bodyEl.innerHTML = t.modal_battery_body;
-        if (btnEl) btnEl.innerText = t.modal_battery_understand;
+                            if (titleEl) titleEl.innerText = t.modal_battery_title;
+                            if (bodyEl) bodyEl.innerHTML = t.modal_battery_body;
+                            if (btnEl) btnEl.innerText = t.modal_battery_understand;
 
-        document.getElementById('battery-help-modal').style.display = 'block';
-    }
-
-    function closeBatteryHelp() {
-        document.getElementById('battery-help-modal').style.display = 'none';
-    }
-
-    function openVisionectHelp() {
-        const t = TRANSLATIONS[currentLang];
-        document.getElementById('visionect-help-title').innerText = t.modal_visionect_title;
-        document.getElementById('visionect-help-body').innerHTML = t.visionect_body;
-        document.getElementById('btn-visionect-ok').innerText = t.btn_understand;
-        document.getElementById('visionect-help-modal').style.display = 'block';
-    }
-
-    function closeVisionectHelp() {
-        document.getElementById('visionect-help-modal').style.display = 'none';
-    }
-
-    function openLinksModal() {
-        document.getElementById('links-modal').style.display = 'block';
-    }
-
-    function closeLinksModal() {
-        document.getElementById('links-modal').style.display = 'none';
-    }
-
-    function clearAll() {
-        if (confirm(TRANSLATIONS[currentLang].confirm_clear)) {
-            window.location.href = window.location.pathname;
-        }
-    }
-
-    function refreshEntities() {
-        const t = TRANSLATIONS[currentLang];
-        const btn = document.getElementById('btn-refresh-ent');
-        if (btn) btn.classList.add('rotating');
-
-        showToast(t.msg_refreshing, 'info');
-
-        // Add timestamp to prevent caching
-        fetch(window.location.href.split('?')[0] + '?t=' + new Date().getTime())
-            .then(response => response.text())
-            .then(html => {
-                // Regex to extract the entitiesData JSON array
-                const matchEntities = html.match(/(?:let|const|var)\s+entitiesData\s*=\s*(\[[\s\S]*?\]);/);
-                const matchAreas = html.match(/(?:let|const|var)\s+areasData\s*=\s*(\[[\s\S]*?\]);/);
-
-                let entitiesUpdated = false;
-
-                if (matchEntities && matchEntities[1]) {
-                    try {
-                        const newEntities = JSON.parse(matchEntities[1]);
-                        if (Array.isArray(newEntities)) {
-                            // Update global variables
-                            entitiesData = newEntities;
-                            window.entitiesData = newEntities;
-                            validEntityIds = new Set(newEntities.map(e => e.id));
-                            entitiesUpdated = true;
+                            document.getElementById('battery-help-modal').style.display = 'block';
                         }
-                    } catch (e) {
-                        console.error("JSON Parse Error (Entities)", e);
-                    }
-                }
 
-                if (matchAreas && matchAreas[1]) {
-                    try {
-                        const newAreas = JSON.parse(matchAreas[1]);
-                        if (Array.isArray(newAreas)) {
-                            areasData = newAreas;
-                            window.areasData = newAreas;
-                            populateAreaSelect();
+                        function closeBatteryHelp() {
+                            document.getElementById('battery-help-modal').style.display = 'none';
                         }
-                    } catch (e) {
-                        console.error("JSON Parse Error (Areas)", e);
-                    }
-                }
 
-                if (entitiesUpdated) {
-                    // Re-run search/validation for current input
-                    const input = document.getElementById('w-id');
-                    if (input && input.value) {
-                        searchEntities(input.value);
-                        validateEntityInput(input.value);
-                    }
-                    showToast(t.msg_refreshed, 'success');
-                } else {
-                    showToast("Could not verify entity data.", 'warning');
-                }
-            })
-            .catch(err => {
-                console.error(err);
-                showToast("Refresh error: " + err, 'error');
-            })
-            .finally(() => {
-                if (btn) btn.classList.remove('rotating');
-            });
-    }
+                        function openVisionectHelp() {
+                            const t = TRANSLATIONS[currentLang];
+                            document.getElementById('visionect-help-title').innerText = t.modal_visionect_title;
+                            document.getElementById('visionect-help-body').innerHTML = t.visionect_body;
+                            document.getElementById('btn-visionect-ok').innerText = t.btn_understand;
+                            document.getElementById('visionect-help-modal').style.display = 'block';
+                        }
 
-    function openAdConfig() {
-        document.getElementById('ad-config-modal').style.display = 'block';
-    }
-    function closeAdConfig() {
-        document.getElementById('ad-config-modal').style.display = 'none';
-    }
-    function copyToClipboardText(elementId) {
-        const textObj = document.getElementById(elementId);
-        if (!textObj) {
-            showToast("Error: Element not found " + elementId, 'error');
-            return;
-        }
-        const text = textObj.innerText;
+                        function closeVisionectHelp() {
+                            document.getElementById('visionect-help-modal').style.display = 'none';
+                        }
 
-        if (navigator.clipboard && window.isSecureContext) {
-            navigator.clipboard.writeText(text).then(() => {
-                showToast(TRANSLATIONS[currentLang].copy_success, 'success');
-            }).catch(err => {
-                // Fallback
-                fallbackCopyTextToClipboard(text);
-            });
-        } else {
-            fallbackCopyTextToClipboard(text);
-        }
-    }
+                        function openLinksModal() {
+                            document.getElementById('links-modal').style.display = 'block';
+                        }
 
-    function fallbackCopyTextToClipboard(text) {
-        var textArea = document.createElement("textarea");
-        textArea.value = text;
-        textArea.style.position = "fixed";  // Avoid scrolling to bottom
-        textArea.style.left = "-9999px";
-        document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
+                        function closeLinksModal() {
+                            document.getElementById('links-modal').style.display = 'none';
+                        }
 
-        try {
-            var successful = document.execCommand('copy');
-            if (successful) {
-                showToast(TRANSLATIONS[currentLang].copy_success, 'success');
-            } else {
-                showToast(TRANSLATIONS[currentLang].copy_error + " (fallback failed)", 'error');
-            }
-        } catch (err) {
-            showToast(TRANSLATIONS[currentLang].copy_error + err, 'error');
-        }
-        document.body.removeChild(textArea);
-    }
+                        function clearAll() {
+                            if (confirm(TRANSLATIONS[currentLang].confirm_clear)) {
+                                window.location.href = window.location.pathname;
+                            }
+                        }
 
-    // Opcjonalnie: Zamknij okno po kliknięciu poza nim
-    window.addEventListener('click', function (event) {
-        const helpModal = document.getElementById('battery-help-modal');
-        const visionectModal = document.getElementById('visionect-help-modal');
-        const configModal = document.getElementById('ad-config-modal');
-        if (event.target == helpModal) closeBatteryHelp();
-        if (event.target == visionectModal) closeVisionectHelp();
-        if (event.target == configModal) closeAdConfig();
-    });
+                        function refreshEntities() {
+                            const t = TRANSLATIONS[currentLang];
+                            const btn = document.getElementById('btn-refresh-ent');
+                            if (btn) btn.classList.add('rotating');
+
+                            showToast(t.msg_refreshing, 'info');
+
+                            // Add timestamp to prevent caching
+                            fetch(window.location.href.split('?')[0] + '?t=' + new Date().getTime())
+                                .then(response => response.text())
+                                .then(html => {
+                                    // Regex to extract the entitiesData JSON array
+                                    const matchEntities = html.match(/(?:let|const|var)\s+entitiesData\s*=\s*(\[[\s\S]*?\]);/);
+                                    const matchAreas = html.match(/(?:let|const|var)\s+areasData\s*=\s*(\[[\s\S]*?\]);/);
+
+                                    let entitiesUpdated = false;
+
+                                    if (matchEntities && matchEntities[1]) {
+                                        try {
+                                            const newEntities = JSON.parse(matchEntities[1]);
+                                            if (Array.isArray(newEntities)) {
+                                                // Update global variables
+                                                entitiesData = newEntities;
+                                                window.entitiesData = newEntities;
+                                                validEntityIds = new Set(newEntities.map(e => e.id));
+                                                entitiesUpdated = true;
+                                            }
+                                        } catch (e) {
+                                            console.error("JSON Parse Error (Entities)", e);
+                                        }
+                                    }
+
+                                    if (matchAreas && matchAreas[1]) {
+                                        try {
+                                            const newAreas = JSON.parse(matchAreas[1]);
+                                            if (Array.isArray(newAreas)) {
+                                                areasData = newAreas;
+                                                window.areasData = newAreas;
+                                                populateAreaSelect();
+                                            }
+                                        } catch (e) {
+                                            console.error("JSON Parse Error (Areas)", e);
+                                        }
+                                    }
+
+                                    if (entitiesUpdated) {
+                                        // Re-run search/validation for current input
+                                        const input = document.getElementById('w-id');
+                                        if (input && input.value) {
+                                            searchEntities(input.value);
+                                            validateEntityInput(input.value);
+                                        }
+                                        showToast(t.msg_refreshed, 'success');
+                                    } else {
+                                        showToast("Could not verify entity data.", 'warning');
+                                    }
+                                })
+                                .catch(err => {
+                                    console.error(err);
+                                    showToast("Refresh error: " + err, 'error');
+                                })
+                                .finally(() => {
+                                    if (btn) btn.classList.remove('rotating');
+                                });
+                        }
+
+                        function openAdConfig() {
+                            document.getElementById('ad-config-modal').style.display = 'block';
+                        }
+                        function closeAdConfig() {
+                            document.getElementById('ad-config-modal').style.display = 'none';
+                        }
+                        function copyToClipboardText(elementId) {
+                            const textObj = document.getElementById(elementId);
+                            if (!textObj) {
+                                showToast("Error: Element not found " + elementId, 'error');
+                                return;
+                            }
+                            const text = textObj.innerText;
+
+                            if (navigator.clipboard && window.isSecureContext) {
+                                navigator.clipboard.writeText(text).then(() => {
+                                    showToast(TRANSLATIONS[currentLang].copy_success, 'success');
+                                }).catch(err => {
+                                    // Fallback
+                                    fallbackCopyTextToClipboard(text);
+                                });
+                            } else {
+                                fallbackCopyTextToClipboard(text);
+                            }
+                        }
+
+                        function fallbackCopyTextToClipboard(text) {
+                            var textArea = document.createElement("textarea");
+                            textArea.value = text;
+                            textArea.style.position = "fixed";  // Avoid scrolling to bottom
+                            textArea.style.left = "-9999px";
+                            document.body.appendChild(textArea);
+                            textArea.focus();
+                            textArea.select();
+
+                            try {
+                                var successful = document.execCommand('copy');
+                                if (successful) {
+                                    showToast(TRANSLATIONS[currentLang].copy_success, 'success');
+                                } else {
+                                    showToast(TRANSLATIONS[currentLang].copy_error + " (fallback failed)", 'error');
+                                }
+                            } catch (err) {
+                                showToast(TRANSLATIONS[currentLang].copy_error + err, 'error');
+                            }
+                            document.body.removeChild(textArea);
+                        }
+
+                        // Opcjonalnie: Zamknij okno po kliknięciu poza nim
+                        window.addEventListener('click', function (event) {
+                            const helpModal = document.getElementById('battery-help-modal');
+                            const visionectModal = document.getElementById('visionect-help-modal');
+                            const configModal = document.getElementById('ad-config-modal');
+                            if (event.target == helpModal) closeBatteryHelp();
+                            if (event.target == visionectModal) closeVisionectHelp();
+                            if (event.target == configModal) closeAdConfig();
+                        });
 </script>
 
 <!-- Import Modal -->
@@ -5446,184 +5502,184 @@ class DashSaver(hass.Hass):
 </div>
 
 <script>
-    function openImportModal() {
-        document.getElementById('import-modal').style.display = 'block';
+                        function openImportModal() {
+                            document.getElementById('import-modal').style.display = 'block';
 
-        // Refresh translations for modal
-        const t = TRANSLATIONS[currentLang];
-        const titleEl = document.getElementById('import-title');
-        if (titleEl && t.modal_import_title) titleEl.innerText = t.modal_import_title;
+                            // Refresh translations for modal
+                            const t = TRANSLATIONS[currentLang];
+                            const titleEl = document.getElementById('import-title');
+                            if (titleEl && t.modal_import_title) titleEl.innerText = t.modal_import_title;
 
-        const list = document.getElementById('dashboard-list');
-        list.innerHTML = `<p>${t.modal_import_loading || "Loading..."}</p>`;
+                            const list = document.getElementById('dashboard-list');
+                            list.innerHTML = `<p>${t.modal_import_loading || "Loading..."}</p>`;
 
-        fetch('api/list_dashboards')
-            .then(r => r.text())
-            .then(text => {
-                try {
-                    return JSON.parse(text);
-                } catch (e) {
-                    console.error("JSON Parse Error. Raw response:", text);
-                    throw new Error("Invalid JSON: " + text.substring(0, 50) + "... (" + e.message + ")");
-                }
-            })
-            .then(data => {
-                list.innerHTML = '';
-                if (data.status === 'success' && data.files.length > 0) {
-                    data.files.forEach(f => {
-                        const div = document.createElement('div');
-                        div.style.padding = '8px';
-                        div.style.cursor = 'pointer';
-                        div.style.borderBottom = '1px solid #eee';
-                        div.style.color = '#333'; // Force dark text
-                        div.style.backgroundColor = '#fff'; // Force white background
-                        div.innerText = f.name; // Display name
+                            fetch('api/list_dashboards')
+                                .then(r => r.text())
+                                .then(text => {
+                                    try {
+                                        return JSON.parse(text);
+                                    } catch (e) {
+                                        console.error("JSON Parse Error. Raw response:", text);
+                                        throw new Error("Invalid JSON: " + text.substring(0, 50) + "... (" + e.message + ")");
+                                    }
+                                })
+                                .then(data => {
+                                    list.innerHTML = '';
+                                    if (data.status === 'success' && data.files.length > 0) {
+                                        data.files.forEach(f => {
+                                            const div = document.createElement('div');
+                                            div.style.padding = '8px';
+                                            div.style.cursor = 'pointer';
+                                            div.style.borderBottom = '1px solid #eee';
+                                            div.style.color = '#333'; // Force dark text
+                                            div.style.backgroundColor = '#fff'; // Force white background
+                                            div.innerText = f.name; // Display name
 
-                        div.onclick = () => loadDashboard(f.name);
-                        div.onmouseover = () => div.style.backgroundColor = '#e3f2fd';
-                        div.onmouseout = () => div.style.backgroundColor = '#fff';
+                                            div.onclick = () => loadDashboard(f.name);
+                                            div.onmouseover = () => div.style.backgroundColor = '#e3f2fd';
+                                            div.onmouseout = () => div.style.backgroundColor = '#fff';
 
-                        list.appendChild(div);
-                    });
-                } else {
-                    list.innerText = t.modal_import_empty || "No files found.";
-                }
-            })
-            .catch(err => {
-                list.innerText = "Error: " + err;
-            });
-    }
+                                            list.appendChild(div);
+                                        });
+                                    } else {
+                                        list.innerText = t.modal_import_empty || "No files found.";
+                                    }
+                                })
+                                .catch(err => {
+                                    list.innerText = "Error: " + err;
+                                });
+                        }
 
-    function closeImportModal() {
-        document.getElementById('import-modal').style.display = 'none';
-    }
+                        function closeImportModal() {
+                            document.getElementById('import-modal').style.display = 'none';
+                        }
 
-    function loadDashboard(filename) {
-        const t = TRANSLATIONS[currentLang];
-        // Confirm first? Maybe not needed for just viewing code, but good practice if checking overwrite
-        // User asked to just "load here", so we will fetch and put into textarea.
+                        function loadDashboard(filename) {
+                            const t = TRANSLATIONS[currentLang];
+                            // Confirm first? Maybe not needed for just viewing code, but good practice if checking overwrite
+                            // User asked to just "load here", so we will fetch and put into textarea.
 
-        fetch('api/read_dashboard/' + encodeURIComponent(filename))
-            .then(r => r.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    const importArea = document.getElementById('import-code');
-                    if (importArea) {
-                        importArea.value = data.content;
-                        // Scroll to the import section
-                        document.getElementById('import-section').scrollIntoView({ behavior: 'smooth' });
-                        closeImportModal();
-                        showToast("✅ " + filename + " wczytany do edytora!", 'success');
-                    }
-                } else {
-                    alert("Error: " + data.message);
-                }
-            })
-            .catch(err => {
-                alert("Error loading file: " + err);
-            });
-    }
+                            fetch('api/read_dashboard/' + encodeURIComponent(filename))
+                                .then(r => r.json())
+                                .then(data => {
+                                    if (data.status === 'success') {
+                                        const importArea = document.getElementById('import-code');
+                                        if (importArea) {
+                                            importArea.value = data.content;
+                                            // Scroll to the import section
+                                            document.getElementById('import-section').scrollIntoView({ behavior: 'smooth' });
+                                            closeImportModal();
+                                            showToast("✅ " + filename + " wczytany do edytora!", 'success');
+                                        }
+                                    } else {
+                                        alert("Error: " + data.message);
+                                    }
+                                })
+                                .catch(err => {
+                                    alert("Error loading file: " + err);
+                                });
+                        }
 
-    // Close modal when clicking outside (extended)
-    const existingWindowOnClick = window.onclick;
-    window.onclick = function (event) {
-        if (existingWindowOnClick) existingWindowOnClick(event);
+                        // Close modal when clicking outside (extended)
+                        const existingWindowOnClick = window.onclick;
+                        window.onclick = function (event) {
+                            if (existingWindowOnClick) existingWindowOnClick(event);
 
-        const modal = document.getElementById('import-modal');
-        const linksModal = document.getElementById('links-modal');
-        if (event.target == modal) {
-            closeImportModal();
-        }
-        if (event.target == linksModal) {
-            closeLinksModal();
-        }
-    }
+                            const modal = document.getElementById('import-modal');
+                            const linksModal = document.getElementById('links-modal');
+                            if (event.target == modal) {
+                                closeImportModal();
+                            }
+                            if (event.target == linksModal) {
+                                closeLinksModal();
+                            }
+                        }
 
-    // Auto-run IP replacement on load
-    document.addEventListener('DOMContentLoaded', () => {
-        if (typeof updateResultPathsToHost === 'function') {
-            updateResultPathsToHost();
-        }
-    });
-    // Info Modal Logic
-    function showInfoModal() {
-        const m = document.getElementById('info-modal');
-        if (!m) return;
+                        // Auto-run IP replacement on load
+                        document.addEventListener('DOMContentLoaded', () => {
+                            if (typeof updateResultPathsToHost === 'function') {
+                                updateResultPathsToHost();
+                            }
+                        });
+                        // Info Modal Logic
+                        function showInfoModal() {
+                            const m = document.getElementById('info-modal');
+                            if (!m) return;
 
-        // Populate fields
-        document.getElementById('info-entities').innerText = typeof connectionInfo !== 'undefined' ? connectionInfo.entity_count : '-';
-        document.getElementById('info-ad-slug').innerText = typeof connectionInfo !== 'undefined' ? connectionInfo.appdaemon_slug : '-';
-        document.getElementById('info-api-source').innerText = typeof connectionInfo !== 'undefined' ? connectionInfo.token_source : '-';
+                            // Populate fields
+                            document.getElementById('info-entities').innerText = typeof connectionInfo !== 'undefined' ? connectionInfo.entity_count : '-';
+                            document.getElementById('info-ad-slug').innerText = typeof connectionInfo !== 'undefined' ? connectionInfo.appdaemon_slug : '-';
+                            document.getElementById('info-api-source').innerText = typeof connectionInfo !== 'undefined' ? connectionInfo.token_source : '-';
 
-        const bridgeActive = typeof connectionInfo !== 'undefined' && connectionInfo.bridge_active;
-        const brText = bridgeActive ? TRANSLATIONS[currentLang].info_bridge_yes : TRANSLATIONS[currentLang].info_bridge_no;
-        document.getElementById('info-bridge').innerText = brText;
-        document.getElementById('info-bridge').style.color = bridgeActive ? 'green' : 'red';
+                            const bridgeActive = typeof connectionInfo !== 'undefined' && connectionInfo.bridge_active;
+                            const brText = bridgeActive ? TRANSLATIONS[currentLang].info_bridge_yes : TRANSLATIONS[currentLang].info_bridge_no;
+                            document.getElementById('info-bridge').innerText = brText;
+                            document.getElementById('info-bridge').style.color = bridgeActive ? 'green' : 'red';
 
-        const dashCount = typeof dashboardsList !== 'undefined' ? dashboardsList.length : 0;
-        document.getElementById('info-dash-count').innerText = dashCount;
+                            const dashCount = typeof dashboardsList !== 'undefined' ? dashboardsList.length : 0;
+                            document.getElementById('info-dash-count').innerText = dashCount;
 
-        // Update dynamic path
-        const pathEl = document.getElementById('info-path'); // This element is now just a container
-        if (pathEl) {
-            const host = window.location.hostname || '[HA_IP]';
-            const pc = document.getElementById('path-code');
-            if (pc && pc.dataset.pathTemplate) {
-                pc.innerText = pc.dataset.pathTemplate.replace(/\[HA_IP\]/g, host);
-            }
-            const pcb = document.getElementById('path-code-bridge');
-            if (pcb && pcb.dataset.pathTemplate) {
-                pcb.innerText = pcb.dataset.pathTemplate.replace(/\[HA_IP\]/g, host);
-            }
-        }
+                            // Update dynamic path
+                            const pathEl = document.getElementById('info-path'); // This element is now just a container
+                            if (pathEl) {
+                                const host = window.location.hostname || '[HA_IP]';
+                                const pc = document.getElementById('path-code');
+                                if (pc && pc.dataset.pathTemplate) {
+                                    pc.innerText = pc.dataset.pathTemplate.replace(/\[HA_IP\]/g, host);
+                                }
+                                const pcb = document.getElementById('path-code-bridge');
+                                if (pcb && pcb.dataset.pathTemplate) {
+                                    pcb.innerText = pcb.dataset.pathTemplate.replace(/\[HA_IP\]/g, host);
+                                }
+                            }
 
-        // Populate Dashboard List
-        const listDiv = document.getElementById('info-dash-list');
-        if (listDiv) {
-            listDiv.innerHTML = '';
-            const dashes = typeof dashboardsList !== 'undefined' ? dashboardsList : [];
-            if (dashes.length > 0) {
-                dashes.forEach(d => {
-                    const div = document.createElement('div');
-                    div.style.padding = '4px 0';
-                    div.style.borderBottom = '1px solid #eee';
-                    // Fix [object Object]: d might be object {name: "foo.dash"} or string
-                    const name = typeof d === 'object' ? (d.name || d.filename || JSON.stringify(d)) : d;
-                    div.innerText = '📄 ' + name;
-                    listDiv.appendChild(div);
-                });
-            } else {
-                listDiv.innerText = TRANSLATIONS[currentLang].dash_list_empty || '(none)';
-            }
-        }
+                            // Populate Dashboard List
+                            const listDiv = document.getElementById('info-dash-list');
+                            if (listDiv) {
+                                listDiv.innerHTML = '';
+                                const dashes = typeof dashboardsList !== 'undefined' ? dashboardsList : [];
+                                if (dashes.length > 0) {
+                                    dashes.forEach(d => {
+                                        const div = document.createElement('div');
+                                        div.style.padding = '4px 0';
+                                        div.style.borderBottom = '1px solid #eee';
+                                        // Fix [object Object]: d might be object {name: "foo.dash"} or string
+                                        const name = typeof d === 'object' ? (d.name || d.filename || JSON.stringify(d)) : d;
+                                        div.innerText = '📄 ' + name;
+                                        listDiv.appendChild(div);
+                                    });
+                                } else {
+                                    listDiv.innerText = TRANSLATIONS[currentLang].dash_list_empty || '(none)';
+                                }
+                            }
 
-        m.style.display = 'block';
-    }
-    function closeInfoModal() { document.getElementById('info-modal').style.display = 'none'; }
+                            m.style.display = 'block';
+                        }
+                        function closeInfoModal() { document.getElementById('info-modal').style.display = 'none'; }
 
-    // Init language from storage - wywołaj natychmiast po załadowaniu DOM
-    document.addEventListener('DOMContentLoaded', function () {
-        if (typeof setLang === 'function' && typeof currentLang !== 'undefined') {
-            setLang(currentLang);
-            // Initialize Areas
-            if (typeof populateAreaSelect === 'function') {
-                populateAreaSelect();
-            }
-        }
-    });
+                        // Init language from storage - wywołaj natychmiast po załadowaniu DOM
+                        document.addEventListener('DOMContentLoaded', function () {
+                            if (typeof setLang === 'function' && typeof currentLang !== 'undefined') {
+                                setLang(currentLang);
+                                // Initialize Areas
+                                if (typeof populateAreaSelect === 'function') {
+                                    populateAreaSelect();
+                                }
+                            }
+                        });
 
-    // Również wywołaj natychmiast jeśli DOM już załadowany
-    if (document.readyState === 'loading') {
-        // DOM jeszcze się ładuje, czekamy na DOMContentLoaded (wyżej)
-    } else {
-        // DOM już załadowany, wywołaj natychmiast
-        if (typeof setLang === 'function' && typeof currentLang !== 'undefined') {
-            setLang(currentLang);
-            if (typeof populateAreaSelect === 'function') {
-                populateAreaSelect();
-            }
-        }
-    }
+                        // Również wywołaj natychmiast jeśli DOM już załadowany
+                        if (document.readyState === 'loading') {
+                            // DOM jeszcze się ładuje, czekamy na DOMContentLoaded (wyżej)
+                        } else {
+                            // DOM już załadowany, wywołaj natychmiast
+                            if (typeof setLang === 'function' && typeof currentLang !== 'undefined') {
+                                setLang(currentLang);
+                                if (typeof populateAreaSelect === 'function') {
+                                    populateAreaSelect();
+                                }
+                            }
+                        }
 </script>
 </body>
 
