@@ -1347,7 +1347,9 @@ def index():
         cols=cols if 'cols' in locals() else 3,
         rows_grid=rows_grid if 'rows_grid' in locals() else 8,
         def_size=def_size_str if 'def_size_str' in locals() else "2, 1",
-        dashboards_list=available_dash_files if 'available_dash_files' in locals() else []
+        dashboards_list=available_dash_files if 'available_dash_files' in locals() else [],
+        device_profile=device_profile if 'device_profile' in locals() else 'joan_6',
+        auto_nav_bar=auto_nav_bar if 'auto_nav_bar' in locals() else False
     )
 
 # -------------------------------------------------------------------------
