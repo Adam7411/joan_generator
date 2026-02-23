@@ -5026,7 +5026,9 @@
         const iconDl = document.getElementById('icon-list');
         POPULAR_ICONS.forEach(i => { const op = document.createElement('option'); op.value = i; iconDl.appendChild(op); });
         const dashDl = document.getElementById('nav-dash-suggestions');
-        DASH_NAMES.forEach(n => { const op = document.createElement('option'); op.value = n; dashDl.appendChild(op); });
+        if (typeof DASH_NAMES !== 'undefined') {
+            DASH_NAMES.forEach(n => { const op = document.createElement('option'); op.value = n; dashDl.appendChild(op); });
+        }
         for (const k in saved) { const op = document.createElement('option'); op.value = k; dashDl.appendChild(op); }
 
         updateResultPathsToHost();
