@@ -523,18 +523,17 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
 
     # device profile settings
     is_pro = (device_profile == 'joan_13_pro')
-    font_smoothing = "-webkit-font-smoothing: none !important; font-smoothing: none !important" if is_pro else ""
 
-    style_title = f"color: #000000 !important; font-size: {'32' if is_pro else '20'}px; font-weight: {'900' if is_pro else '700'}; text-align: center; padding-top: {'10' if is_pro else '5'}px; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif" + (f"; {font_smoothing}" if font_smoothing else "")
-    style_title2 = f"color: #000000 !important; font-size: {'24' if is_pro else '16'}px; font-weight: {'900' if is_pro else '700'}; text-align: center; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif" + (f"; {font_smoothing}" if font_smoothing else "")
-    style_title_small = f"color: #000000 !important; font-size: {'24' if is_pro else '16'}px; font-weight: {'900' if is_pro else '700'}; text-align: center; padding-top: {'10' if is_pro else '5'}px; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif" + (f"; {font_smoothing}" if font_smoothing else "")
+    style_title = f"color: #000000 !important; font-size: {'32' if is_pro else '20'}px; font-weight: {'900' if is_pro else '700'}; text-align: center; padding-top: {'10' if is_pro else '5'}px; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif"
+    style_title2 = f"color: #000000 !important; font-size: {'24' if is_pro else '16'}px; font-weight: {'900' if is_pro else '700'}; text-align: center; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif"
+    style_title_small = f"color: #000000 !important; font-size: {'24' if is_pro else '16'}px; font-weight: {'900' if is_pro else '700'}; text-align: center; padding-top: {'10' if is_pro else '5'}px; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif"
     
     style_widget = "color: #000000 !important; background-color: #FFFFFF !important"
-    style_text = f"color: #000000 !important; font-weight: {'900' if is_pro else '700'} !important" + (f"; {font_smoothing}" if font_smoothing else "")
-    style_state_text = f"color: #000000 !important; font-weight: {'900' if is_pro else '700'} !important; font-size: {'26' if is_pro else '16'}px !important" + (f"; {font_smoothing}" if font_smoothing else "")
+    style_text = f"color: #000000 !important; font-weight: {'900' if is_pro else '700'} !important"
+    style_state_text = f"color: #000000 !important; font-weight: {'900' if is_pro else '700'} !important; font-size: {'26' if is_pro else '16'}px !important"
     
-    style_gauge_val = f"color: #000000 !important; font-size: {'50' if is_pro else '30'}px !important; font-weight: {'900' if is_pro else '700'} !important; line-height: 1.1 !important; display: inline-block !important" + (f"; {font_smoothing}" if font_smoothing else "")
-    style_unit = f"color: #000000 !important; padding-top: {'90' if is_pro else '60'}px !important; display: inline-block !important" + (f"; {font_smoothing}" if font_smoothing else "")
+    style_gauge_val = f"color: #000000 !important; font-size: {'50' if is_pro else '30'}px !important; font-weight: {'900' if is_pro else '700'} !important; line-height: 1.1 !important; display: inline-block !important"
+    style_unit = f"color: #000000 !important; padding-top: {'90' if is_pro else '60'}px !important; display: inline-block !important"
     style_icon = f"color: #000000 !important"
 
     # dynamic value/title helpers inside
@@ -553,7 +552,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                 px_map = {"normal": 54, "medium": 40, "small": 32}
             px = px_map.get(size_hint, 90 if is_pro else 54)
             
-        tmpl = f"color: #000000 !important; font-size: {{px}}px !important; font-weight: {'900' if is_pro else '700'} !important; padding-top: {'90' if is_pro else '60'}px !important; line-height: 1.1 !important; display: inline-block !important" + (f"; {font_smoothing}" if font_smoothing else "")
+        tmpl = f"color: #000000 !important; font-size: {{px}}px !important; font-weight: {'900' if is_pro else '700'} !important; padding-top: {'90' if is_pro else '60'}px !important; line-height: 1.1 !important; display: inline-block !important"
         return tmpl.format(px=px)
         
     def build_title_style_local(is_small_w, custom_px):
@@ -1355,55 +1354,6 @@ def index():
 # -------------------------------------------------------------------------
 # API ENDPOINTS
 # -------------------------------------------------------------------------
-def get_entity_frequency(entity_id, hours=24):
-    """Fetches entity history to roughly calculate changes per hour over the last 24h."""
-    from datetime import datetime, timedelta
-    
-    # Try fetching history via REST API
-    end_time = datetime.utcnow()
-    start_time = end_time - timedelta(hours=hours)
-    start_str = start_time.strftime('%Y-%m-%dT%H:%M:%S.000Z')
-    
-    url = f"{API_URL}/history/period/{start_str}?filter_entity_id={entity_id}"
-    headers = {
-        "Authorization": f"Bearer {TOKEN}",
-        "Content-Type": "application/json"
-    }
-    
-    try:
-        resp = requests.get(url, headers=headers, timeout=10)
-        if resp.status_code == 200:
-            history = resp.json()
-            if history and len(history) > 0:
-                events = history[0]
-                changes = len(events)
-                cph = changes / hours
-                level = "low"
-                if cph > 30: level = "high"
-                elif cph > 5: level = "medium"
-                
-                return {
-                    "entity": entity_id,
-                    "changes_per_hour": round(cph, 2),
-                    "total_changes": changes,
-                    "level": level
-                }
-        
-        return {
-            "entity": entity_id,
-            "changes_per_hour": 0,
-            "total_changes": 0,
-            "level": "unknown",
-            "error": f"API returning {resp.status_code} or no data."
-        }
-    except Exception as e:
-        return {
-            "entity": entity_id,
-            "changes_per_hour": 0,
-            "total_changes": 0,
-            "level": "unknown",
-            "error": str(e)
-        }
 @app.route('/api/entity_frequency/<path:entity_id>')
 def api_entity_frequency(entity_id):
     """Returns entity update frequency analysis (JSON)."""
