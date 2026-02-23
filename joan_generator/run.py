@@ -407,13 +407,10 @@ def get_entity_frequency(entity_id, hours=24):
                 last_status = res.status_code
                 last_url = url
                 
-                print(f"DEBUG {entity_id} - URL: {url} -> Status: {res.status_code}", flush=True)
-                
                 if res.status_code == 200:
                     response = res
                     break
             except Exception as e:
-                print(f"DEBUG {entity_id} - URL: {url} -> Exception: {e}", flush=True)
                 continue
                 
         if response and response.status_code == 200:
@@ -423,8 +420,6 @@ def get_entity_frequency(entity_id, hours=24):
                 total_changes = len(history) - 1  # -1 because first entry is initial state
                 if total_changes < 0:
                     total_changes = 0
-                
-                print(f"📊 {entity_id} - History API returned {len(history)} states (changes: {total_changes})", flush=True)
                 
                 changes_per_hour = total_changes / hours if hours > 0 else 0
                 
@@ -446,7 +441,6 @@ def get_entity_frequency(entity_id, hours=24):
                 }
             else:
                 # No history - new entity or no changes
-                print(f"📉 {entity_id} - API returned success, but data is empty or invalid: {data}", flush=True)
                 return {
                     'entity_id': entity_id,
                     'changes_per_hour': 0,
