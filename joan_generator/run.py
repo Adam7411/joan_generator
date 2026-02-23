@@ -353,20 +353,43 @@ def get_entity_frequency(entity_id, hours=24):
     
     headers = {"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json"}
     
-    try:
-        # HA History API endpoint requires the timestamp in the URL path
-        url = f"{API_URL}/history/period/{start_iso}?filter_entity_id={entity_id}&minimal_response"
-        
-        # Test if we need to force http://homeassistant:8123 instead of supervisor
-        req_url = url
-        if "supervisor" in req_url:
-            req_url = req_url.replace("http://supervisor/core/api", "http://homeassistant:8123/api")
+    # Calculate start timestamp (X hours ago)
+    end_time = datetime.utcnow()
+    start_time = end_time - timedelta(hours=hours)
+    start_iso = start_time.strftime('%Y-%m-%dT%H:%M:%SZ')
+
+    # We will try several URL patterns because HA API behavior can vary by environment/version
+    test_urls = [
+        # 1. Direct HA Container with explicit timestamp (usually most reliable)
+        f"http://homeassistant:8123/api/history/period/{start_iso}?filter_entity_id={entity_id}&minimal_response",
+        # 2. Supervisor Proxy with explicit timestamp
+        f"http://supervisor/core/api/history/period/{start_iso}?filter_entity_id={entity_id}&minimal_response",
+        # 3. Direct HA Container without timestamp (defaults to last 24h)
+        f"http://homeassistant:8123/api/history/period?filter_entity_id={entity_id}&minimal_response",
+        # 4. Supervisor Proxy without timestamp
+        f"http://supervisor/core/api/history/period?filter_entity_id={entity_id}&minimal_response"
+    ]
+    
+    response = None
+    last_error = "No URL attempted"
+
+    for url in test_urls:
+        try:
+            print(f"ℹ️ Testing History API: {url}")
+            res = requests.get(url, headers=headers, timeout=8)
+            print(f"ℹ️ Response: {res.status_code}")
+            if res.status_code == 200:
+                response = res
+                break
+            last_error = f"HTTP {res.status_code}"
+        except Exception as e:
+            last_error = str(e)
+            print(f"⚠️ Failed {url}: {e}")
             
-        print(f"ℹ️ History API Request: {req_url}")
-        response = requests.get(req_url, headers=headers, timeout=15)
-        
-        if response.status_code == 200:
+    try:
+        if response and response.status_code == 200:
             data = response.json()
+            print(f"✅ History Received: {len(data)} items")
             if data and len(data) > 0 and len(data[0]) > 0:
                 history = data[0]
                 total_changes = len(history) - 1  # -1 because first entry is initial state
