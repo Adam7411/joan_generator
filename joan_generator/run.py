@@ -441,7 +441,8 @@ def get_entity_frequency(entity_id, hours=24):
         else:
             if last_status == 404:
                 # 404 often means the entity has no history recorded yet, or recorder is disabled for it
-                return {'entity_id': entity_id, 'changes_per_hour': 0, 'total_changes': 0, 'hours_analyzed': hours, 'level': 'ok'}
+                print(f"📉 {entity_id} - API returned 404 (Not Found) for all URLs.", flush=True)
+                return {'entity_id': entity_id, 'changes_per_hour': 0, 'total_changes': 0, 'hours_analyzed': hours, 'level': 'ok', 'debug_data': '404_NOT_FOUND'}
             print(f"❌ History API Error: All attempts failed. Last status: {last_status}")
             return {'error': f'API error: {last_status}', 'changes_per_hour': 0, 'total_changes': 0, 'level': 'unknown'}
     except Exception as e:
