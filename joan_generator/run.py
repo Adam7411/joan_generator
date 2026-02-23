@@ -343,53 +343,43 @@ def get_entity_frequency(entity_id, hours=24):
     if not TOKEN:
         return {'error': 'Brak tokena API', 'changes_per_hour': 0, 'total_changes': 0, 'level': 'unknown'}
     
-    from datetime import datetime, timedelta
-    
     # Calculate start timestamp (X hours ago)
     end_time = datetime.utcnow()
     start_time = end_time - timedelta(hours=hours)
-    # The timezone suffix Z is critical for Home Assistant History API
+    # Correct format for Home Assistant History: 2024-05-23T12:00:00Z
     start_iso = start_time.strftime('%Y-%m-%dT%H:%M:%SZ')
     
     headers = {"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json"}
-    
-    # Calculate start timestamp (X hours ago)
-    end_time = datetime.utcnow()
-    start_time = end_time - timedelta(hours=hours)
-    start_iso = start_time.strftime('%Y-%m-%dT%H:%M:%SZ')
 
-    # We will try several URL patterns because HA API behavior can vary by environment/version
+    # Strategy: try the most likely working URL first (API_URL with timestamp)
     test_urls = [
-        # 1. Direct HA Container with explicit timestamp (usually most reliable)
+        # 1. Standard API URL with timestamp (Worked before, prioritized)
+        f"{API_URL}/history/period/{start_iso}?filter_entity_id={entity_id}&minimal_response",
+        # 2. Direct HA container (Secondary fallback)
         f"http://homeassistant:8123/api/history/period/{start_iso}?filter_entity_id={entity_id}&minimal_response",
-        # 2. Supervisor Proxy with explicit timestamp
-        f"http://supervisor/core/api/history/period/{start_iso}?filter_entity_id={entity_id}&minimal_response",
-        # 3. Direct HA Container without timestamp (defaults to last 24h)
-        f"http://homeassistant:8123/api/history/period?filter_entity_id={entity_id}&minimal_response",
-        # 4. Supervisor Proxy without timestamp
-        f"http://supervisor/core/api/history/period?filter_entity_id={entity_id}&minimal_response"
+        # 3. API URL without timestamp
+        f"{API_URL}/history/period?filter_entity_id={entity_id}&minimal_response",
+        # 4. Direct HA container without timestamp
+        f"http://homeassistant:8123/api/history/period?filter_entity_id={entity_id}&minimal_response"
     ]
     
     response = None
-    last_error = "No URL attempted"
-
     for url in test_urls:
         try:
-            print(f"ℹ️ Testing History API: {url}")
-            res = requests.get(url, headers=headers, timeout=8)
-            print(f"ℹ️ Response: {res.status_code}")
+            print(f"ℹ️ Attempting History API: {url}")
+            res = requests.get(url, headers=headers, timeout=10)
             if res.status_code == 200:
                 response = res
+                print(f"✅ History API Success: {url}")
                 break
-            last_error = f"HTTP {res.status_code}"
+            else:
+                print(f"ℹ️ History API Status {res.status_code} for: {url}")
         except Exception as e:
-            last_error = str(e)
-            print(f"⚠️ Failed {url}: {e}")
+            print(f"⚠️ History API Connection error for {url}: {e}")
             
     try:
         if response and response.status_code == 200:
             data = response.json()
-            print(f"✅ History Received: {len(data)} items")
             if data and len(data) > 0 and len(data[0]) > 0:
                 history = data[0]
                 total_changes = len(history) - 1  # -1 because first entry is initial state
@@ -398,10 +388,6 @@ def get_entity_frequency(entity_id, hours=24):
                 
                 changes_per_hour = total_changes / hours if hours > 0 else 0
                 
-                # Warning levels (relaxed thresholds)
-                # < 10/h = OK
-                # 10-60/h = Warning (every 1-6 min)
-                # > 60/h = Danger (more frequent than every minute)
                 if changes_per_hour > 60:
                     level = 'danger'
                 elif changes_per_hour > 10:
@@ -417,18 +403,13 @@ def get_entity_frequency(entity_id, hours=24):
                     'level': level
                 }
             else:
-                # No history - new entity or no changes
                 return {
-                    'entity_id': entity_id,
-                    'changes_per_hour': 0,
-                    'total_changes': 0,
-                    'hours_analyzed': hours,
-                    'level': 'ok'
+                    'entity_id': entity_id, 'changes_per_hour': 0, 'total_changes': 0, 'hours_analyzed': hours, 'level': 'ok'
                 }
         else:
-            if response.status_code != 404:
-                print(f"⚠️ History API returned {response.status_code}. History integration might be disabled.")
-            return {'error': f'API error: {response.status_code}', 'changes_per_hour': 0, 'total_changes': 0, 'level': 'unknown'}
+            status = response.status_code if response else "No response"
+            print(f"❌ All History API attempts failed. Status: {status}")
+            return {'error': f'API error: {status}', 'changes_per_hour': 0, 'total_changes': 0, 'level': 'unknown'}
     except Exception as e:
         print(f"⚠️ Exception during frequency analysis: {e}")
         return {'error': str(e), 'changes_per_hour': 0, 'total_changes': 0, 'level': 'unknown'}
