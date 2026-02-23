@@ -353,10 +353,17 @@ def get_entity_frequency(entity_id, hours=24):
     headers = {"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json"}
     
     try:
-        # HA History API endpoint
-        url = f"{API_URL}/history/period/{start_iso}?filter_entity_id={entity_id}&minimal_response"
-        response = requests.get(url, headers=headers, timeout=15)
+        # HA History API endpoint - default period is 24 hours if timestamp is omitted
+        url = f"{API_URL}/history/period"
+        params = {"filter_entity_id": entity_id, "minimal_response": ""}
+        response = requests.get(url, headers=headers, params=params, timeout=15)
         
+        # Fallback if supervisor proxy blocks history endpoint
+        if response.status_code == 404 and "supervisor" in API_URL:
+            fallback_url = "http://homeassistant:8123/api/history/period"
+            print(f"⚠️ Supervisor proxy returned 404 for history API. Trying direct fallback IP: {fallback_url}")
+            response = requests.get(fallback_url, headers=headers, params=params, timeout=15)
+            
         if response.status_code == 200:
             data = response.json()
             if data and len(data) > 0 and len(data[0]) > 0:
