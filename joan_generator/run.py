@@ -560,13 +560,23 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                 if not row:
                     continue
                 row_parts = []
+                max_h = 1
                 for w in row:
+                    h = grid_params['def_h']
+                    size_str = w.get('size', '')
+                    if size_str:
+                        import re
+                        m = re.search(r'x(\d+)', size_str)
+                        if m:
+                            h = int(m.group(1))
+                    if h > max_h:
+                        max_h = h
+
                     if w['type'] == 'spacer':
                         row_parts.append("spacer")
                         continue
 
                     widget_id = w['id']
-                    size_str = w.get('size', '')
                     is_default = False
 
                     if size_str == f"({grid_params['def_w']}x{grid_params['def_h']})":
@@ -586,6 +596,8 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     processed_widgets.append(w)
                 if row_parts:
                     output.append(f"  - {', '.join(row_parts)}")
+                    for _ in range(max_h - 1):
+                        output.append("  -")
 
             output.append("")
             output.append("# -------------------")
