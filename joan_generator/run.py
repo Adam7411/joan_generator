@@ -363,36 +363,49 @@ def get_entity_frequency(entity_id, hours=24):
         return {'error': 'Brak tokena API', 'changes_per_hour': 0, 'total_changes': 0, 'level': 'unknown'}
     
     from datetime import datetime, timedelta
+    import urllib.parse
     
     # Calculate start timestamp (X hours ago)
     end_time = datetime.utcnow()
     start_time = end_time - timedelta(hours=hours)
+    # ISO format string suitable for HA API (must end in Z or +00:00)
     start_iso = start_time.strftime('%Y-%m-%dT%H:%M:%SZ')
+    
+    # Properly encode the URL parameters
+    safe_entity_id = urllib.parse.quote(entity_id)
+
+    # Clean the API_URL to avoid double slashes
+    base_api = API_URL.rstrip('/')
     
     headers = {"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json"}
     
     try:
-        # Build test URLs based on the token source to avoid sending manual tokens to supervisor (which gives 401)
+        # Build test URLs based on the token source
+        # The syntax for history API is: /api/history/period/<timestamp>?filter_entity_id=<entity_id>&minimal_response
+        query_params = f"?filter_entity_id={safe_entity_id}&significant_changes_only=0&minimal_response"
+        
         if "Manual" in TOKEN_SOURCE:
             test_urls = [
-                f"{API_URL}/history/period/{start_iso}?filter_entity_id={entity_id}&minimal_response",
-                f"{API_URL}/history/period?filter_entity_id={entity_id}&minimal_response"
+                f"{base_api}/history/period/{start_iso}{query_params}",
+                f"{base_api}/history/period{query_params}"
             ]
         else:
             test_urls = [
-                f"{API_URL}/history/period/{start_iso}?filter_entity_id={entity_id}&minimal_response",
-                f"http://supervisor/core/api/history/period/{start_iso}?filter_entity_id={entity_id}&minimal_response",
-                f"http://homeassistant:8123/api/history/period/{start_iso}?filter_entity_id={entity_id}&minimal_response",
-                f"{API_URL}/history/period?filter_entity_id={entity_id}&minimal_response"
+                f"{base_api}/history/period/{start_iso}{query_params}",
+                f"http://supervisor/core/api/history/period/{start_iso}{query_params}",
+                f"http://homeassistant:8123/api/history/period/{start_iso}{query_params}",
+                f"{base_api}/history/period{query_params}"
             ]
         
         response = None
         last_status = 0
+        last_url = ""
         
         for url in test_urls:
             try:
                 res = requests.get(url, headers=headers, timeout=10)
                 last_status = res.status_code
+                last_url = url
                 if res.status_code == 200:
                     response = res
                     break
@@ -441,10 +454,10 @@ def get_entity_frequency(entity_id, hours=24):
         else:
             if last_status == 404:
                 # 404 often means the entity has no history recorded yet, or recorder is disabled for it
-                print(f"📉 {entity_id} - API returned 404 (Not Found) for all URLs.", flush=True)
-                return {'entity_id': entity_id, 'changes_per_hour': 0, 'total_changes': 0, 'hours_analyzed': hours, 'level': 'ok', 'debug_data': '404_NOT_FOUND'}
-            print(f"❌ History API Error: All attempts failed. Last status: {last_status}")
-            return {'error': f'API error: {last_status}', 'changes_per_hour': 0, 'total_changes': 0, 'level': 'unknown'}
+                print(f"📉 {entity_id} - API returned 404 (Not Found) for url: {last_url}", flush=True)
+                return {'entity_id': entity_id, 'changes_per_hour': 0, 'total_changes': 0, 'hours_analyzed': hours, 'level': 'ok', 'debug_data': f"404_NOT_FOUND at {last_url}"}
+            print(f"❌ History API Error: All attempts failed. Last status: {last_status}, Last URL: {last_url}")
+            return {'error': f'API error: {last_status}', 'changes_per_hour': 0, 'total_changes': 0, 'level': 'unknown', 'debug_data': f"Error {last_status}"}
     except Exception as e:
         print(f"❌ Exception during frequency analysis: {e}")
         return {'error': str(e), 'changes_per_hour': 0, 'total_changes': 0, 'level': 'unknown'}
