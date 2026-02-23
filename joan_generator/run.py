@@ -375,15 +375,15 @@ def get_entity_frequency(entity_id, hours=24):
         # Build test URLs based on the token source to avoid sending manual tokens to supervisor (which gives 401)
         if "Manual" in TOKEN_SOURCE:
             test_urls = [
-                f"{API_URL}/history/period/{start_iso}?filter_entity_id={entity_id}",
-                f"{API_URL}/history/period?filter_entity_id={entity_id}"
+                f"{API_URL}/history/period/{start_iso}?filter_entity_id={entity_id}&minimal_response",
+                f"{API_URL}/history/period?filter_entity_id={entity_id}&minimal_response"
             ]
         else:
             test_urls = [
-                f"{API_URL}/history/period/{start_iso}?filter_entity_id={entity_id}",
-                f"http://supervisor/core/api/history/period/{start_iso}?filter_entity_id={entity_id}",
-                f"http://homeassistant:8123/api/history/period/{start_iso}?filter_entity_id={entity_id}",
-                f"{API_URL}/history/period?filter_entity_id={entity_id}"
+                f"{API_URL}/history/period/{start_iso}?filter_entity_id={entity_id}&minimal_response",
+                f"http://supervisor/core/api/history/period/{start_iso}?filter_entity_id={entity_id}&minimal_response",
+                f"http://homeassistant:8123/api/history/period/{start_iso}?filter_entity_id={entity_id}&minimal_response",
+                f"{API_URL}/history/period?filter_entity_id={entity_id}&minimal_response"
             ]
         
         response = None
@@ -406,6 +406,8 @@ def get_entity_frequency(entity_id, hours=24):
                 total_changes = len(history) - 1  # -1 because first entry is initial state
                 if total_changes < 0:
                     total_changes = 0
+                
+                print(f"📊 {entity_id} - History API returned {len(history)} states (changes: {total_changes})")
                 
                 changes_per_hour = total_changes / hours if hours > 0 else 0
                 
