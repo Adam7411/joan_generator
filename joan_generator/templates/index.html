@@ -1717,6 +1717,10 @@
                 <div class="file-info-block">
                     {% if connection_info.bridge_active %}
                     <strong data-i18n="res_step1_bridge">1. Zapisz bezpośrednio w AppDaemon:</strong>
+                    <div style="font-size: 0.85em; color: #555; margin-top: 5px;">Ścieżka zapisu pliku: <code
+                            id="path-code-bridge"
+                            data-path-template="\\[HA_IP]\addon_configs\{{ connection_info.appdaemon_slug }}\dashboards\{{ filename }}">\\[HA_IP]\addon_configs\{{ connection_info.appdaemon_slug }}\dashboards\{{ filename }}</code>
+                    </div>
                     {% else %}
                     <strong data-i18n="res_step1">1. Zapisz wygenerowany kod w pliku albo skonfiguruj konfigurację
                         zapisu:</strong>
@@ -5560,10 +5564,17 @@ class DashSaver(hass.Hass):
         document.getElementById('info-dash-count').innerText = dashCount;
 
         // Update dynamic path
-        const pathEl = document.getElementById('info-path');
+        const pathEl = document.getElementById('info-path'); // This element is now just a container
         if (pathEl) {
             const host = window.location.hostname || '[HA_IP]';
-            pathEl.textContent = pathEl.getAttribute('data-template').replace(/\[HA_IP\]/g, host);
+            const pc = document.getElementById('path-code');
+            if (pc && pc.dataset.pathTemplate) {
+                pc.innerText = pc.dataset.pathTemplate.replace(/\[HA_IP\]/g, host);
+            }
+            const pcb = document.getElementById('path-code-bridge');
+            if (pcb && pcb.dataset.pathTemplate) {
+                pcb.innerText = pcb.dataset.pathTemplate.replace(/\[HA_IP\]/g, host);
+            }
         }
 
         // Populate Dashboard List
