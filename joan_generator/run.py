@@ -431,6 +431,7 @@ def get_entity_frequency(entity_id, hours=24):
                 }
             else:
                 # No history - new entity or no changes
+                print(f"📉 {entity_id} - API returned success, but data is empty or invalid: {data}")
                 return {
                     'entity_id': entity_id,
                     'changes_per_hour': 0,
