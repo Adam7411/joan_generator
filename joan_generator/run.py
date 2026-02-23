@@ -352,23 +352,26 @@ def get_entity_frequency(entity_id, hours=24):
     
     headers = {"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json"}
 
-    # Strategy: try the most likely working URL first (API_URL with timestamp)
+    # Strategy: try several URL patterns because HA API behavior can vary by environment/version
     test_urls = [
-        # 1. Standard API URL with timestamp (Worked before, prioritized)
+        # 1. Supervisor Proxy with explicit timestamp (Usually most reliable in Hass.io)
+        f"http://supervisor/core/api/history/period/{start_iso}?filter_entity_id={entity_id}&minimal_response",
+        # 2. Configured API URL (Supports manual token/host)
         f"{API_URL}/history/period/{start_iso}?filter_entity_id={entity_id}&minimal_response",
-        # 2. Direct HA container (Secondary fallback)
+        # 3. Direct HA Container with explicit timestamp
         f"http://homeassistant:8123/api/history/period/{start_iso}?filter_entity_id={entity_id}&minimal_response",
-        # 3. API URL without timestamp
-        f"{API_URL}/history/period?filter_entity_id={entity_id}&minimal_response",
-        # 4. Direct HA container without timestamp
-        f"http://homeassistant:8123/api/history/period?filter_entity_id={entity_id}&minimal_response"
+        # 4. Supervisor Proxy without timestamp
+        f"http://supervisor/core/api/history/period?filter_entity_id={entity_id}&minimal_response"
     ]
     
     response = None
+    last_status = "Brak połączenia"
+
     for url in test_urls:
         try:
             print(f"ℹ️ Attempting History API: {url}")
             res = requests.get(url, headers=headers, timeout=10)
+            last_status = f"HTTP {res.status_code}"
             if res.status_code == 200:
                 response = res
                 print(f"✅ History API Success: {url}")
@@ -376,6 +379,7 @@ def get_entity_frequency(entity_id, hours=24):
             else:
                 print(f"ℹ️ History API Status {res.status_code} for: {url}")
         except Exception as e:
+            last_status = str(e)
             print(f"⚠️ History API Connection error for {url}: {e}")
             
     try:
@@ -408,9 +412,8 @@ def get_entity_frequency(entity_id, hours=24):
                     'entity_id': entity_id, 'changes_per_hour': 0, 'total_changes': 0, 'hours_analyzed': hours, 'level': 'ok'
                 }
         else:
-            status = response.status_code if response else "No response"
-            print(f"❌ All History API attempts failed. Status: {status}")
-            return {'error': f'API error: {status}', 'changes_per_hour': 0, 'total_changes': 0, 'level': 'unknown'}
+            print(f"❌ All History API attempts failed. Last status: {last_status}")
+            return {'error': f'API error: {last_status}', 'changes_per_hour': 0, 'total_changes': 0, 'level': 'unknown'}
     except Exception as e:
         print(f"⚠️ Exception during frequency analysis: {e}")
         return {'error': str(e), 'changes_per_hour': 0, 'total_changes': 0, 'level': 'unknown'}
