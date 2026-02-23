@@ -1379,6 +1379,28 @@
                     <input type="text" id="dash-title" oninput="syncTitle()" value="{{ title }}">
                 </div>
                 <div class="flex-col">
+                    <label for="device-profile" style="font-weight: bold; margin-bottom: 5px; display: block;"
+                        data-i18n="lbl_device_profile">Model urządzenia:</label>
+                    <select id="device-profile" class="form-control" onchange="window.updateGridConstraints()">
+                        <option value="joan_6" {% if device_profile=='joan_6' %}selected{% endif %}>Joan 6 (6-inch)
+                        </option>
+                        <option value="joan_13_pro" {% if device_profile=='joan_13_pro' %}selected{% endif %}>Joan 13
+                            Pro (13-inch)</option>
+                    </select>
+                </div>
+
+                <!-- Auto Top Navigation Bar Toggle -->
+                <div class="flex-col">
+                    <div style="margin-top: 0px;">
+                        <label style="display: flex; align-items: center; cursor: pointer;">
+                            <input type="checkbox" id="auto-nav-bar" {% if auto_nav_bar %}checked{% endif %}
+                                style="margin-right: 10px; width: 18px; height: 18px;">
+                            <span data-i18n="lbl_auto_nav_bar" style="font-weight: bold;">Auto Pasek Nawigacji
+                                (Góra)</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="flex-col">
                     <label data-i18n="lbl_orientation">Orientacja ekranu</label>
                     <select id="screen-orientation" onchange="handleOrientationChange()">
                         <option value="portrait" data-i18n="opt_orientation_portrait">Pion (3 kolumny bazowo)</option>
@@ -1439,7 +1461,10 @@
             <input type="hidden" name="ui_language" id="input-lang" value="pl">
             <input type="hidden" name="grid_columns" id="form-cols" value="3">
             <input type="hidden" name="grid_rows" id="form-rows" value="8">
-            <input type="hidden" name="default_widget_size" id="input-def-size" value="2, 1">
+            <input type="hidden" name="default_widget_size" id="input-def-size" value="{{ def_size }}">
+            <input type="hidden" name="device_profile" id="form-device-profile" value="{{ device_profile }}">
+            <input type="hidden" name="auto_nav_bar" id="form-auto-nav-bar"
+                value="{{ 'true' if auto_nav_bar else 'false' }}">
 
             <div class="add-widget-box" id="editor-box">
                 <div class="section-title">
@@ -1468,6 +1493,9 @@
                             <option value="climate">climate</option>
                             <option value="fan">fan</option>
                             <option value="media_player">media_player</option>
+                            <option value="input_select">input_select</option>
+                            <option value="input_boolean">input_boolean</option>
+                            <option value="input_number">input_number</option>
                         </select>
                     </div>
                 </div>
@@ -1689,6 +1717,10 @@
                 <div class="file-info-block">
                     {% if connection_info.bridge_active %}
                     <strong data-i18n="res_step1_bridge">1. Zapisz bezpośrednio w AppDaemon:</strong>
+                    <div style="font-size: 0.85em; color: #555; margin-top: 5px;">Ścieżka zapisu pliku: <code
+                            id="path-code-bridge"
+                            data-path-template="\\[HA_IP]\addon_configs\{{ connection_info.appdaemon_slug }}\dashboards\{{ filename }}">\\[HA_IP]\addon_configs\{{ connection_info.appdaemon_slug }}\dashboards\{{ filename }}</code>
+                    </div>
                     {% else %}
                     <strong data-i18n="res_step1">1. Zapisz wygenerowany kod w pliku albo skonfiguruj konfigurację
                         zapisu:</strong>
@@ -2823,6 +2855,8 @@
             'fan': { type: 'fan', size: '(2x1)', iconOn: 'mdi-fan', iconOff: 'mdi-fan-off' },
             'automation': { type: 'switch', size: '(2x1)', icon: 'mdi-robot' },
             'input_boolean': { type: 'input_boolean', size: '(2x1)', icon: 'mdi-toggle-switch' },
+            'input_select': { type: 'input_select', size: '(2x1)', icon: 'mdi-format-list-bulleted' },
+            'input_number': { type: 'input_number', size: '(2x1)', icon: 'mdi-tune-variant' },
             'scene': { type: 'scene', size: '(2x1)', icon: 'mdi-palette' },
             'input_button': { type: 'input_button', size: '(2x1)', icon: 'mdi-gesture-tap-button' },
             'vacuum': { type: 'switch', size: '(2x1)', iconOn: 'mdi-robot-vacuum', iconOff: 'mdi-robot-vacuum-variant' },
@@ -2883,7 +2917,7 @@
                 'danger': '🔴',
                 'unknown': '❓'
             };
-            return indicators[level] || indicators['unknown'];
+            return indicators[level] || '❓';
         }
 
         // Get battery message for tooltip
@@ -2893,14 +2927,14 @@
             const rate = (changesPerHour || 0).toFixed(2);
 
             if (level === 'danger') {
-                // Remove HTML link from tooltip (just show message)
                 return t.freq_danger.replace('{0}', rate).replace(/<a[^>]*>(.*?)<\/a>/g, '$1');
             } else if (level === 'warning') {
                 return t.freq_warning.replace('{0}', rate).replace(/<a[^>]*>(.*?)<\/a>/g, '$1');
             } else if (level === 'ok') {
                 return t.freq_ok.replace('{0}', rate);
-            } else if (level === 'unknown' && errorMsg) {
-                return (lang === 'pl' ? "Błąd analizy: " : "Analysis Error: ") + errorMsg;
+            } else if (level === 'unknown') {
+                if (errorMsg) return (lang === 'pl' ? `Błąd: ${errorMsg}` : `Error: ${errorMsg}`);
+                return (lang === 'pl' ? "Brak danych historycznych (404/Brak Recorder)" : "No history data (404/No Recorder)");
             }
             return t.freq_analyzing;
         }
@@ -4175,6 +4209,8 @@
             document.getElementById('form-rows').value = document.getElementById('h-rows').value;
             document.getElementById('input-def-size').value = `${globalDefaultSize.w}, ${globalDefaultSize.h}`;
             document.getElementById('input-lang').value = currentLang;
+            document.getElementById('form-device-profile').value = document.getElementById('device-profile').value;
+            document.getElementById('form-auto-nav-bar').value = document.getElementById('auto-nav-bar').checked ? 'true' : 'false';
 
             // Layout i definicje muszą być zawsze zsynchronizowane, nawet przy restarcie!
             document.getElementById('layout_json').value = JSON.stringify(rows);
@@ -5528,10 +5564,17 @@ class DashSaver(hass.Hass):
         document.getElementById('info-dash-count').innerText = dashCount;
 
         // Update dynamic path
-        const pathEl = document.getElementById('info-path');
+        const pathEl = document.getElementById('info-path'); // This element is now just a container
         if (pathEl) {
             const host = window.location.hostname || '[HA_IP]';
-            pathEl.textContent = pathEl.getAttribute('data-template').replace(/\[HA_IP\]/g, host);
+            const pc = document.getElementById('path-code');
+            if (pc && pc.dataset.pathTemplate) {
+                pc.innerText = pc.dataset.pathTemplate.replace(/\[HA_IP\]/g, host);
+            }
+            const pcb = document.getElementById('path-code-bridge');
+            if (pcb && pcb.dataset.pathTemplate) {
+                pcb.innerText = pcb.dataset.pathTemplate.replace(/\[HA_IP\]/g, host);
+            }
         }
 
         // Populate Dashboard List
