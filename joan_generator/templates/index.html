@@ -4478,7 +4478,28 @@
                     })
                     .then(data => {
                         if (data.error) {
+                            if (data.debug_data && typeof data.debug_data === 'string' && data.debug_data.includes('404_NOT_FOUND')) {
+                                // Special case: History integration is missing in HA
+                                badge.className = 'freq-badge freq-warning';
+                                icon.innerText = '⚠️';
+                                text.innerHTML = TRANSLATIONS[currentLang] && TRANSLATIONS[currentLang].freq_no_history
+                                    ? TRANSLATIONS[currentLang].freq_no_history
+                                    : "No History in HA! Add 'history:' to configuration.yaml";
+                                badge.classList.remove('hidden');
+                                return;
+                            }
                             badge.classList.add('hidden');
+                            return;
+                        }
+
+                        // Also check if debug_data says 404 even without explicit error flag
+                        if (data.debug_data && typeof data.debug_data === 'string' && data.debug_data.includes('404_NOT_FOUND')) {
+                            badge.className = 'freq-badge freq-warning';
+                            icon.innerText = '⚠️';
+                            text.innerHTML = TRANSLATIONS[currentLang] && TRANSLATIONS[currentLang].freq_no_history
+                                ? TRANSLATIONS[currentLang].freq_no_history
+                                : "No History in HA! Add 'history:' to configuration.yaml";
+                            badge.classList.remove('hidden');
                             return;
                         }
 
@@ -4509,9 +4530,11 @@
                             TRANSLATIONS.pl.freq_ok = "Zoptymalizowano (ok. {0} zmian/h)";
                             TRANSLATIONS.pl.freq_warning = "Częste zmiany (ok. {0} zmian/h). Może obciążać baterię!";
                             TRANSLATIONS.pl.freq_danger = "Bardzo częste zmiany (ok. {0} zmian/h). OSTRZEŻENIE DLA BATERII!";
+                            TRANSLATIONS.pl.freq_no_history = "Brak historii w HA! Dopisz 'history:' do configuration.yaml";
                             TRANSLATIONS.en.freq_ok = "Optimized (~{0} changes/h)";
                             TRANSLATIONS.en.freq_warning = "Frequent updates (~{0} changes/h). May drain battery!";
                             TRANSLATIONS.en.freq_danger = "Too frequent updates (~{0} changes/h). BATTERY WARNING!";
+                            TRANSLATIONS.en.freq_no_history = "No History in HA! Add 'history:' to configuration.yaml";
                         }
 
                         if (data.level === 'ok' && data.changes_per_hour === 0) {
