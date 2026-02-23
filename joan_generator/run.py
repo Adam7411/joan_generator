@@ -402,10 +402,11 @@ def get_entity_frequency(entity_id, hours=24):
                     'level': 'ok'
                 }
         else:
-            print(f"❌ History API Error: {response.status_code}")
+            if response.status_code != 404:
+                print(f"⚠️ History API returned {response.status_code}. History integration might be disabled.")
             return {'error': f'API error: {response.status_code}', 'changes_per_hour': 0, 'total_changes': 0, 'level': 'unknown'}
     except Exception as e:
-        print(f"❌ Exception during frequency analysis: {e}")
+        print(f"⚠️ Exception during frequency analysis: {e}")
         return {'error': str(e), 'changes_per_hour': 0, 'total_changes': 0, 'level': 'unknown'}
 
 # 3. STYLES (E-INK OPTIMIZED & TWEAKED)
