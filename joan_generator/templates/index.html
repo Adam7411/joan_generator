@@ -1378,21 +1378,26 @@
                     <label data-i18n="lbl_dash_title">Tytuł Dashboardu</label>
                     <input type="text" id="dash-title" oninput="syncTitle()" value="{{ title }}">
                 </div>
-                <!-- NOWE: Device Profile -->
                 <div class="flex-col">
-                    <label data-i18n="lbl_device_profile">Model urządzenia</label>
-                    <select id="device-profile" onchange="handleGridChange()">
-                        <option value="joan_6" selected data-i18n="opt_joan_6">Joan 6 (6 cali)</option>
-                        <option value="joan_13_pro" data-i18n="opt_joan_13">Joan 13 Pro (13.3 cala)</option>
+                    <label for="device-profile" style="font-weight: bold; margin-bottom: 5px; display: block;"
+                        data-i18n="lbl_device_profile">Model urządzenia:</label>
+                    <select id="device-profile" class="form-control" onchange="window.updateGridConstraints()">
+                        <option value="joan_6" {% if device_profile=='joan_6' %}selected{% endif %}>Joan 6 (6-inch)
+                        </option>
+                        <option value="joan_13_pro" {% if device_profile=='joan_13_pro' %}selected{% endif %}>Joan 13
+                            Pro (13-inch)</option>
                     </select>
                 </div>
-                <!-- NOWE: Auto Top Navigation Bar -->
+
+                <!-- Auto Top Navigation Bar Toggle -->
                 <div class="flex-col">
-                    <label style="font-size: 0.9em; margin-bottom: 5px;" data-i18n="lbl_auto_nav">Auto Pasek
-                        Nawigacji</label>
-                    <div>
-                        <input type="checkbox" id="auto-nav-bar" style="transform: scale(1.5); margin: 5px;"
-                            title="Automatycznie wygeneruj górny wiersz z przyciskami do innych dashboardów">
+                    <div style="margin-top: 0px;">
+                        <label style="display: flex; align-items: center; cursor: pointer;">
+                            <input type="checkbox" id="auto-nav-bar" {% if auto_nav_bar %}checked{% endif %}
+                                style="margin-right: 10px; width: 18px; height: 18px;">
+                            <span data-i18n="lbl_auto_nav_bar" style="font-weight: bold;">Auto Pasek Nawigacji
+                                (Góra)</span>
+                        </label>
                     </div>
                 </div>
                 <div class="flex-col">
@@ -1456,9 +1461,10 @@
             <input type="hidden" name="ui_language" id="input-lang" value="pl">
             <input type="hidden" name="grid_columns" id="form-cols" value="3">
             <input type="hidden" name="grid_rows" id="form-rows" value="8">
-            <input type="hidden" name="default_widget_size" id="input-def-size" value="2, 1">
-            <input type="hidden" name="device_profile" id="form-device-profile" value="joan_6">
-            <input type="hidden" name="auto_nav_bar" id="form-auto-nav-bar" value="false">
+            <input type="hidden" name="default_widget_size" id="input-def-size" value="{{ def_size }}">
+            <input type="hidden" name="device_profile" id="form-device-profile" value="{{ device_profile }}">
+            <input type="hidden" name="auto_nav_bar" id="form-auto-nav-bar"
+                value="{{ 'true' if auto_nav_bar else 'false' }}">
 
             <div class="add-widget-box" id="editor-box">
                 <div class="section-title">
