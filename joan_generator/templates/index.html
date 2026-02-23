@@ -4555,8 +4555,11 @@
                     })
                     .then(data => {
                         // Clear any "stuck" states if data is missing or has error
-                        if (!data || data.error) {
-                            if (data && data.debug_data && typeof data.debug_data === 'string' && data.debug_data.includes('404_NOT_FOUND')) {
+                        if (!data || data.error || data.level === 'unknown') {
+                            const is404 = data && data.debug_data && typeof data.debug_data === 'string' && data.debug_data.includes('404_NOT_FOUND');
+                            const isUnknown = data && data.level === 'unknown';
+
+                            if (is404 || isUnknown) {
                                 // Missing history component in HA
                                 badge.className = 'freq-badge freq-warning';
                                 icon.innerText = '⚠️';
