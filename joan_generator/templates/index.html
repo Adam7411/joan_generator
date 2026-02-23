@@ -3904,7 +3904,8 @@
             // Profil urządzenia - pobieramy aktualny stan z selektora
             const prof = document.getElementById('device-profile').value;
             const isPro = (prof === 'joan_13_pro');
-            const baseCell = isPro ? 188 : 117;
+            // Zmniejszamy bazowy rozmiar do 117px nawet dla Pro w celach podglądu, by nie łamało wierszy
+            const baseCell = 117;
             const gap = 8;
 
             // Dynamiczne ustawienie siatki w CSS (background-size w .eink-row)
@@ -4059,8 +4060,8 @@
                         }
 
                         // Apply Scale (Bigger scale for title for better readability in preview as requested)
-                        // Pro model has more space, so we use slightly different scaling to keep it readable
-                        const TITLE_PREVIEW_SCALE = isPro ? 0.6 : 0.8;
+                        // Skala proporcjonalnie mniejsza dla Pro (ponieważ używamy 117px zamiast 188px)
+                        const TITLE_PREVIEW_SCALE = isPro ? 0.4 : 0.8;
                         titleStyle = `font-size: ${Math.round(titlePx * TITLE_PREVIEW_SCALE)}px;`;
 
                         let valueStyle = '';
@@ -4085,7 +4086,7 @@
                         }
 
                         // Apply Scale for Value
-                        const VAL_PREVIEW_SCALE = isPro ? 0.45 : 0.5;
+                        const VAL_PREVIEW_SCALE = isPro ? 0.3 : 0.5;
                         valueStyle = `font-size: ${Math.round(valuePx * VAL_PREVIEW_SCALE)}px;`;
 
                         const valDisplay = r_state_enabled ? realState : "";
