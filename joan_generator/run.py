@@ -1262,6 +1262,10 @@ def index():
         custom_defs_json = request.form.get('custom_definitions_json', '{}')
         lang = request.form.get('ui_language', 'pl')
         current_ui_lang = lang
+        device_profile = request.form.get('device_profile', 'joan_6')
+        auto_nav_bar = request.form.get('auto_nav_bar', 'false').lower() == 'true'
+        dash_list_str = request.form.get('dashboards_list', '')
+        available_dash_files = [d.strip() for d in dash_list_str.split(',') if d.strip()] if dash_list_str else []
 
         # Update global view parameters
         dashboard_slug = title.lower().replace(" ", "_")
@@ -1349,6 +1353,55 @@ def index():
 # -------------------------------------------------------------------------
 # API ENDPOINTS
 # -------------------------------------------------------------------------
+def get_entity_frequency(entity_id, hours=24):
+    """Fetches entity history to roughly calculate changes per hour over the last 24h."""
+    from datetime import datetime, timedelta
+    
+    # Try fetching history via REST API
+    end_time = datetime.utcnow()
+    start_time = end_time - timedelta(hours=hours)
+    start_str = start_time.strftime('%Y-%m-%dT%H:%M:%S.000Z')
+    
+    url = f"{API_URL}/history/period/{start_str}?filter_entity_id={entity_id}"
+    headers = {
+        "Authorization": f"Bearer {TOKEN}",
+        "Content-Type": "application/json"
+    }
+    
+    try:
+        resp = requests.get(url, headers=headers, timeout=10)
+        if resp.status_code == 200:
+            history = resp.json()
+            if history and len(history) > 0:
+                events = history[0]
+                changes = len(events)
+                cph = changes / hours
+                level = "low"
+                if cph > 30: level = "high"
+                elif cph > 5: level = "medium"
+                
+                return {
+                    "entity": entity_id,
+                    "changes_per_hour": round(cph, 2),
+                    "total_changes": changes,
+                    "level": level
+                }
+        
+        return {
+            "entity": entity_id,
+            "changes_per_hour": 0,
+            "total_changes": 0,
+            "level": "unknown",
+            "error": f"API returning {resp.status_code} or no data."
+        }
+    except Exception as e:
+        return {
+            "entity": entity_id,
+            "changes_per_hour": 0,
+            "total_changes": 0,
+            "level": "unknown",
+            "error": str(e)
+        }
 @app.route('/api/entity_frequency/<path:entity_id>')
 def api_entity_frequency(entity_id):
     """Returns entity update frequency analysis (JSON)."""
