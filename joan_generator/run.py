@@ -406,10 +406,14 @@ def get_entity_frequency(entity_id, hours=24):
                 res = requests.get(url, headers=headers, timeout=10)
                 last_status = res.status_code
                 last_url = url
+                
+                print(f"DEBUG {entity_id} - URL: {url} -> Status: {res.status_code}", flush=True)
+                
                 if res.status_code == 200:
                     response = res
                     break
-            except Exception:
+            except Exception as e:
+                print(f"DEBUG {entity_id} - URL: {url} -> Exception: {e}", flush=True)
                 continue
                 
         if response and response.status_code == 200:
