@@ -41,10 +41,9 @@ try:
             manual_token = options.get('manual_token')
             if manual_token and len(manual_token) > 10:
                 TOKEN = manual_token
-                # CHANGED: Keep using supervisor proxy even with manual token for better reliability inside addons
-                API_URL = "http://supervisor/core/api" 
+                API_URL = "http://homeassistant:8123/api"
                 TOKEN_SOURCE = "Manual (Konfiguracja)"
-                print(f"🔧 Manual token detected. Using API: {API_URL}")
+                print(f"🔧 Manual token detected. Switching API to: {API_URL}")
                 print(f"🔑 Token loaded (starts with: {TOKEN[:10]}...)")
             opt_slug = options.get('appdaemon_slug')
             if opt_slug:
@@ -373,13 +372,19 @@ def get_entity_frequency(entity_id, hours=24):
     headers = {"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json"}
     
     try:
-        # Strategy: try several URL patterns because HA API behavior can vary by environment/version
-        test_urls = [
-            f"{API_URL}/history/period/{start_iso}?filter_entity_id={entity_id}&minimal_response",
-            f"http://supervisor/core/api/history/period/{start_iso}?filter_entity_id={entity_id}&minimal_response",
-            f"http://homeassistant:8123/api/history/period/{start_iso}?filter_entity_id={entity_id}&minimal_response",
-            f"{API_URL}/history/period?filter_entity_id={entity_id}&minimal_response"
-        ]
+        # Build test URLs based on the token source to avoid sending manual tokens to supervisor (which gives 401)
+        if "Manual" in TOKEN_SOURCE:
+            test_urls = [
+                f"{API_URL}/history/period/{start_iso}?filter_entity_id={entity_id}",
+                f"{API_URL}/history/period?filter_entity_id={entity_id}"
+            ]
+        else:
+            test_urls = [
+                f"{API_URL}/history/period/{start_iso}?filter_entity_id={entity_id}",
+                f"http://supervisor/core/api/history/period/{start_iso}?filter_entity_id={entity_id}",
+                f"http://homeassistant:8123/api/history/period/{start_iso}?filter_entity_id={entity_id}",
+                f"{API_URL}/history/period?filter_entity_id={entity_id}"
+            ]
         
         response = None
         last_status = 0
