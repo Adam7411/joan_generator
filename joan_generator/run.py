@@ -236,6 +236,27 @@ def restart_appdaemon_addon():
         return False, f"API Error: {response.status_code} {response.text}"
 
 # -------------------------------------------------------------------------
+# CHECK HISTORY COMPONENT
+# -------------------------------------------------------------------------
+def check_history_active():
+    """Checks if the history component is active in Home Assistant config."""
+    if not TOKEN:
+        return False
+    try:
+        headers = {"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json"}
+        url = f"{API_URL}/config"
+        res = requests.get(url, headers=headers, timeout=5)
+        if res.status_code != 200:
+            res = requests.get("http://homeassistant:8123/api/config", headers=headers, timeout=5)
+        if res.status_code == 200:
+            data = res.json()
+            components = data.get("components", [])
+            return "history" in components
+    except Exception as e:
+        print(f"❌ Error checking history active: {e}")
+    return False
+
+# -------------------------------------------------------------------------
 # APPDAEMON API BRIDGE FUNCTIONS (Direct Save)
 # -------------------------------------------------------------------------
 def check_appdaemon_bridge():
