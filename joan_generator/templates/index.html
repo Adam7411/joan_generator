@@ -2917,7 +2917,7 @@
                 'danger': '🔴',
                 'unknown': '❓'
             };
-            return indicators[level] || indicators['unknown'];
+            return indicators[level] || '❓';
         }
 
         // Get battery message for tooltip
@@ -2927,14 +2927,14 @@
             const rate = (changesPerHour || 0).toFixed(2);
 
             if (level === 'danger') {
-                // Remove HTML link from tooltip (just show message)
                 return t.freq_danger.replace('{0}', rate).replace(/<a[^>]*>(.*?)<\/a>/g, '$1');
             } else if (level === 'warning') {
                 return t.freq_warning.replace('{0}', rate).replace(/<a[^>]*>(.*?)<\/a>/g, '$1');
             } else if (level === 'ok') {
                 return t.freq_ok.replace('{0}', rate);
             } else if (level === 'unknown') {
-                return (lang === 'pl' ? "Brak danych (sprawdź bazę HA)" : "No data (check HA history)");
+                if (errorMsg) return (lang === 'pl' ? `Błąd: ${errorMsg}` : `Error: ${errorMsg}`);
+                return (lang === 'pl' ? "Brak danych historycznych (404/Brak Recorder)" : "No history data (404/No Recorder)");
             }
             return t.freq_analyzing;
         }
