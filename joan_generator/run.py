@@ -523,18 +523,18 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
 
     # device profile settings
     is_pro = (device_profile == 'joan_13_pro')
-    font_smoothing = "-webkit-font-smoothing: none !important; font-smoothing: none !important;" if is_pro else ""
+    font_smoothing = "-webkit-font-smoothing: none !important; font-smoothing: none !important" if is_pro else ""
 
-    style_title = f"color: #000000 !important; font-size: {'32' if is_pro else '20'}px; font-weight: {'900' if is_pro else '700'}; text-align: center; padding-top: {'10' if is_pro else '5'}px; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif; {font_smoothing}"
-    style_title2 = f"color: #000000 !important; font-size: {'24' if is_pro else '16'}px; font-weight: {'900' if is_pro else '700'}; text-align: center; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif; {font_smoothing}"
-    style_title_small = f"color: #000000 !important; font-size: {'24' if is_pro else '16'}px; font-weight: {'900' if is_pro else '700'}; text-align: center; padding-top: {'10' if is_pro else '5'}px; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif; {font_smoothing}"
+    style_title = f"color: #000000 !important; font-size: {'32' if is_pro else '20'}px; font-weight: {'900' if is_pro else '700'}; text-align: center; padding-top: {'10' if is_pro else '5'}px; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif" + (f"; {font_smoothing}" if font_smoothing else "")
+    style_title2 = f"color: #000000 !important; font-size: {'24' if is_pro else '16'}px; font-weight: {'900' if is_pro else '700'}; text-align: center; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif" + (f"; {font_smoothing}" if font_smoothing else "")
+    style_title_small = f"color: #000000 !important; font-size: {'24' if is_pro else '16'}px; font-weight: {'900' if is_pro else '700'}; text-align: center; padding-top: {'10' if is_pro else '5'}px; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif" + (f"; {font_smoothing}" if font_smoothing else "")
     
     style_widget = "color: #000000 !important; background-color: #FFFFFF !important"
-    style_text = f"color: #000000 !important; font-weight: {'900' if is_pro else '700'} !important; {font_smoothing}"
-    style_state_text = f"color: #000000 !important; font-weight: {'900' if is_pro else '700'} !important; font-size: {'26' if is_pro else '16'}px !important; {font_smoothing}"
+    style_text = f"color: #000000 !important; font-weight: {'900' if is_pro else '700'} !important" + (f"; {font_smoothing}" if font_smoothing else "")
+    style_state_text = f"color: #000000 !important; font-weight: {'900' if is_pro else '700'} !important; font-size: {'26' if is_pro else '16'}px !important" + (f"; {font_smoothing}" if font_smoothing else "")
     
-    style_gauge_val = f"color: #000000 !important; font-size: {'50' if is_pro else '30'}px !important; font-weight: {'900' if is_pro else '700'} !important; line-height: 1.1 !important; display: inline-block !important; {font_smoothing}"
-    style_unit = f"color: #000000 !important; padding-top: {'90' if is_pro else '60'}px !important; display: inline-block !important; {font_smoothing}"
+    style_gauge_val = f"color: #000000 !important; font-size: {'50' if is_pro else '30'}px !important; font-weight: {'900' if is_pro else '700'} !important; line-height: 1.1 !important; display: inline-block !important" + (f"; {font_smoothing}" if font_smoothing else "")
+    style_unit = f"color: #000000 !important; padding-top: {'90' if is_pro else '60'}px !important; display: inline-block !important" + (f"; {font_smoothing}" if font_smoothing else "")
     style_icon = f"color: #000000 !important"
 
     # dynamic value/title helpers inside
@@ -553,7 +553,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                 px_map = {"normal": 54, "medium": 40, "small": 32}
             px = px_map.get(size_hint, 90 if is_pro else 54)
             
-        tmpl = f"color: #000000 !important; font-size: {{px}}px !important; font-weight: {'900' if is_pro else '700'} !important; padding-top: {'90' if is_pro else '60'}px !important; line-height: 1.1 !important; display: inline-block !important; {font_smoothing}"
+        tmpl = f"color: #000000 !important; font-size: {{px}}px !important; font-weight: {'900' if is_pro else '700'} !important; padding-top: {'90' if is_pro else '60'}px !important; line-height: 1.1 !important; display: inline-block !important" + (f"; {font_smoothing}" if font_smoothing else "")
         return tmpl.format(px=px)
         
     def build_title_style_local(is_small_w, custom_px):
