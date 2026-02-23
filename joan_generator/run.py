@@ -406,30 +406,24 @@ def get_entity_frequency(entity_id, hours=24):
                 res = requests.get(url, headers=headers, timeout=10)
                 last_status = res.status_code
                 last_url = url
-                
                 if res.status_code == 200:
                     response = res
                     break
-            except Exception as e:
+            except Exception:
                 continue
                 
         if response and response.status_code == 200:
             data = response.json()
-            if data and len(data) > 0 and len(data[0]) > 0:
+            if data and isinstance(data, list) and len(data) > 0 and len(data[0]) > 0:
                 history = data[0]
-                total_changes = len(history) - 1  # -1 because first entry is initial state
-                if total_changes < 0:
-                    total_changes = 0
+                total_changes = len(history) - 1
+                if total_changes < 0: total_changes = 0
                 
                 changes_per_hour = total_changes / hours if hours > 0 else 0
                 
-                # Warning levels (relaxed thresholds)
-                if changes_per_hour > 60:
-                    level = 'danger'
-                elif changes_per_hour > 10:
-                    level = 'warning'
-                else:
-                    level = 'ok'
+                if changes_per_hour > 60: level = 'danger'
+                elif changes_per_hour > 10: level = 'warning'
+                else: level = 'ok'
                 
                 return {
                     'entity_id': entity_id,
@@ -440,21 +434,34 @@ def get_entity_frequency(entity_id, hours=24):
                     'debug_data': f"states: {len(history)}"
                 }
             else:
-                # No history - new entity or no changes
+                # No history found in the response
                 return {
                     'entity_id': entity_id,
                     'changes_per_hour': 0,
                     'total_changes': 0,
                     'hours_analyzed': hours,
                     'level': 'ok',
-                    'debug_data': str(data)[:100]
+                    'debug_data': "Empty history list"
                 }
-            if last_status == 404:
-                # 404 often means the entity has no history recorded yet, or recorder is disabled for it
-                print(f"📉 {entity_id} - API returned 404 (Not Found) for url: {last_url}", flush=True)
-                return {'entity_id': entity_id, 'changes_per_hour': 0, 'total_changes': 0, 'hours_analyzed': hours, 'level': 'ok', 'debug_data': f"404_NOT_FOUND at {last_url}"}
-            print(f"❌ History API Error: All attempts failed. Last status: {last_status}, Last URL: {last_url}")
-            return {'error': f'API error: {last_status}', 'changes_per_hour': 0, 'total_changes': 0, 'level': 'unknown', 'debug_data': f"Error {last_status} (404 likely means history: is missing)"}
+        
+        # If we reached here, no 200 OK was received
+        if last_status == 404:
+            return {
+                'entity_id': entity_id,
+                'changes_per_hour': 0,
+                'total_changes': 0,
+                'hours_analyzed': hours,
+                'level': 'ok',
+                'debug_data': f"404_NOT_FOUND at {last_url}"
+            }
+            
+        return {
+            'error': f'API error: {last_status}',
+            'changes_per_hour': 0,
+            'total_changes': 0,
+            'level': 'unknown',
+            'debug_data': f"Error {last_status} from {last_url}"
+        }
     except Exception as e:
         print(f"❌ Exception during frequency analysis: {e}")
         return {'error': str(e), 'changes_per_hour': 0, 'total_changes': 0, 'level': 'unknown'}
