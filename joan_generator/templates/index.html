@@ -1378,6 +1378,23 @@
                     <label data-i18n="lbl_dash_title">Tytuł Dashboardu</label>
                     <input type="text" id="dash-title" oninput="syncTitle()" value="{{ title }}">
                 </div>
+                <!-- NOWE: Device Profile -->
+                <div class="flex-col">
+                    <label data-i18n="lbl_device_profile">Model urządzenia</label>
+                    <select id="device-profile" onchange="handleGridChange()">
+                        <option value="joan_6" selected data-i18n="opt_joan_6">Joan 6 (6 cali)</option>
+                        <option value="joan_13_pro" data-i18n="opt_joan_13">Joan 13 Pro (13.3 cala)</option>
+                    </select>
+                </div>
+                <!-- NOWE: Auto Top Navigation Bar -->
+                <div class="flex-col">
+                    <label style="font-size: 0.9em; margin-bottom: 5px;" data-i18n="lbl_auto_nav">Auto Pasek
+                        Nawigacji</label>
+                    <div>
+                        <input type="checkbox" id="auto-nav-bar" style="transform: scale(1.5); margin: 5px;"
+                            title="Automatycznie wygeneruj górny wiersz z przyciskami do innych dashboardów">
+                    </div>
+                </div>
                 <div class="flex-col">
                     <label data-i18n="lbl_orientation">Orientacja ekranu</label>
                     <select id="screen-orientation" onchange="handleOrientationChange()">
@@ -1440,6 +1457,8 @@
             <input type="hidden" name="grid_columns" id="form-cols" value="3">
             <input type="hidden" name="grid_rows" id="form-rows" value="8">
             <input type="hidden" name="default_widget_size" id="input-def-size" value="2, 1">
+            <input type="hidden" name="device_profile" id="form-device-profile" value="joan_6">
+            <input type="hidden" name="auto_nav_bar" id="form-auto-nav-bar" value="false">
 
             <div class="add-widget-box" id="editor-box">
                 <div class="section-title">
@@ -4180,6 +4199,8 @@
             document.getElementById('form-rows').value = document.getElementById('h-rows').value;
             document.getElementById('input-def-size').value = `${globalDefaultSize.w}, ${globalDefaultSize.h}`;
             document.getElementById('input-lang').value = currentLang;
+            document.getElementById('form-device-profile').value = document.getElementById('device-profile').value;
+            document.getElementById('form-auto-nav-bar').value = document.getElementById('auto-nav-bar').checked ? 'true' : 'false';
 
             // Layout i definicje muszą być zawsze zsynchronizowane, nawet przy restarcie!
             document.getElementById('layout_json').value = JSON.stringify(rows);
