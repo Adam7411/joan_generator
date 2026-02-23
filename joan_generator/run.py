@@ -451,8 +451,8 @@ def get_entity_frequency(entity_id, hours=24):
                 'changes_per_hour': 0,
                 'total_changes': 0,
                 'hours_analyzed': hours,
-                'level': 'ok',
-                'debug_data': f"404_NOT_FOUND at {last_url}"
+                'level': 'unknown',
+                'debug_data': f"404_NOT_FOUND at {last_url}. (HA history missing/disabled?)"
             }
             
         return {
