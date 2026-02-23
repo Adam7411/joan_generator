@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="pl">
+<html lang="pl" class="notranslate" translate="no">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google" content="notranslate">
     <title>Joan 6 E-Ink Generator</title>
 
     <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css" rel="stylesheet">
@@ -4551,10 +4552,10 @@
                         return response.json();
                     })
                     .then(data => {
-                        if (!data) return;
-                        if (data.error) {
-                            if (data.debug_data && typeof data.debug_data === 'string' && data.debug_data.includes('404_NOT_FOUND')) {
-                                // Special case: History integration is missing in HA
+                        // Clear any "stuck" states if data is missing or has error
+                        if (!data || data.error) {
+                            if (data && data.debug_data && typeof data.debug_data === 'string' && data.debug_data.includes('404_NOT_FOUND')) {
+                                // Missing history component in HA
                                 badge.className = 'freq-badge freq-warning';
                                 icon.innerText = '⚠️';
                                 text.innerHTML = TRANSLATIONS[currentLang] && TRANSLATIONS[currentLang].freq_no_history
@@ -4567,28 +4568,12 @@
                             return;
                         }
 
-                        // Also check if debug_data says 404 even without explicit error flag
-                        if (data.debug_data && typeof data.debug_data === 'string' && data.debug_data.includes('404_NOT_FOUND')) {
-                            badge.className = 'freq-badge freq-warning';
-                            icon.innerText = '⚠️';
-                            text.innerHTML = TRANSLATIONS[currentLang] && TRANSLATIONS[currentLang].freq_no_history
-                                ? TRANSLATIONS[currentLang].freq_no_history
-                                : "No History in HA! Add 'history:' to configuration.yaml";
-                            badge.classList.remove('hidden');
-                            return;
-                        }
-
-                        if (data.debug_data) {
-                            console.warn("History API Debug info for " + entityId + ":", data.debug_data);
-                        }
-
                         // Pobierz dane z API
                         const changes = data.changes_per_hour;
                         let msgKey = 'freq_ok';
                         let cssClass = 'freq-ok';
                         let iconChar = '✅';
 
-                        // Dobierz styl i ikonę na podstawie poziomu zagrożenia
                         if (data.level === 'danger') {
                             msgKey = 'freq_danger';
                             cssClass = 'freq-danger';
@@ -4599,16 +4584,15 @@
                             iconChar = '⚠️';
                         }
 
-                        // Zaktualizuj interfejs
-                        if (data.level === 'ok' && data.changes_per_hour === 0) {
-                            // Hide badge if completely 0 changes to not clutter UI
+                        // Hide if completely 0 and level ok
+                        if (data.level === 'ok' && changes === 0) {
                             badge.classList.add('hidden');
                             return;
                         }
 
                         badge.className = `freq-badge ${cssClass}`;
                         icon.innerText = iconChar;
-                        text.innerHTML = TRANSLATIONS[currentLang][msgKey].replace('{0}', changes);
+                        text.innerHTML = (TRANSLATIONS[currentLang][msgKey] || msgKey).replace('{0}', changes);
                         badge.classList.remove('hidden');
                     })
                     .catch(err => {
