@@ -2934,7 +2934,7 @@
             } else if (level === 'ok') {
                 return t.freq_ok.replace('{0}', rate);
             } else if (level === 'unknown') {
-                return (lang === 'pl' ? "Brak historii (wyłączona?)" : "No history (disabled?)");
+                return (lang === 'pl' ? "Brak danych (sprawdź bazę HA)" : "No data (check HA history)");
             }
             return t.freq_analyzing;
         }
