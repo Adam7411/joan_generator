@@ -622,6 +622,10 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
         return base_style
 
     output = []
+    output.append(f"# Joan Dashboard: {title}")
+    output.append(f"# Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    output.append("# Tip: Jeśli nie widzisz ostrzeżeń o baterii w generatorze, upewnij się że masz 'history:' w configuration.yaml")
+    output.append("")
     output.append(f"title: {title}")
     dims = "[188, 192]" if is_pro else "[117, 123]"
     margins = "[13, 6]" if is_pro else "[8, 4]"
