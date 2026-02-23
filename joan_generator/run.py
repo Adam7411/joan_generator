@@ -449,16 +449,26 @@ def get_entity_frequency(entity_id, hours=24):
                     'level': 'ok',
                     'debug_data': str(data)[:100]
                 }
-        else:
             if last_status == 404:
                 # 404 often means the entity has no history recorded yet, or recorder is disabled for it
                 print(f"📉 {entity_id} - API returned 404 (Not Found) for url: {last_url}", flush=True)
                 return {'entity_id': entity_id, 'changes_per_hour': 0, 'total_changes': 0, 'hours_analyzed': hours, 'level': 'ok', 'debug_data': f"404_NOT_FOUND at {last_url}"}
             print(f"❌ History API Error: All attempts failed. Last status: {last_status}, Last URL: {last_url}")
-            return {'error': f'API error: {last_status}', 'changes_per_hour': 0, 'total_changes': 0, 'level': 'unknown', 'debug_data': f"Error {last_status}"}
+            return {'error': f'API error: {last_status}', 'changes_per_hour': 0, 'total_changes': 0, 'level': 'unknown', 'debug_data': f"Error {last_status} (404 likely means history: is missing)"}
     except Exception as e:
         print(f"❌ Exception during frequency analysis: {e}")
         return {'error': str(e), 'changes_per_hour': 0, 'total_changes': 0, 'level': 'unknown'}
+
+def check_history_active():
+    """Checks if the Home Assistant history component is enabled by calling the API."""
+    if not TOKEN: return False
+    headers = {"Authorization": f"Bearer {TOKEN}"}
+    try:
+        # Check if the endpoint exists (returns 200 or 400 with param errors, but not 404)
+        res = requests.get(f"{API_URL}/history/period", headers=headers, timeout=5)
+        return res.status_code != 404
+    except:
+        return False
 
 # 3. STYLES (E-INK OPTIMIZED & TWEAKED)
 # -------------------------------------------------------------------------
@@ -624,7 +634,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
     output = []
     output.append(f"# Joan Dashboard: {title}")
     output.append(f"# Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    output.append("# Tip: Jeśli nie widzisz ostrzeżeń o baterii w generatorze, upewnij się że masz 'history:' w configuration.yaml")
+    output.append("# Tip: Jeśli nie widzisz analizy baterii, dopisz 'history:' do swojego pliku configuration.yaml")
     output.append("")
     output.append(f"title: {title}")
     dims = "[188, 192]" if is_pro else "[117, 123]"
@@ -1307,7 +1317,8 @@ def index():
         "entity_count": len(ha_entities),
         "appdaemon_slug": APPDAEMON_SLUG,
         "bridge_active": bridge_active,
-        "has_dashboards": has_dashboards
+        "has_dashboards": has_dashboards,
+        "history_active": check_history_active()
     }
 
     current_ui_lang = request.form.get('ui_language', 'pl') if request.method == 'POST' else request.args.get('lang', 'pl')
