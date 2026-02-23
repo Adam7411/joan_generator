@@ -4482,6 +4482,10 @@
                             return;
                         }
 
+                        if (data.debug_data) {
+                            console.warn("History API Debug info for " + entityId + ":", data.debug_data);
+                        }
+
                         // Pobierz dane z API
                         const changes = data.changes_per_hour;
                         let msgKey = 'freq_ok';
