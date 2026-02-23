@@ -344,46 +344,21 @@ def get_entity_frequency(entity_id, hours=24):
     if not TOKEN:
         return {'error': 'Brak tokena API', 'changes_per_hour': 0, 'total_changes': 0, 'level': 'unknown'}
     
+    from datetime import datetime, timedelta
+    
     # Calculate start timestamp (X hours ago)
     end_time = datetime.utcnow()
     start_time = end_time - timedelta(hours=hours)
-    # Correct format for Home Assistant History: 2024-05-23T12:00:00Z
     start_iso = start_time.strftime('%Y-%m-%dT%H:%M:%SZ')
     
     headers = {"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json"}
-
-    # Strategy: try several URL patterns because HA API behavior can vary by environment/version
-    test_urls = [
-        # 1. Supervisor Proxy with explicit timestamp (Usually most reliable in Hass.io)
-        f"http://supervisor/core/api/history/period/{start_iso}?filter_entity_id={entity_id}&minimal_response",
-        # 2. Configured API URL (Supports manual token/host)
-        f"{API_URL}/history/period/{start_iso}?filter_entity_id={entity_id}&minimal_response",
-        # 3. Direct HA Container with explicit timestamp
-        f"http://homeassistant:8123/api/history/period/{start_iso}?filter_entity_id={entity_id}&minimal_response",
-        # 4. Supervisor Proxy without timestamp
-        f"http://supervisor/core/api/history/period?filter_entity_id={entity_id}&minimal_response"
-    ]
     
-    response = None
-    last_status = "Brak połączenia"
-
-    for url in test_urls:
-        try:
-            print(f"ℹ️ Attempting History API: {url}")
-            res = requests.get(url, headers=headers, timeout=10)
-            last_status = f"HTTP {res.status_code}"
-            if res.status_code == 200:
-                response = res
-                print(f"✅ History API Success: {url}")
-                break
-            else:
-                print(f"ℹ️ History API Status {res.status_code} for: {url}")
-        except Exception as e:
-            last_status = str(e)
-            print(f"⚠️ History API Connection error for {url}: {e}")
-            
     try:
-        if response and response.status_code == 200:
+        # HA History API endpoint
+        url = f"{API_URL}/history/period/{start_iso}?filter_entity_id={entity_id}&minimal_response"
+        response = requests.get(url, headers=headers, timeout=15)
+        
+        if response.status_code == 200:
             data = response.json()
             if data and len(data) > 0 and len(data[0]) > 0:
                 history = data[0]
@@ -393,6 +368,10 @@ def get_entity_frequency(entity_id, hours=24):
                 
                 changes_per_hour = total_changes / hours if hours > 0 else 0
                 
+                # Warning levels (relaxed thresholds)
+                # < 10/h = OK
+                # 10-60/h = Warning (every 1-6 min)
+                # > 60/h = Danger (more frequent than every minute)
                 if changes_per_hour > 60:
                     level = 'danger'
                 elif changes_per_hour > 10:
@@ -408,14 +387,19 @@ def get_entity_frequency(entity_id, hours=24):
                     'level': level
                 }
             else:
+                # No history - new entity or no changes
                 return {
-                    'entity_id': entity_id, 'changes_per_hour': 0, 'total_changes': 0, 'hours_analyzed': hours, 'level': 'ok'
+                    'entity_id': entity_id,
+                    'changes_per_hour': 0,
+                    'total_changes': 0,
+                    'hours_analyzed': hours,
+                    'level': 'ok'
                 }
         else:
-            print(f"❌ All History API attempts failed. Last status: {last_status}")
-            return {'error': f'API error: {last_status}', 'changes_per_hour': 0, 'total_changes': 0, 'level': 'unknown'}
+            print(f"❌ History API Error: {response.status_code}")
+            return {'error': f'API error: {response.status_code}', 'changes_per_hour': 0, 'total_changes': 0, 'level': 'unknown'}
     except Exception as e:
-        print(f"⚠️ Exception during frequency analysis: {e}")
+        print(f"❌ Exception during frequency analysis: {e}")
         return {'error': str(e), 'changes_per_hour': 0, 'total_changes': 0, 'level': 'unknown'}
 
 # 3. STYLES (E-INK OPTIMIZED & TWEAKED)
