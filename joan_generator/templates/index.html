@@ -2933,8 +2933,8 @@
                 return t.freq_warning.replace('{0}', rate).replace(/<a[^>]*>(.*?)<\/a>/g, '$1');
             } else if (level === 'ok') {
                 return t.freq_ok.replace('{0}', rate);
-            } else if (level === 'unknown' && errorMsg) {
-                return (lang === 'pl' ? "Błąd analizy: " : "Analysis Error: ") + errorMsg;
+            } else if (level === 'unknown') {
+                return (lang === 'pl' ? "Brak historii (wyłączona?)" : "No history (disabled?)");
             }
             return t.freq_analyzing;
         }
