@@ -1441,10 +1441,12 @@
                         placeholder="Wklej tutaj zawartość pliku .dash..."></textarea>
                     <button type="button" class="btn btn-import" onclick="importYaml()" data-i18n="btn_import">Wczytaj
                         Kod</button>
+                    {% if not connection_info.history_active %}
                     <div style="font-size: 0.8em; margin-top: 10px; color: #666; font-style: italic;"
                         data-i18n="import_history_warning">
                         Wskazówka: Upewnij się, że masz aktywne 'history:' w HA dla analizy baterii.
                     </div>
+                    {% endif %}
 
                     {% if connection_info.bridge_active %}
                     <button type="button" class="btn btn-import" style="background-color: #9c27b0; margin-left: 10px;"
@@ -2652,11 +2654,11 @@
                 list_dashboards_title: "Lista Dashboardów:",
                 dash_list_empty: "(brak)",
                 freq_no_history: "Analiza niemożliwa! Brak wpisu 'history:' w pliku configuration.yaml. Dopisz history: aby aktywować.",
-                import_history_warning: "⚠️ Uwaga: Twój Home Assistant nie ma aktywnego modułu 'history:'. Importowane widżety nie będą pokazywać analizy baterii. Dopisz history: do configuration.yaml."
+                import_history_warning: "💡 Wskazówka: Upewnij się, że masz aktywne 'history:' w configuration.yaml dla analizy baterii."
             },
             en: {
                 btn_import_dash: "📥 IMPORT DASHBOARD",
-                import_history_warning: "⚠️ Note: Your Home Assistant does not have the 'history:' module enabled. Imported widgets will not show battery analysis. Add history: to configuration.yaml.",
+                import_history_warning: "💡 Hint: Make sure you have 'history:' enabled in configuration.yaml for battery analysis.",
                 btn_config_autosave: "⚙️ CONFIGURE AUTO-SAVE/READ",
                 modal_import_title: "Select Dashboard to Edit",
                 modal_import_loading: "Loading list...",
