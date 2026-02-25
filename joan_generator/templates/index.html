@@ -1468,6 +1468,10 @@
             <input type="hidden" name="device_profile" id="form-device-profile" value="{{ device_profile }}">
             <input type="hidden" name="auto_nav_bar" id="form-auto-nav-bar"
                 value="{{ 'true' if auto_nav_bar else 'false' }}">
+            <input type="hidden" name="layout_data_json" id="layout_json" value="">
+            <input type="hidden" name="custom_definitions_json" id="custom_defs" value="">
+            <input type="hidden" name="dashboards_list" id="form-dash-list"
+                value="{% for d in dashboards_list %}{{ d.name if d.name is defined else d }}{% if not loop.last %},{% endif %}{% endfor %}">
 
             <div class="add-widget-box" id="editor-box">
                 <div class="section-title">
