@@ -4251,8 +4251,8 @@
                         const VAL_PREVIEW_SCALE = isPro ? 0.3 : 0.5;
                         valueStyle = `font-size: ${Math.round(valuePx * VAL_PREVIEW_SCALE)}px;`;
 
-                        const valDisplay = r_state_enabled ? realState : "";
-                        const valStyleFinal = r_state_enabled ? valueStyle : "display:none;";
+                        const valDisplay = (r_state_enabled && r_type !== 'navigate') ? realState : "";
+                        const valStyleFinal = (r_state_enabled && r_type !== 'navigate') ? valueStyle : "display:none;";
 
                         // Create title element separately to ensure proper UTF-8 encoding
                         const titleDiv = document.createElement('div');
