@@ -2668,7 +2668,8 @@
                 list_dashboards_title: "Lista Dashboardów:",
                 dash_list_empty: "(brak)",
                 nav_target_prefix: "Cel: ",
-                auto_nav_title: "AUTO NAWIGACJA"
+                auto_nav_title: "TOOLBOX NAWIGACJI (Przeciągnij przycisk)",
+                auto_nav_desc: "Chwyć i upuść wybrany dashboard do podglądu, aby dodać stały przycisk."
             },
             en: {
                 btn_import_dash: "📥 IMPORT DASHBOARD",
@@ -2766,7 +2767,8 @@
                 json_load_success: "Project loaded from JSON!",
                 json_load_error: "JSON file error: ",
                 nav_target_prefix: "Target: ",
-                auto_nav_title: "AUTO NAV",
+                auto_nav_title: "NAVIGATION TOOLBOX (Drag to add)",
+                auto_nav_desc: "Drag and drop a dashboard into the preview to add a permanent navigation button.",
                 confirm_restart: "Restart AppDaemon?",
                 btn_ad_config: "⚙️ SAVE CONFIGURATION",
                 modal_ad_config_title: "Direct Save Configuration",
@@ -3966,28 +3968,40 @@
             // Dynamiczne ustawienie siatki w CSS (background-size w .eink-row)
             document.documentElement.style.setProperty('--grid-cell-size', (baseCell + gap) + 'px');
 
-            // ====================== VIRTUAL NAVIGATION ROW ======================
+            // ====================== VIRTUAL NAVIGATION TOOLBOX ======================
             if (document.getElementById('auto-nav-bar').checked) {
-                const navRowDiv = document.createElement('div');
-                navRowDiv.className = 'eink-row virtual-nav-row';
-                navRowDiv.style.marginTop = '10px';
-                navRowDiv.style.marginBottom = '30px';
-                navRowDiv.style.opacity = '1';
-                navRowDiv.style.borderStyle = 'none';
-                navRowDiv.style.borderBottom = '4px solid #2e7d32';
-                navRowDiv.style.paddingBottom = '5px';
+                const navToolbox = document.createElement('div');
+                navToolbox.className = 'nav-toolbox';
+                navToolbox.style.backgroundColor = '#f1f8e9';
+                navToolbox.style.border = '2px dashed #2e7d32';
+                navToolbox.style.borderRadius = '8px';
+                navToolbox.style.padding = '15px';
+                navToolbox.style.marginBottom = '40px';
+                navToolbox.style.marginTop = '10px';
+                navToolbox.style.boxShadow = 'inset 0 0 10px rgba(0,0,0,0.05)';
 
-                const navControls = document.createElement('div');
-                navControls.className = 'row-controls';
-                const navLabel = document.createElement('span');
-                navLabel.className = 'row-label';
-                navLabel.style.backgroundColor = '#2e7d32';
-                navLabel.style.color = '#fff';
-                navLabel.style.fontSize = '11px';
-                navLabel.style.padding = '2px 8px';
-                navLabel.innerText = TRANSLATIONS[currentLang].auto_nav_title;
-                navControls.appendChild(navLabel);
-                navRowDiv.appendChild(navControls);
+                const header = document.createElement('div');
+                header.style.display = 'flex';
+                header.style.flexDirection = 'column';
+                header.style.marginBottom = '10px';
+
+                const title = document.createElement('strong');
+                title.style.color = '#1b5e20';
+                title.style.fontSize = '14px';
+                title.innerText = TRANSLATIONS[currentLang].auto_nav_title;
+                header.appendChild(title);
+
+                const desc = document.createElement('small');
+                desc.style.color = '#558b2f';
+                desc.innerText = TRANSLATIONS[currentLang].auto_nav_desc;
+                header.appendChild(desc);
+
+                navToolbox.appendChild(header);
+
+                const navItemsContainer = document.createElement('div');
+                navItemsContainer.style.display = 'flex';
+                navItemsContainer.style.flexWrap = 'wrap';
+                navItemsContainer.style.gap = '10px';
 
                 // Get other dashboards to navigate to
                 const currentDash = document.getElementById('dash-title').value.toLowerCase();
@@ -3996,63 +4010,64 @@
                     return name !== currentDash && name !== 'main';
                 });
 
-                others.forEach((d, idx) => {
+                others.forEach((d) => {
                     const dName = typeof d === 'string' ? d : d.name;
                     const cleanName = dName.replace('.dash', '');
-                    const navW = {
-                        id: 'navigate.' + cleanName,
-                        type: 'navigate',
-                        name: cleanName.toUpperCase(),
-                        size: '(2x1)',
-                        dash: cleanName
-                    };
 
-                    const navWrapper = document.createElement('div');
-                    navWrapper.className = 'widget-wrapper';
-                    navWrapper.draggable = true;
-                    navWrapper.style.cursor = 'grab';
-                    navWrapper.ondragstart = (e) => {
+                    const toolboxItem = document.createElement('div');
+                    toolboxItem.className = 'toolbox-widget-wrapper';
+                    toolboxItem.style.padding = '5px';
+                    toolboxItem.style.border = '1px solid #c8e6c9';
+                    toolboxItem.style.backgroundColor = '#fff';
+                    toolboxItem.style.borderRadius = '4px';
+                    toolboxItem.style.cursor = 'grab';
+                    toolboxItem.style.userSelect = 'none';
+                    toolboxItem.draggable = true;
+
+                    // Smaller scale for toolbox
+                    const scaleEffect = 0.7;
+                    toolboxItem.style.width = Math.round(((2 * baseCell) + gap) * scaleEffect) + 'px';
+                    toolboxItem.style.height = Math.round(baseCell * scaleEffect) + 'px';
+                    toolboxItem.style.display = 'flex';
+                    toolboxItem.style.flexDirection = 'column';
+                    toolboxItem.style.alignItems = 'center';
+                    toolboxItem.style.justifyContent = 'center';
+                    toolboxItem.style.position = 'relative';
+
+                    const navTitle = document.createElement('div');
+                    navTitle.innerText = cleanName.toUpperCase();
+                    navTitle.style.fontSize = Math.round(14 * scaleEffect) + 'px';
+                    navTitle.style.fontWeight = 'bold';
+                    navTitle.style.marginBottom = '2px';
+                    toolboxItem.appendChild(navTitle);
+
+                    const navIcon = document.createElement('i');
+                    navIcon.className = 'mdi mdi-arrow-right-bold';
+                    navIcon.style.fontSize = Math.round(24 * scaleEffect) + 'px';
+                    toolboxItem.appendChild(navIcon);
+
+                    const navLabel = document.createElement('div');
+                    navLabel.innerText = cleanName + '.dash';
+                    navLabel.style.fontSize = '9px';
+                    navLabel.style.color = '#666';
+                    toolboxItem.appendChild(navLabel);
+
+                    toolboxItem.ondragstart = (e) => {
                         dragSrc = { type: 'virtual_nav', dash: cleanName };
                         e.dataTransfer.effectAllowed = 'copy';
-                        e.dataTransfer.setData('text/plain', cleanName); // Required by some browsers
-                        navWrapper.style.opacity = '0.5';
+                        e.dataTransfer.setData('text/plain', cleanName);
+                        toolboxItem.style.opacity = '0.5';
                     };
-                    navWrapper.ondragend = () => {
-                        navWrapper.style.opacity = '1';
+                    toolboxItem.ondragend = () => {
+                        toolboxItem.style.opacity = '1';
                     };
 
-                    const navTypeLabel = document.createElement('div');
-                    navTypeLabel.className = 'ew-type-label';
-                    navTypeLabel.innerText = 'navigate';
-                    navWrapper.appendChild(navTypeLabel);
-
-                    const navDiv = document.createElement('div');
-                    navDiv.className = 'eink-widget';
-                    const navWidth = (2 * baseCell) + gap;
-                    const navHeight = baseCell;
-                    navDiv.style.width = navWidth + 'px';
-                    navDiv.style.height = navHeight + 'px';
-
-                    const navTitlePx = isPro ? 24 : 16;
-                    const NAV_SCALE = isPro ? 0.4 : 0.8;
-                    const navTitleStyle = `font-size: ${Math.round(navTitlePx * NAV_SCALE)}px; font-weight:700; margin-top:8px; text-align:center;`;
-
-                    const navTitleDiv = document.createElement('div');
-                    navTitleDiv.className = 'ew-title';
-                    navTitleDiv.style.cssText = navTitleStyle;
-                    navTitleDiv.textContent = navW.name;
-
-                    navDiv.innerHTML = `
-                        <i class="mdi mdi-arrow-right-bold ew-icon notranslate"></i>
-                        <div class="ew-nav-info">Target: ${cleanName}.dash</div>
-                    `;
-                    navDiv.insertBefore(navTitleDiv, navDiv.firstChild);
-                    navWrapper.appendChild(navDiv);
-                    navRowDiv.appendChild(navWrapper);
+                    navItemsContainer.appendChild(toolboxItem);
                 });
 
+                navToolbox.appendChild(navItemsContainer);
                 if (others.length > 0) {
-                    container.appendChild(navRowDiv);
+                    container.appendChild(navToolbox);
                 }
             }
             // ====================================================================
