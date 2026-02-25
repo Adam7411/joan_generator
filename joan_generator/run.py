@@ -384,119 +384,64 @@ def get_entity_frequency(entity_id, hours=24):
         return {'error': 'Brak tokena API', 'changes_per_hour': 0, 'total_changes': 0, 'level': 'unknown'}
     
     from datetime import datetime, timedelta
-    import urllib.parse
     
     # Calculate start timestamp (X hours ago)
     end_time = datetime.utcnow()
     start_time = end_time - timedelta(hours=hours)
-    # ISO format string suitable for HA API (must end in Z or +00:00)
     start_iso = start_time.strftime('%Y-%m-%dT%H:%M:%SZ')
-    
-    # Properly encode the URL parameters
-    safe_entity_id = urllib.parse.quote(entity_id)
-
-    # Clean the API_URL to avoid double slashes
-    base_api = API_URL.rstrip('/')
     
     headers = {"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json"}
     
     try:
-        # Build test URLs based on the token source
-        # The syntax for history API is: /api/history/period/<timestamp>?filter_entity_id=<entity_id>&minimal_response
-        query_params = f"?filter_entity_id={safe_entity_id}&significant_changes_only=0&minimal_response"
+        # HA History API endpoint
+        url = f"{API_URL}/history/period/{start_iso}?filter_entity_id={entity_id}&minimal_response"
+        response = requests.get(url, headers=headers, timeout=15)
         
-        if "Manual" in TOKEN_SOURCE:
-            test_urls = [
-                f"{base_api}/history/period/{start_iso}{query_params}",
-                f"{base_api}/history/period{query_params}"
-            ]
-        else:
-            test_urls = [
-                f"{base_api}/history/period/{start_iso}{query_params}",
-                f"http://supervisor/core/api/history/period/{start_iso}{query_params}",
-                f"http://homeassistant:8123/api/history/period/{start_iso}{query_params}",
-                f"{base_api}/history/period{query_params}"
-            ]
-        
-        response = None
-        last_status = 0
-        last_url = ""
-        
-        for url in test_urls:
-            try:
-                res = requests.get(url, headers=headers, timeout=10)
-                last_status = res.status_code
-                last_url = url
-                if res.status_code == 200:
-                    response = res
-                    break
-            except Exception:
-                continue
-                
-        if response and response.status_code == 200:
+        if response.status_code == 200:
             data = response.json()
-            if data and isinstance(data, list) and len(data) > 0 and len(data[0]) > 0:
+            if data and len(data) > 0 and len(data[0]) > 0:
                 history = data[0]
-                total_changes = len(history) - 1
-                if total_changes < 0: total_changes = 0
+                total_changes = len(history) - 1  # -1 because first entry is initial state
+                if total_changes < 0:
+                    total_changes = 0
                 
                 changes_per_hour = total_changes / hours if hours > 0 else 0
                 
-                if changes_per_hour > 60: level = 'danger'
-                elif changes_per_hour > 10: level = 'warning'
-                else: level = 'ok'
+                # Warning levels (relaxed thresholds)
+                # < 10/h = OK
+                # 10-60/h = Warning (every 1-6 min)
+                # > 60/h = Danger (more frequent than every minute)
+                if changes_per_hour > 60:
+                    level = 'danger'
+                elif changes_per_hour > 10:
+                    level = 'warning'
+                else:
+                    level = 'ok'
                 
                 return {
                     'entity_id': entity_id,
                     'changes_per_hour': round(changes_per_hour, 2),
                     'total_changes': total_changes,
                     'hours_analyzed': hours,
-                    'level': level,
-                    'debug_data': f"states: {len(history)}"
+                    'level': level
                 }
             else:
-                # No history found in the response
+                # No history - new entity or no changes
                 return {
                     'entity_id': entity_id,
                     'changes_per_hour': 0,
                     'total_changes': 0,
                     'hours_analyzed': hours,
-                    'level': 'ok',
-                    'debug_data': "Empty history list"
+                    'level': 'ok'
                 }
-        
-        # If we reached here, no 200 OK was received
-        if last_status == 404:
-            return {
-                'entity_id': entity_id,
-                'changes_per_hour': 0,
-                'total_changes': 0,
-                'hours_analyzed': hours,
-                'level': 'unknown',
-                'debug_data': f"404_NOT_FOUND at {last_url}. (HA history missing/disabled?)"
-            }
-            
-        return {
-            'error': f'API error: {last_status}',
-            'changes_per_hour': 0,
-            'total_changes': 0,
-            'level': 'unknown',
-            'debug_data': f"Error {last_status} from {last_url}"
-        }
+        else:
+            print(f"❌ History API Error: {response.status_code}")
+            return {'error': f'API error: {response.status_code}', 'changes_per_hour': 0, 'total_changes': 0, 'level': 'unknown'}
     except Exception as e:
         print(f"❌ Exception during frequency analysis: {e}")
         return {'error': str(e), 'changes_per_hour': 0, 'total_changes': 0, 'level': 'unknown'}
 
-def check_history_active():
-    """Checks if the Home Assistant history component is enabled by calling the API."""
-    if not TOKEN: return False
-    headers = {"Authorization": f"Bearer {TOKEN}"}
-    try:
-        # Check if the endpoint exists (returns 200 or 400 with param errors, but not 404)
-        res = requests.get(f"{API_URL}/history/period", headers=headers, timeout=5)
-        return res.status_code != 404
-    except:
-        return False
+
 
 # 3. STYLES (E-INK OPTIMIZED & TWEAKED)
 # -------------------------------------------------------------------------
@@ -1345,8 +1290,7 @@ def index():
         "entity_count": len(ha_entities),
         "appdaemon_slug": APPDAEMON_SLUG,
         "bridge_active": bridge_active,
-        "has_dashboards": has_dashboards,
-        "history_active": check_history_active()
+        "has_dashboards": has_dashboards
     }
 
     current_ui_lang = request.form.get('ui_language', 'pl') if request.method == 'POST' else request.args.get('lang', 'pl')
