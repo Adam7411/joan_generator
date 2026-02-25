@@ -685,6 +685,20 @@
             line-height: 1;
         }
 
+        .ew-nav-info {
+            position: absolute;
+            bottom: 4px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 9px;
+            color: #777;
+            font-weight: bold;
+            pointer-events: none;
+            text-transform: none;
+            opacity: 0.8;
+        }
+
         .ew-copy {
             position: absolute;
             top: -8px;
@@ -2651,7 +2665,9 @@
                 link_generator: "Ten generator (Dokumentacja i kod)",
                 link_visionect: "Visionect (Producent Joan 6)",
                 list_dashboards_title: "Lista Dashboardów:",
-                dash_list_empty: "(brak)"
+                dash_list_empty: "(brak)",
+                nav_target_prefix: "Cel: ",
+                auto_nav_title: "AUTO NAWIGACJA"
             },
             en: {
                 btn_import_dash: "📥 IMPORT DASHBOARD",
@@ -2748,6 +2764,8 @@
                 alert_name_required: "Enter a name!",
                 json_load_success: "Project loaded from JSON!",
                 json_load_error: "JSON file error: ",
+                nav_target_prefix: "Target: ",
+                auto_nav_title: "AUTO NAV",
                 confirm_restart: "Restart AppDaemon?",
                 btn_ad_config: "⚙️ SAVE CONFIGURATION",
                 modal_ad_config_title: "Direct Save Configuration",
@@ -3531,8 +3549,8 @@
                             // Jeśli nowe ID już istnieje gdzieś indziej, dodaj suffix
                             w.id = ensureUniqueId(w.id);
                         } else {
-                            // Użytkownik zachował bazową encję. 
-                            // Musimy przywrócić originalId (czyli np. z suffixem), 
+                            // Użytkownik zachował bazową encję.
+                            // Musimy przywrócić originalId (czyli np. z suffixem),
                             // aby nie stworzyć konfliktu z innym widgetem o tym samym base.
                             w.id = originalId;
                         }
@@ -3907,6 +3925,82 @@
             // Dynamiczne ustawienie siatki w CSS (background-size w .eink-row)
             document.documentElement.style.setProperty('--grid-cell-size', (baseCell + gap) + 'px');
 
+            // ====================== VIRTUAL NAVIGATION ROW ======================
+            if (document.getElementById('auto-nav-bar').checked) {
+                const navRowDiv = document.createElement('div');
+                navRowDiv.className = 'eink-row virtual-nav-row';
+                navRowDiv.style.marginTop = '10px';
+                navRowDiv.style.opacity = '0.9';
+                navRowDiv.style.borderStyle = 'solid';
+                navRowDiv.style.borderColor = '#4caf50';
+
+                const navControls = document.createElement('div');
+                navControls.className = 'row-controls';
+                const navLabel = document.createElement('span');
+                navLabel.className = 'row-label';
+                navLabel.style.backgroundColor = '#4caf50';
+                navLabel.style.color = '#fff';
+                navLabel.innerText = TRANSLATIONS[currentLang].auto_nav_title;
+                navControls.appendChild(navLabel);
+                navRowDiv.appendChild(navControls);
+
+                // Get other dashboards to navigate to
+                const currentDash = document.getElementById('dash-title').value.toLowerCase();
+                const others = dashboardsList.filter(d => {
+                    const name = (typeof d === 'string' ? d : d.name).replace('.dash', '').toLowerCase();
+                    return name !== currentDash && name !== 'main';
+                });
+
+                others.forEach((d, idx) => {
+                    const dName = typeof d === 'string' ? d : d.name;
+                    const cleanName = dName.replace('.dash', '');
+                    const navW = {
+                        id: 'navigate.' + cleanName,
+                        type: 'navigate',
+                        name: cleanName.toUpperCase(),
+                        size: '(2x1)',
+                        dash: cleanName
+                    };
+
+                    const navWrapper = document.createElement('div');
+                    navWrapper.className = 'widget-wrapper';
+
+                    const navTypeLabel = document.createElement('div');
+                    navTypeLabel.className = 'ew-type-label';
+                    navTypeLabel.innerText = 'navigate';
+                    navWrapper.appendChild(navTypeLabel);
+
+                    const navDiv = document.createElement('div');
+                    navDiv.className = 'eink-widget';
+                    const navWidth = (2 * baseCell) + gap;
+                    const navHeight = baseCell;
+                    navDiv.style.width = navWidth + 'px';
+                    navDiv.style.height = navHeight + 'px';
+
+                    const navTitlePx = isPro ? 24 : 16;
+                    const NAV_SCALE = isPro ? 0.4 : 0.8;
+                    const navTitleStyle = `font-size: ${Math.round(navTitlePx * NAV_SCALE)}px; font-weight:700; margin-top:8px; text-align:center;`;
+
+                    const navTitleDiv = document.createElement('div');
+                    navTitleDiv.className = 'ew-title';
+                    navTitleDiv.style.cssText = navTitleStyle;
+                    navTitleDiv.textContent = navW.name;
+
+                    navDiv.innerHTML = `
+                        <i class="mdi mdi-arrow-right-bold ew-icon notranslate"></i>
+                        <div class="ew-nav-info">Target: ${cleanName}.dash</div>
+                    `;
+                    navDiv.insertBefore(navTitleDiv, navDiv.firstChild);
+                    navWrapper.appendChild(navDiv);
+                    navRowDiv.appendChild(navWrapper);
+                });
+
+                if (others.length > 0) {
+                    container.appendChild(navRowDiv);
+                }
+            }
+            // ====================================================================
+
             rows.forEach((row, rI) => {
                 const rowDiv = document.createElement('div');
                 rowDiv.className = 'eink-row';
@@ -4101,6 +4195,16 @@
                             <div class="ew-copy" onclick="copyWidget(${rI}, ${wI}, event)">📄</div>
                             ${copyTagHtml}
                         `;
+
+                        // Add navigation info for navigate types
+                        if (r_type === 'navigate' || (w.id && w.id.startsWith('navigate.'))) {
+                            const navTarget = w.dash || w.id.replace('navigate.', '');
+                            const navInfo = document.createElement('div');
+                            navInfo.className = 'ew-nav-info';
+                            const prefix = TRANSLATIONS[currentLang].nav_target_prefix || (currentLang === 'pl' ? 'Cel: ' : 'Target: ');
+                            navInfo.innerText = `${prefix}${navTarget}.dash`;
+                            div.appendChild(navInfo);
+                        }
                         // Insert title element at the beginning to preserve UTF-8 characters
                         div.insertBefore(titleDiv, div.firstChild);
                     }
@@ -4399,6 +4503,7 @@
                             let icon_on = '';
                             let icon_off = '';
 
+                            let dash = '';
                             let state_text_enabled = true;
                             let title_size_custom = '';
                             let value_size_custom = '';
@@ -4418,6 +4523,11 @@
                                 if (ionMatch) icon_on = ionMatch[1].trim();
                                 const ioffMatch = d.match(/icon_off:\s*(.*)/);
                                 if (ioffMatch) icon_off = ioffMatch[1].trim();
+
+                                if (type === 'navigate') {
+                                    const dashMatch = d.match(/dash:\s*(.*)/);
+                                    if (dashMatch) dash = dashMatch[1].trim();
+                                }
 
                                 const iActiveMatch = d.match(/icon_active:\s*(.*)/);
                                 if (iActiveMatch) icon = iActiveMatch[1].trim();
@@ -4467,31 +4577,31 @@
                                     const en = entMatch[1].trim();
                                     if (en.startsWith('input_button.')) type = 'input_button';
                                 }
-
                             } else {
                                 if (id === 'spacer') type = 'spacer';
-                                else if (id.startsWith('navigate.')) type = 'navigate';
+                                else if (id.startsWith('navigate.')) {
+                                    type = 'navigate';
+                                    dash = id.replace('navigate.', '');
+                                }
                                 else if (id.startsWith('sensor.')) type = 'sensor';
                             }
 
                             const widgetObj = {
-                                id,
-                                type,
-                                size,
-                                name,
-                                icon,
-                                icon_on,
-                                icon_off,
-                                value_size_hint,
-                                value_size_custom,
-                                title_size_custom,
-                                state_text_enabled,
-                                was_edited: false
+                                id, type, size, name, icon, icon_on, icon_off,
+                                value_size_hint, value_size_custom, title_size_custom,
+                                state_text_enabled, was_edited: false, dash: dash
                             };
                             fitSizeToGrid(widgetObj);
                             rowData.push(widgetObj);
                         });
-                        newRows.push(rowData);
+
+                        // DETECTION LOGIC: If first row is all navigation, set the checkbox and skip it
+                        if (newRows.length === 0 && rowData.length > 0 && rowData.every(w => w.type === 'navigate' || w.id.startsWith('navigate.'))) {
+                            document.getElementById('auto-nav-bar').checked = true;
+                            console.log("Auto Nav Bar detected in import, setting checkbox.");
+                        } else {
+                            newRows.push(rowData);
+                        }
                     } else if (tr.match(/^[a-z0-9_]+:/i)) {
                         inLayout = false;
                     }
