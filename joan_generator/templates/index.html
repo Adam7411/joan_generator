@@ -1366,7 +1366,7 @@
             {% endif %}
 
             <div class="header-top">
-                <h1 data-i18n="title_main">Joan 6 E-Ink Generator</h1>
+                <h1 data-i18n="title_main">Joan E-Ink Generator</h1>
                 <div class="controls" style="display:flex; align-items:center;">
                     <button type="button" onclick="toggleTheme()" id="btn-theme" title="Zmień motyw">🌙</button>
                     <button type="button" onclick="showInfoModal()" id="btn-info" title="Informacje o systemie"
@@ -2496,7 +2496,7 @@
                 modal_import_empty: "Nie znaleziono plików .dash lub błąd połączenia.",
                 modal_import_confirm: "Czy na pewno chcesz wczytać ten dashboard? Obecny wynik zostanie nadpisany.",
                 btn_cancel: "Anuluj",
-                title_main: "Joan 6 E-Ink Generator",
+                title_main: "Joan E-Ink Generator",
                 sec_settings: "1. Ustawienia Dashboardu", lbl_dash_title: "Tytuł Dashboardu", lbl_grid: "Układ Siatki (Smart Grid)",
                 lbl_orientation: "Orientacja ekranu", lbl_auto_nav_bar: "Pokaż Toolbox Nawigacji",
                 opt_orientation_portrait: "Pion (3 kolumny bazowo)",
@@ -2663,8 +2663,8 @@
                 link_v3_aio: "Instalacja serwera Visionect v3 (All-in-One) w Home Assistant",
                 link_v3_proxmox: "Instalacja serwera Visionect w Proxmox",
                 link_addon: "Dodatek Visionect Joan dla Home Assistant",
-                link_generator: "Ten generator (Dokumentacja i kod)",
-                link_visionect: "Visionect (Producent Joan 6)",
+                link_generator: "Ten generator Joan E-Ink (Dokumentacja i kod)",
+                link_visionect: "Visionect (Producent Joan)",
                 list_dashboards_title: "Lista Dashboardów:",
                 dash_list_empty: "(brak)",
                 nav_target_prefix: "Cel: ",
@@ -2679,7 +2679,7 @@
                 modal_import_empty: "No .dash files found or connection error.",
                 modal_import_confirm: "Are you sure you want to load this dashboard? Current result will be overwritten.",
                 btn_cancel: "Cancel",
-                title_main: "Joan 6 E-Ink Generator",
+                title_main: "Joan E-Ink Generator",
                 sec_settings: "1. Dashboard Settings", lbl_dash_title: "Dashboard Title", lbl_grid: "Grid Layout (Smart Grid)",
                 lbl_orientation: "Screen orientation", lbl_auto_nav_bar: "Show Navigation Toolbox",
                 opt_orientation_portrait: "Portrait (3 cols default)",
@@ -2848,7 +2848,7 @@
                 link_v3_proxmox: "Visionect Software Suite - Installation in Proxmox",
                 link_addon: "Visionect Joan for Home Assistant add-on",
                 link_generator: "This Generator (Documentation & Code)",
-                link_visionect: "Visionect (Joan 6 Manufacturer)",
+                link_visionect: "Visionect (Joan Manufacturer)",
                 list_dashboards_title: "Dashboard List:",
                 dash_list_empty: "(none)",
                 freq_no_history: "Analysis impossible! No 'history:' entry in configuration.yaml. Add history: to enable battery analysis."
@@ -5855,6 +5855,7 @@ class DashSaver(hass.Hass):
                 const pcb = document.getElementById('path-code-bridge');
                 if (pcb && pcb.dataset.pathTemplate) {
                     pcb.innerText = pcb.dataset.pathTemplate.replace(/\[HA_IP\]/g, host);
+                    pcb.style.display = bridgeActive ? 'block' : 'none';
                 }
             }
 
@@ -5934,11 +5935,15 @@ class DashSaver(hass.Hass):
             </div>
             <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #ddd;">
                 <div><strong data-i18n="info_lbl_path">Ścieżka Config AppDaemon:</strong></div>
-                <div id="info-path" data-template="\\[HA_IP]\addon_configs\{{ connection_info.appdaemon_slug }}\"
-                    style="font-family: monospace; background: #f5f5f5; padding: 5px; border-radius: 4px; margin-top: 5px; word-break: break-all; color: #333;">
-                    ...
-                    <div id="info-path" data-template="\\[HA_IP]\addon_configs\{{ connection_info.appdaemon_slug }}\"
+                <div id="info-path">
+                    <div id="path-code"
+                        data-path-template="\\[HA_IP]\addon_configs\{{ connection_info.appdaemon_slug }}\"
                         style="font-family: monospace; background: #f5f5f5; padding: 5px; border-radius: 4px; margin-top: 5px; word-break: break-all; color: #333;">
+                        ...
+                    </div>
+                    <div id="path-code-bridge"
+                        data-path-template="\\[HA_IP]\addon_configs\{{ connection_info.appdaemon_slug }}\dash_saver.py"
+                        style="font-family: monospace; background: #f5f5f5; padding: 5px; border-radius: 4px; margin-top: 5px; word-break: break-all; color: #333; display: none;">
                         ...
                     </div>
                 </div>
@@ -5989,7 +5994,7 @@ class DashSaver(hass.Hass):
                     style="margin-bottom: 15px; padding: 12px; background: #f9f9f9; border-left: 4px solid #4caf50; border-radius: 4px;">
                     <a href="https://github.com/Adam7411/joan_generator" target="_blank"
                         style="text-decoration: none; color: #1565c0; font-weight: bold;" data-i18n="link_generator">
-                        Joan 6: AppDaemon Dashboard Generator add-on
+                        Joan E-Ink Generator add-on
                     </a>
                 </li>
                 <li
@@ -6002,9 +6007,13 @@ class DashSaver(hass.Hass):
                 </li>
                 <li
                     style="margin-bottom: 15px; padding: 12px; background: #f9f9f9; border-left: 4px solid #d32f2f; border-radius: 4px;">
+                    <a href="https://docs.visionect.com/index.html" target="_blank"
+                        style="text-decoration: none; color: #1565c0; font-weight: bold; margin-bottom: 5px; display: block;">
+                        📖 Dokumentacja Techniczna Visionect (Official)
+                    </a>
                     <a href="https://www.visionect.com/" target="_blank"
                         style="text-decoration: none; color: #d32f2f; font-weight: bold;" data-i18n="link_visionect">
-                        Visionect (Joan 6 Manufacturer)
+                        Visionect (Producent Joan)
                     </a>
                 </li>
             </ul>
