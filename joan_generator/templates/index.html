@@ -1441,12 +1441,7 @@
                         placeholder="Wklej tutaj zawartość pliku .dash..."></textarea>
                     <button type="button" class="btn btn-import" onclick="importYaml()" data-i18n="btn_import">Wczytaj
                         Kod</button>
-                    {% if not connection_info.history_active %}
-                    <div style="font-size: 0.8em; margin-top: 10px; color: #666; font-style: italic;"
-                        data-i18n="import_history_warning">
-                        Wskazówka: Upewnij się, że masz aktywne 'history:' w HA dla analizy baterii.
-                    </div>
-                    {% endif %}
+
 
                     {% if connection_info.bridge_active %}
                     <button type="button" class="btn btn-import" style="background-color: #9c27b0; margin-left: 10px;"
@@ -2652,13 +2647,10 @@
                 link_generator: "Ten generator (Dokumentacja i kod)",
                 link_visionect: "Visionect (Producent Joan 6)",
                 list_dashboards_title: "Lista Dashboardów:",
-                dash_list_empty: "(brak)",
-                freq_no_history: "Analiza niemożliwa! Brak wpisu 'history:' w pliku configuration.yaml. Dopisz history: aby aktywować.",
-                import_history_warning: "💡 Wskazówka: Upewnij się, że masz aktywne 'history:' w configuration.yaml dla analizy baterii."
+                dash_list_empty: "(brak)"
             },
             en: {
                 btn_import_dash: "📥 IMPORT DASHBOARD",
-                import_history_warning: "💡 Hint: Make sure you have 'history:' enabled in configuration.yaml for battery analysis.",
                 btn_config_autosave: "⚙️ CONFIGURE AUTO-SAVE/READ",
                 modal_import_title: "Select Dashboard to Edit",
                 modal_import_loading: "Loading list...",
@@ -4559,19 +4551,6 @@
                     .then(data => {
                         // Clear any "stuck" states if data is missing or has error
                         if (!data || data.error || data.level === 'unknown') {
-                            const is404 = data && data.debug_data && typeof data.debug_data === 'string' && data.debug_data.includes('404_NOT_FOUND');
-                            const isUnknown = data && data.level === 'unknown';
-
-                            if (is404 || isUnknown) {
-                                // Missing history component in HA
-                                badge.className = 'freq-badge freq-warning';
-                                icon.innerText = '⚠️';
-                                text.innerHTML = TRANSLATIONS[currentLang] && TRANSLATIONS[currentLang].freq_no_history
-                                    ? TRANSLATIONS[currentLang].freq_no_history
-                                    : "No History in HA! Add 'history:' to configuration.yaml";
-                                badge.classList.remove('hidden');
-                                return;
-                            }
                             badge.classList.add('hidden');
                             return;
                         }
