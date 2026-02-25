@@ -607,7 +607,6 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
     output = []
     output.append(f"# Joan Dashboard: {title}")
     output.append(f"# Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    output.append("# Tip: Jeśli nie widzisz analizy baterii, dopisz 'history:' do swojego pliku configuration.yaml")
     output.append("")
     output.append(f"title: {title}")
     dims = "[188, 192]" if is_pro else "[117, 123]"
@@ -650,8 +649,9 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
             output.append("layout:")
             if auto_nav_bar and available_dash_files:
                 nav_parts = []
-                for dash_file in available_dash_files:
-                    dash_slug = dash_file.replace('.dash', '')
+                for dash_item in available_dash_files:
+                    dash_name = dash_item.get('name') if isinstance(dash_item, dict) else dash_item
+                    dash_slug = dash_name.replace('.dash', '')
                     if dash_slug != title.lower().replace(' ', '_'):
                         nav_parts.append(f"navigate.{dash_slug}(1x1)")
                 if nav_parts:
@@ -1235,8 +1235,9 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
             output.append("# -------------------")
             output.append("")
             seen_navs = set()
-            for dash_file in available_dash_files:
-                dash_slug = dash_file.replace('.dash', '')
+            for dash_item in available_dash_files:
+                dash_name = dash_item.get('name') if isinstance(dash_item, dict) else dash_item
+                dash_slug = dash_name.replace('.dash', '')
                 if dash_slug != title.lower().replace(' ', '_'):
                     nav_id = f"navigate.{dash_slug}"
                     if nav_id in seen_navs:
