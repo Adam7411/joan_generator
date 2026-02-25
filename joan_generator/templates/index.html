@@ -3857,7 +3857,8 @@
 
         function handleDragOver(e) {
             if (e.preventDefault) e.preventDefault();
-            e.dataTransfer.dropEffect = 'move';
+            // Allow copy for virtual navigation, move for standard widgets
+            e.dataTransfer.dropEffect = (dragSrc && dragSrc.type === 'virtual_nav') ? 'copy' : 'move';
             const row = e.target.closest('.eink-row');
             if (row) row.classList.add('drag-over');
             return false;
@@ -3972,8 +3973,8 @@
             if (document.getElementById('auto-nav-bar').checked) {
                 const navToolbox = document.createElement('div');
                 navToolbox.className = 'nav-toolbox';
-                navToolbox.style.backgroundColor = '#f1f8e9';
-                navToolbox.style.border = '2px dashed #2e7d32';
+                navToolbox.style.backgroundColor = '#e3f2fd';
+                navToolbox.style.border = '2px dashed #2196f3';
                 navToolbox.style.borderRadius = '8px';
                 navToolbox.style.padding = '15px';
                 navToolbox.style.marginBottom = '40px';
@@ -3986,13 +3987,13 @@
                 header.style.marginBottom = '10px';
 
                 const title = document.createElement('strong');
-                title.style.color = '#1b5e20';
+                title.style.color = '#0d47a1';
                 title.style.fontSize = '14px';
                 title.innerText = TRANSLATIONS[currentLang].auto_nav_title;
                 header.appendChild(title);
 
                 const desc = document.createElement('small');
-                desc.style.color = '#558b2f';
+                desc.style.color = '#1976d2';
                 desc.innerText = TRANSLATIONS[currentLang].auto_nav_desc;
                 header.appendChild(desc);
 
@@ -4017,7 +4018,7 @@
                     const toolboxItem = document.createElement('div');
                     toolboxItem.className = 'toolbox-widget-wrapper';
                     toolboxItem.style.padding = '5px';
-                    toolboxItem.style.border = '1px solid #c8e6c9';
+                    toolboxItem.style.border = '1px solid #bbdefb';
                     toolboxItem.style.backgroundColor = '#fff';
                     toolboxItem.style.borderRadius = '4px';
                     toolboxItem.style.cursor = 'grab';
