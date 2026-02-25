@@ -691,12 +691,12 @@
             left: 0;
             width: 100%;
             text-align: center;
-            font-size: 9px;
-            color: #777;
+            font-size: 11px;
+            color: #000;
             font-weight: bold;
             pointer-events: none;
             text-transform: none;
-            opacity: 0.8;
+            opacity: 1;
         }
 
         .ew-copy {
@@ -3871,8 +3871,28 @@
             if (row) row.classList.remove('drag-over');
 
             if (dragSrc === null) return;
-            const movedWidget = rows[dragSrc.r][dragSrc.w];
 
+            // Handle virtual nav drop
+            if (dragSrc.type === 'virtual_nav') {
+                const navW = {
+                    id: 'navigate.' + dragSrc.dash,
+                    type: 'navigate',
+                    name: dragSrc.dash.toUpperCase(),
+                    size: '(2x1)',
+                    dash: dragSrc.dash,
+                    was_edited: false
+                };
+                if (getRowUsage(rows[targetR]) + getSlots(navW) > getMaxSlots()) {
+                    alert(TRANSLATIONS[currentLang].alert_full);
+                    return;
+                }
+                rows[targetR].push(navW);
+                dragSrc = null;
+                renderPreview();
+                return;
+            }
+
+            const movedWidget = rows[dragSrc.r][dragSrc.w];
             rows[dragSrc.r].splice(dragSrc.w, 1);
 
             if (getRowUsage(rows[targetR]) + getSlots(movedWidget) > getMaxSlots()) {
@@ -3888,6 +3908,26 @@
         function handleWidgetDrop(e, targetR, targetW) {
             e.stopPropagation(); e.preventDefault();
             if (dragSrc === null) return;
+
+            // Handle virtual nav drop between widgets
+            if (dragSrc.type === 'virtual_nav') {
+                const navW = {
+                    id: 'navigate.' + dragSrc.dash,
+                    type: 'navigate',
+                    name: dragSrc.dash.toUpperCase(),
+                    size: '(2x1)',
+                    dash: dragSrc.dash,
+                    was_edited: false
+                };
+                if (getRowUsage(rows[targetR]) + getSlots(navW) > getMaxSlots()) {
+                    alert(TRANSLATIONS[currentLang].alert_full);
+                    return;
+                }
+                rows[targetR].splice(targetW, 0, navW);
+                dragSrc = null;
+                renderPreview();
+                return;
+            }
 
             const movedWidget = rows[dragSrc.r][dragSrc.w];
             rows[dragSrc.r].splice(dragSrc.w, 1);
@@ -3938,8 +3978,10 @@
                 navControls.className = 'row-controls';
                 const navLabel = document.createElement('span');
                 navLabel.className = 'row-label';
-                navLabel.style.backgroundColor = '#4caf50';
+                navLabel.style.backgroundColor = '#2e7d32';
                 navLabel.style.color = '#fff';
+                navLabel.style.fontSize = '11px';
+                navLabel.style.padding = '2px 8px';
                 navLabel.innerText = TRANSLATIONS[currentLang].auto_nav_title;
                 navControls.appendChild(navLabel);
                 navRowDiv.appendChild(navControls);
@@ -3964,6 +4006,11 @@
 
                     const navWrapper = document.createElement('div');
                     navWrapper.className = 'widget-wrapper';
+                    navWrapper.draggable = true;
+                    navWrapper.ondragstart = (e) => {
+                        dragSrc = { type: 'virtual_nav', dash: cleanName };
+                        e.dataTransfer.effectAllowed = 'copy';
+                    };
 
                     const navTypeLabel = document.createElement('div');
                     navTypeLabel.className = 'ew-type-label';
