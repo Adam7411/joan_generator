@@ -687,7 +687,7 @@
 
         .ew-nav-info {
             position: absolute;
-            bottom: 4px;
+            bottom: 12px;
             left: 0;
             width: 100%;
             text-align: center;
@@ -1408,11 +1408,12 @@
                 <!-- Auto Top Navigation Bar Toggle -->
                 <div class="flex-col">
                     <div style="margin-top: 0px;">
-                        <label style="display: flex; align-items: center; cursor: pointer;">
+                        <span data-i18n="lbl_auto_nav_bar" style="font-weight: bold; margin-right: 10px;">Auto Pasek
+                            Nawigacji (Góra)</span>
+                        <label class="toggle-switch">
                             <input type="checkbox" id="auto-nav-bar" {% if auto_nav_bar %}checked{% endif %}
-                                style="margin-right: 10px; width: 18px; height: 18px;">
-                            <span data-i18n="lbl_auto_nav_bar" style="font-weight: bold;">Auto Pasek Nawigacji
-                                (Góra)</span>
+                                onchange="renderPreview()">
+                            <span class="slider"></span>
                         </label>
                     </div>
                 </div>
@@ -3970,9 +3971,11 @@
                 const navRowDiv = document.createElement('div');
                 navRowDiv.className = 'eink-row virtual-nav-row';
                 navRowDiv.style.marginTop = '10px';
-                navRowDiv.style.opacity = '0.9';
-                navRowDiv.style.borderStyle = 'solid';
-                navRowDiv.style.borderColor = '#4caf50';
+                navRowDiv.style.marginBottom = '30px';
+                navRowDiv.style.opacity = '1';
+                navRowDiv.style.borderStyle = 'none';
+                navRowDiv.style.borderBottom = '4px solid #2e7d32';
+                navRowDiv.style.paddingBottom = '5px';
 
                 const navControls = document.createElement('div');
                 navControls.className = 'row-controls';
@@ -4007,9 +4010,15 @@
                     const navWrapper = document.createElement('div');
                     navWrapper.className = 'widget-wrapper';
                     navWrapper.draggable = true;
+                    navWrapper.style.cursor = 'grab';
                     navWrapper.ondragstart = (e) => {
                         dragSrc = { type: 'virtual_nav', dash: cleanName };
                         e.dataTransfer.effectAllowed = 'copy';
+                        e.dataTransfer.setData('text/plain', cleanName); // Required by some browsers
+                        navWrapper.style.opacity = '0.5';
+                    };
+                    navWrapper.ondragend = () => {
+                        navWrapper.style.opacity = '1';
                     };
 
                     const navTypeLabel = document.createElement('div');
