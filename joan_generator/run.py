@@ -647,15 +647,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
 
         if rows:
             output.append("layout:")
-            if auto_nav_bar and available_dash_files:
-                nav_parts = []
-                for dash_item in available_dash_files:
-                    dash_name = dash_item.get('name') if isinstance(dash_item, dict) else dash_item
-                    dash_slug = dash_name.replace('.dash', '')
-                    if dash_slug != title.lower().replace(' ', '_'):
-                        nav_parts.append(f"navigate.{dash_slug}(1x1)")
-                if nav_parts:
-                    output.append(f"  - {', '.join(nav_parts)}")
+            # Removed automated navigation inject to prevent overriding user layout
 
             for row in rows:
                 if not row:
