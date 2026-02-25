@@ -2664,6 +2664,7 @@
                 link_v3_proxmox: "Instalacja serwera Visionect w Proxmox",
                 link_addon: "Dodatek Visionect Joan dla Home Assistant",
                 link_generator: "Ten generator Joan E-Ink (Dokumentacja i kod)",
+                link_visionect_docs: "📖 Oficjalna Dokumentacja Techniczna Visionect",
                 link_visionect: "Visionect (Producent Joan)",
                 list_dashboards_title: "Lista Dashboardów:",
                 dash_list_empty: "(brak)",
@@ -2848,6 +2849,7 @@
                 link_v3_proxmox: "Visionect Software Suite - Installation in Proxmox",
                 link_addon: "Visionect Joan for Home Assistant add-on",
                 link_generator: "This Generator (Documentation & Code)",
+                link_visionect_docs: "📖 Official Visionect Technical Documentation",
                 link_visionect: "Visionect (Joan Manufacturer)",
                 list_dashboards_title: "Dashboard List:",
                 dash_list_empty: "(none)",
@@ -6008,9 +6010,13 @@ class DashSaver(hass.Hass):
                 <li
                     style="margin-bottom: 15px; padding: 12px; background: #f9f9f9; border-left: 4px solid #d32f2f; border-radius: 4px;">
                     <a href="https://docs.visionect.com/index.html" target="_blank"
-                        style="text-decoration: none; color: #1565c0; font-weight: bold; margin-bottom: 5px; display: block;">
+                        style="text-decoration: none; color: #1565c0; font-weight: bold;"
+                        data-i18n="link_visionect_docs">
                         📖 Dokumentacja Techniczna Visionect (Official)
                     </a>
+                </li>
+                <li
+                    style="margin-bottom: 15px; padding: 12px; background: #f9f9f9; border-left: 4px solid #d32f2f; border-radius: 4px;">
                     <a href="https://www.visionect.com/" target="_blank"
                         style="text-decoration: none; color: #d32f2f; font-weight: bold;" data-i18n="link_visionect">
                         Visionect (Producent Joan)
