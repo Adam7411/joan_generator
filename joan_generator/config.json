@@ -1,5 +1,5 @@
 {
-  "name": "Joan 6/13: AppDaemon Dashboard Generator",
+  "name": "Joan 6: AppDaemon Dashboard Generator",
   "version": "1.5.1",
   "slug": "joan_generator",
   "description": ".dash file creator for AppDaemon, optimized for Visionect Joan 6/13 screens.",
@@ -11,7 +11,7 @@
   "hassio_role": "manager",
   "init": false,
   "panel_icon": "mdi:tablet-dashboard",
-  "panel_title": "Joan 6/13 Generator",
+  "panel_title": "Joan 6 Generator",
   "ingress": true,
   "ingress_port": 5000,
   "homeassistant_api": true,
