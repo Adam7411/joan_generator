@@ -1133,6 +1133,26 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append(f"  slider_style: \"background-color: #cccccc !important;\"")
                     output.append(f"  slidercontainer_style: \"background-color: #ffffff !important;\"")
 
+                elif w_type == 'input_slider':
+                    output.append(f"  widget_type: input_slider")
+                    output.append(f"  entity: {real_entity_id}")
+                    output.append(f"  title: \"{w_name}\"")
+
+                    # Fetch units from entity if available
+                    unit = ""
+                    if real_entity_id in entities_map:
+                        unit = entities_map[real_entity_id].get('attributes', {}).get('unit_of_measurement', '') or entities_map[real_entity_id].get('unit', '')
+                    if unit:
+                        output.append(f"  units: \"{unit}\"")
+
+                    output.append(f"  title_style: \"{build_title_style_local(is_small, t_size_custom)}\"")
+                    output.append(f"  widget_style: \"{style_widget}\"")
+                    output.append(f"  value_style: \"color: #000000 !important; font-size: 28px !important; font-weight: 700 !important; text-align: center !important;\"")
+                    output.append(f"  minvalue_style: \"color: #000000 !important; font-size: 14px !important;\"")
+                    output.append(f"  maxvalue_style: \"color: #000000 !important; font-size: 14px !important;\"")
+                    output.append(f"  slider_style: \"color: #000000 !important; background-color: #000000 !important; border: 2px solid #000000 !important;\"")
+                    output.append(f"  slidercontainer_style: \"background-color: #ffffff !important; border: 1px solid #cccccc !important;\"")
+
                 elif w_type == 'input_select':
                     output.append(f"  widget_type: input_select")
                     output.append(f"  entity: {real_entity_id}")
