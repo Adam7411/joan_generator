@@ -798,18 +798,8 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     if w_icon:
                         output.append(f"  icon: {w_icon}")
                     output.append(f"  title_style: \"{build_title_style_local(is_small, t_size_custom)}\"")
-                    output.append(f"  title2_style: \"{style_title}; font-size: 16px;\"")
                     output.append(f"  widget_style: \"{style_widget}\"")
                     output.append(f"  icon_style: \"{style_icon}\"")
-                    output.append(f"  icon_style_active: \"{style_icon}\"")
-                    output.append(f"  icon_style_inactive: \"{style_icon}; opacity: 0.5;\"")
-                    output.append(f"  text_style: \"{style_text}\"")
-                    output.append(f"  level_style: \"{style_text}; font-size: 16px;\"")
-                    output.append(f"  units_style: \"{style_text}; font-size: 16px;\"")
-                    output.append(f"  artist_style: \"{style_text}\"")
-                    output.append(f"  media_title_style: \"{style_text}; font-weight: bold;\"")
-                    output.append(f"  album_style: \"{style_text}\"")
-                    output.append(f"  state_text_style: \"{style_text}\"")
                     output.append("  truncate_name: 20")
                     output.append("  step: 5")
 
@@ -821,16 +811,10 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append(f"  step: 1")
                     output.append(f"  precision: 1")
                     output.append(f"  title_style: \"{build_title_style_local(is_small, t_size_custom)}\"")
-                    output.append(f"  title2_style: \"{style_title}; font-size: 16px;\"")
-                    output.append(f"  text_style: \"{style_text}\"")
                     output.append(f"  widget_style: \"{style_widget}\"")
                     output.append(f"  icon_style_active: \"{style_icon}\"")
                     output.append(f"  icon_style_inactive: \"{style_icon}; opacity: 0.5;\"")
                     output.append(f"  icon_style: \"{style_icon}\"")
-                    output.append(f"  level_style: \"{style_text}; color: #000000 !important;\"")
-                    output.append(f"  level2_style: \"{style_text}; color: #000000 !important;\"")
-                    output.append(f"  unit_style: \"{style_text}; color: #000000 !important;\"")
-                    output.append(f"  unit2_style: \"{style_text}; color: #000000 !important;\"")
 
                 elif w_type == 'fan':
                     output.append(f"  widget_type: fan")
@@ -1143,7 +1127,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append(f"  value_style: \"color: #000000 !important; font-size: 28px !important; font-weight: 700 !important; text-align: center !important;\"")
                     output.append(f"  minvalue_style: \"color: #000000 !important; font-size: 14px !important;\"")
                     output.append(f"  maxvalue_style: \"color: #000000 !important; font-size: 14px !important;\"")
-                    output.append(f"  slider_style: \"color: #000000 !important; font-size: 20px !important; border: 2px solid #000000 !important;\"")
+                    output.append(f"  slider_style: \"color: #000000 !important; border: 2px solid #000000 !important;\"")
                     output.append(f"  slidercontainer_style: \"background-color: transparent !important;\"")
 
                 elif w_type == 'input_select':
