@@ -566,36 +566,31 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
     # device profile settings
     is_pro = (device_profile == 'joan_13_pro')
 
-    style_title = f"color: #000000 !important; font-size: {'32' if is_pro else '20'}px; font-weight: {'900' if is_pro else '700'}; text-align: center; padding-top: {'10' if is_pro else '5'}px; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif"
-    style_title2 = f"color: #000000 !important; font-size: {'24' if is_pro else '16'}px; font-weight: {'900' if is_pro else '700'}; text-align: center; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif"
-    style_title_small = f"color: #000000 !important; font-size: {'24' if is_pro else '16'}px; font-weight: {'900' if is_pro else '700'}; text-align: center; padding-top: {'10' if is_pro else '5'}px; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif"
+    style_title = "color: #000000 !important; font-size: 20px; font-weight: 700; text-align: center; padding-top: 5px; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif"
+    style_title2 = "color: #000000 !important; font-size: 16px; font-weight: 700; text-align: center; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif"
+    style_title_small = "color: #000000 !important; font-size: 16px; font-weight: 700; text-align: center; padding-top: 5px; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif"
     
     style_widget = "color: #000000 !important; background-color: #FFFFFF !important"
-    style_text = f"color: #000000 !important; font-weight: {'900' if is_pro else '700'} !important"
-    style_state_text = f"color: #000000 !important; font-weight: {'900' if is_pro else '700'} !important; font-size: {'26' if is_pro else '16'}px !important"
+    style_text = "color: #000000 !important; font-weight: 700 !important"
+    style_state_text = "color: #000000 !important; font-weight: 700 !important; font-size: 16px !important"
     
-    style_gauge_val = f"color: #000000 !important; font-size: {'50' if is_pro else '30'}px !important; font-weight: {'900' if is_pro else '700'} !important; line-height: 1.1 !important; display: inline-block !important"
-    style_unit = f"color: #000000 !important; padding-top: {'90' if is_pro else '60'}px !important; display: inline-block !important"
-    style_icon = f"color: #000000 !important"
+    style_gauge_val = "color: #000000 !important; font-size: 30px !important; font-weight: 700 !important; line-height: 1.1 !important; display: inline-block !important"
+    style_unit = "color: #000000 !important; padding-top: 60px !important; display: inline-block !important"
+    style_icon = "color: #000000 !important"
     # dynamic value/title helpers inside
     def build_val_style_local(size_hint, is_small_w, custom_px):
         if custom_px and str(custom_px).strip():
             try:
                 px = int(custom_px)
             except:
-                px = (60 if is_pro else 34) if is_small_w else (90 if is_pro else 54)
-        elif is_small_w:
-            px = 60 if is_pro else 34
+                px = 34 if is_small_w else 54
         else:
-            if is_pro:
-                px_map = {"normal": 90, "medium": 65, "small": 50}
-            else:
-                px_map = {"normal": 54, "medium": 40, "small": 32}
-            px = px_map.get(size_hint, 90 if is_pro else 54)
-            
-        tmpl = f"color: #000000 !important; font-size: {{px}}px !important; font-weight: {'900' if is_pro else '700'} !important; padding-top: {'90' if is_pro else '60'}px !important; line-height: 1.1 !important; display: inline-block !important"
+            if size_hint == 'small': px = 34
+            elif size_hint == 'large': px = 64
+            else: px = 54
+        tmpl = f"color: #000000 !important; font-size: {{px}}px !important; font-weight: 700 !important; padding-top: 60px !important; line-height: 1.1 !important; display: inline-block !important"
         return tmpl.format(px=px)
-        
+
     def build_title_style_local(is_small_w, custom_px):
         base_style = style_title_small if is_small_w else style_title
         if custom_px and str(custom_px).strip():
