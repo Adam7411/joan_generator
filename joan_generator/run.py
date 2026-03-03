@@ -726,6 +726,8 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                 
                 output.append(f"{w_id}:")
 
+                w_title2 = w.get('title2', '')
+
                 if w_type == 'navigate':
                     dash_name = w.get('dash', w_id.replace('navigate.', ''))
                     nav_icon = w_icon or 'mdi-arrow-right-circle'
@@ -743,6 +745,9 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append(f"  widget_type: switch")
                     output.append(f"  entity: {real_entity_id}")
                     output.append(f"  title: \"{w_name}\"")
+                    if w_title2:
+                        output.append(f"  title2: \"{w_title2}\"")
+                        output.append(f"  title2_style: \"{style_title2}\"")
                     if i_on: output.append(f"  icon_on: {i_on}")
                     if i_off: output.append(f"  icon_off: {i_off}")
                     if w_icon and not i_on:
@@ -772,6 +777,9 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append(f"  widget_type: sensor")
                     output.append(f"  entity: {real_entity_id}")
                     output.append(f"  title: \"{w_name}\"")
+                    if w_title2:
+                        output.append(f"  title2: \"{w_title2}\"")
+                        output.append(f"  title2_style: \"{style_title2}\"")
                     if w_icon:
                         output.append(f"  icon: {w_icon}")
 
@@ -911,6 +919,9 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append(f"  widget_type: light")
                     output.append(f"  entity: {real_entity_id}")
                     output.append(f"  title: \"{w_name}\"")
+                    if w_title2:
+                        output.append(f"  title2: \"{w_title2}\"")
+                        output.append(f"  title2_style: \"{style_title2}\"")
 
                     if i_on: output.append(f"  icon_on: {i_on}")
                     if i_off: output.append(f"  icon_off: {i_off}")
@@ -947,6 +958,9 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                         output.append(f"  icon_off: {w_icon}")
                     t_size_custom = w.get('title_size_custom')
                     output.append(f"  title_style: \"{build_title_style_local(is_small, t_size_custom)}\"")
+                    if w_title2:
+                        output.append(f"  title2: \"{w_title2}\"")
+                        output.append(f"  title2_style: \"{style_title2}\"")
                     output.append(f"  widget_style: \"{style_widget}\"")
                     output.append(f"  icon_style_active: \"{style_icon}\"")
                     output.append(f"  icon_style_inactive: \"{style_icon}; opacity: 0.5;\"")
@@ -1135,9 +1149,14 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append(f"  select_style: \"color: #000000 !important; font-size: 18px !important; background: #ffffff !important; border: 1px solid #999999 !important;\"")
                     output.append(f"  selectcontainer_style: \"background-color: #ffffff !important;\"")
 
+
+
                 elif w_type == 'label':
                     output.append(f"  widget_type: label")
                     output.append(f"  text: \"{w_name}\"")
+                    if w_title2:
+                        output.append(f"  title2: \"{w_title2}\"")
+                        output.append(f"  title2_style: \"{style_title2}\"")
                     if w_icon:
                         output.append(f"  icon: {w_icon}")
                     output.append(f"  text_style: \"{build_title_style_local(is_small, t_size_custom)}\"")
