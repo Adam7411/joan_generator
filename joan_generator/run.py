@@ -579,8 +579,8 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
     style_icon = f"color: #000000 !important"
 
     # === TOUCH BUTTON STYLE (duże przyciski +/- na e-ink) ===
-    touch_btn_px = 65 if is_pro else 45
-    style_touch_btn = f"color: #000000 !important; font-size: {touch_btn_px}px !important; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transform: scale(1.1); padding: 0 4px;"
+    touch_btn_px = 55 if is_pro else 34
+    style_touch_btn = f"color: #000000 !important; font-size: {touch_btn_px}px !important; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; padding: 5px; margin: 0; transform: scale(1.15);"
 
     # dynamic value/title helpers inside
     def build_val_style_local(size_hint, is_small_w, custom_px):
