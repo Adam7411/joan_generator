@@ -576,6 +576,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
     
     style_gauge_val = f"color: #000000 !important; font-size: {'50' if is_pro else '30'}px !important; font-weight: {'900' if is_pro else '700'} !important; line-height: 1.1 !important; display: inline-block !important"
     style_unit = f"color: #000000 !important; padding-top: {'90' if is_pro else '60'}px !important; display: inline-block !important"
+    style_icon = f"color: #000000 !important"
     # dynamic value/title helpers inside
     def build_val_style_local(size_hint, is_small_w, custom_px):
         if custom_px and str(custom_px).strip():
