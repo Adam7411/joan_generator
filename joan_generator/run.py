@@ -830,8 +830,6 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append(f"  level2_style: \"{style_text}; color: #000000 !important;\"")
                     output.append(f"  unit_style: \"{style_text}; color: #000000 !important;\"")
                     output.append(f"  unit2_style: \"{style_text}; color: #000000 !important;\"")
-                    output.append(f"  level_up_style: \"{style_lvl_up}\"")
-                    output.append(f"  level_down_style: \"{style_lvl_down}\"")
 
                 elif w_type == 'fan':
                     output.append(f"  widget_type: fan")
@@ -943,8 +941,6 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append(f"  title_style: \"{style_title}\"")
                     output.append(f"  widget_style: \"{style_widget}\"")
                     output.append(f"  icon_style_inactive: \"{style_icon}; opacity: 0.5;\"")
-                    output.append(f"  level_up_style: \"{style_lvl_up}\"")
-                    output.append(f"  level_down_style: \"{style_lvl_down}\"")
                     
                     st_enabled = w.get('state_text_enabled', True)
                     if str(st_enabled).lower() == 'false' or st_enabled is False:
@@ -974,8 +970,6 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append(f"  widget_style: \"{style_widget}\"")
                     output.append(f"  icon_style_active: \"{style_icon}\"")
                     output.append(f"  icon_style_inactive: \"{style_icon}; opacity: 0.5;\"")
-                    output.append(f"  level_up_style: \"{style_lvl_up}\"")
-                    output.append(f"  level_down_style: \"{style_lvl_down}\"")
                     
                     st_enabled = w.get('state_text_enabled', True)
                     if str(st_enabled).lower() == 'false' or st_enabled is False:
