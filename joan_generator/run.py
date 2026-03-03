@@ -579,15 +579,10 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
     style_icon = f"color: #000000 !important"
 
     # === ODPORNE NA ROZWALANIE PRZYCISKI DOTYKOWE (+/-) ===
-    # Obniżamy fizyczny text-size, a robimy GIGANTYCZNĄ niewidzialną strefę uderzenia palcem za pomocą paddingów.
-    t_font = 42 if is_pro else 26  # Rozsądny rozmiar samej ikony (nie wychodzi za ekran!)
-    t_pad = 25 if is_pro else 15   # 15px niewidzialnego "nawisu" na każdy bok dookoła kliknięcia
+    # Używamy tylko bezpiecznego zwiększenia font-size by nie zrujnować układu kafelków (flexbox).
+    t_font = 40 if is_pro else 28 
     
-    style_touch_icon = f"color: #000000 !important; font-size: {t_font}px !important; cursor: pointer; padding: {t_pad}px !important; margin: -{t_pad}px !important; z-index: 10;"
-    
-    # Dodatkowe wciągnięcie do wewnątrz widżetu (żeby uciec od prawej krawędzi)
-    style_lvl_down = style_touch_icon + " position: relative; left: 8px;"
-    style_lvl_up = style_touch_icon + " position: relative; right: 8px;"
+    style_lvl_btn = f"color: #000000 !important; font-size: {t_font}px !important; cursor: pointer;"
     
     # Styl dla przycisków w input_slider (bo one mają widoczną ramkę, więc bez ujemnych marginesów)
     style_touch_btn = f"color: #000000 !important; font-size: {t_font}px !important; cursor: pointer; padding: 2px 14px !important;"
@@ -825,10 +820,10 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append(f"  media_title_style: \"{style_text}; font-weight: bold;\"")
                     output.append(f"  album_style: \"{style_text}\"")
                     output.append(f"  state_text_style: \"{style_text}\"")
-                    output.append(f"  icon_up_style: \"{style_touch_icon}\"")
-                    output.append(f"  icon_down_style: \"{style_touch_icon}\"")
-                    output.append(f"  level_up_style: \"{style_lvl_up}\"")
-                    output.append(f"  level_down_style: \"{style_lvl_down}\"")
+                    output.append(f"  icon_up_style: \"{style_lvl_btn}\"")
+                    output.append(f"  icon_down_style: \"{style_lvl_btn}\"")
+                    output.append(f"  level_up_style: \"{style_lvl_btn}\"")
+                    output.append(f"  level_down_style: \"{style_lvl_btn}\"")
                     output.append("  truncate_name: 20")
                     output.append("  step: 5")
 
