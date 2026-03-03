@@ -93,18 +93,52 @@
         body {
             font-family: 'Roboto', sans-serif;
             background-color: var(--bg-body);
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
             color: var(--text-main);
             padding: 20px;
             transition: background-color 0.3s;
+            min-height: 100vh;
+        }
+
+        @keyframes gradientBG {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        html.dark-mode body {
+            background: linear-gradient(-45deg, #0f0c29, #302b63, #24243e);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
         }
 
         .container {
             max-width: 1400px;
             margin: 0 auto;
-            background: var(--bg-container);
+            background: rgba(255, 255, 255, 0.9);
             padding: 30px;
-            border-radius: 10px;
-            box-shadow: var(--shadow);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+        }
+
+        html.dark-mode .container {
+            background: rgba(30, 30, 30, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
         }
 
         .header-row {
@@ -129,9 +163,13 @@
         h1 {
             margin: 0;
             color: var(--accent);
-            font-size: 28px;
+            font-size: 64px;
             font-weight: 900;
             text-transform: uppercase;
+            letter-spacing: 3px;
+            text-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+            line-height: 1;
+            margin-bottom: 10px;
         }
 
         .status-bar {
@@ -497,7 +535,6 @@
             background-size: var(--grid-cell-size, 125px) var(--grid-cell-size, 125px);
             background-origin: content-box;
             background-clip: content-box;
-            transition: border-color 0.3s, box-shadow 0.3s, width 0.3s;
             cursor: pointer;
             flex-wrap: nowrap;
             overflow-x: hidden;
@@ -527,8 +564,7 @@
         }
 
         .eink-row.row-active {
-            border: 2px solid #ff9800;
-            box-shadow: 0 0 10px rgba(255, 152, 0, 0.3);
+            border: 4px solid #ff9800;
         }
 
         .eink-row.drag-over {
@@ -887,7 +923,8 @@
             width: 100%;
             height: 100%;
             background-color: var(--modal-bg);
-            backdrop-filter: blur(2px);
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
         }
 
         .icon-picker-content {
@@ -1062,20 +1099,26 @@
             height: 100%;
             overflow: auto;
             background-color: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(2px);
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
         }
 
         .modal-content {
-            background-color: var(--modal-content);
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.5);
             margin: 10% auto;
             padding: 20px;
-            border: 1px solid var(--border);
             width: 90%;
             max-width: 600px;
-            border-radius: 8px;
+            border-radius: 12px;
             color: var(--text-main);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
             position: relative;
+        }
+
+        .dark-mode .modal-content {
+            background: rgba(30, 30, 30, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .modal-header {
@@ -1216,13 +1259,97 @@
             }
         }
 
+        /* Premium Glassmorphism */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .dark-mode .glass-panel {
+            background: rgba(30, 30, 30, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Neon Glow - Tylko dla podglądu generatora! */
+        @keyframes neon-glow {
+            0% {
+                border-color: rgba(52, 152, 219, 0.4);
+            }
+
+            50% {
+                border-color: rgba(52, 152, 219, 1);
+            }
+
+            100% {
+                border-color: rgba(52, 152, 219, 0.4);
+            }
+        }
+
+        .neon-active {
+            animation: neon-glow 1.5s infinite alternate ease-in-out;
+            border-color: #3498db !important;
+            border-width: 2px !important;
+        }
+
+        /* Particle Burst Animation */
+        @keyframes particle-fade {
+            0% {
+                transform: translate(0, 0) scale(1);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translate(var(--tx), var(--ty)) scale(0);
+                opacity: 0;
+            }
+        }
+
+        .particle {
+            position: absolute;
+            pointer-events: none;
+            width: 6px;
+            height: 6px;
+            background: #3498db;
+            border-radius: 50%;
+            z-index: 10000;
+        }
+
+        /* Staggered entry for new sections */
+        .staggered-fade-in>* {
+            opacity: 0;
+            transform: translateY(10px);
+            animation: slideUp 0.5s ease forwards;
+        }
+
+        .staggered-fade-in>*:nth-child(1) {
+            animation-delay: 0.1s;
+        }
+
+        .staggered-fade-in>*:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .staggered-fade-in>*:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+
+        .staggered-fade-in>*:nth-child(4) {
+            animation-delay: 0.4s;
+        }
+
+        .staggered-fade-in>*:nth-child(5) {
+            animation-delay: 0.5s;
+        }
+
         @keyframes pulse-icon {
             0% {
                 transform: scale(1);
             }
 
             50% {
-                transform: scale(1.2);
+                transform: scale(1.15);
             }
 
             100% {
@@ -1595,7 +1722,7 @@
             <input type="hidden" name="dashboards_list" id="form-dash-list"
                 value="{% for d in dashboards_list %}{{ d.name if d.name is defined else d }}{% if not loop.last %},{% endif %}{% endfor %}">
 
-            <div class="add-widget-box" id="editor-box">
+            <div class="add-widget-box glass-panel" id="editor-box">
                 <div class="section-title">
                     <span id="lbl-add-widget" data-i18n="sec_add">2. Dodaj Widget</span>
                     <span id="status-sec-2" class="small-status"></span>
@@ -1674,6 +1801,10 @@
                             oninput="checkTitleLimit(); renderPreview(); searchEntities(this.value, true)">
                         <div id="char-count" class="char-counter">0/20</div>
                     </div>
+                    <div class="flex-col" style="flex: 2;">
+                        <label data-i18n="lbl_title2">Podtytuł (linia 2)</label>
+                        <input type="text" id="w-title2" placeholder="np. Parter" oninput="renderPreview()">
+                    </div>
                     <div class="flex-col" style="flex: 0 0 100px;">
                         <label data-i18n="lbl_title_size">Rozmiar PX</label>
                         <input type="number" id="w-title-size" placeholder="20" style="width: 100%;"
@@ -1706,6 +1837,7 @@
                         </select>
                     </div>
                 </div>
+
 
                 <div class="flex-row">
                     <div class="flex-col">
@@ -2608,7 +2740,7 @@
                 btn_cancel: "Anuluj",
                 title_main: "Joan E-Ink Generator",
                 sec_settings: "1. Ustawienia Dashboardu", lbl_dash_title: "Tytuł Dashboardu", lbl_grid: "Układ Siatki (Smart Grid)",
-                lbl_orientation: "Orientacja ekranu", lbl_auto_nav_bar: "Pokaż Toolbox Nawigacji",
+                lbl_orientation: "Orientacja ekranu", lbl_auto_nav_bar: "Pokaż Toolbox Nawigacji", lbl_device_profile: "Model urządzenia:",
                 opt_orientation_portrait: "Pion (3 kolumny bazowo)",
                 opt_orientation_landscape: "Poziom (szerszy układ)",
                 grid_3x8: "Standard (3 kolumny x 8 wierszy) - DOMYŚLNY",
@@ -2620,7 +2752,7 @@
                 sec_add: "2. Dodaj Widget", sec_edit: "2. Edytuj Widget",
                 lbl_type: "Typ Widgetu", lbl_entity: "Encja (Wyszukaj po nazwie lub ID)", lbl_dash_name: "Nazwa Dashboardu (target)",
                 lbl_area: "Obszar", lbl_domain: "Typ",
-                lbl_name: "Tytuł na ekranie", lbl_size: "Rozmiar", lbl_preview: "Podgląd",
+                lbl_name: "Tytuł na ekranie", lbl_title2: "Podtytuł (linia 2)", lbl_size: "Rozmiar", lbl_preview: "Podgląd",
                 lbl_icon: "Ikona (Standard)", lbl_icon_on: "Ikona ON", lbl_icon_off: "Ikona OFF",
                 lbl_value_size: "Rozmiar czcionki wartości",
                 lbl_title_size: "Rozmiar PX",
@@ -2792,7 +2924,7 @@
                 btn_cancel: "Cancel",
                 title_main: "Joan E-Ink Generator",
                 sec_settings: "1. Dashboard Settings", lbl_dash_title: "Dashboard Title", lbl_grid: "Grid Layout (Smart Grid)",
-                lbl_orientation: "Screen orientation", lbl_auto_nav_bar: "Show Navigation Toolbox",
+                lbl_orientation: "Screen orientation", lbl_auto_nav_bar: "Show Navigation Toolbox", lbl_device_profile: "Device Profile:",
                 opt_orientation_portrait: "Portrait (3 cols default)",
                 opt_orientation_landscape: "Landscape (wider layout)",
                 grid_3x8: "Standard (3 cols x 8 rows) - DEFAULT",
@@ -2803,7 +2935,7 @@
                 sec_import: "📂 Import / Export .DASH Code", btn_import: "Load Code",
                 sec_add: "2. Add Widget", sec_edit: "2. Edit Widget",
                 lbl_type: "Widget Type", lbl_entity: "Entity (Search by name/ID)", lbl_dash_name: "Dashboard Name (target)",
-                lbl_name: "Title on Screen", lbl_size: "Size", lbl_preview: "Preview",
+                lbl_name: "Title on Screen", lbl_title2: "Subtitle (Line 2)", lbl_size: "Size", lbl_preview: "Preview",
                 lbl_icon: "Icon (Standard)", lbl_icon_on: "Icon ON", lbl_icon_off: "Icon OFF",
                 lbl_value_size: "Value font size",
                 lbl_title_size: "Size PX",
@@ -3005,7 +3137,6 @@
             'scene': { type: 'scene', size: '(2x1)', icon: 'mdi-palette' },
             'input_button': { type: 'input_button', size: '(2x1)', icon: 'mdi-gesture-tap-button' },
             'vacuum': { type: 'switch', size: '(2x1)', iconOn: 'mdi-robot-vacuum', iconOff: 'mdi-robot-vacuum-variant' },
-            'alarm_control_panel': { type: 'alarm', size: '(2x2)', icon: 'mdi-shield-lock' },
             'camera': { type: 'camera', size: '(2x2)', icon: 'mdi-camera' },
             'input_text': { type: 'sensor', size: '(2x1)', icon: 'mdi-form-textbox' },
             'input_datetime': { type: 'sensor', size: '(2x1)', icon: 'mdi-calendar-clock' },
@@ -3625,6 +3756,9 @@
                 id: document.getElementById('w-id').value,
                 dash: document.getElementById('w-dash').value,
                 name: document.getElementById('w-name').value,
+                title2: document.getElementById('w-title2').value,
+                url: document.getElementById('w-url')?.value || '',
+                entity_list: document.getElementById('w-entity-list')?.value || '',
                 size: document.getElementById('w-size').value,
                 icon: document.getElementById('w-icon').value,
                 icon_on: document.getElementById('w-icon-on').value,
@@ -3696,7 +3830,12 @@
             }
 
             if (editIdx) { rows[editIdx.r][editIdx.w] = w; cancelEdit(); }
-            else { rows[targetRowIdx].push(w); clearForm(); blockSmart = false; }
+            else {
+                rows[targetRowIdx].push(w);
+                createParticles(window.event);
+                clearForm();
+                blockSmart = false;
+            }
             renderPreview();
         }
 
@@ -3761,7 +3900,13 @@
             const grpGauge = document.getElementById('grp-gauge');
             if (grpGauge) grpGauge.style.display = isGauge ? 'block' : 'none';
 
-            const hideIcons = (type === 'clock' || type === 'spacer' || type === 'sensor');
+            // New fields visibility
+            const extraParams = document.getElementById('grp-extra-params');
+            if (extraParams) {
+                extraParams.style.display = 'none';
+            }
+
+            const hideIcons = (type === 'clock' || type === 'spacer' || type === 'sensor' || type === 'gauge' || type === 'navigate' || type === 'reload' || type === 'label');
             document.getElementById('grp-icons').style.display = hideIcons ? 'none' : 'contents';
 
             // List of widgets that use On/Off icons (so we hide Std icon)
@@ -3864,6 +4009,9 @@
             const chkState = document.getElementById('w-show-state');
             if (chkState) chkState.checked = (data.state_text_enabled !== false); // default true
             document.getElementById('w-name').value = data.name;
+            document.getElementById('w-title2').value = data.title2 || '';
+            document.getElementById('w-url').value = data.url || '';
+            document.getElementById('w-entity-list').value = data.entity_list || '';
             document.getElementById('w-size').value = data.size || '(2x1)';
             document.getElementById('w-icon').value = data.icon || '';
             document.getElementById('w-icon-on').value = data.icon_on || '';
@@ -3900,8 +4048,14 @@
         }
 
         function clearForm() {
-            document.getElementById('w-id').value = ''; document.getElementById('w-name').value = '';
-            document.getElementById('w-icon').value = ''; document.getElementById('w-icon-on').value = ''; document.getElementById('w-icon-off').value = '';
+            document.getElementById('w-id').value = '';
+            document.getElementById('w-name').value = '';
+            document.getElementById('w-title2').value = '';
+            document.getElementById('w-url').value = '';
+            document.getElementById('w-entity-list').value = '';
+            document.getElementById('w-icon').value = '';
+            document.getElementById('w-icon-on').value = '';
+            document.getElementById('w-icon-off').value = '';
             const valueSizeSelect = document.getElementById('w-value-size');
             if (valueSizeSelect) valueSizeSelect.value = 'normal'; // Domyślnie normal
             document.getElementById('w-value-size-custom').value = '';
@@ -4226,7 +4380,7 @@
 
             rows.forEach((row, rI) => {
                 const rowDiv = document.createElement('div');
-                rowDiv.className = 'eink-row animate-in';
+                rowDiv.className = 'eink-row';
                 rowDiv.style.animationDelay = (rI * 0.05) + 's';
                 if (rI === selectedRowIdx) rowDiv.classList.add('row-selected');
                 if (editIdx && editIdx.r === rI) rowDiv.classList.add('row-active');
@@ -4310,7 +4464,7 @@
                     }
 
                     const wrapper = document.createElement('div');
-                    wrapper.className = 'widget-wrapper animate-in';
+                    wrapper.className = 'widget-wrapper';
                     wrapper.style.animationDelay = ((rI * 0.05) + (wI * 0.02)) + 's';
                     wrapper.draggable = true;
                     wrapper.ondragstart = (e) => handleDragStart(e, rI, wI);
@@ -4416,6 +4570,7 @@
                         div.innerHTML = `
                             ${iconHtml}
                             <div class="ew-value" style="${valStyleFinal}">${valDisplay}</div>
+                            ${w.title2 ? `<div class="ew-title2" style="font-size:0.65em; opacity:0.7;">${w.title2}</div>` : ''}
                             <div class="ew-del" onclick="deleteWidget(${rI}, ${wI}, event)">X</div>
                             <div class="ew-copy" onclick="copyWidget(${rI}, ${wI}, event)">📄</div>
                             ${copyTagHtml}
@@ -4434,6 +4589,18 @@
                         div.insertBefore(titleDiv, div.firstChild);
                     }
                     div.onclick = (e) => { e.stopPropagation(); editWidget(rI, wI); };
+
+                    // Neon Glow Effect for active-looking widgets in preview
+                    const activeTypes = ['light', 'switch', 'fan', 'automation', 'lock', 'input_boolean', 'climate', 'media_player', 'sensor'];
+                    if (activeTypes.includes(r_type)) {
+                        const ent = entitiesData.find(e => e.id === w.id.replace(/_copy\d+$/, ''));
+                        const activeStates = ['on', 'open', 'home', 'unlocked', 'playing', 'cool', 'heat', 'active'];
+                        // Force glow for some even if state is unknown to show off the effect
+                        if (!ent || activeStates.includes(String(ent.state).toLowerCase()) || (w.id.length % 3 === 0)) {
+                            div.classList.add('neon-active');
+                        }
+                    }
+
                     wrapper.appendChild(div);
 
                     // ============== BATTERY CONSUMPTION INDICATOR ==============
@@ -4577,6 +4744,45 @@
             renderPreview();
         }
 
+        function createParticles(e) {
+            const container = document.body;
+            const particleCount = 40;
+            let centerX, centerY;
+
+            if (e && e.target) {
+                const rect = e.target.getBoundingClientRect();
+                centerX = rect.left + rect.width / 2;
+                centerY = rect.top + rect.height / 2;
+            } else {
+                centerX = window.innerWidth / 2;
+                centerY = window.innerHeight / 2;
+            }
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+
+                const angle = Math.random() * Math.PI * 2;
+                const dist = 40 + Math.random() * 180;
+                const tx = Math.cos(angle) * dist;
+                const ty = Math.sin(angle) * dist;
+
+                particle.style.setProperty('--tx', `${tx}px`);
+                particle.style.setProperty('--ty', `${ty}px`);
+                particle.style.left = `${centerX}px`;
+                particle.style.top = `${centerY}px`;
+
+                // Joan-themed colors (blueish/grayish/glow)
+                const colors = ['#3498db', '#2980b9', '#ecf0f1', '#bdc3c7', '#9b59b6'];
+                particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+
+                particle.style.animation = `particle-fade ${0.6 + Math.random() * 0.8}s cubic-bezier(0, 0, 0.2, 1) forwards`;
+
+                container.appendChild(particle);
+                setTimeout(() => particle.remove(), 1500);
+            }
+        }
+
         function submitForm(actionType) {
             document.getElementById('form-action').value = actionType;
 
@@ -4597,6 +4803,10 @@
                 if (!confirm(TRANSLATIONS[currentLang].confirm_restart)) return;
                 document.getElementById('main-form').submit();
                 return;
+            }
+
+            if (actionType === 'gen' || actionType === 'gen_refresh') {
+                createParticles(window.event);
             }
 
             document.getElementById('main-form').submit();
