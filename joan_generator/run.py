@@ -576,17 +576,6 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
     
     style_gauge_val = f"color: #000000 !important; font-size: {'50' if is_pro else '30'}px !important; font-weight: {'900' if is_pro else '700'} !important; line-height: 1.1 !important; display: inline-block !important"
     style_unit = f"color: #000000 !important; padding-top: {'90' if is_pro else '60'}px !important; display: inline-block !important"
-    style_icon = f"color: #000000 !important"
-
-    # === ODPORNE NA ROZWALANIE PRZYCISKI DOTYKOWE (+/-) ===
-    # Używamy tylko bezpiecznego zwiększenia font-size by nie zrujnować układu kafelków (flexbox).
-    t_font = 40 if is_pro else 28 
-    
-    style_lvl_btn = f"color: #000000 !important; font-size: {t_font}px !important; cursor: pointer;"
-    
-    # Styl dla przycisków w input_slider (bo one mają widoczną ramkę, więc bez ujemnych marginesów)
-    style_touch_btn = f"color: #000000 !important; font-size: {t_font}px !important; cursor: pointer; padding: 2px 14px !important;"
-
     # dynamic value/title helpers inside
     def build_val_style_local(size_hint, is_small_w, custom_px):
         if custom_px and str(custom_px).strip():
@@ -820,10 +809,6 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append(f"  media_title_style: \"{style_text}; font-weight: bold;\"")
                     output.append(f"  album_style: \"{style_text}\"")
                     output.append(f"  state_text_style: \"{style_text}\"")
-                    output.append(f"  icon_up_style: \"{style_lvl_btn}\"")
-                    output.append(f"  icon_down_style: \"{style_lvl_btn}\"")
-                    output.append(f"  level_up_style: \"{style_lvl_btn}\"")
-                    output.append(f"  level_down_style: \"{style_lvl_btn}\"")
                     output.append("  truncate_name: 20")
                     output.append("  step: 5")
 
@@ -1160,10 +1145,10 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
 
                     output.append(f"  title_style: \"{build_title_style_local(is_small, t_size_custom)}\"")
                     output.append(f"  widget_style: \"{style_widget}\"")
-                    output.append(f"  value_style: \"color: #000000 !important; font-size: 32px !important; font-weight: 700 !important; text-align: center !important;\"")
-                    output.append(f"  minvalue_style: \"color: #000000 !important; font-size: 20px !important; font-weight: bold !important;\"")
-                    output.append(f"  maxvalue_style: \"color: #000000 !important; font-size: 20px !important; font-weight: bold !important;\"")
-                    output.append(f"  slider_style: \"{style_touch_btn}; font-weight: bold !important; background-color: transparent !important; border: 2px solid #000000 !important; border-radius: 8px !important;\"")
+                    output.append(f"  value_style: \"color: #000000 !important; font-size: 28px !important; font-weight: 700 !important; text-align: center !important;\"")
+                    output.append(f"  minvalue_style: \"color: #000000 !important; font-size: 14px !important;\"")
+                    output.append(f"  maxvalue_style: \"color: #000000 !important; font-size: 14px !important;\"")
+                    output.append(f"  slider_style: \"color: #000000 !important; font-size: 20px !important; border: 2px solid #000000 !important;\"")
                     output.append(f"  slidercontainer_style: \"background-color: transparent !important;\"")
 
                 elif w_type == 'input_select':
