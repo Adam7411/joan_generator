@@ -578,9 +578,19 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
     style_unit = f"color: #000000 !important; padding-top: {'90' if is_pro else '60'}px !important; display: inline-block !important"
     style_icon = f"color: #000000 !important"
 
-    # === TOUCH BUTTON STYLE (duże przyciski +/- na e-ink) ===
-    touch_btn_px = 55 if is_pro else 34
-    style_touch_btn = f"color: #000000 !important; font-size: {touch_btn_px}px !important; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; padding: 5px; margin: 0; transform: scale(1.15);"
+    # === ODPORNE NA ROZWALANIE PRZYCISKI DOTYKOWE (+/-) ===
+    # Obniżamy fizyczny text-size, a robimy GIGANTYCZNĄ niewidzialną strefę uderzenia palcem za pomocą paddingów.
+    t_font = 42 if is_pro else 26  # Rozsądny rozmiar samej ikony (nie wychodzi za ekran!)
+    t_pad = 25 if is_pro else 15   # 15px niewidzialnego "nawisu" na każdy bok dookoła kliknięcia
+    
+    style_touch_icon = f"color: #000000 !important; font-size: {t_font}px !important; cursor: pointer; padding: {t_pad}px !important; margin: -{t_pad}px !important; z-index: 10;"
+    
+    # Dodatkowe wciągnięcie do wewnątrz widżetu (żeby uciec od prawej krawędzi)
+    style_lvl_down = style_touch_icon + " position: relative; left: 8px;"
+    style_lvl_up = style_touch_icon + " position: relative; right: 8px;"
+    
+    # Styl dla przycisków w input_slider (bo one mają widoczną ramkę, więc bez ujemnych marginesów)
+    style_touch_btn = f"color: #000000 !important; font-size: {t_font}px !important; cursor: pointer; padding: 2px 14px !important;"
 
     # dynamic value/title helpers inside
     def build_val_style_local(size_hint, is_small_w, custom_px):
@@ -815,10 +825,10 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append(f"  media_title_style: \"{style_text}; font-weight: bold;\"")
                     output.append(f"  album_style: \"{style_text}\"")
                     output.append(f"  state_text_style: \"{style_text}\"")
-                    output.append(f"  icon_up_style: \"{style_touch_btn}\"")
-                    output.append(f"  icon_down_style: \"{style_touch_btn}\"")
-                    output.append(f"  level_up_style: \"{style_touch_btn}\"")
-                    output.append(f"  level_down_style: \"{style_touch_btn}\"")
+                    output.append(f"  icon_up_style: \"{style_touch_icon}\"")
+                    output.append(f"  icon_down_style: \"{style_touch_icon}\"")
+                    output.append(f"  level_up_style: \"{style_lvl_up}\"")
+                    output.append(f"  level_down_style: \"{style_lvl_down}\"")
                     output.append("  truncate_name: 20")
                     output.append("  step: 5")
 
@@ -840,8 +850,8 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append(f"  level2_style: \"{style_text}; color: #000000 !important;\"")
                     output.append(f"  unit_style: \"{style_text}; color: #000000 !important;\"")
                     output.append(f"  unit2_style: \"{style_text}; color: #000000 !important;\"")
-                    output.append(f"  level_up_style: \"{style_touch_btn}\"")
-                    output.append(f"  level_down_style: \"{style_touch_btn}\"")
+                    output.append(f"  level_up_style: \"{style_lvl_up}\"")
+                    output.append(f"  level_down_style: \"{style_lvl_down}\"")
 
                 elif w_type == 'fan':
                     output.append(f"  widget_type: fan")
@@ -953,8 +963,8 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append(f"  title_style: \"{style_title}\"")
                     output.append(f"  widget_style: \"{style_widget}\"")
                     output.append(f"  icon_style_inactive: \"{style_icon}; opacity: 0.5;\"")
-                    output.append(f"  level_up_style: \"{style_touch_btn}\"")
-                    output.append(f"  level_down_style: \"{style_touch_btn}\"")
+                    output.append(f"  level_up_style: \"{style_lvl_up}\"")
+                    output.append(f"  level_down_style: \"{style_lvl_down}\"")
                     
                     st_enabled = w.get('state_text_enabled', True)
                     if str(st_enabled).lower() == 'false' or st_enabled is False:
@@ -984,8 +994,8 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append(f"  widget_style: \"{style_widget}\"")
                     output.append(f"  icon_style_active: \"{style_icon}\"")
                     output.append(f"  icon_style_inactive: \"{style_icon}; opacity: 0.5;\"")
-                    output.append(f"  level_up_style: \"{style_touch_btn}\"")
-                    output.append(f"  level_down_style: \"{style_touch_btn}\"")
+                    output.append(f"  level_up_style: \"{style_lvl_up}\"")
+                    output.append(f"  level_down_style: \"{style_lvl_down}\"")
                     
                     st_enabled = w.get('state_text_enabled', True)
                     if str(st_enabled).lower() == 'false' or st_enabled is False:
