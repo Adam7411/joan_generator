@@ -1216,97 +1216,13 @@
             }
         }
 
-        /* Premium Glassmorphism */
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(12px) saturate(180%);
-            -webkit-backdrop-filter: blur(12px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 16px;
-        }
-
-        .dark-mode .glass-panel {
-            background: rgba(30, 30, 30, 0.7);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        /* Neon Glow - Tylko dla podglądu generatora! */
-        @keyframes neon-glow {
-            0% {
-                box-shadow: 0 0 5px rgba(52, 152, 219, 0.2), inset 0 0 2px rgba(52, 152, 219, 0.1);
-            }
-
-            50% {
-                box-shadow: 0 0 20px rgba(52, 152, 219, 0.6), inset 0 0 10px rgba(52, 152, 219, 0.3);
-            }
-
-            100% {
-                box-shadow: 0 0 5px rgba(52, 152, 219, 0.2), inset 0 0 2px rgba(52, 152, 219, 0.1);
-            }
-        }
-
-        .neon-active {
-            animation: neon-glow 2s infinite ease-in-out;
-            border-color: #3498db !important;
-        }
-
-        /* Particle Burst Animation */
-        @keyframes particle-fade {
-            0% {
-                transform: translate(0, 0) scale(1);
-                opacity: 1;
-            }
-
-            100% {
-                transform: translate(var(--tx), var(--ty)) scale(0);
-                opacity: 0;
-            }
-        }
-
-        .particle {
-            position: absolute;
-            pointer-events: none;
-            width: 6px;
-            height: 6px;
-            background: #3498db;
-            border-radius: 50%;
-            z-index: 10000;
-        }
-
-        /* Staggered entry for new sections */
-        .staggered-fade-in>* {
-            opacity: 0;
-            transform: translateY(10px);
-            animation: slideUp 0.5s ease forwards;
-        }
-
-        .staggered-fade-in>*:nth-child(1) {
-            animation-delay: 0.1s;
-        }
-
-        .staggered-fade-in>*:nth-child(2) {
-            animation-delay: 0.2s;
-        }
-
-        .staggered-fade-in>*:nth-child(3) {
-            animation-delay: 0.3s;
-        }
-
-        .staggered-fade-in>*:nth-child(4) {
-            animation-delay: 0.4s;
-        }
-
-        .staggered-fade-in>*:nth-child(5) {
-            animation-delay: 0.5s;
-        }
-
         @keyframes pulse-icon {
             0% {
                 transform: scale(1);
             }
 
             50% {
-                transform: scale(1.15);
+                transform: scale(1.2);
             }
 
             100% {
@@ -1758,10 +1674,6 @@
                             oninput="checkTitleLimit(); renderPreview(); searchEntities(this.value, true)">
                         <div id="char-count" class="char-counter">0/20</div>
                     </div>
-                    <div class="flex-col" style="flex: 2;">
-                        <label data-i18n="lbl_title2">Podtytuł (linia 2)</label>
-                        <input type="text" id="w-title2" placeholder="np. Parter" oninput="renderPreview()">
-                    </div>
                     <div class="flex-col" style="flex: 0 0 100px;">
                         <label data-i18n="lbl_title_size">Rozmiar PX</label>
                         <input type="number" id="w-title-size" placeholder="20" style="width: 100%;"
@@ -1791,24 +1703,7 @@
                             <option value="navigate" data-i18n="opt_navigate">Navigate / Button</option>
                             <option value="reload" data-i18n="opt_reload">Reload Dashboard</option>
                             <option value="gauge" data-i18n="opt_gauge">Gauge / Radial</option>
-                            <option value="iframe" data-i18n="opt_iframe">IFrame / Strona WWW</option>
-                            <option value="rss" data-i18n="opt_rss">RSS Feed / Wiadomości</option>
-                            <option value="slideshow" data-i18n="opt_slideshow">Slideshow / Kamera</option>
-                            <option value="weather" data-i18n="opt_weather">Pogoda (Weather)</option>
-                            <option value="alarm" data-i18n="opt_alarm">Alarm Control Panel</option>
                         </select>
-                    </div>
-                </div>
-
-                <div class="flex-row" id="grp-extra-params" style="display: none;">
-                    <div class="flex-col" id="grp-url" style="flex: 1; display: none;">
-                        <label data-i18n="lbl_url">Adres URL (IFrame/RSS)</label>
-                        <input type="text" id="w-url" placeholder="https://..." oninput="renderPreview()">
-                    </div>
-                    <div class="flex-col" id="grp-entity-list" style="flex: 1; display: none;">
-                        <label data-i18n="lbl_entity_list">Lista encji/obrazów (Slideshow)</label>
-                        <input type="text" id="w-entity-list" placeholder="entity1, entity2, ..."
-                            oninput="renderPreview()">
                     </div>
                 </div>
 
@@ -2713,7 +2608,7 @@
                 btn_cancel: "Anuluj",
                 title_main: "Joan E-Ink Generator",
                 sec_settings: "1. Ustawienia Dashboardu", lbl_dash_title: "Tytuł Dashboardu", lbl_grid: "Układ Siatki (Smart Grid)",
-                lbl_orientation: "Orientacja ekranu", lbl_auto_nav_bar: "Pokaż Toolbox Nawigacji", lbl_device_profile: "Model urządzenia:",
+                lbl_orientation: "Orientacja ekranu", lbl_auto_nav_bar: "Pokaż Toolbox Nawigacji",
                 opt_orientation_portrait: "Pion (3 kolumny bazowo)",
                 opt_orientation_landscape: "Poziom (szerszy układ)",
                 grid_3x8: "Standard (3 kolumny x 8 wierszy) - DOMYŚLNY",
@@ -2725,8 +2620,7 @@
                 sec_add: "2. Dodaj Widget", sec_edit: "2. Edytuj Widget",
                 lbl_type: "Typ Widgetu", lbl_entity: "Encja (Wyszukaj po nazwie lub ID)", lbl_dash_name: "Nazwa Dashboardu (target)",
                 lbl_area: "Obszar", lbl_domain: "Typ",
-                lbl_name: "Tytuł na ekranie", lbl_title2: "Podtytuł (linia 2)", lbl_size: "Rozmiar", lbl_preview: "Podgląd",
-                lbl_url: "Adres URL (IFrame/RSS)", lbl_entity_list: "Lista encji/obrazów (Slideshow - rozdziel przecinkiem)",
+                lbl_name: "Tytuł na ekranie", lbl_size: "Rozmiar", lbl_preview: "Podgląd",
                 lbl_icon: "Ikona (Standard)", lbl_icon_on: "Ikona ON", lbl_icon_off: "Ikona OFF",
                 lbl_value_size: "Rozmiar czcionki wartości",
                 lbl_title_size: "Rozmiar PX",
@@ -2743,8 +2637,6 @@
                 opt_fan: "Wentylator", opt_scene: "Scena", opt_input_button: "Input Button / Przycisk",
                 opt_light: "Światło (Ściemniane)", opt_group: "Grupa (Świateł)", opt_input_boolean: "Przełącznik Boolean", opt_reload: "Odśwież Dashboard",
                 opt_gauge: "Wskaźnik (Gauge)",
-                opt_iframe: "IFrame / Strona WWW", opt_rss: "RSS Feed / Wiadomości", opt_slideshow: "Slideshow / Kamera",
-                opt_weather: "Pogoda (Weather)", opt_alarm: "Alarm Control Panel",
                 lbl_show_state: "Pokaż stan (Tekst)",
                 grid_3x10: "Wysoki (3 kolumny x 10 wierszy)",
                 grid_3x6: "Kompakt (3 kolumny x 6 wierszy)",
@@ -2900,7 +2792,7 @@
                 btn_cancel: "Cancel",
                 title_main: "Joan E-Ink Generator",
                 sec_settings: "1. Dashboard Settings", lbl_dash_title: "Dashboard Title", lbl_grid: "Grid Layout (Smart Grid)",
-                lbl_orientation: "Screen orientation", lbl_auto_nav_bar: "Show Navigation Toolbox", lbl_device_profile: "Device Profile:",
+                lbl_orientation: "Screen orientation", lbl_auto_nav_bar: "Show Navigation Toolbox",
                 opt_orientation_portrait: "Portrait (3 cols default)",
                 opt_orientation_landscape: "Landscape (wider layout)",
                 grid_3x8: "Standard (3 cols x 8 rows) - DEFAULT",
@@ -2911,8 +2803,7 @@
                 sec_import: "📂 Import / Export .DASH Code", btn_import: "Load Code",
                 sec_add: "2. Add Widget", sec_edit: "2. Edit Widget",
                 lbl_type: "Widget Type", lbl_entity: "Entity (Search by name/ID)", lbl_dash_name: "Dashboard Name (target)",
-                lbl_name: "Title on Screen", lbl_title2: "Subtitle (Line 2)", lbl_size: "Size", lbl_preview: "Preview",
-                lbl_url: "URL Address (IFrame/RSS)", lbl_entity_list: "Entity/Image list (Slideshow - comma separated)",
+                lbl_name: "Title on Screen", lbl_size: "Size", lbl_preview: "Preview",
                 lbl_icon: "Icon (Standard)", lbl_icon_on: "Icon ON", lbl_icon_off: "Icon OFF",
                 lbl_value_size: "Value font size",
                 lbl_title_size: "Size PX",
@@ -2929,8 +2820,6 @@
                 opt_fan: "Fan", opt_scene: "Scene", opt_input_button: "Input Button",
                 opt_light: "Light (Dimmable)", opt_group: "Group (Lights)", opt_input_boolean: "Input Boolean", opt_reload: "Reload Dashboard",
                 opt_gauge: "Gauge",
-                opt_iframe: "IFrame / Web Page", opt_rss: "RSS Feed / News", opt_slideshow: "Slideshow / Camera",
-                opt_weather: "Weather", opt_alarm: "Alarm Control Panel",
                 lbl_show_state: "Show state (Text)",
                 grid_3x10: "Tall (3 cols x 10 rows)",
                 grid_3x6: "Compact (3 cols x 6 rows)",
@@ -3109,11 +2998,6 @@
             'script': { type: 'script', size: '(2x1)', iconOn: 'mdi-script-text-outline', iconOff: 'mdi-script-text-outline' },
             'fan': { type: 'fan', size: '(2x1)', iconOn: 'mdi-fan', iconOff: 'mdi-fan-off' },
             'automation': { type: 'switch', size: '(2x1)', icon: 'mdi-robot' },
-            'iframe': { type: 'iframe', size: '(3x2)', icon: 'mdi-web' },
-            'rss': { type: 'rss', size: '(3x2)', icon: 'mdi-rss' },
-            'slideshow': { type: 'slideshow', size: '(3x2)', icon: 'mdi-image-multiple' },
-            'weather': { type: 'weather', size: '(2x2)', icon: 'mdi-weather-partly-cloudy' },
-            'alarm_control_panel': { type: 'alarm', size: '(2x2)', icon: 'mdi-shield-lock' },
             'input_boolean': { type: 'input_boolean', size: '(2x1)', icon: 'mdi-toggle-switch' },
             'input_select': { type: 'input_select', size: '(2x1)', icon: 'mdi-format-list-bulleted' },
             'input_number': { type: 'input_number', size: '(2x1)', icon: 'mdi-tune-variant' },
@@ -3741,9 +3625,6 @@
                 id: document.getElementById('w-id').value,
                 dash: document.getElementById('w-dash').value,
                 name: document.getElementById('w-name').value,
-                title2: document.getElementById('w-title2').value,
-                url: document.getElementById('w-url')?.value || '',
-                entity_list: document.getElementById('w-entity-list')?.value || '',
                 size: document.getElementById('w-size').value,
                 icon: document.getElementById('w-icon').value,
                 icon_on: document.getElementById('w-icon-on').value,
@@ -3880,17 +3761,7 @@
             const grpGauge = document.getElementById('grp-gauge');
             if (grpGauge) grpGauge.style.display = isGauge ? 'block' : 'none';
 
-            // New fields visibility
-            const isIframe = type === 'iframe' || type === 'rss';
-            const isSlideshow = type === 'slideshow';
-            const extraParams = document.getElementById('grp-extra-params');
-            if (extraParams) {
-                extraParams.style.display = (isIframe || isSlideshow) ? 'flex' : 'none';
-                document.getElementById('grp-url').style.display = isIframe ? 'block' : 'none';
-                document.getElementById('grp-entity-list').style.display = isSlideshow ? 'block' : 'none';
-            }
-
-            const hideIcons = (type === 'clock' || type === 'spacer' || type === 'sensor' || type === 'iframe' || type === 'rss' || type === 'weather');
+            const hideIcons = (type === 'clock' || type === 'spacer' || type === 'sensor');
             document.getElementById('grp-icons').style.display = hideIcons ? 'none' : 'contents';
 
             // List of widgets that use On/Off icons (so we hide Std icon)
@@ -3993,9 +3864,6 @@
             const chkState = document.getElementById('w-show-state');
             if (chkState) chkState.checked = (data.state_text_enabled !== false); // default true
             document.getElementById('w-name').value = data.name;
-            document.getElementById('w-title2').value = data.title2 || '';
-            document.getElementById('w-url').value = data.url || '';
-            document.getElementById('w-entity-list').value = data.entity_list || '';
             document.getElementById('w-size').value = data.size || '(2x1)';
             document.getElementById('w-icon').value = data.icon || '';
             document.getElementById('w-icon-on').value = data.icon_on || '';
@@ -4032,14 +3900,8 @@
         }
 
         function clearForm() {
-            document.getElementById('w-id').value = '';
-            document.getElementById('w-name').value = '';
-            document.getElementById('w-title2').value = '';
-            document.getElementById('w-url').value = '';
-            document.getElementById('w-entity-list').value = '';
-            document.getElementById('w-icon').value = '';
-            document.getElementById('w-icon-on').value = '';
-            document.getElementById('w-icon-off').value = '';
+            document.getElementById('w-id').value = ''; document.getElementById('w-name').value = '';
+            document.getElementById('w-icon').value = ''; document.getElementById('w-icon-on').value = ''; document.getElementById('w-icon-off').value = '';
             const valueSizeSelect = document.getElementById('w-value-size');
             if (valueSizeSelect) valueSizeSelect.value = 'normal'; // Domyślnie normal
             document.getElementById('w-value-size-custom').value = '';
@@ -4554,7 +4416,6 @@
                         div.innerHTML = `
                             ${iconHtml}
                             <div class="ew-value" style="${valStyleFinal}">${valDisplay}</div>
-                            ${w.title2 ? `<div class="ew-title2" style="font-size:0.65em; opacity:0.7;">${w.title2}</div>` : ''}
                             <div class="ew-del" onclick="deleteWidget(${rI}, ${wI}, event)">X</div>
                             <div class="ew-copy" onclick="copyWidget(${rI}, ${wI}, event)">📄</div>
                             ${copyTagHtml}
@@ -4573,16 +4434,6 @@
                         div.insertBefore(titleDiv, div.firstChild);
                     }
                     div.onclick = (e) => { e.stopPropagation(); editWidget(rI, wI); };
-
-                    // Neon Glow Effect for active-looking widgets in preview
-                    const activeTypes = ['light', 'switch', 'fan', 'automation', 'lock', 'input_boolean'];
-                    if (activeTypes.includes(r_type)) {
-                        const ent = entitiesData.find(e => e.id === w.id.replace(/_copy\d+$/, ''));
-                        if (ent && ['on', 'open', 'home', 'unlocked', 'playing'].includes(String(ent.state).toLowerCase())) {
-                            div.classList.add('neon-active');
-                        }
-                    }
-
                     wrapper.appendChild(div);
 
                     // ============== BATTERY CONSUMPTION INDICATOR ==============
@@ -4641,34 +4492,6 @@
                         const infoIcon = document.createElement('div');
                         infoIcon.className = 'widget-info';
                         infoIcon.innerHTML = '<i class="mdi mdi-information-variant"></i>';
-                        function createParticles(e) {
-                            const container = document.body;
-                            const particleCount = 30;
-                            const rect = e.target.getBoundingClientRect();
-                            const centerX = rect.left + rect.width / 2;
-                            const centerY = rect.top + rect.height / 2;
-
-                            for (let i = 0; i < particleCount; i++) {
-                                const particle = document.createElement('div');
-                                particle.className = 'particle';
-
-                                const angle = Math.random() * Math.PI * 2;
-                                const dist = 50 + Math.random() * 150;
-                                const tx = Math.cos(angle) * dist;
-                                const ty = Math.sin(angle) * dist;
-
-                                particle.style.setProperty('--tx', `${tx}px`);
-                                particle.style.setProperty('--ty', `${ty}px`);
-                                particle.style.left = `${centerX}px`;
-                                particle.style.top = `${centerY}px`;
-                                particle.style.background = `hsl(${Math.random() * 360}, 70%, 60%)`;
-
-                                particle.style.animation = `particle-fade ${0.5 + Math.random() * 1}s ease-out forwards`;
-
-                                container.appendChild(particle);
-                                setTimeout(() => particle.remove(), 1500);
-                            }
-                        }
 
                         const lang = currentLang || 'pl';
                         const t = TRANSLATIONS[lang === 'pl' ? 'pl_extra' : 'en_extra'];
@@ -4754,45 +4577,6 @@
             renderPreview();
         }
 
-        function createParticles(e) {
-            const container = document.body;
-            const particleCount = 40;
-            let centerX, centerY;
-
-            if (e && e.target) {
-                const rect = e.target.getBoundingClientRect();
-                centerX = rect.left + rect.width / 2;
-                centerY = rect.top + rect.height / 2;
-            } else {
-                centerX = window.innerWidth / 2;
-                centerY = window.innerHeight / 2;
-            }
-
-            for (let i = 0; i < particleCount; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'particle';
-
-                const angle = Math.random() * Math.PI * 2;
-                const dist = 40 + Math.random() * 180;
-                const tx = Math.cos(angle) * dist;
-                const ty = Math.sin(angle) * dist;
-
-                particle.style.setProperty('--tx', `${tx}px`);
-                particle.style.setProperty('--ty', `${ty}px`);
-                particle.style.left = `${centerX}px`;
-                particle.style.top = `${centerY}px`;
-
-                // Joan-themed colors (blueish/grayish/glow)
-                const colors = ['#3498db', '#2980b9', '#ecf0f1', '#bdc3c7', '#9b59b6'];
-                particle.style.background = colors[Math.floor(Math.random() * colors.length)];
-
-                particle.style.animation = `particle-fade ${0.6 + Math.random() * 0.8}s cubic-bezier(0, 0, 0.2, 1) forwards`;
-
-                container.appendChild(particle);
-                setTimeout(() => particle.remove(), 1500);
-            }
-        }
-
         function submitForm(actionType) {
             document.getElementById('form-action').value = actionType;
 
@@ -4813,10 +4597,6 @@
                 if (!confirm(TRANSLATIONS[currentLang].confirm_restart)) return;
                 document.getElementById('main-form').submit();
                 return;
-            }
-
-            if (actionType === 'gen' || actionType === 'gen_refresh') {
-                createParticles(window.event);
             }
 
             document.getElementById('main-form').submit();
