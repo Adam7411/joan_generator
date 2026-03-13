@@ -7,8 +7,16 @@ import io
 from datetime import datetime, timedelta
 
 # Application Initialization
-print("📦 1. Initializing Joan 6 Generator app...")
+logger.info("Initializing Joan 6 Generator app...")
 app = Flask(__name__)
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[logging.StreamHandler()]
+)
+logger = logging.getLogger(__name__)
 
 def safe_int(val, default):
     if val is None:
@@ -49,10 +57,10 @@ try:
             if opt_slug:
                 APPDAEMON_SLUG = opt_slug
 except Exception as e:
-    print(f"ℹ️ Info: Could not read options file: {e}")
+            logger.info(f"Could not read options file: {e}")
 
 if not TOKEN:
-    print("❌ WARNING: No authorization token! Entity list will be empty.")
+    logger.warning("No authorization token! Entity list will be empty.")
 
 # -------------------------------------------------------------------------
 # FETCHING DATA FROM HOME ASSISTANT
@@ -107,7 +115,7 @@ def get_ha_areas_and_map():
                 return areas, entity_map
         else:
             # Fallback to direct container access if supervisor proxy fails
-            print(f"⚠️ Primary /template API failed ({response.status_code}), trying fallback...")
+            logger.warning(f"Primary /template API failed ({response.status_code}), trying fallback...")
             fallback_url = "http://homeassistant:8123/api/template"
             res2 = requests.post(fallback_url, headers=headers, json={"template": template_str}, timeout=10)
             if res2.status_code == 200:
@@ -117,7 +125,7 @@ def get_ha_areas_and_map():
                     entity_map = {k: v for k, v in result.get('entity_map', {}).items() if k != "_end"}
                     return areas, entity_map
     except Exception as e:
-        print(f"❌ Exception while fetching areas: {e}")
+        logger.error(f"Exception while fetching areas: {e}", exc_info=True)
         
     return [], {}
 
@@ -135,7 +143,7 @@ def get_ha_entities():
         
         # Fallback if primary fails
         if response.status_code != 200:
-            print(f"⚠️ Primary /states API failed ({response.status_code}), trying fallback...")
+            logger.warning(f"Primary /states API failed ({response.status_code}), trying fallback...")
             response = requests.get("http://homeassistant:8123/api/states", headers=headers, timeout=10)
             
         if response.status_code == 200:
@@ -166,7 +174,7 @@ def get_ha_entities():
             # Return both entities and areas
             return {'entities': entities, 'areas': areas}
     except Exception as e:
-        print(f"❌ Exception while fetching entities: {e}")
+        logger.error(f"Exception while fetching entities: {e}", exc_info=True)
         
     return {'entities': [], 'areas': []}
 
@@ -253,7 +261,7 @@ def check_history_active():
             components = data.get("components", [])
             return "history" in components
     except Exception as e:
-        print(f"❌ Error checking history active: {e}")
+        logger.error(f"Error checking history active: {e}", exc_info=True)
     return False
 
 # -------------------------------------------------------------------------
