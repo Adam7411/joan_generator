@@ -4001,19 +4001,28 @@
             document.getElementById('lbl-add-widget').innerText = TRANSLATIONS[currentLang].sec_edit;
             document.getElementById('btn-submit').innerText = TRANSLATIONS[currentLang].btn_update;
 
+            // Ustaw typ widgetu
             document.getElementById('w-type').value = data.type;
 
+            // === OBSŁUGA TYPU NAVIGATE ===
             if (data.type === 'navigate') {
-                document.getElementById('w-dash').value = data.id.replace('navigate.', '');
+                const dashName = data.id.replace('navigate.', '');
+                document.getElementById('w-dash').value = dashName;
+                document.getElementById('w-id').value = ''; // wyczyść pole encji, żeby nie zostało z poprzedniego widgetu
             } else {
                 document.getElementById('w-id').value = data.id.replace(/_copy\d+$/, '');
+                document.getElementById('w-dash').value = ''; // wyczyść pole dashboardu, jeśli to nie navigate
             }
 
+            // Najpierw przełącz widoczność grup pól na podstawie typu
+            toggleInputs();
+
+            // Ustaw pozostałe pola
             if (data.min) document.getElementById('w-min').value = data.min;
             if (data.max) document.getElementById('w-max').value = data.max;
 
             const chkState = document.getElementById('w-show-state');
-            if (chkState) chkState.checked = (data.state_text_enabled !== false); // default true
+            if (chkState) chkState.checked = (data.state_text_enabled !== false); // domyślnie true
 
             document.getElementById('w-name').value = data.name;
             document.getElementById('w-title2').value = data.title2 || '';
@@ -4031,9 +4040,6 @@
             updateIconPreview();
             updateTitleLimit();
 
-            // toggleInputs() MUST be called after all values are set so that correct groups are shown/hidden
-            toggleInputs();
-
             const filtersDiv = document.getElementById('entity-filters');
             if (filtersDiv) filtersDiv.style.display = 'none';
 
@@ -4044,7 +4050,7 @@
 
             renderPreview();
 
-            // Smooth scroll to the editor when starting widget edit
+            // Smooth scroll do formularza edycji
             editorBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
 
