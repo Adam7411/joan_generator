@@ -3988,26 +3988,33 @@
         function checkTitleLimit() { updateTitleLimit(); }
 
         function editWidget(r, w) {
-            blockSmart = true; editIdx = { r, w }; selectedRowIdx = r;
+            blockSmart = true;
+            editIdx = { r, w };
+            selectedRowIdx = r;
+
             const data = rows[r][w];
-            document.getElementById('editor-box').classList.add('editing');
+
+            const editorBox = document.getElementById('editor-box');
+            editorBox.classList.add('editing');
             document.getElementById('btn-cancel').classList.remove('hidden');
 
             document.getElementById('lbl-add-widget').innerText = TRANSLATIONS[currentLang].sec_edit;
-
             document.getElementById('btn-submit').innerText = TRANSLATIONS[currentLang].btn_update;
+
             document.getElementById('w-type').value = data.type;
-            // toggleInputs() moved to end of function to reflect data state correctly
-            if (data.type === 'navigate') document.getElementById('w-dash').value = data.id.replace('navigate.', '');
-            else {
-                // Strip _copy\d+ for user readability as requested
+
+            if (data.type === 'navigate') {
+                document.getElementById('w-dash').value = data.id.replace('navigate.', '');
+            } else {
                 document.getElementById('w-id').value = data.id.replace(/_copy\d+$/, '');
             }
+
             if (data.min) document.getElementById('w-min').value = data.min;
             if (data.max) document.getElementById('w-max').value = data.max;
 
             const chkState = document.getElementById('w-show-state');
             if (chkState) chkState.checked = (data.state_text_enabled !== false); // default true
+
             document.getElementById('w-name').value = data.name;
             document.getElementById('w-title2').value = data.title2 || '';
             document.getElementById('w-url').value = data.url || '';
@@ -4019,18 +4026,26 @@
             document.getElementById('w-value-size').value = data.value_size_hint || 'auto';
             document.getElementById('w-value-size-custom').value = data.value_size_custom || '';
             document.getElementById('w-title-size').value = data.title_size_custom || '';
+
             manualIconOverride = true;
-            updateIconPreview(); updateTitleLimit();
-            // Call toggleInputs after setting checkbox state
+            updateIconPreview();
+            updateTitleLimit();
+
+            // toggleInputs() MUST be called after all values are set so that correct groups are shown/hidden
             toggleInputs();
-            // Hide Area and Type filters when editing
+
             const filtersDiv = document.getElementById('entity-filters');
             if (filtersDiv) filtersDiv.style.display = 'none';
+
             setTimeout(() => {
                 blockSmart = false;
-                // Wywołaj analizę częstotliwości dla edytowanej encji
                 if (data.id) checkEntityFrequency(data.id);
-            }, 500); renderPreview();
+            }, 500);
+
+            renderPreview();
+
+            // Smooth scroll to the editor when starting widget edit
+            editorBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
 
         function cancelEdit() {
