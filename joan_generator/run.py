@@ -58,8 +58,7 @@ try:
             if opt_slug:
                 APPDAEMON_SLUG = opt_slug
 except Exception as e:
-    # poprawione wcięcie
-    logger.info(f"Could not read options file: {e}")
+            logger.info(f"Could not read options file: {e}")
 
 if not TOKEN:
     logger.warning("No authorization token! Entity list will be empty.")
@@ -111,7 +110,7 @@ def get_ha_areas_and_map():
         if response.status_code == 200:
             result = response.json()
             if result:
-                # Remove null terminators used for valid JSON trailing comma handling
+                 # Remove null terminators used for valid JSON trailing comma handling
                 areas = [a for a in result.get('areas', []) if a]
                 entity_map = {k: v for k, v in result.get('entity_map', {}).items() if k != "_end"}
                 return areas, entity_map
@@ -133,7 +132,7 @@ def get_ha_areas_and_map():
 
 def get_ha_entities():
     if not TOKEN:
-        return {'entities': [], 'areas': []}  # Changed return structure to include areas
+        return {'entities': [], 'areas': []} # Changed return structure to include areas
         
     headers = {"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json"}
     
@@ -161,7 +160,7 @@ def get_ha_entities():
                 
                 entity_obj = {
                     'id': e_id,
-                    'area_id': area_id,  # Added area_id
+                    'area_id': area_id, # Added area_id
                     'state': state['state'],
                     'attributes': {
                         'friendly_name': attributes.get('friendly_name', e_id),
@@ -292,7 +291,7 @@ def check_appdaemon_bridge():
     
     return False
 
-ACTIVE_BRIDGE_PATH = "/api/save_dash"  # Fallback
+ACTIVE_BRIDGE_PATH = "/api/save_dash" # Fallback
 
 def save_dash_file_via_api(filename, content):
     """Sends file to AppDaemon by trying various possible API paths."""
@@ -308,7 +307,7 @@ def save_dash_file_via_api(filename, content):
         try:
             headers = {"Content-Type": "application/json"}
             if TOKEN:
-                headers["Authorization"] = f"Bearer {TOKEN}"
+                 headers["Authorization"] = f"Bearer {TOKEN}"
 
             response = requests.post(url, json=payload, headers=headers, timeout=10)
             
@@ -450,6 +449,8 @@ def get_entity_frequency(entity_id, hours=24):
     except Exception as e:
         print(f"❌ Exception during frequency analysis: {e}")
         return {'error': str(e), 'changes_per_hour': 0, 'total_changes': 0, 'level': 'unknown'}
+
+
 
 # 3. STYLES (E-INK OPTIMIZED & TWEAKED)
 # -------------------------------------------------------------------------
@@ -686,8 +687,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                             size_str = f"({size_str})"
                         widget_id += size_str
 
-                    if not widget_id:
-                        continue
+                    if not widget_id: continue
                     row_parts.append(widget_id)
                     processed_widgets.append(w)
                 if row_parts:
@@ -757,10 +757,8 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     if w_title2:
                         output.append(f"  title2: \"{w_title2}\"")
                         output.append(f"  title2_style: \"{style_title2}\"")
-                    if i_on:
-                        output.append(f"  icon_on: {i_on}")
-                    if i_off:
-                        output.append(f"  icon_off: {i_off}")
+                    if i_on: output.append(f"  icon_on: {i_on}")
+                    if i_off: output.append(f"  icon_off: {i_off}")
                     if w_icon and not i_on:
                         output.append(f"  icon: {w_icon}")
                         output.append(f"  icon_on: {w_icon}")
@@ -849,10 +847,8 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append("    service: fan/turn_off")
                     output.append(f"    entity_id: {real_entity_id}")
 
-                    if i_on:
-                        output.append(f"  icon_on: {i_on}")
-                    if i_off:
-                        output.append(f"  icon_off: {i_off}")
+                    if i_on: output.append(f"  icon_on: {i_on}")
+                    if i_off: output.append(f"  icon_off: {i_off}")
                     if w_icon and not i_on:
                         output.append(f"  icon: {w_icon}")
                         output.append(f"  icon_on: {w_icon}")
@@ -883,10 +879,8 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append(f"  entity: {real_entity_id}")
                     output.append(f"  title: \"{w_name}\"")
 
-                    if w_icon:
-                        output.append(f"  icon: {w_icon}")
-                    elif i_on:
-                        output.append(f"  icon: {i_on}")
+                    if w_icon: output.append(f"  icon: {w_icon}")
+                    elif i_on: output.append(f"  icon: {i_on}")
 
                     output.append(f"  title_style: \"{build_title_style_local(is_small, t_size_custom)}\"")
                     output.append(f"  widget_style: \"{style_widget}\"")
@@ -905,12 +899,11 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append(f"  entity: {real_entity_id}")
                     output.append(f"  title: \"{w_name}\"")
 
+                    
                     g_min = w.get('min', '').strip()
                     g_max = w.get('max', '').strip()
-                    if not g_min:
-                        g_min = "0"
-                    if not g_max:
-                        g_max = "100"
+                    if not g_min: g_min = "0"
+                    if not g_max: g_max = "100"
 
                     output.append(f"  min: {g_min}")
                     output.append(f"  max: {g_max}")
@@ -939,10 +932,8 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                         output.append(f"  title2: \"{w_title2}\"")
                         output.append(f"  title2_style: \"{style_title2}\"")
 
-                    if i_on:
-                        output.append(f"  icon_on: {i_on}")
-                    if i_off:
-                        output.append(f"  icon_off: {i_off}")
+                    if i_on: output.append(f"  icon_on: {i_on}")
+                    if i_off: output.append(f"  icon_off: {i_off}")
                     if w_icon and not i_on:
                         output.append(f"  icon: {w_icon}")
                         output.append(f"  icon_on: {w_icon}")
@@ -968,10 +959,8 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append(f"  entity: {real_entity_id}")
                     output.append(f"  title: \"{w_name}\"")
 
-                    if i_on:
-                        output.append(f"  icon_on: {i_on}")
-                    if i_off:
-                        output.append(f"  icon_off: {i_off}")
+                    if i_on: output.append(f"  icon_on: {i_on}")
+                    if i_off: output.append(f"  icon_off: {i_off}")
                     if w_icon and not i_on:
                         output.append(f"  icon: {w_icon}")
                         output.append(f"  icon_on: {w_icon}")
@@ -1002,10 +991,8 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append(f"  entity: {real_entity_id}")
                     output.append(f"  title: \"{w_name}\"")
 
-                    if i_on:
-                        output.append(f"  icon_on: {i_on}")
-                    if i_off:
-                        output.append(f"  icon_off: {i_off}")
+                    if i_on: output.append(f"  icon_on: {i_on}")
+                    if i_off: output.append(f"  icon_off: {i_off}")
                     if w_icon and not i_on:
                         output.append(f"  icon: {w_icon}")
                         output.append(f"  icon_on: {w_icon}")
@@ -1032,13 +1019,11 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append(f"  entity: {real_entity_id}")
                     output.append(f"  title: \"{w_name}\"")
 
-                    if i_on:
-                        output.append(f"  icon_on: {i_on}")
-                    if i_off:
-                        output.append(f"  icon_off: {i_off}")
-                    if w_icon and not i_on:
-                        output.append(f"  icon: {w_icon}")
+                    if i_on: output.append(f"  icon_on: {i_on}")
+                    if i_off: output.append(f"  icon_off: {i_off}")
+                    if w_icon and not i_on: output.append(f"  icon: {w_icon}")
                     
+                    # Robust check for state_text_enabled
                     st_enabled = w.get('state_text_enabled', True)
                     if str(st_enabled).lower() == 'false' or st_enabled is False:
                         output.append(f"  state_text_style: \"display: none !important;\"")
@@ -1060,15 +1045,14 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append(f"  entity: {real_entity_id}")
                     output.append(f"  title: \"{w_name}\"")
 
-                    if i_on:
-                        output.append(f"  icon_on: {i_on}")
-                    if i_off:
-                        output.append(f"  icon_off: {i_off}")
+                    if i_on: output.append(f"  icon_on: {i_on}")
+                    if i_off: output.append(f"  icon_off: {i_off}")
                     if w_icon and not i_on:
                         output.append(f"  icon: {w_icon}")
                         output.append(f"  icon_on: {w_icon}")
                         output.append(f"  icon_off: {w_icon}")
                     
+                    # Robust check for state_text_enabled
                     st_enabled = w.get('state_text_enabled', True)
                     if str(st_enabled).lower() == 'false' or st_enabled is False:
                         output.append(f"  state_text_style: \"display: none !important;\"")
@@ -1089,10 +1073,8 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append(f"  widget_type: cover")
                     output.append(f"  entity: {real_entity_id}")
                     output.append(f"  title: \"{w_name}\"")
-                    if i_on:
-                        output.append(f"  icon_on: {i_on}")
-                    if i_off:
-                        output.append(f"  icon_off: {i_off}")
+                    if i_on: output.append(f"  icon_on: {i_on}")
+                    if i_off: output.append(f"  icon_off: {i_off}")
                     if w_icon and not i_on:
                         output.append(f"  icon: {w_icon}")
                         output.append(f"  icon_on: {w_icon}")
@@ -1108,6 +1090,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                         output.append(f"  value_style: \"display: none !important;\"")
                     else:
                         output.append(f"  state_text: 1")
+
                         output.append(f"  value_style: \"{build_val_style_local(final_size_hint, is_small, v_size_custom)}\"")
                     output.append("  state_map:")
                     output.append(f"    \"open\": \"{dic.get('cover_open', dic['open'])}\"")
@@ -1118,12 +1101,9 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                 elif w_type == 'reload':
                     output.append(f"  widget_type: reload")
                     output.append(f"  title: \"{w_name}\"")
-                    if w_icon:
-                        output.append(f"  icon_active: {w_icon}")
-                    elif i_on:
-                        output.append(f"  icon_active: {i_on}")
-                    else:
-                        output.append(f"  icon_active: mdi-refresh")
+                    if w_icon: output.append(f"  icon_active: {w_icon}")
+                    elif i_on: output.append(f"  icon_active: {i_on}")
+                    else: output.append(f"  icon_active: mdi-refresh")
                     output.append(f"  title_style: \"{build_title_style_local(is_small, t_size_custom)}\"")
                     output.append(f"  widget_style: \"{style_widget}\"")
                     output.append(f"  icon_active_style: \"{style_icon}\"")
@@ -1134,6 +1114,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append(f"  entity: {real_entity_id}")
                     output.append(f"  title: \"{w_name}\"")
 
+                    
                     # Fetch units from entity if available
                     unit = ""
                     if real_entity_id in entities_map:
@@ -1177,6 +1158,8 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append(f"  select_style: \"color: #000000 !important; font-size: 18px !important; background: #ffffff !important; border: 1px solid #999999 !important;\"")
                     output.append(f"  selectcontainer_style: \"background-color: #ffffff !important;\"")
 
+
+
                 elif w_type == 'label':
                     output.append(f"  widget_type: label")
                     output.append(f"  text: \"{w_name}\"")
@@ -1212,16 +1195,12 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append(f"  entity: {real_entity_id}")
                     output.append(f"  title: \"{w_name}\"")
 
-                    if i_on:
-                        output.append(f"  icon_on: {i_on}")
-                    if i_off:
-                        output.append(f"  icon_off: {i_off}")
+                    if i_on: output.append(f"  icon_on: {i_on}")
+                    if i_off: output.append(f"  icon_off: {i_off}")
 
                     if ad_type == 'lock':
-                        if i_off:
-                            output.append(f"  icon_locked: {i_off}")
-                        if i_on:
-                            output.append(f"  icon_unlocked: {i_on}")
+                        if i_off: output.append(f"  icon_locked: {i_off}")
+                        if i_on: output.append(f"  icon_unlocked: {i_on}")
 
                     if w_icon and not i_on:
                         output.append(f"  icon: {w_icon}")
@@ -1229,6 +1208,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                         output.append(f"  icon_on: {w_icon}")
                         output.append(f"  icon_off: {w_icon}")
 
+                    # Robust check for state_text_enabled
                     st_enabled = w.get('state_text_enabled', True)
                     if str(st_enabled).lower() == 'false' or st_enabled is False:
                         output.append(f"  state_text_style: \"display: none !important;\"")
@@ -1277,11 +1257,11 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     seen_navs.add(nav_id)
                     nav_name = dash_slug.replace('_', ' ').title()
                     output.append(f"{nav_id}:")
-                    output.append("  widget_type: navigate")
+                    output.append(f"  widget_type: navigate")
                     output.append(f"  title: \"{nav_name[:12]}\"")
                     output.append(f"  dashboard: {dash_slug}")
-                    output.append("  icon_active: mdi-arrow-right-circle")
-                    output.append("  icon_inactive: mdi-arrow-right-circle")
+                    output.append(f"  icon_active: mdi-arrow-right-circle")
+                    output.append(f"  icon_inactive: mdi-arrow-right-circle")
                     output.append(f"  title_style: \"{style_title_small}\"")
                     output.append(f"  widget_style: \"{style_widget}\"")
                     output.append(f"  icon_active_style: \"{style_icon}\"")
@@ -1306,6 +1286,7 @@ def index():
     dashboard_slug = "joandashboard"
     has_token = bool(TOKEN)
     save_message = None
+
 
     bridge_active = check_appdaemon_bridge()
     has_dashboards = False
@@ -1353,7 +1334,7 @@ def index():
             custom_defs = json.loads(custom_defs_json)
             def_w, def_h = map(int, [x.strip() for x in def_size_str.split(',')])
             grid_params = {'cols': cols, 'rows_grid': rows_grid, 'def_w': def_w, 'def_h': def_h}
-        except Exception:
+        except:
             layout_data = []
             custom_defs = {}
             grid_params = {'cols': 3, 'rows_grid': 8, 'def_w': 2, 'def_h': 1}
@@ -1398,7 +1379,7 @@ def index():
                 file_obj = io.BytesIO(yaml_content.encode('utf-8'))
                 return send_file(file_obj, mimetype='text/plain', as_attachment=True, download_name=dashboard_filename)
         
-        else:  # generate
+        else: # generate
             try:
                 generated_yaml = generate_joan_dash_yaml(
                     layout_data, title, grid_params, lang, custom_defs, entities_map, device_profile, auto_nav_bar, available_dash_files
@@ -1459,5 +1440,7 @@ def api_read_dashboard(filename):
     else:
         return jsonify({"status": "error", "message": f"Cannot read dashboard: {filename}"})
 
+
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000, debug=True)
+
