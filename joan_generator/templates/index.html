@@ -3990,7 +3990,7 @@
         }
         function checkTitleLimit() { updateTitleLimit(); }
 
-        function editWidget(r, w) {
+        function editWidget(r, w, skipScroll = false) {
             blockSmart = true;
             editIdx = { r, w };
             selectedRowIdx = r;
@@ -4053,8 +4053,10 @@
 
             renderPreview();
 
-            // Smooth scroll do formularza edycji
-            editorBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            // Smooth scroll do formularza edycji (ale nie przy kliknięciu z podglądu, żeby było widać podświetlenie kafelka)
+            if (!skipScroll) {
+                editorBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
         }
 
         function cancelEdit() {
@@ -4612,7 +4614,9 @@
                         // Insert title element at the beginning to preserve UTF-8 characters
                         div.insertBefore(titleDiv, div.firstChild);
                     }
-                    div.onclick = (e) => { e.stopPropagation(); editWidget(rI, wI); };
+                    // Kliknięcie kafelka: włączamy tryb edycji, ale NIE przewijamy strony,
+                    // żeby użytkownik mógł od razu zobaczyć, który kafelek się podświetlił w podglądzie.
+                    div.onclick = (e) => { e.stopPropagation(); editWidget(rI, wI, true); };
 
                     // Neon Glow Effect for active-looking widgets in preview
                     const activeTypes = ['light', 'switch', 'fan', 'automation', 'lock', 'input_boolean', 'climate', 'media_player', 'sensor'];
