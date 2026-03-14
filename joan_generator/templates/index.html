@@ -3992,10 +3992,17 @@
 
         function editWidget(r, w, skipScroll = false) {
             blockSmart = true;
+
+            // Wyczyść poprzedni znacznik edycji na danych, jeśli był ustawiony
+            if (editIdx && rows[editIdx.r] && rows[editIdx.r][editIdx.w]) {
+                rows[editIdx.r][editIdx.w].editing = false;
+            }
+
             editIdx = { r, w };
             selectedRowIdx = r;
 
             const data = rows[r][w];
+            if (data) data.editing = true;
 
             const editorBox = document.getElementById('editor-box');
             editorBox.classList.add('editing');
@@ -4060,6 +4067,13 @@
         }
 
         function cancelEdit() {
+            // Wyczyść flagę editing na wszystkich widgetach
+            rows.forEach(row => {
+                row.forEach(w => {
+                    if (w && w.editing) w.editing = false;
+                });
+            });
+
             editIdx = null; blockSmart = false;
             document.getElementById('editor-box').classList.remove('editing');
             document.getElementById('btn-cancel').classList.add('hidden');
@@ -4463,7 +4477,7 @@
                 rowDiv.appendChild(controls);
 
                 row.forEach((w, wI) => {
-                    const isEditingThis = (editIdx && editIdx.r === rI && editIdx.w === wI);
+                    const isEditingThis = (w && w.editing === true) || (editIdx && editIdx.r === rI && editIdx.w === wI);
 
                     // Peeking logic: If editing, use current form values for rendering
                     let r_name = w.name;
