@@ -4643,7 +4643,7 @@
 
                     // Neon Glow Effect for active-looking widgets in preview
                     const activeTypes = ['light', 'switch', 'fan', 'automation', 'lock', 'input_boolean', 'climate', 'media_player', 'sensor'];
-                    if (activeTypes.includes(r_type)) {
+                    if (activeTypes.includes(r_type) && !isEditingThis) {
                         const ent = entitiesData.find(e => e.id === w.id.replace(/_copy\d+$/, ''));
                         const activeStates = ['on', 'open', 'home', 'unlocked', 'playing', 'cool', 'heat', 'active'];
                         // Force glow for some even if state is unknown to show off the effect
