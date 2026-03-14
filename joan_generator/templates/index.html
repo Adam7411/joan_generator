@@ -2699,14 +2699,17 @@
             'medical': 'mdi-medical-bag', 'health': 'mdi-heart-pulse', 'zdrowie': 'mdi-heart-pulse'
         };
 
+        // Deduplikacja ikon, żeby picker był lżejszy i szybszy
+        const POPULAR_ICONS_UNIQUE = Array.from(new Set(POPULAR_ICONS));
+
         function tryAutoSelectIcon(entityId) {
             if (!entityId) return;
             const iconStd = document.getElementById('w-icon');
             const iconOn = document.getElementById('w-icon-on');
             const iconOff = document.getElementById('w-icon-off');
 
-            // Only auto-fill if fields are empty to respect manual choice
-            if (iconStd.value || iconOn.value) return;
+            // Szanujemy manualIconOverride: jeśli użytkownik ruszył ikony, nie nadpisujemy ich automatycznie
+            if (manualIconOverride) return;
 
             const lower = entityId.toLowerCase();
             const parts = lower.split(/[\._\-\s]+/);
@@ -5423,7 +5426,7 @@
             const f = filter.toLowerCase();
 
             let count = 0;
-            POPULAR_ICONS.forEach(icon => {
+            POPULAR_ICONS_UNIQUE.forEach(icon => {
                 if (count > 2000 && filter === "") return;
                 if (icon.toLowerCase().includes(f)) {
                     const div = document.createElement('div');
@@ -5668,7 +5671,7 @@
             setLang('en');
         }
         const iconDl = document.getElementById('icon-list');
-        POPULAR_ICONS.forEach(i => { const op = document.createElement('option'); op.value = i; iconDl.appendChild(op); });
+        POPULAR_ICONS_UNIQUE.forEach(i => { const op = document.createElement('option'); op.value = i; iconDl.appendChild(op); });
         const dashDl = document.getElementById('nav-dash-suggestions');
         if (typeof DASH_NAMES !== 'undefined') {
             DASH_NAMES.forEach(n => { const op = document.createElement('option'); op.value = n; dashDl.appendChild(op); });
