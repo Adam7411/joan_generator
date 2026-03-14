@@ -3180,21 +3180,19 @@
 
             // Check cache first
             if (batteryAnalysisCache[baseEntity]) {
-                return batteryAnalysisCache[baseEntity];
+                return await batteryAnalysisCache[baseEntity];
             }
 
-            try {
-                // Use relative path for Ingress compatibility
-                const response = await fetch(`api/entity_frequency/${encodeURIComponent(baseEntity)}`);
-                const data = await response.json();
+            // Store promise in cache to prevent duplicate requests
+            const fetchPromise = fetch(`api/entity_frequency/${encodeURIComponent(baseEntity)}`)
+                .then(response => response.json())
+                .catch(error => {
+                    console.error('Battery analysis error for', baseEntity, ':', error);
+                    return { level: 'unknown', changes_per_hour: 0, error: error.toString() };
+                });
 
-                // Store in cache
-                batteryAnalysisCache[baseEntity] = data;
-                return data;
-            } catch (error) {
-                console.error('Battery analysis error for', baseEntity, ':', error);
-                return { level: 'unknown', changes_per_hour: 0, error: error.toString() };
-            }
+            batteryAnalysisCache[baseEntity] = fetchPromise;
+            return await fetchPromise;
         }
 
         // Get battery indicator icon based on level
@@ -4045,8 +4043,8 @@
 
             document.getElementById('w-name').value = data.name;
             document.getElementById('w-title2').value = data.title2 || '';
-            document.getElementById('w-url').value = data.url || '';
-            document.getElementById('w-entity-list').value = data.entity_list || '';
+            const wUrl = document.getElementById('w-url'); if (wUrl) wUrl.value = data.url || '';
+            const wEntityList = document.getElementById('w-entity-list'); if (wEntityList) wEntityList.value = data.entity_list || '';
             document.getElementById('w-size').value = data.size || '(2x1)';
             document.getElementById('w-icon').value = data.icon || '';
             document.getElementById('w-icon-on').value = data.icon_on || '';
@@ -4100,8 +4098,8 @@
             document.getElementById('w-id').value = '';
             document.getElementById('w-name').value = '';
             document.getElementById('w-title2').value = '';
-            document.getElementById('w-url').value = '';
-            document.getElementById('w-entity-list').value = '';
+            const wUrl = document.getElementById('w-url'); if (wUrl) wUrl.value = '';
+            const wEntityList = document.getElementById('w-entity-list'); if (wEntityList) wEntityList.value = '';
             document.getElementById('w-icon').value = '';
             document.getElementById('w-icon-on').value = '';
             document.getElementById('w-icon-off').value = '';
