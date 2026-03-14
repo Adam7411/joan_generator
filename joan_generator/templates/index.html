@@ -1415,6 +1415,15 @@
             box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
         }
 
+        /* Wymuś priorytet stylu edycji nad hoverem */
+        .eink-widget.editing,
+        .eink-widget.editing:hover {
+            border: 4px solid #ff9800 !important;
+            transform: scale(1.05) !important;
+            z-index: 20 !important;
+            box-shadow: 0 0 15px rgba(255, 152, 0, 0.5) !important;
+        }
+
         /* Battery Consumption Indicators */
         .battery-indicator {
             position: absolute;
