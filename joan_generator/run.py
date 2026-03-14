@@ -58,7 +58,7 @@ try:
             if opt_slug:
                 APPDAEMON_SLUG = opt_slug
 except Exception as e:
-            logger.info(f"Could not read options file: {e}")
+    logger.info(f"Could not read options file: {e}")
 
 if not TOKEN:
     logger.warning("No authorization token! Entity list will be empty.")
@@ -117,6 +117,12 @@ def get_ha_areas_and_map():
         else:
             # Fallback to direct container access if supervisor proxy fails
             logger.warning(f"Primary /template API failed ({response.status_code}), trying fallback...")
+            try:
+                snippet = (response.text or "")[:500]
+                if snippet:
+                    logger.warning(f"Template API response (first 500 chars): {snippet}")
+            except Exception:
+                pass
             fallback_url = "http://homeassistant:8123/api/template"
             res2 = requests.post(fallback_url, headers=headers, json={"template": template_str}, timeout=10)
             if res2.status_code == 200:
@@ -127,7 +133,11 @@ def get_ha_areas_and_map():
                     return areas, entity_map
     except Exception as e:
         logger.error(f"Exception while fetching areas: {e}", exc_info=True)
-        
+        try:
+            if 'response' in dir() and response is not None and getattr(response, 'text', None):
+                logger.warning(f"Response text (first 500 chars): {response.text[:500]}")
+        except Exception:
+            pass
     return [], {}
 
 def get_ha_entities():
