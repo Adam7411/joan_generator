@@ -585,28 +585,42 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
     # device profile settings
     is_pro = (device_profile == 'joan_13_pro')
 
-    style_title = "color: #000000 !important; font-size: 20px; font-weight: 700; text-align: center; padding-top: 5px; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif"
-    style_title2 = "color: #000000 !important; font-size: 16px; font-weight: 700; text-align: center; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif"
-    style_title_small = "color: #000000 !important; font-size: 16px; font-weight: 700; text-align: center; padding-top: 5px; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif"
-    
-    style_widget = "color: #000000 !important; background-color: #FFFFFF !important"
-    style_text = "color: #000000 !important; font-weight: 700 !important"
-    style_state_text = "color: #000000 !important; font-weight: 700 !important; font-size: 16px !important"
-    
-    style_gauge_val = "color: #000000 !important; font-size: 30px !important; font-weight: 700 !important; line-height: 1.1 !important; display: inline-block !important"
-    style_unit = "color: #000000 !important; padding-top: 60px !important; display: inline-block !important"
-    style_icon = "color: #000000 !important"
+    if is_pro:
+        style_title = "color: #000000 !important; font-size: 32px; font-weight: 700; text-align: center; padding-top: 5px; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif"
+        style_title2 = "color: #000000 !important; font-size: 24px; font-weight: 700; text-align: center; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif"
+        style_title_small = "color: #000000 !important; font-size: 24px; font-weight: 700; text-align: center; padding-top: 5px; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif"
+        
+        style_widget = "color: #000000 !important; background-color: #FFFFFF !important"
+        style_text = "color: #000000 !important; font-weight: 700 !important; font-size: 28px !important"
+        style_state_text = "color: #000000 !important; font-weight: 700 !important; font-size: 28px !important"
+        
+        style_gauge_val = "color: #000000 !important; font-size: 54px !important; font-weight: 700 !important; line-height: 1.1 !important; display: inline-block !important"
+        style_unit = "color: #000000 !important; padding-top: 90px !important; display: inline-block !important; font-size: 30px;"
+        style_icon = "color: #000000 !important; font-size: 90px;"
+    else:
+        style_title = "color: #000000 !important; font-size: 20px; font-weight: 700; text-align: center; padding-top: 5px; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif"
+        style_title2 = "color: #000000 !important; font-size: 16px; font-weight: 700; text-align: center; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif"
+        style_title_small = "color: #000000 !important; font-size: 16px; font-weight: 700; text-align: center; padding-top: 5px; width: 100%; font-family: 'Roboto', 'Arial Black', sans-serif"
+        
+        style_widget = "color: #000000 !important; background-color: #FFFFFF !important"
+        style_text = "color: #000000 !important; font-weight: 700 !important"
+        style_state_text = "color: #000000 !important; font-weight: 700 !important; font-size: 16px !important"
+        
+        style_gauge_val = "color: #000000 !important; font-size: 30px !important; font-weight: 700 !important; line-height: 1.1 !important; display: inline-block !important"
+        style_unit = "color: #000000 !important; padding-top: 60px !important; display: inline-block !important"
+        style_icon = "color: #000000 !important"
+
     # dynamic value/title helpers inside
     def build_val_style_local(size_hint, is_small_w, custom_px):
         if custom_px and str(custom_px).strip():
             try:
                 px = int(custom_px)
             except:
-                px = 34 if is_small_w else 54
+                px = (60 if is_pro else 34) if is_small_w else (90 if is_pro else 54)
         else:
-            if size_hint == 'small': px = 34
-            elif size_hint == 'large': px = 64
-            else: px = 54
+            if size_hint == 'small': px = 50 if is_pro else 34
+            elif size_hint == 'large': px = 110 if is_pro else 64
+            else: px = 90 if is_pro else 54
         tmpl = f"color: #000000 !important; font-size: {{px}}px !important; font-weight: 700 !important; padding-top: 60px !important; line-height: 1.1 !important; display: inline-block !important"
         return tmpl.format(px=px)
 
@@ -755,7 +769,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append(f"  dashboard: {dash_name}")
                     output.append(f"  icon_active: {nav_icon}")
                     output.append(f"  icon_inactive: {nav_icon}")
-                    output.append(f"  title_style: \"{style_title}\"")
+                    output.append(f"  title_style: \"{build_title_style_local(is_small, t_size_custom)}\"")
                     output.append(f"  widget_style: \"{style_widget}\"")
                     output.append(f"  icon_active_style: \"{style_icon}\"")
                     output.append(f"  icon_inactive_style: \"{style_icon}\"")
