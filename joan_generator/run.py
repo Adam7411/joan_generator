@@ -737,7 +737,18 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                 if w_id in custom_defs and not w.get('was_edited', False):
                     output.append(f"{w_id}:")
                     for line in custom_defs[w_id].split('\n'):
-                        if line.strip():
+                        line_stripped = line.strip()
+                        if line_stripped:
+                            if is_pro:
+                                # Auto-upgrade standard 6-inch sizes to 13-inch sizes for imported legacy widgets
+                                if 'font-size: 20px' in line: line = line.replace('font-size: 20px', 'font-size: 32px')
+                                elif 'font-size: 16px' in line: line = line.replace('font-size: 16px', 'font-size: 24px')
+                                elif 'font-size: 54px' in line: line = line.replace('font-size: 54px', 'font-size: 90px')
+                                elif 'font-size: 34px' in line: line = line.replace('font-size: 34px', 'font-size: 60px')
+                                # Ensure icons get scaled if missing font-size
+                                if ('icon_style' in line or 'icon_active_style' in line or 'icon_inactive_style' in line):
+                                    if 'font-size' not in line:
+                                        line = line.replace('!important"', '!important; font-size: 90px;"')
                             output.append(f"  {line}")
                     output.append("")
                     continue
@@ -1286,7 +1297,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                     output.append(f"  dashboard: {dash_slug}")
                     output.append(f"  icon_active: mdi-arrow-right-circle")
                     output.append(f"  icon_inactive: mdi-arrow-right-circle")
-                    output.append(f"  title_style: \"{style_title_small}\"")
+                    output.append(f"  title_style: \"{build_title_style_local(False, '')}\"")
                     output.append(f"  widget_style: \"{style_widget}\"")
                     output.append(f"  icon_active_style: \"{style_icon}\"")
                     output.append(f"  icon_inactive_style: \"{style_icon}\"")
