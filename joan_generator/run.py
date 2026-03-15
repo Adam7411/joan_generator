@@ -509,9 +509,10 @@ def pick_auto_size(value_size_hint: str, entity_id: str, entities_map: dict) -> 
     If hint == 'auto', selects size based on current entity state:
       >10000  -> small (40px)
       >1000   -> medium (48px)
+      length <= 3 -> large (110px)
       else    -> normal (54px)
     If number parsing fails, falls back to text length:
-      len>9 -> small, len>6 -> medium, otherwise normal.
+      len>9 -> small, len>6 -> medium, len<=3 -> large, otherwise normal.
     """
     if value_size_hint != "auto":
         return value_size_hint
@@ -519,20 +520,24 @@ def pick_auto_size(value_size_hint: str, entity_id: str, entities_map: dict) -> 
     ent = entities_map.get(entity_id)
     if ent:
         raw = str(ent.get("state", "")).replace(",", ".").strip()
+        length = len(raw)
         try:
             val = float(raw)
             if abs(val) > 10000:
                 return "small"
             if abs(val) > 1000:
                 return "medium"
+            if length <= 3:
+                return "large"
             return "normal"
         except Exception:
             pass
-        length = len(raw)
         if length > 9:
             return "small"
         if length > 6:
             return "medium"
+        if length <= 3:
+            return "large"
     return "normal"
 
 # ICON FORMAT NORMALIZATION
