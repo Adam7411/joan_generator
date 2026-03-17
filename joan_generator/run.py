@@ -620,6 +620,8 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
         if custom_px and str(custom_px).strip():
             try:
                 px = int(custom_px)
+                if not is_pro and px in [110, 90, 65, 60, 50]:
+                    px = 34 if is_small_w else 54
             except:
                 px = (60 if is_pro else 34) if is_small_w else (90 if is_pro else 54)
         else:
@@ -632,6 +634,12 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
     def build_title_style_local(is_small_w, custom_px):
         base_style = style_title_small if is_small_w else style_title
         if custom_px and str(custom_px).strip():
+            try:
+                px = int(custom_px)
+                if not is_pro and px in [40, 32, 24]:
+                    return base_style
+            except:
+                pass
             import re
             return re.sub(r'font-size: \d+px', f'font-size: {custom_px}px', base_style)
         return base_style
