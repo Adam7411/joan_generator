@@ -639,6 +639,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
     output = []
     output.append(f"# Joan Dashboard: {title}")
     output.append(f"# Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    output.append(f"# Model: {'Joan 13 Pro' if is_pro else 'Joan 6'}")
     output.append("")
     output.append(f"title: {title}")
     dims = "[188, 192]" if is_pro else "[117, 123]"
