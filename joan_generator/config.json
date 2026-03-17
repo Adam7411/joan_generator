@@ -1,6 +1,6 @@
 {
   "name": "Joan 6/13 AppDaemon Dashboard Generator",
-  "version": "1.5.5",
+  "version": "1.5.6",
   "slug": "joan_generator",
   "description": ".dash file creator for AppDaemon, optimized for Visionect Joan 6/13 screens.",
   "url": "https://github.com/Adam7411/joan_generator",
