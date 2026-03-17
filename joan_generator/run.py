@@ -1366,10 +1366,19 @@ def index():
         dash_list_str = request.form.get('dashboards_list', '')
         available_dash_files = [d.strip() for d in dash_list_str.split(',') if d.strip()] if dash_list_str else []
 
-        # Update global view parameters
-        dashboard_slug = title.lower().replace(" ", "_")
-        dashboard_filename = dashboard_slug + ".dash"
+        # Helper to preserve case sensitivity from existing files
+        expected_slug = title.lower().replace(" ", "_").replace("ą", "a").replace("ć", "c").replace("ę", "e").replace("ł", "l").replace("ń", "n").replace("ó", "o").replace("ś", "s").replace("ź", "z").replace("ż", "z")
+        expected_filename = expected_slug + ".dash"
         
+        # Check against available files to preserve original camelCase/Capitalized filename
+        dashboard_filename = expected_filename
+        dashboard_slug = expected_slug
+        for f in available_dash_files:
+            fname = f.get('name', '') if isinstance(f, dict) else f
+            if fname.lower() == expected_filename:
+                dashboard_filename = fname
+                dashboard_slug = fname.replace('.dash', '')
+                break
         try:
             layout_data = json.loads(layout_json)
             custom_defs = json.loads(custom_defs_json)
