@@ -1286,7 +1286,7 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
             output.append("# AUTO NAV BAR WIDGETS")
             output.append("# -------------------")
             output.append("")
-            seen_navs = set()
+            seen_navs = set(seen_ids)
             for dash_item in available_dash_files:
                 dash_name = dash_item.get('name') if isinstance(dash_item, dict) else dash_item
                 dash_slug = dash_name.replace('.dash', '')
