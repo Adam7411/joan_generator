@@ -763,6 +763,17 @@ def generate_joan_dash_yaml(rows, title, grid_params, lang_code, custom_defs, en
                                 if ('icon_style' in line or 'icon_active_style' in line or 'icon_inactive_style' in line):
                                     if 'font-size' not in line:
                                         line = line.replace('!important"', '!important; font-size: 90px;"')
+                            else:
+                                # Auto-downgrade 13-inch sizes back to 6-inch sizes
+                                if 'font-size: 32px' in line: line = line.replace('font-size: 32px', 'font-size: 20px')
+                                elif 'font-size: 24px' in line: line = line.replace('font-size: 24px', 'font-size: 16px')
+                                elif 'font-size: 90px' in line: line = line.replace('font-size: 90px', 'font-size: 54px')
+                                elif 'font-size: 60px' in line: line = line.replace('font-size: 60px', 'font-size: 34px')
+                                if ('icon_style' in line or 'icon_active_style' in line or 'icon_inactive_style' in line):
+                                    if '; font-size: 90px;' in line:
+                                        line = line.replace('; font-size: 90px;', '')
+                                    if 'font-size: 90px;' in line:
+                                        line = line.replace('font-size: 90px;', '')
                             output.append(f"  {line}")
                     output.append("")
                     continue
